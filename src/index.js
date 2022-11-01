@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper.js';
@@ -30,30 +31,32 @@ function init() {
     const container = document.createElement( 'div' );
     document.body.appendChild( container );
 
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-    camera.position.set( 100, 200, 300 );
-
+    
     // scene
-
     scene = new THREE.Scene();
     scene.background = new THREE.Color( 0xa0a0a0 );
     // scene.fog = new THREE.Fog( 0xa0a0a0, 10, 50 );
-
+    
+    // camera
+    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+    camera.position.set( 0, 20, 30 );
+    scene.add( camera );
+    
+    // scene.add( new THREE.PolarGridHelper( 30, 0 ) );
+        
+    
+    const listener = new THREE.AudioListener();
+    scene.add( listener );
+    
+    // light
     const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
     hemiLight.position.set( 0, 20, 0 );
     scene.add( hemiLight );
 
-    // scene.add( new THREE.PolarGridHelper( 30, 0 ) );
-
-    const listener = new THREE.AudioListener();
-    camera.add( listener );
-    scene.add( camera );
-
-
     const dirLight = new THREE.DirectionalLight( 0xffffff );
     dirLight.position.set( 3, 10, 10 );
     dirLight.castShadow = true;
-    dirLight.shadow.camera.top = 20;
+    dirLight.shadow.camera.top = 25;
     dirLight.shadow.camera.bottom = -20;
     dirLight.shadow.camera.left = -20;
     dirLight.shadow.camera.right = 20;
@@ -65,23 +68,23 @@ function init() {
     scene.add( dirLight );
 
     // ground
-
-    const ground = new THREE.Mesh( new THREE.PlaneGeometry( 100, 100 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+    const ground = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
     ground.rotation.x = - Math.PI / 2;
     ground.receiveShadow = true;
     scene.add( ground );
 
     // render
-
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.shadowMap.enabled = true;
     container.appendChild( renderer.domElement );
+    const controls = new OrbitControls( camera, renderer.domElement );
+
 
     effect = new OutlineEffect( renderer );
 
-    // FPS STATS
+    // FPS stats
 
     stats = new Stats();
     container.appendChild( stats.dom );
@@ -113,6 +116,7 @@ function init() {
 
         mesh = mmd.mesh;
         mesh.castShadow = true;
+        mesh.receiveShadow = true;
 
         helper.add( mesh, {
             animation: mmd.animation,
@@ -160,6 +164,7 @@ function init() {
 
         const api = {
             'play/pause': false,
+            'camera motion': true,
             'show outline': true,
             'show IK bones': false,
             'show rigid bodies': false
