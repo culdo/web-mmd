@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 
-import Stats from 'three/addons/libs/stats.module.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+import Stats from 'three/examples/jsm/libs/stats.module.js';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
-import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
-import { MMDLoader } from 'three/addons/loaders/MMDLoader.js';
-import { MMDAnimationHelper } from 'three/addons/animation/MMDAnimationHelper.js';
+import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
+import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
+import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper.js';
 
 let stats;
 
@@ -59,12 +59,12 @@ function init() {
 
     effect = new OutlineEffect( renderer );
 
-    // STATS
+    // FPS STATS
 
     stats = new Stats();
     container.appendChild( stats.dom );
 
-    // model
+    // Log asset downloading progress
 
     function onProgress( xhr ) {
 
@@ -134,7 +134,7 @@ function init() {
     function initGui() {
 
         const api = {
-            'animation': true,
+            'play/pause': true,
             'ik': true,
             'outline': true,
             'physics': true,
@@ -143,8 +143,9 @@ function init() {
         };
 
         const gui = new GUI();
-        gui.add( api, 'animation' ).onChange( function () {
-            helper.enable( 'animation', api[ 'animation' ] );
+        gui.add( api, 'play/pause' ).onChange( function () {
+            helper.enable( 'animation', api[ 'play/pause' ] );
+            helper.enable( 'cameraAnimation', api[ 'play/pause' ] );
         } );
         gui.add( api, 'ik' ).onChange( function () {
             helper.enable( 'ik', api[ 'ik' ] );
