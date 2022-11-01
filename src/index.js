@@ -31,30 +31,52 @@ function init() {
     document.body.appendChild( container );
 
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+    camera.position.set( 100, 200, 300 );
 
     // scene
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0xffffff );
+    scene.background = new THREE.Color( 0xa0a0a0 );
+    // scene.fog = new THREE.Fog( 0xa0a0a0, 10, 50 );
 
-    scene.add( new THREE.PolarGridHelper( 30, 0 ) );
+    const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+    hemiLight.position.set( 0, 20, 0 );
+    scene.add( hemiLight );
+
+    // scene.add( new THREE.PolarGridHelper( 30, 0 ) );
 
     const listener = new THREE.AudioListener();
     camera.add( listener );
     scene.add( camera );
 
-    const ambient = new THREE.AmbientLight( 0x666666 );
-    scene.add( ambient );
 
-    const directionalLight = new THREE.DirectionalLight( 0x887766 );
-    directionalLight.position.set( - 1, 1, 1 ).normalize();
-    scene.add( directionalLight );
+    const dirLight = new THREE.DirectionalLight( 0xffffff );
+    dirLight.position.set( 3, 10, 10 );
+    dirLight.castShadow = true;
+    dirLight.shadow.camera.top = 20;
+    dirLight.shadow.camera.bottom = -20;
+    dirLight.shadow.camera.left = -20;
+    dirLight.shadow.camera.right = 20;
+    dirLight.shadow.camera.near = 0.1;
+    dirLight.shadow.camera.far = 80;
 
-    //
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 1024;
+    scene.add( dirLight );
+
+    // ground
+
+    const ground = new THREE.Mesh( new THREE.PlaneGeometry( 100, 100 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+    ground.rotation.x = - Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add( ground );
+
+    // render
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.shadowMap.enabled = true;
     container.appendChild( renderer.domElement );
 
     effect = new OutlineEffect( renderer );
@@ -90,6 +112,7 @@ function init() {
     loader.loadWithAnimation( modelFile, vmdFiles, function ( mmd ) {
 
         mesh = mmd.mesh;
+        mesh.castShadow = true;
 
         helper.add( mesh, {
             animation: mmd.animation,
@@ -124,6 +147,8 @@ function init() {
         scene.add( physicsHelper );
 
         initGui();
+        helper.enable( 'animation', false );
+        helper.enable( 'cameraAnimation', false );
 
     }, onProgress, null );
 
@@ -134,10 +159,8 @@ function init() {
     function initGui() {
 
         const api = {
-            'play/pause': true,
-            'ik': true,
-            'outline': true,
-            'physics': true,
+            'play/pause': false,
+            'show outline': true,
             'show IK bones': false,
             'show rigid bodies': false
         };
@@ -146,15 +169,14 @@ function init() {
         gui.add( api, 'play/pause' ).onChange( function () {
             helper.enable( 'animation', api[ 'play/pause' ] );
             helper.enable( 'cameraAnimation', api[ 'play/pause' ] );
+            if(helper.audio.isPlaying) {
+                helper.audio.pause()
+            }else{
+                helper.audio.play()
+            }
         } );
-        gui.add( api, 'ik' ).onChange( function () {
-            helper.enable( 'ik', api[ 'ik' ] );
-        } );
-        gui.add( api, 'outline' ).onChange( function () {
-            effect.enabled = api[ 'outline' ];
-        } );
-        gui.add( api, 'physics' ).onChange( function () {
-            helper.enable( 'physics', api[ 'physics' ] )
+        gui.add( api, 'show outline' ).onChange( function () {
+            effect.enabled = api[ 'show outline' ];
         } );
         gui.add( api, 'show IK bones' ).onChange( function () {
             ikHelper.visible = api[ 'show IK bones' ];
