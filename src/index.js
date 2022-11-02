@@ -10,7 +10,7 @@ import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHel
 
 let stats;
 
-let mesh, camera, scene, renderer, effect;
+let mesh, camera, scene, renderer, effect, stage;
 let helper, ikHelper, physicsHelper;
 
 let ready = false;
@@ -21,8 +21,7 @@ const api = {
     'camera': true,
     'music': true,
     'ground shadow': true,
-    'ground color': 0xffffff,
-    'background color': 0x43a0ad,
+    'fog color': 0x43a0ad,
     'self shadow': false,
     'show outline': true,
     'show IK bones': false,
@@ -51,8 +50,7 @@ function init() {
     
     // scene
     scene = new THREE.Scene();
-    // scene.background = new THREE.Color( api['background color'] );
-    scene.fog = new THREE.Fog( api['background color'], 10, 500 );
+    scene.fog = new THREE.Fog( api['fog color'], 10, 500 );
     
     // camera
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
@@ -79,13 +77,6 @@ function init() {
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 1024;
     scene.add( dirLight );
-
-
-    // ground
-    const ground = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), new THREE.MeshPhongMaterial( { color: api['ground color'], depthWrite: false} ));
-    ground.rotation.x = - Math.PI / 2;
-    ground.receiveShadow = api["ground shadow"];
-    // scene.add( ground );
 
     // render
     renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -145,12 +136,14 @@ function init() {
     helper = new MMDAnimationHelper();
     
     const loader = new MMDLoader();
+
     // load stage
     loader.load('models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx', function ( mesh ) {
         mesh.castShadow = true;
-        mesh.receiveShadow = api['ground color'];
+        mesh.receiveShadow = api['ground shadow'];
 
         scene.add( mesh );
+        stage = mesh;
     }, onProgress, null)
 
     // load character
@@ -207,6 +200,8 @@ function init() {
             isPlaying = state
             if(helper.audio.isPlaying) {
                 helper.audio.pause()
+            }else{
+                gui.close();
             }
         } );
         gui.add( api, 'camera' ).onChange( function (state) {
@@ -220,28 +215,36 @@ function init() {
             }
         } );
 
-        gui.add( api, 'ground shadow' ).onChange( function (state) {
-            ground.receiveShadow = state;
-        } );
-        gui.addColor( api, 'ground color' ).onChange( handleColorChange( ground.material.color));
-        gui.addColor( api, 'background color' ).onChange( function ( value ) {
-            // scene.background.setHex( value );
-            scene.fog.color.setHex( value );
-        });
-
-        gui.add( api, 'self shadow' ).onChange( function (state) {
-            mesh.receiveShadow = state;
-        } );
+        guiColor(gui);
         guiLight(gui);
+        guiShadow(gui);
         guiDebug(gui);
     }
+    function guiColor( gui) {
+        const folder = gui.addFolder( 'Color' );
+        folder.addColor( api, 'fog color' ).onChange( function ( value ) {
+            scene.fog.color.setHex( value );
+        });
+        folder.close();
+    }
 
+    function guiShadow( gui) {
+        const folder = gui.addFolder( 'Shadow' );
+        folder.add( api, 'ground shadow' ).onChange( function (state) {
+            stage.receiveShadow = state;
+        } );
+        folder.add( api, 'self shadow' ).onChange( function (state) {
+            mesh.receiveShadow = state;
+        } );
+        folder.close();
+    }
     function guiLight( gui) {
         const folder = gui.addFolder( 'Light' );
 
         folder.addColor( api, 'Directional' ).onChange( handleColorChange( dirLight.color) );
         folder.addColor( api, 'Hemisphere sky' ).onChange( handleColorChange( hemiLight.color) );
         folder.addColor( api, 'Hemisphere ground' ).onChange( handleColorChange( hemiLight.groundColor) );
+        folder.close();
     }
     function guiDebug(gui) {
         const folder = gui.addFolder( 'Debug' );
@@ -255,6 +258,7 @@ function init() {
         folder.add( api, 'show rigid bodies' ).onChange( function (state) {
             if ( physicsHelper !== undefined ) physicsHelper.visible = state;
         } );
+        folder.close();
     }
 
 }
