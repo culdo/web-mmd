@@ -15,6 +15,7 @@ let helper, ikHelper, physicsHelper;
 
 let ready = false;
 let isPlaying = false;
+let checkbox;
 
 const api = {
     'play/pause': false,
@@ -133,7 +134,7 @@ function init() {
     const audioFile = 'models/mmd/audios/GimmexGimme.m4a';
     const audioParams = { delayTime: 6 * 1 / 30 };
 
-    helper = new MMDAnimationHelper();
+    helper = new MMDAnimationHelper({resetPhysicsOnLoop: false});
     
     const loader = new MMDLoader();
 
@@ -196,7 +197,7 @@ function init() {
     function initGui() {
 
         const gui = new GUI();
-        gui.add( api, 'play/pause' ).onChange( function (state) {
+        checkbox = gui.add( api, 'play/pause' ).onChange( function (state) {
             isPlaying = state
             if(helper.audio.isPlaying) {
                 helper.audio.pause()
@@ -284,8 +285,16 @@ function animate() {
 }
 
 function render() {
-    let delta = clock.getDelta()
     if(ready){
+        let delta = clock.getDelta()
+        // only loop once
+        if(helper.audioManager.looped){
+            isPlaying = false;
+            helper.audioManager.looped = false;
+
+            api['play/pause'] = false;
+            checkbox.updateDisplay();
+        }
         if (isPlaying ) {
 
             helper.update( delta );
