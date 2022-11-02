@@ -22,14 +22,13 @@ const api = {
     'ground shadow': true,
     'ground color': 0xffffff,
     'background color': 0xa0a0a0,
-    'fog color': 0xa0a0a0,
     'self shadow': false,
-    'show outline': true,
+    'show outline': false,
     'show IK bones': false,
     'show rigid bodies': false,
     // light
     'Hemisphere sky': 0x666666,
-    'Hemisphere ground': 0x444444,
+    'Hemisphere ground': 0x482e2e,
     'Directional': 0xffffff,
 };
 
@@ -52,7 +51,7 @@ function init() {
     // scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color( api['background color'] );
-    scene.fog = new THREE.Fog( api['fog color'], 10, 500 );
+    scene.fog = new THREE.Fog( api['background color'], 10, 500 );
     
     // camera
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
@@ -82,7 +81,7 @@ function init() {
 
 
     // ground
-    const ground = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), new THREE.MeshPhongMaterial( { color: api['ground color'], depthWrite: false } ) );
+    const ground = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), new THREE.MeshPhongMaterial( { color: api['ground color'], depthWrite: false} ));
     ground.rotation.x = - Math.PI / 2;
     ground.receiveShadow = api["ground shadow"];
     scene.add( ground );
@@ -98,6 +97,7 @@ function init() {
 
     // outline
     effect = new OutlineEffect( renderer );
+    effect.enabled = api['show outline']
 
     // FPS stats
     stats = new Stats();
@@ -214,8 +214,11 @@ function init() {
             ground.receiveShadow = state;
         } );
         gui.addColor( api, 'ground color' ).onChange( handleColorChange( ground.material.color));
-        gui.addColor( api, 'background color' ).onChange( handleColorChange( scene.background));
-        gui.addColor( api, 'fog color' ).onChange( handleColorChange( scene.fog.color ));
+        gui.addColor( api, 'background color' ).onChange( function ( value ) {
+            scene.background.setHex( value );
+            scene.fog.color.setHex( value );
+        });
+
         gui.add( api, 'self shadow' ).onChange( function (state) {
             mesh.receiveShadow = state;
         } );
@@ -226,9 +229,9 @@ function init() {
     function guiLight( gui) {
         const folder = gui.addFolder( 'Light' );
 
-        folder.addColor( api, 'Directional' ).onChange( handleColorChange( dirLight.color, true ) );
-        folder.addColor( api, 'Hemisphere sky' ).onChange( handleColorChange( hemiLight.color, true ) );
-        folder.addColor( api, 'Hemisphere ground' ).onChange( handleColorChange( hemiLight.groundColor, true ) );
+        folder.addColor( api, 'Directional' ).onChange( handleColorChange( dirLight.color) );
+        folder.addColor( api, 'Hemisphere sky' ).onChange( handleColorChange( hemiLight.color) );
+        folder.addColor( api, 'Hemisphere ground' ).onChange( handleColorChange( hemiLight.groundColor) );
     }
     function guiDebug(gui) {
         const folder = gui.addFolder( 'Debug' );
