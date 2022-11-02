@@ -35,22 +35,19 @@ function init() {
     // scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color( 0xa0a0a0 );
-    // scene.fog = new THREE.Fog( 0xa0a0a0, 10, 50 );
+    scene.fog = new THREE.Fog( 0xa0a0a0, 10, 500 );
     
     // camera
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
     camera.position.set( 0, 20, 30 );
     scene.add( camera );
     
-    // scene.add( new THREE.PolarGridHelper( 30, 0 ) );
-        
-    
     const listener = new THREE.AudioListener();
     scene.add( listener );
     
     // light
     const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
-    hemiLight.position.set( 0, 20, 0 );
+    hemiLight.position.set( 0, 40, 0 );
     scene.add( hemiLight );
 
     const dirLight = new THREE.DirectionalLight( 0xffffff );
@@ -80,16 +77,16 @@ function init() {
     renderer.shadowMap.enabled = true;
     container.appendChild( renderer.domElement );
     const controls = new OrbitControls( camera, renderer.domElement );
+    controls.target.set( 0, 10, 0 );
 
-
+    // outline
     effect = new OutlineEffect( renderer );
 
     // FPS stats
-
     stats = new Stats();
     container.appendChild( stats.dom );
 
-    // Log asset downloading progress
+    // log asset downloading progress
 
     function onProgress( xhr ) {
 
@@ -164,7 +161,6 @@ function init() {
 
         const api = {
             'play/pause': false,
-            'camera motion': true,
             'show outline': true,
             'show IK bones': false,
             'show rigid bodies': false
