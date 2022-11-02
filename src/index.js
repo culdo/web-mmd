@@ -14,9 +14,11 @@ let mesh, camera, scene, renderer, effect;
 let helper, ikHelper, physicsHelper;
 
 let ready = false;
+let isPlaying = false;
 
 const api = {
     'play/pause': false,
+    'music': true,
     'ground shadow': true,
     'ground color': 0xffffff,
     'background color': 0xa0a0a0,
@@ -194,48 +196,54 @@ function init() {
     function initGui() {
 
         const gui = new GUI();
-        gui.add( api, 'play/pause' ).onChange( function () {
-            helper.enable( 'animation', api[ 'play/pause' ] );
-            helper.enable( 'cameraAnimation', api[ 'play/pause' ] );
+        gui.add( api, 'play/pause' ).onChange( function (state) {
+            isPlaying = state
+            helper.enable( 'animation', state );
+            helper.enable( 'cameraAnimation', state );
             if(helper.audio.isPlaying) {
                 helper.audio.pause()
+            }
+        } );
+        gui.add( api, 'music' ).onChange( function (state) {
+            if(state) {
+                helper.audio.setVolume(1.0);
             }else{
-                helper.audio.play()
+                helper.audio.setVolume(0.0);
             }
         } );
 
-        gui.add( api, 'ground shadow' ).onChange( function () {
-            ground.receiveShadow = api[ 'ground shadow' ];
+        gui.add( api, 'ground shadow' ).onChange( function (state) {
+            ground.receiveShadow = state;
         } );
         gui.addColor( api, 'ground color' ).onChange( handleColorChange( ground.material.color));
         gui.addColor( api, 'background color' ).onChange( handleColorChange( scene.background));
         gui.addColor( api, 'fog color' ).onChange( handleColorChange( scene.fog.color ));
-        gui.add( api, 'self shadow' ).onChange( function () {
-            mesh.receiveShadow = api[ 'self shadow' ];
+        gui.add( api, 'self shadow' ).onChange( function (state) {
+            mesh.receiveShadow = state;
         } );
         guiLight(gui);
-        gui.add( api, 'show outline' ).onChange( function () {
-            effect.enabled = api[ 'show outline' ];
-        } );
-        gui.add( api, 'show IK bones' ).onChange( function () {
-            ikHelper.visible = api[ 'show IK bones' ];
-        } );
-        gui.add( api, 'show rigid bodies' ).onChange( function () {
-            if ( physicsHelper !== undefined ) physicsHelper.visible = api[ 'show rigid bodies' ];
-        } );
+        guiDebug(gui);
     }
 
     function guiLight( gui) {
-
         const folder = gui.addFolder( 'Light' );
-        
+
         folder.addColor( api, 'Directional' ).onChange( handleColorChange( dirLight.color, true ) );
-
         folder.addColor( api, 'Hemisphere sky' ).onChange( handleColorChange( hemiLight.color, true ) );
-
         folder.addColor( api, 'Hemisphere ground' ).onChange( handleColorChange( hemiLight.groundColor, true ) );
+    }
+    function guiDebug(gui) {
+        const folder = gui.addFolder( 'Debug' );
 
-
+        folder.add( api, 'show outline' ).onChange( function (state) {
+            effect.enabled = state;
+        } );
+        folder.add( api, 'show IK bones' ).onChange( function (state) {
+            ikHelper.visible = state;
+        } );
+        folder.add( api, 'show rigid bodies' ).onChange( function (state) {
+            if ( physicsHelper !== undefined ) physicsHelper.visible = state;
+        } );
     }
 
 }
@@ -261,10 +269,10 @@ function animate() {
 }
 
 function render() {
+    let delta = clock.getDelta()
+    if ( ready && isPlaying ) {
 
-    if ( ready ) {
-
-        helper.update( clock.getDelta() );
+        helper.update( delta );
 
     }
 
