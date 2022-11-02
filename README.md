@@ -1,15 +1,9 @@
-# 🚀 Welcome to your new awesome project!
+# Web-MMD
 
-This project has been created using **webpack-cli**, you can now run
+For who want to play MMD in the browser
 
-```
-npm run build
-```
-
-or
-
-```
-yarn build
-```
-
-to bundle your application
+# To-do list
+- [x] play/pause
+- [x] turn on/off shawdow
+- [x] choose light color
+- [ ] can choose different model, motion, camera, music

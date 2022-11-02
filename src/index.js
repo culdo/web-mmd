@@ -135,11 +135,11 @@ function init() {
 
     }
 
-    const modelFile = 'models/mmd/miku/miku_v2.pmd';
-    const vmdFiles = [ 'models/mmd/motions/wavefile_v2.vmd' ];
-    const cameraFiles = [ 'models/mmd/cameras/wavefile_camera.vmd' ];
-    const audioFile = 'models/mmd/audios/wavefile_short.mp3';
-    const audioParams = { delayTime: 160 * 1 / 30 };
+    const modelFile = 'models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
+    const vmdFiles = [ 'models/mmd/motions/GimmeGimme_with_emotion.vmd'];
+    const cameraFiles = [ 'models/mmd/cameras/GimmexGimme.vmd' ];
+    const audioFile = 'models/mmd/audios/GimmexGimme.m4a';
+    const audioParams = { delayTime: 6 * 1 / 30 };
 
     helper = new MMDAnimationHelper();
 
@@ -166,7 +166,7 @@ function init() {
 
                 const audio = new THREE.Audio( listener ).setBuffer( buffer );
 
-                helper.add( audio, audioParams );
+                helper.add( audio );
                 scene.add( mesh );
 
                 ready = true;
@@ -184,8 +184,6 @@ function init() {
         scene.add( physicsHelper );
 
         initGui();
-        helper.enable( 'animation', false );
-        helper.enable( 'cameraAnimation', false );
 
     }, onProgress, null );
 
@@ -270,12 +268,15 @@ function animate() {
 
 function render() {
     let delta = clock.getDelta()
-    if ( ready && isPlaying ) {
+    if(ready){
+        if (isPlaying ) {
 
-        helper.update( delta );
+            helper.update( delta );
 
+        }else{
+            helper.objects.get(mesh).physics.update( delta );
+        }
     }
-
     effect.render( scene, camera );
 
 }
