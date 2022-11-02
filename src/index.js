@@ -18,12 +18,13 @@ let isPlaying = false;
 
 const api = {
     'play/pause': false,
+    'camera': true,
     'music': true,
     'ground shadow': true,
     'ground color': 0xffffff,
-    'background color': 0xa0a0a0,
+    'background color': 0x43a0ad,
     'self shadow': false,
-    'show outline': false,
+    'show outline': true,
     'show IK bones': false,
     'show rigid bodies': false,
     // light
@@ -50,7 +51,7 @@ function init() {
     
     // scene
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( api['background color'] );
+    // scene.background = new THREE.Color( api['background color'] );
     scene.fog = new THREE.Fog( api['background color'], 10, 500 );
     
     // camera
@@ -84,7 +85,7 @@ function init() {
     const ground = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), new THREE.MeshPhongMaterial( { color: api['ground color'], depthWrite: false} ));
     ground.rotation.x = - Math.PI / 2;
     ground.receiveShadow = api["ground shadow"];
-    scene.add( ground );
+    // scene.add( ground );
 
     // render
     renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -142,9 +143,17 @@ function init() {
     const audioParams = { delayTime: 6 * 1 / 30 };
 
     helper = new MMDAnimationHelper();
-
+    
     const loader = new MMDLoader();
+    // load stage
+    loader.load('models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx', function ( mesh ) {
+        mesh.castShadow = true;
+        mesh.receiveShadow = api['ground color'];
 
+        scene.add( mesh );
+    }, onProgress, null)
+
+    // load character
     loader.loadWithAnimation( modelFile, vmdFiles, function ( mmd ) {
 
         mesh = mmd.mesh;
@@ -166,7 +175,7 @@ function init() {
 
                 const audio = new THREE.Audio( listener ).setBuffer( buffer );
 
-                helper.add( audio );
+                helper.add( audio , audioParams);
                 scene.add( mesh );
 
                 ready = true;
@@ -196,11 +205,12 @@ function init() {
         const gui = new GUI();
         gui.add( api, 'play/pause' ).onChange( function (state) {
             isPlaying = state
-            helper.enable( 'animation', state );
-            helper.enable( 'cameraAnimation', state );
             if(helper.audio.isPlaying) {
                 helper.audio.pause()
             }
+        } );
+        gui.add( api, 'camera' ).onChange( function (state) {
+            helper.enable( 'cameraAnimation', state );
         } );
         gui.add( api, 'music' ).onChange( function (state) {
             if(state) {
@@ -215,7 +225,7 @@ function init() {
         } );
         gui.addColor( api, 'ground color' ).onChange( handleColorChange( ground.material.color));
         gui.addColor( api, 'background color' ).onChange( function ( value ) {
-            scene.background.setHex( value );
+            // scene.background.setHex( value );
             scene.fog.color.setHex( value );
         });
 
