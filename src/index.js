@@ -15,6 +15,22 @@ let helper, ikHelper, physicsHelper;
 
 let ready = false;
 
+const api = {
+    'play/pause': false,
+    'ground shadow': true,
+    'ground color': 0xffffff,
+    'background color': 0xa0a0a0,
+    'fog color': 0xa0a0a0,
+    'self shadow': false,
+    'show outline': true,
+    'show IK bones': false,
+    'show rigid bodies': false,
+    // light
+    'Hemisphere sky': 0x666666,
+    'Hemisphere ground': 0x444444,
+    'Directional': 0xffffff,
+};
+
 const clock = new THREE.Clock();
 
 
@@ -30,12 +46,11 @@ function init() {
 
     const container = document.createElement( 'div' );
     document.body.appendChild( container );
-
     
     // scene
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0xa0a0a0 );
-    scene.fog = new THREE.Fog( 0xa0a0a0, 10, 500 );
+    scene.background = new THREE.Color( api['background color'] );
+    scene.fog = new THREE.Fog( api['fog color'], 10, 500 );
     
     // camera
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
@@ -46,11 +61,11 @@ function init() {
     scene.add( listener );
     
     // light
-    const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+    const hemiLight = new THREE.HemisphereLight( api["Hemisphere sky"], api["Hemisphere ground"] );
     hemiLight.position.set( 0, 40, 0 );
     scene.add( hemiLight );
 
-    const dirLight = new THREE.DirectionalLight( 0xffffff );
+    const dirLight = new THREE.DirectionalLight( api["Directional"], 0.5 );
     dirLight.position.set( 3, 10, 10 );
     dirLight.castShadow = true;
     dirLight.shadow.camera.top = 25;
@@ -59,15 +74,15 @@ function init() {
     dirLight.shadow.camera.right = 20;
     dirLight.shadow.camera.near = 0.1;
     dirLight.shadow.camera.far = 80;
-
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 1024;
     scene.add( dirLight );
 
+
     // ground
-    const ground = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+    const ground = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), new THREE.MeshPhongMaterial( { color: api['ground color'], depthWrite: false } ) );
     ground.rotation.x = - Math.PI / 2;
-    ground.receiveShadow = true;
+    ground.receiveShadow = api["ground shadow"];
     scene.add( ground );
 
     // render
@@ -99,6 +114,25 @@ function init() {
 
     }
 
+    // handle gui color change
+    function handleColorChange( color, converSRGBToLinear = false ) {
+
+        return function ( value ) {
+
+            if ( typeof value === 'string' ) {
+
+                value = value.replace( '#', '0x' );
+
+            }
+
+            color.setHex( value );
+
+            if ( converSRGBToLinear === true ) color.convertSRGBToLinear();
+
+        };
+
+    }
+
     const modelFile = 'models/mmd/miku/miku_v2.pmd';
     const vmdFiles = [ 'models/mmd/motions/wavefile_v2.vmd' ];
     const cameraFiles = [ 'models/mmd/cameras/wavefile_camera.vmd' ];
@@ -113,7 +147,7 @@ function init() {
 
         mesh = mmd.mesh;
         mesh.castShadow = true;
-        mesh.receiveShadow = true;
+        mesh.receiveShadow = api["self shadow"];
 
         helper.add( mesh, {
             animation: mmd.animation,
@@ -159,13 +193,6 @@ function init() {
 
     function initGui() {
 
-        const api = {
-            'play/pause': false,
-            'show outline': true,
-            'show IK bones': false,
-            'show rigid bodies': false
-        };
-
         const gui = new GUI();
         gui.add( api, 'play/pause' ).onChange( function () {
             helper.enable( 'animation', api[ 'play/pause' ] );
@@ -176,6 +203,17 @@ function init() {
                 helper.audio.play()
             }
         } );
+
+        gui.add( api, 'ground shadow' ).onChange( function () {
+            ground.receiveShadow = api[ 'ground shadow' ];
+        } );
+        gui.addColor( api, 'ground color' ).onChange( handleColorChange( ground.material.color));
+        gui.addColor( api, 'background color' ).onChange( handleColorChange( scene.background));
+        gui.addColor( api, 'fog color' ).onChange( handleColorChange( scene.fog.color ));
+        gui.add( api, 'self shadow' ).onChange( function () {
+            mesh.receiveShadow = api[ 'self shadow' ];
+        } );
+        guiLight(gui);
         gui.add( api, 'show outline' ).onChange( function () {
             effect.enabled = api[ 'show outline' ];
         } );
@@ -185,6 +223,19 @@ function init() {
         gui.add( api, 'show rigid bodies' ).onChange( function () {
             if ( physicsHelper !== undefined ) physicsHelper.visible = api[ 'show rigid bodies' ];
         } );
+    }
+
+    function guiLight( gui) {
+
+        const folder = gui.addFolder( 'Light' );
+        
+        folder.addColor( api, 'Directional' ).onChange( handleColorChange( dirLight.color, true ) );
+
+        folder.addColor( api, 'Hemisphere sky' ).onChange( handleColorChange( hemiLight.color, true ) );
+
+        folder.addColor( api, 'Hemisphere ground' ).onChange( handleColorChange( hemiLight.groundColor, true ) );
+
+
     }
 
 }
