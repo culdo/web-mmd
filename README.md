@@ -1,6 +1,6 @@
 # Web-MMD
 
-For who want to play MMD in the browser
+For who want to play MMD in the browser, it is improved version from [three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio)
 
 # TL;DR
 https://culdo.github.io/web-mmd/
