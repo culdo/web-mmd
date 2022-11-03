@@ -18,11 +18,11 @@ let timeoutID;
 let prevTime = 0.0;
 
 const api = {
-    'camera': true,
+    'auto camera': true,
     'physics on pause': true,
     'ground shadow': true,
+    'self shadow': true,
     'fog color': 0x43a0ad,
-    'self shadow': false,
     'show outline': true,
     'show IK bones': false,
     'show rigid bodies': false,
@@ -80,7 +80,7 @@ function init() {
     hemiLight.position.set( 0, 40, 0 );
     scene.add( hemiLight );
 
-    const dirLight = new THREE.DirectionalLight( api["Directional"], 0.5 );
+    const dirLight = new THREE.DirectionalLight( api["Directional"], 0.45 );
     dirLight.position.set( 3, 10, 10 );
     dirLight.castShadow = true;
     dirLight.shadow.camera.top = 25;
@@ -89,14 +89,16 @@ function init() {
     dirLight.shadow.camera.right = 20;
     dirLight.shadow.camera.near = 0.1;
     dirLight.shadow.camera.far = 80;
-    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.width = 1024;
     dirLight.shadow.mapSize.height = 1024;
+    dirLight.shadow.bias = -0.015;
     scene.add( dirLight );
 
     // render
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.shadowMap.type = THREE.VSMShadowMap;
     renderer.shadowMap.enabled = true;
     container.appendChild( renderer.domElement );
     const controls = new OrbitControls( camera, renderer.domElement );
@@ -203,7 +205,7 @@ function init() {
     window.addEventListener( 'resize', onWindowResize );
 
     function initGui() {
-        gui.add( api, 'camera' ).onChange( function (state) {
+        gui.add( api, 'auto camera' ).onChange( function (state) {
             helper.enable( 'cameraAnimation', state );
         } );
         gui.add( api, 'physics on pause' )

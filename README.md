@@ -1,16 +1,16 @@
 # Web-MMD
+Try it now: https://culdo.github.io/web-mmd/
 
-For who want to play MMD in the browser, it is improved version from [three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio)
+For who want to play MMD in the browser, you can play it everywhere now.
 
-# TL;DR
-https://culdo.github.io/web-mmd/
+It is improved version from [three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio).
 
 # Feature
-* Play motion, camera, audio together
-* Play camera manually
+* Play MMD with time control bar(forward, backward, jump to time...etc)
+* Turn on/off auto camera(Can play manully)
 * Adjust shadow/outline/color/...etc
 
-# Assets　Credits
+# Asset credits
 * music: GimmexGimme by 八王子P × Giga
 * model: つみ式みくさんv4 by つみだんご
 * motion: ぎみぎみ（みっちゃん）_原曲音源 by シガー
