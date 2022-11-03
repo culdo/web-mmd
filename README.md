@@ -7,7 +7,7 @@ It is improved version from [three.js example](https://threejs.org/examples/#web
 
 # Feature
 * Play MMD with time control bar(forward, backward, jump to time...etc)
-* Turn on/off auto camera(Can play manully)
+* Turn on/off auto camera(can play manually)
 * Adjust shadow/outline/color/...etc
 
 # Asset credits
