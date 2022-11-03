@@ -10,6 +10,14 @@ https://culdo.github.io/web-mmd/
 * Play camera manually
 * Adjust shadow/outline/color/...etc
 
+# Assets　Credits
+* music: GimmexGimme by 八王子P × Giga
+* model: つみ式みくさんv4 by つみだんご
+* motion: ぎみぎみ（みっちゃん）_原曲音源 by シガー
+* emotion: GimmeGimmeリップ表情v07 by ノン
+* camera: Gimme x Gimme镜头 by 冬菇
+* stage: RedialC_EpRoomDS by RedialC
+
 # To-do list
 - [x] play/pause
 - [x] turn on/off shawdow
