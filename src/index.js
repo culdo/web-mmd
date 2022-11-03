@@ -111,13 +111,15 @@ function init() {
     container.appendChild( stats.dom );
 
     // log asset downloading progress
+    let loading = document.getElementById("loading");
 
     function onProgress( xhr ) {
 
         if ( xhr.lengthComputable ) {
 
-            const percentComplete = xhr.loaded / xhr.total * 100;
-            console.log( Math.round( percentComplete, 2 ) + '% downloaded' );
+            const percentComplete = Math.round( xhr.loaded / xhr.total * 100, 2 ) ;
+            console.log( percentComplete + '% downloaded' );
+            loading.textContent = "Loading " + percentComplete + "%..."
 
         }
 
@@ -179,6 +181,7 @@ function init() {
 
             scene.add(mesh);
             ready = true;
+            loading.style.display = "none";
 
 
         }, onProgress, null );

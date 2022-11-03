@@ -101,3 +101,15 @@ a, button, input, select {
 	transition: opacity 1s ease 0s; 
 	opacity: 0;
 }
+
+#loading {
+	position: absolute; 
+	margin-right: auto;
+	margin-left: auto;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	margin-top: 30%;
+	text-align: center;
+}
