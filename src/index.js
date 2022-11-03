@@ -14,13 +14,12 @@ let mesh, camera, scene, renderer, effect, stage;
 let helper, ikHelper, physicsHelper;
 
 let ready = false;
-let isPlaying = false;
-let checkbox, timeoutID;
+let timeoutID;
+let prevTime = 0.0;
 
 const api = {
-    'play/pause': false,
     'camera': true,
-    'music': true,
+    'physics on pause': true,
     'ground shadow': true,
     'fog color': 0x43a0ad,
     'self shadow': false,
@@ -146,10 +145,8 @@ function init() {
     const modelFile = 'models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
     const vmdFiles = [ 'models/mmd/motions/GimmeGimme_with_emotion.vmd'];
     const cameraFiles = [ 'models/mmd/cameras/GimmexGimme.vmd' ];
-    const audioFile = 'models/mmd/audios/GimmexGimme.m4a';
-    const audioParams = { delayTime: 6 * 1 / 30 };
 
-    helper = new MMDAnimationHelper({resetPhysicsOnLoop: false});
+    helper = new MMDAnimationHelper();
     
     const loader = new MMDLoader();
 
@@ -180,16 +177,9 @@ function init() {
                 animation: cameraAnimation
             } );
 
-            new THREE.AudioLoader().load( audioFile, function ( buffer ) {
+            scene.add(mesh);
+            ready = true;
 
-                const audio = new THREE.Audio( listener ).setBuffer( buffer );
-
-                helper.add( audio , audioParams);
-                scene.add( mesh );
-
-                ready = true;
-
-            }, onProgress, null );
 
         }, onProgress, null );
         
@@ -210,24 +200,10 @@ function init() {
     window.addEventListener( 'resize', onWindowResize );
 
     function initGui() {
-        checkbox = gui.add( api, 'play/pause' ).onChange( function (state) {
-            isPlaying = state
-            if(helper.audio.isPlaying) {
-                helper.audio.pause()
-            }else{
-                gui.close();
-            }
-        } );
         gui.add( api, 'camera' ).onChange( function (state) {
             helper.enable( 'cameraAnimation', state );
         } );
-        gui.add( api, 'music' ).onChange( function (state) {
-            if(state) {
-                helper.audio.setVolume(1.0);
-            }else{
-                helper.audio.setVolume(0.0);
-            }
-        } );
+        gui.add( api, 'physics on pause' )
 
         guiColor(gui);
         guiLight(gui);
@@ -299,22 +275,27 @@ function animate() {
 
 function render() {
     if(ready){
-        let delta = clock.getDelta()
         // only loop once
-        if(helper.audioManager.looped){
-            isPlaying = false;
-            helper.audioManager.looped = false;
-
-            api['play/pause'] = false;
-            checkbox.updateDisplay();
+        if ( player.duration > 0 && player.currentTime === player.duration ){
             gui.open();
         }
-        if (isPlaying ) {
+        let currTime = player.currentTime
+        let delta = currTime - prevTime;
 
-            helper.update( delta );
+        if(Math.abs(delta) > 0) {
 
-        }else{
+            helper.update( delta , currTime);
+            prevTime = currTime
+
+        } else if(api['physics on pause']) {
+
+            let delta = clock.getDelta()
             helper.objects.get(mesh).physics.update( delta );
+
+        }
+        if(helper.objects.get(mesh).looped) {
+            player.pause();
+            player.currentTime = 0.0;
         }
     }
     effect.render( scene, camera );
