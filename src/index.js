@@ -112,7 +112,7 @@ function init() {
     stats = new Stats();
     container.appendChild( stats.dom );
 
-    // log asset downloading progress
+    // log assets downloading progress
     let loading = document.getElementById("loading");
 
     function onProgress( xhr ) {

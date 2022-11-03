@@ -6,7 +6,7 @@ For who want to play MMD in the browser, you can play it everywhere now.
 It is improved version from [three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio).
 
 # Feature
-* Play MMD with time control bar(forward, backward, jump to time...etc)
+* Play MMD with time control bar(time seeking, jump to time...etc)
 * Turn on/off auto camera(can play manually)
 * Adjust shadow/outline/color/...etc
 
