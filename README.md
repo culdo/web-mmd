@@ -7,3 +7,5 @@ For who want to play MMD in the browser
 - [x] turn on/off shawdow
 - [x] choose light color
 - [ ] can choose different model, motion, camera, music
+- [ ] player control bar
+- [ ] timeline editor

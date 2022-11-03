@@ -15,7 +15,7 @@ let helper, ikHelper, physicsHelper;
 
 let ready = false;
 let isPlaying = false;
-let checkbox;
+let checkbox, timeoutID;
 
 const api = {
     'play/pause': false,
@@ -32,6 +32,7 @@ const api = {
     'Hemisphere ground': 0x482e2e,
     'Directional': 0xffffff,
 };
+const gui = new GUI();
 
 const clock = new THREE.Clock();
 
@@ -48,7 +49,21 @@ function init() {
 
     const container = document.createElement( 'div' );
     document.body.appendChild( container );
-    
+
+    let player = document.getElementById("player")
+    // control bar
+    document.addEventListener( 'mousemove', function ( event ) {
+
+        player.style.opacity = 0.5;
+        if ( timeoutID !== undefined ) {
+            clearTimeout( timeoutID );
+        }
+
+        timeoutID = setTimeout( function () {
+            player.style.opacity = 0;
+        }, 1000 );
+    } );
+
     // scene
     scene = new THREE.Scene();
     scene.fog = new THREE.Fog( api['fog color'], 10, 500 );
@@ -195,8 +210,6 @@ function init() {
     window.addEventListener( 'resize', onWindowResize );
 
     function initGui() {
-
-        const gui = new GUI();
         checkbox = gui.add( api, 'play/pause' ).onChange( function (state) {
             isPlaying = state
             if(helper.audio.isPlaying) {
@@ -294,6 +307,7 @@ function render() {
 
             api['play/pause'] = false;
             checkbox.updateDisplay();
+            gui.open();
         }
         if (isPlaying ) {
 
