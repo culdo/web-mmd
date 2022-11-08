@@ -13,16 +13,35 @@ let mesh, helper;
 
 const vpds = [];
 
-let container;
+let container, gui;
 
 document.addEventListener("DOMContentLoaded", () => {
     waitForElm('#threejs_canvas').then((elm) => {
         init();
-        respondToVisibility(gradioApp().getElementById("tab_3d_poser"), ()=>{
+        respondToVisibility(gradioApp().getElementById("tab_3d_poser"), (opened)=>{
             onWindowResize();
+            if(opened) {
+                gui.open();
+            }else if(gui){
+                gui.close();
+            }
         })
     });
 })
+
+function submit_model2img(){
+    requestProgress('img2img')
+
+    res = create_submit_args(arguments)
+
+    res[0] = get_tab_index('mode_model2img')
+    res[5] = renderer.domElement.toDataURL();
+    console.log(res)
+
+    return res
+}
+
+window.submit_model2img = submit_model2img
 
 function waitForElm(selector) {
     return new Promise(resolve => {
@@ -79,7 +98,7 @@ function init() {
 
     // render
 
-    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer = new THREE.WebGLRenderer( { antialias: true , preserveDrawingBuffer: true} );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( container.clientWidth, container.clientHeight );
     container.appendChild( renderer.domElement );
@@ -165,7 +184,8 @@ function init() {
 
     function initGui() {
 
-        const gui = new GUI();
+        gui = new GUI();
+        gui.close();
 
         const dictionary = mesh.morphTargetDictionary;
 
@@ -270,7 +290,7 @@ function init() {
         onChangePose();
 
         poses.open();
-        morphs.open();
+        morphs.close();
 
     }
 
