@@ -165,6 +165,10 @@ function init() {
 
                 } else {
 
+                    let ikHelper = helper.objects.get( mesh ).ikSolver.createHelper();
+                    ikHelper.visible = false;
+                    scene.add( ikHelper );
+                    
                     initGui();
                     animate();
 
