@@ -1,15 +1,17 @@
 import * as THREE from 'three';
 
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 
-import { OutlineEffect } from 'three/addons/effects/OutlineEffect.js';
-import { MMDLoader } from 'three/addons/loaders/MMDLoader.js';
-import { MMDAnimationHelper } from 'three/addons/animation/MMDAnimationHelper.js';
+import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
+import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
+import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper.js';
 
 let camera, scene, renderer, effect;
 let mesh, helper;
+let clock = new THREE.Clock();
 
 const vpds = [];
 
@@ -104,9 +106,17 @@ function init() {
     container.appendChild( renderer.domElement );
 
     // orbit controls
-    const controls = new OrbitControls( camera, renderer.domElement );
+    const orbitControls = new OrbitControls( camera, renderer.domElement );
 
     effect = new OutlineEffect( renderer );
+
+    // bone transformer
+    const transformControls = new TransformControls( camera, renderer.domElement );
+    transformControls.size = .75;
+    scene.add( transformControls );
+    // disable orbitControls while using transformControls
+    transformControls.addEventListener( 'mouseDown', () => orbitControls.enabled = false );
+    transformControls.addEventListener( 'mouseUp', () => orbitControls.enabled = true );
 
     // model
 
@@ -144,8 +154,22 @@ function init() {
 
         mesh = object;
         mesh.position.y = - 10;
-
+        helper.add( mesh , {
+            physics: false
+        });
         scene.add( mesh );
+        
+        helper.enable( 'physics', false )
+        let ikHelper = helper.objects.get( mesh ).ikSolver.createHelper();
+        ikHelper.visible = false;
+        scene.add( ikHelper );
+
+        for(let i=0; i<mesh.skeleton.bones.length; i++ ) {
+            console.log(mesh.skeleton.bones[i].name);
+            if(mesh.skeleton.bones[i].name === "左手首IK") {
+                transformControls.attach( mesh.skeleton.bones[i] );
+            }
+        }
 
         let vpdIndex = 0;
 
@@ -164,10 +188,6 @@ function init() {
                     loadVpd();
 
                 } else {
-
-                    let ikHelper = helper.objects.get( mesh ).ikSolver.createHelper();
-                    ikHelper.visible = false;
-                    scene.add( ikHelper );
                     
                     initGui();
                     animate();
@@ -319,6 +339,9 @@ function animate() {
 }
 
 function render() {
+    // mesh.updateMatrixWorld( true );
+    helper.objects.get( mesh ).ikSolver.update();
+    helper.update( clock.getDelta() );
 
     effect.render( scene, camera );
 
