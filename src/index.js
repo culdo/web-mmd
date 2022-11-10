@@ -2,20 +2,24 @@ import * as THREE from 'three';
 
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { ArcballControls } from 'three/examples/jsm/controls/ArcballControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper.js';
+import { Vector3 } from 'three';
 
 let camera, scene, renderer, effect;
-let mesh, helper;
-let clock = new THREE.Clock();
-
+let mesh, helper, ikHelper;
 const vpds = [];
 
 let container, gui;
+let transformControls = [];
+let arcBallControls;
+
+const boneCaches = {};
 
 document.addEventListener("DOMContentLoaded", () => {
     waitForElm('#threejs_canvas').then((elm) => {
@@ -24,6 +28,11 @@ document.addEventListener("DOMContentLoaded", () => {
             onWindowResize();
             if(opened) {
                 gui.open();
+                // I was trying hard to hack to get to work, idk why ArcballControls can't init successfully(blank when left click)
+                arcBallControls.setScale();
+                arcBallControls.applyTransformMatrix( arcBallControls.scale( 1.0006, arcBallControls._gizmos.position ) );
+                arcBallControls.setIdel();
+                
             }else if(gui){
                 gui.close();
             }
@@ -106,17 +115,44 @@ function init() {
     container.appendChild( renderer.domElement );
 
     // orbit controls
-    const orbitControls = new OrbitControls( camera, renderer.domElement );
+    // const orbitControls = new OrbitControls( camera, renderer.domElement );
+    arcBallControls = new ArcballControls( camera, renderer.domElement, scene );
 
     effect = new OutlineEffect( renderer );
 
     // bone transformer
-    const transformControls = new TransformControls( camera, renderer.domElement );
-    transformControls.size = .75;
-    scene.add( transformControls );
-    // disable orbitControls while using transformControls
-    transformControls.addEventListener( 'mouseDown', () => orbitControls.enabled = false );
-    transformControls.addEventListener( 'mouseUp', () => orbitControls.enabled = true );
+    function addTransformControl(bone, mode = 'translate') {
+        let transformControl = new TransformControls(camera, renderer.domElement);
+        transformControl.attach( bone );
+        transformControl.mode = mode;
+        if(mode==="rotate"){
+            transformControl.size = .5;
+        }
+        transformControl.visible = false;
+        transformControl.enabled = false;
+        scene.add(transformControl);
+
+        // disable orbitControls while using transformControls
+        transformControl.addEventListener('mouseDown', (e) => {
+            for(const tfc of transformControls) {
+                if(tfc !== e.target){
+                    tfc.visible = false;
+                    tfc.enabled = false;
+                }
+            }
+            arcBallControls.enabled = false;
+        });
+        transformControl.addEventListener('mouseUp', (e) => {
+            for(const tfc of transformControls) {
+                if(tfc !== e.target){
+                    tfc.visible = true;
+                    tfc.enabled = true;
+                }
+            }
+            arcBallControls.enabled = true;
+        });
+        transformControls.push(transformControl);
+    }
 
     // model
 
@@ -158,18 +194,18 @@ function init() {
             physics: false
         });
         scene.add( mesh );
+        window.mesh = mesh;
+
+        console.log(mesh.geometry.userData.MMD.iks);
+        console.log(mesh.geometry.userData.MMD.grants);
         
         helper.enable( 'physics', false )
-        let ikHelper = helper.objects.get( mesh ).ikSolver.createHelper();
+        ikHelper = helper.objects.get( mesh ).ikSolver.createHelper();
         ikHelper.visible = false;
         scene.add( ikHelper );
 
-        for(let i=0; i<mesh.skeleton.bones.length; i++ ) {
-            console.log(mesh.skeleton.bones[i].name);
-            if(mesh.skeleton.bones[i].name === "左手首IK") {
-                transformControls.attach( mesh.skeleton.bones[i] );
-            }
-        }
+        setupIK();
+        console.log(mesh.skeleton.bones);
 
         let vpdIndex = 0;
 
@@ -218,6 +254,8 @@ function init() {
 
         const poses = gui.addFolder( 'Poses' );
         const morphs = gui.addFolder( 'Morphs' );
+        const cameraGUI = gui.addFolder( 'Camera' );
+        const debugs = gui.addFolder( 'Debugs' );
 
         function getBaseName( s ) {
 
@@ -254,6 +292,16 @@ function init() {
         }
 
         function initPoses() {
+            controls["reset pose"] = () => mesh.pose();
+            poses.add(controls, "reset pose");
+
+            controls["adjust pose"] = false;
+            poses.add(controls, "adjust pose").onChange( (state) => {
+                for(const tfc of transformControls) {
+                    tfc.visible = state;
+                    tfc.enabled = state;
+                }
+            })
 
             const files = { default: - 1 };
 
@@ -274,6 +322,18 @@ function init() {
                 morphs.add( controls, key, 0.0, 1.0, 0.01 ).onChange( onChangeMorph );
 
             }
+
+        }
+
+        function initCamera() {
+            cameraGUI.add(camera.rotation, 'z', -Math.PI, Math.PI, 0.1)
+        }
+
+        function initDebugs() {
+            controls.ikHelper = ikHelper.visible;
+            debugs.add(controls, "ikHelper").onChange((state)=>{
+                ikHelper.visible = state;
+            })
 
         }
 
@@ -309,14 +369,106 @@ function init() {
         initKeys();
         initPoses();
         initMorphs();
+        initCamera();
+        initDebugs();
 
         onChangeMorph();
         onChangePose();
 
         poses.open();
         morphs.close();
+        debugs.close();
 
     }
+
+    function setupIK() {
+        // setArmIK( '左' );
+        // setArmIK( '右' );
+
+        addTransformControl( getBoneByName( '左腕' ), 'rotate' );
+
+        addTransformControl( getBoneByName( '右腕' ), 'rotate' );
+
+        addTransformControl( getBoneByName( '左ひじ' ), 'rotate' );
+
+        addTransformControl( getBoneByName( '右ひじ' ), 'rotate' );
+
+        addTransformControl( getBoneByName( '左手首' ), 'rotate' );
+
+        addTransformControl( getBoneByName( '右手首' ), 'rotate' );
+
+        addTransformControl( getBoneByName( '左足ＩＫ' ) );
+
+        addTransformControl( getBoneByName( '左つま先ＩＫ' ) );
+
+        addTransformControl( getBoneByName( '右足ＩＫ' ) );
+
+        addTransformControl( getBoneByName( '右つま先ＩＫ' ) );
+
+        addTransformControl( getBoneByName( 'センター' ) );
+
+    }
+
+    function setArmIK( side ) {
+
+        var bones = mesh.skeleton.bones;
+        let iksIdx;
+
+        if(side === "左") {
+            iksIdx = 7;
+        }else{
+            iksIdx = 9;
+        }
+
+        var links = mesh.geometry.userData.MMD.iks[iksIdx].links;
+        var linkBone = bones[links[0].index].parent;
+
+        for ( var i = 0; i < 0; i ++ ) {
+
+            console.log( linkBone.name );
+
+            var link = {};
+            link.index = bones.indexOf( linkBone );
+
+
+            links.push( link );
+
+            linkBone = linkBone.parent;
+
+        }
+
+    }
+}
+
+function solveIK() {
+
+    helper.objects.get( mesh ).ikSolver.update();
+
+    // updateArmBones( '左' );
+    // updateArmBones( '右' );
+
+}
+
+function updateArmBones( side ) {
+
+    getBoneByName( side + '腕' ).quaternion.copy(
+        getBoneByName( side + '腕S' ).quaternion );
+    getBoneByName( side + '腕' ).quaternion.copy(
+        getBoneByName( side + 'ひじS' ).quaternion );
+    getBoneByName( side + '手首' ).quaternion.copy(
+        getBoneByName( side + 'ひじS' ).quaternion );
+
+}
+
+function getBoneByName( name ) {
+
+    if ( boneCaches[ name ] === undefined ) {
+
+        boneCaches[ name ] = mesh.skeleton.getBoneByName( name );
+
+    }
+
+    return boneCaches[ name ];
 
 }
 
@@ -339,9 +491,8 @@ function animate() {
 }
 
 function render() {
-    // mesh.updateMatrixWorld( true );
-    helper.objects.get( mesh ).ikSolver.update();
-    helper.update( clock.getDelta() );
+    solveIK();
+    helper.objects.get( mesh ).grantSolver.update();
 
     effect.render( scene, camera );
 
