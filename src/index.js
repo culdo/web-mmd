@@ -114,9 +114,9 @@ function init() {
     renderer.setSize( container.clientWidth, container.clientHeight );
     container.appendChild( renderer.domElement );
 
-    // orbit controls
-    // const orbitControls = new OrbitControls( camera, renderer.domElement );
+    // arcball controls
     arcBallControls = new ArcballControls( camera, renderer.domElement, scene );
+    arcBallControls.setGizmosVisible(false);
 
     effect = new OutlineEffect( renderer );
 
@@ -330,9 +330,10 @@ function init() {
         }
 
         function initDebugs() {
-            controls.ikHelper = ikHelper.visible;
-            debugs.add(controls, "ikHelper").onChange((state)=>{
-                ikHelper.visible = state;
+            debugs.add(ikHelper, "visible").name("ikHelper");
+            controls.gizmoVisible = false;
+            debugs.add(controls, "gizmoVisible").onChange((state)=>{
+                arcBallControls.setGizmosVisible(state);
             })
 
         }
