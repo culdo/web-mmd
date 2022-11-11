@@ -8,6 +8,8 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper.js';
+import { Clock, SkinnedMesh } from 'three';
+import { Skeleton } from 'three';
 
 let camera, scene, renderer, effect;
 let mesh, helper, ikHelper;
@@ -16,25 +18,30 @@ const vpds = [];
 let container, gui;
 let transformControls = [];
 let arcBallControls;
+let clock = new Clock();
+const controls = {};
 
 const boneCaches = {};
 
+
 document.addEventListener("DOMContentLoaded", () => {
     waitForElm('#threejs_canvas').then((elm) => {
-        init();
-        respondToVisibility(gradioApp().getElementById("tab_3d_poser"), (opened)=>{
-            onWindowResize();
-            if(opened) {
-                gui.open();
-                // I was trying hard to hack to get to work, idk why ArcballControls can't init successfully(blank when left click)
-                arcBallControls.setScale();
-                arcBallControls.applyTransformMatrix( arcBallControls.scale( 1.0006, arcBallControls._gizmos.position ) );
-                arcBallControls.setIdel();
-                
-            }else if(gui){
-                gui.close();
-            }
-        })
+        Ammo().then( function () {
+            init();
+            respondToVisibility(gradioApp().getElementById("tab_3d_poser"), (opened)=>{
+                onWindowResize();
+                if(opened) {
+                    gui.open();
+                    // I was trying hard to make working, idk why ArcballControls can't init successfully(blank when left click)
+                    arcBallControls.setScale();
+                    arcBallControls.applyTransformMatrix( arcBallControls.scale( 1.0006, arcBallControls._gizmos.position ) );
+                    arcBallControls.setIdel();                    
+                    
+                }else if(gui){
+                    gui.close();
+                }
+            })
+        } );
     });
 })
 
@@ -189,7 +196,7 @@ function init() {
         mesh = object;
         mesh.position.y = - 10;
         helper.add( mesh , {
-            physics: false
+            physics: true
         });
         scene.add( mesh );
         window.mesh = mesh;
@@ -197,7 +204,6 @@ function init() {
         console.log(mesh.geometry.userData.MMD.iks);
         console.log(mesh.geometry.userData.MMD.grants);
         
-        helper.enable( 'physics', false )
         ikHelper = helper.objects.get( mesh ).ikSolver.createHelper();
         ikHelper.visible = false;
         scene.add( ikHelper );
@@ -224,6 +230,7 @@ function init() {
                 } else {
                     
                     initGui();
+                    onChangePose();
                     animate();
 
                 }
@@ -247,7 +254,6 @@ function init() {
 
         const dictionary = mesh.morphTargetDictionary;
 
-        const controls = {};
         const keys = [];
 
         const poses = gui.addFolder( 'Poses' );
@@ -290,7 +296,7 @@ function init() {
         }
 
         function initPoses() {
-            controls["reset pose"] = () => mesh.pose();
+            controls["reset pose"] = () => onChangePose();
             poses.add(controls, "reset pose");
 
             controls["adjust pose"] = false;
@@ -301,7 +307,7 @@ function init() {
                 }
             })
 
-            const files = { default: - 1 };
+            const files = { default: -1 };
 
             for ( let i = 0; i < vpdFiles.length; i ++ ) {
 
@@ -333,6 +339,10 @@ function init() {
             debugs.add(controls, "gizmoVisible").onChange((state)=>{
                 arcBallControls.setGizmosVisible(state);
             })
+            controls.physics = true;
+            debugs.add(controls, "physics").onChange((state)=>{
+                helper.enable("physics", state);
+            })
 
         }
 
@@ -343,22 +353,6 @@ function init() {
                 const key = keys[ i ];
                 const value = controls[ key ];
                 mesh.morphTargetInfluences[ i ] = value;
-
-            }
-
-        }
-
-        function onChangePose() {
-
-            const index = parseInt( controls.pose );
-
-            if ( index === - 1 ) {
-
-                mesh.pose();
-
-            } else {
-
-                helper.pose( mesh, vpds[ index ] );
 
             }
 
@@ -441,6 +435,30 @@ function init() {
     }
 }
 
+function onChangePose() {
+
+    const index = parseInt( controls.pose );
+    if ( index === - 1 ) {
+        // idk why this work, I just used try & error to found out
+        helper.enable("physics", false);
+        helper.objects.get(mesh).physics.reset();
+        mesh.pose();
+        setTimeout(() => {
+            helper.objects.get(mesh).physics.reset();
+            helper.enable("physics", controls.physics);
+        }, 100);
+        
+    
+    } else {
+        // also this
+        helper.objects.get(mesh).physics.reset();
+        helper.pose( mesh, vpds[ index ] );
+        helper.objects.get(mesh).physics.reset();
+
+    }
+
+}
+
 function solveIK() {
 
     helper.objects.get( mesh ).ikSolver.update();
@@ -494,6 +512,7 @@ function animate() {
 function render() {
     solveIK();
     helper.objects.get( mesh ).grantSolver.update();
+    helper.update(clock.getDelta());
 
     effect.render( scene, camera );
 
