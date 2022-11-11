@@ -2,14 +2,12 @@ import * as THREE from 'three';
 
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
-// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { ArcballControls } from 'three/examples/jsm/controls/ArcballControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper.js';
-import { Vector3 } from 'three';
 
 let camera, scene, renderer, effect;
 let mesh, helper, ikHelper;
@@ -385,6 +383,8 @@ function init() {
     function setupIK() {
         // setArmIK( '左' );
         // setArmIK( '右' );
+
+        addTransformControl( getBoneByName( '首' ), 'rotate' );
 
         addTransformControl( getBoneByName( '左腕' ), 'rotate' );
 
