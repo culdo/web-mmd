@@ -21,6 +21,7 @@ const config = {
     static: {
       directory: path.join(__dirname, 'dist'),
     },
+    watchFiles: ["src/*.html"],
   },
   plugins: [
     new HtmlWebpackPlugin({

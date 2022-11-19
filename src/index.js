@@ -50,8 +50,16 @@ function init() {
     document.body.appendChild( container );
 
     let player = document.getElementById("player")
+    player.src = 'models/mmd/audios/GimmexGimme.m4a';
+    player.onplay = () => {
+        helper.objects.get( character ).physics.reset();
+        gui.close();
+    }
+    player.onpause = () => {
+        gui.open();
+    }
     // control bar
-    document.addEventListener( 'mousemove', function ( event ) {
+    document.addEventListener( 'mousemove', ( e ) => {
 
         player.style.opacity = 0.5;
         if ( timeoutID !== undefined ) {
@@ -178,6 +186,7 @@ function init() {
         scene.add( physicsHelper );
 
         gui.initGui({api, helper, scene, character, stage, effect, ikHelper, physicsHelper, dirLight, hemiLight});
+        helper.objects.get( character ).physics.reset();
 
     }, onProgress, null );
 
@@ -202,36 +211,45 @@ function animate() {
 
     requestAnimationFrame( animate );
 
-    stats.begin();
-    render();
-    stats.end();
+    if(ready){
+        stats.begin();
+        render();
+        stats.end();
+    }
 }
 
 function render() {
-    if(ready){
-        // only loop once
-        if ( player.duration > 0 && player.currentTime === player.duration ){
-            gui.open();
+    let currTime = player.currentTime
+    let delta = currTime - prevTime;
+
+    if(Math.abs(delta) > 0) {
+        if(Math.abs(delta) > 0.1) {
+            helper.enable('physics', false);
         }
-        let currTime = player.currentTime
-        let delta = currTime - prevTime;
 
-        if(Math.abs(delta) > 0) {
+        helper.update( delta , currTime);
 
-            helper.update( delta , currTime);
-            prevTime = currTime
-
-        } else if(api['physics on pause']) {
-
-            let delta = clock.getDelta()
-            helper.objects.get(character).physics.update( delta );
-
+        if(Math.abs(delta) > 0.1) {
+            helper.objects.get( character ).physics.reset();
+            helper.enable('physics', true);
+            console.log('time seeked. physics reset.')
         }
-        if(helper.objects.get(character).looped) {
-            player.pause();
-            player.currentTime = 0.0;
-        }
+        prevTime = currTime
+
+    } else if(api['physics on pause']) {
+
+        let delta = clock.getDelta()
+        helper.objects.get(character).physics.update( delta );
+
     }
+
+    // stop when motion is finished
+    if(helper.objects.get(character).looped) {
+        player.pause();
+        player.currentTime = 0.0;
+        helper.objects.get(character).looped = false;
+    }
+
     effect.render( scene, camera );
 
 }

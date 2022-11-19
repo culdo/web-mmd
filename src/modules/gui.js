@@ -1,10 +1,11 @@
+import localforage from 'localforage';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
 class MMDGui {
     constructor() {
         this.gui = new GUI();
-        this.open = this.gui.open;
-        this.close = this.gui.close;
+        this.open = () => this.gui.open();
+        this.close = () => this.gui.close();
         this.mmd = null;
     }
 
@@ -15,13 +16,30 @@ class MMDGui {
             this.mmd.helper.enable( 'cameraAnimation', state );
         } );
         this.gui.add( this.mmd.api, 'physics on pause' );
-        
+        this._guiAsset();
         this._guiColor();
         this._guiLight();
         this._guiShadow();
         this._guiDebug();
     }
-    
+
+    _guiAsset() {
+        const folder = this.gui.addFolder( 'Assets' );
+        this.mmd.api.selectChar = () => {
+            document.getElementById('selectFile').click();
+        }
+        this.mmd.api.selectStage = () => {}
+        this.mmd.api.selectMusic = () => {}
+        this.mmd.api.selectCamera = () => {}
+        this.mmd.api.selectMotion = () => {}
+        folder.add(this.mmd.api, 'selectChar').name('select character..')
+        folder.add(this.mmd.api, 'selectStage').name('select stage...')
+        folder.add(this.mmd.api, 'selectMusic').name('select music...')
+        folder.add(this.mmd.api, 'selectCamera').name('select camera...')
+        folder.add(this.mmd.api, 'selectMotion').name('select motion...')
+        folder.close();
+    }
+
     _guiColor() {
         const folder = this.gui.addFolder( 'Color' );
         folder.addColor( this.mmd.api, 'fog color' ).onChange( ( value ) => {
@@ -44,26 +62,16 @@ class MMDGui {
     _guiLight() {
         const folder = this.gui.addFolder( 'Light' );
 
-        folder.addColor( this.mmd.api, 'Directional' ).onChange( handleColorChange( this.mmd.dirLight.color) );
-        folder.addColor( this.mmd.api, 'Hemisphere sky' ).onChange( handleColorChange( this.mmd.hemiLight.color) );
-        folder.addColor( this.mmd.api, 'Hemisphere ground' ).onChange( handleColorChange( this.mmd.hemiLight.groundColor) );
+        folder.addColor( this.mmd.api, 'Directional' ).onChange( setColor( this.mmd.dirLight.color) );
+        folder.addColor( this.mmd.api, 'Hemisphere sky' ).onChange( setColor( this.mmd.hemiLight.color) );
+        folder.addColor( this.mmd.api, 'Hemisphere ground' ).onChange( setColor( this.mmd.hemiLight.groundColor) );
         folder.close();
 
         // handle gui color change
-        function handleColorChange( color ) {
-    
+        function setColor( color ) {
             return ( value  ) => {
-    
-                if ( typeof value === 'string' ) {
-    
-                    value = value.replace( '#', '0x' );
-    
-                }
-    
                 color.setHex( value );
-    
-            };
-    
+            }
         }
     }
 
