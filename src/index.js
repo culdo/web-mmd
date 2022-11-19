@@ -1,16 +1,16 @@
 import * as THREE from 'three';
 
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper.js';
+import {MMDGui} from './modules/gui.js'
 
 let stats;
 
-let mesh, camera, scene, renderer, effect, stage;
+let character, camera, scene, renderer, effect, stage;
 let helper, ikHelper, physicsHelper;
 
 let ready = false;
@@ -31,7 +31,7 @@ const api = {
     'Hemisphere ground': 0x482e2e,
     'Directional': 0xffffff,
 };
-const gui = new GUI();
+const gui = new MMDGui();
 
 const clock = new THREE.Clock();
 
@@ -127,25 +127,6 @@ function init() {
 
     }
 
-    // handle gui color change
-    function handleColorChange( color, converSRGBToLinear = false ) {
-
-        return function ( value ) {
-
-            if ( typeof value === 'string' ) {
-
-                value = value.replace( '#', '0x' );
-
-            }
-
-            color.setHex( value );
-
-            if ( converSRGBToLinear === true ) color.convertSRGBToLinear();
-
-        };
-
-    }
-
     const modelFile = 'models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
     const vmdFiles = [ 'models/mmd/motions/GimmeGimme_with_emotion.vmd'];
     const cameraFiles = [ 'models/mmd/cameras/GimmexGimme.vmd' ];
@@ -156,21 +137,21 @@ function init() {
 
     // load stage
     loader.load('models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx', function ( mesh ) {
-        mesh.castShadow = true;
-        mesh.receiveShadow = api['ground shadow'];
-
-        scene.add( mesh );
         stage = mesh;
+        stage.castShadow = true;
+        stage.receiveShadow = api['ground shadow'];
+
+        scene.add( stage );
     }, onProgress, null)
 
     // load character
     loader.loadWithAnimation( modelFile, vmdFiles, function ( mmd ) {
 
-        mesh = mmd.mesh;
-        mesh.castShadow = true;
-        mesh.receiveShadow = api["self shadow"];
+        character = mmd.mesh;
+        character.castShadow = true;
+        character.receiveShadow = api["self shadow"];
 
-        helper.add( mesh, {
+        helper.add( character, {
             animation: mmd.animation,
             physics: true
         } );
@@ -181,80 +162,28 @@ function init() {
                 animation: cameraAnimation
             } );
 
-            scene.add(mesh);
+            scene.add(character);
             ready = true;
             loading.style.display = "none";
 
 
         }, onProgress, null );
         
-        ikHelper = helper.objects.get( mesh ).ikSolver.createHelper();
+        ikHelper = helper.objects.get( character ).ikSolver.createHelper();
         ikHelper.visible = false;
         scene.add( ikHelper );
 
-        physicsHelper = helper.objects.get( mesh ).physics.createHelper();
+        physicsHelper = helper.objects.get( character ).physics.createHelper();
         physicsHelper.visible = false;
         scene.add( physicsHelper );
 
-        initGui();
+        gui.initGui({api, helper, scene, character, stage, effect, ikHelper, physicsHelper, dirLight, hemiLight});
 
     }, onProgress, null );
 
     //
 
     window.addEventListener( 'resize', onWindowResize );
-
-    function initGui() {
-        gui.add( api, 'auto camera' ).onChange( function (state) {
-            helper.enable( 'cameraAnimation', state );
-        } );
-        gui.add( api, 'physics on pause' )
-
-        guiColor(gui);
-        guiLight(gui);
-        guiShadow(gui);
-        guiDebug(gui);
-    }
-    function guiColor( gui) {
-        const folder = gui.addFolder( 'Color' );
-        folder.addColor( api, 'fog color' ).onChange( function ( value ) {
-            scene.fog.color.setHex( value );
-        });
-        folder.close();
-    }
-
-    function guiShadow( gui) {
-        const folder = gui.addFolder( 'Shadow' );
-        folder.add( api, 'ground shadow' ).onChange( function (state) {
-            stage.receiveShadow = state;
-        } );
-        folder.add( api, 'self shadow' ).onChange( function (state) {
-            mesh.receiveShadow = state;
-        } );
-        folder.close();
-    }
-    function guiLight( gui) {
-        const folder = gui.addFolder( 'Light' );
-
-        folder.addColor( api, 'Directional' ).onChange( handleColorChange( dirLight.color) );
-        folder.addColor( api, 'Hemisphere sky' ).onChange( handleColorChange( hemiLight.color) );
-        folder.addColor( api, 'Hemisphere ground' ).onChange( handleColorChange( hemiLight.groundColor) );
-        folder.close();
-    }
-    function guiDebug(gui) {
-        const folder = gui.addFolder( 'Debug' );
-
-        folder.add( api, 'show outline' ).onChange( function (state) {
-            effect.enabled = state;
-        } );
-        folder.add( api, 'show IK bones' ).onChange( function (state) {
-            ikHelper.visible = state;
-        } );
-        folder.add( api, 'show rigid bodies' ).onChange( function (state) {
-            if ( physicsHelper !== undefined ) physicsHelper.visible = state;
-        } );
-        folder.close();
-    }
 
 }
 
@@ -295,10 +224,10 @@ function render() {
         } else if(api['physics on pause']) {
 
             let delta = clock.getDelta()
-            helper.objects.get(mesh).physics.update( delta );
+            helper.objects.get(character).physics.update( delta );
 
         }
-        if(helper.objects.get(mesh).looped) {
+        if(helper.objects.get(character).looped) {
             player.pause();
             player.currentTime = 0.0;
         }
