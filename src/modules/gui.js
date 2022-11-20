@@ -16,15 +16,15 @@ class MMDGui {
             this.mmd.helper.enable( 'cameraAnimation', state );
         } );
         this.gui.add( this.mmd.api, 'physics on pause' );
-        this._guiAsset();
+        this._guiFile();
         this._guiColor();
         this._guiLight();
         this._guiShadow();
         this._guiDebug();
     }
 
-    _guiAsset() {
-        const folder = this.gui.addFolder( 'Assets' );
+    _guiFile() {
+        const folder = this.gui.addFolder( 'Files' );
         this.mmd.api.selectChar = () => {}
         this.mmd.api.selectStage = () => {}
         this.mmd.api.selectMusic = () => {
