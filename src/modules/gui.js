@@ -29,13 +29,15 @@ class MMDGui {
         const folder = this.gui.addFolder( 'Files' );
         let mmd = this.mmd;
 
+        // TODO: use unzip tools to unzip model files, because it has many texture images
         mmd.api.selectChar = () => {
             selectFile.onchange = _makeLoadFn('character', (url)=>{
             });
             selectFile.click();
         }
+        // TODO: same above
         mmd.api.selectStage = () => {
-            selectFile.onchange = _makeLoadFn('stage', (url, ext)=>{
+            selectFile.onchange = _makeLoadFn('stage', (url, filename)=>{
                 mmd.scene.remove(mmd.stage);
                 console.log("remove stage")
                 // load stage
@@ -47,19 +49,21 @@ class MMDGui {
                     
                     mmd.scene.add( mesh );
                     mmd.stage = mesh;
-                }, onProgress, null, ext)
+                }, onProgress, null, path.extname(filename).slice(1))
+                mmd.api.stage = filename;
             });
             selectFile.click();
         }
 
         mmd.api.selectMusic = () => {
-            selectFile.onchange = _makeLoadFn('music', (url)=>{
+            selectFile.onchange = _makeLoadFn('music', (url, filename)=>{
                 mmd.player.src = url;
+                mmd.api.music = filename;
             });
             selectFile.click();
         }
         mmd.api.selectCamera = () => {
-            selectFile.onchange = _makeLoadFn('camera', (url)=>{
+            selectFile.onchange = _makeLoadFn('camera', (url, filename)=>{
                 mmd.helper.remove(mmd.camera);
                 mmd.loader.loadAnimation( url, mmd.camera, function ( cameraAnimation ) {
 
@@ -68,11 +72,12 @@ class MMDGui {
                     } );
         
                 }, onProgress, null );
+                mmd.api.camera = filename;
             });
             selectFile.click();
         }
         mmd.api.selectMotion = () => {
-            selectFile.onchange = _makeLoadFn('motion', (url)=>{
+            selectFile.onchange = _makeLoadFn('motion', (url, filename)=>{
                 mmd.helper.objects.get( mmd.character ).mixer.uncacheRoot(mmd.character);
                 mmd.helper.remove(mmd.character);
                 mmd.loader.loadAnimation( url, mmd.character, function ( mmdAnimation ) {
@@ -82,18 +87,19 @@ class MMDGui {
                     } );
         
                 }, onProgress, null );
+                mmd.api.motion = filename;
             });
             selectFile.click();
         }
-        folder.add(mmd.api, 'character')
+        folder.add(mmd.api, 'character').listen()
         folder.add(mmd.api, 'selectChar').name('select character..')
-        folder.add(mmd.api, 'stage')
+        folder.add(mmd.api, 'stage').listen()
         folder.add(mmd.api, 'selectStage').name('select stage...')
-        folder.add(mmd.api, 'music')
+        folder.add(mmd.api, 'music').listen()
         folder.add(mmd.api, 'selectMusic').name('select music...')
-        folder.add(mmd.api, 'camera')
+        folder.add(mmd.api, 'camera').listen()
         folder.add(mmd.api, 'selectCamera').name('select camera...')
-        folder.add(mmd.api, 'motion')
+        folder.add(mmd.api, 'motion').listen()
         folder.add(mmd.api, 'selectMotion').name('select motion...')
         folder.close();
 
@@ -107,7 +113,7 @@ class MMDGui {
                             alert('Please choose an file to be uploaded.');
                             return;
                         }
-                        cb(URL.createObjectURL(blob), path.extname(blob.name).slice(1));
+                        cb(URL.createObjectURL(blob), blob.name);
                     }).catch(e => console.log(e));
                 })
             }
