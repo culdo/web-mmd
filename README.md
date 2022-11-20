@@ -10,7 +10,7 @@ It is improved version from [three.js example](https://threejs.org/examples/#web
 * Turn on/off auto camera(can play manually)
 * Adjust shadow/outline/color/...etc
 
-# Asset credits
+# Demo credits
 * music: GimmexGimme by 八王子P × Giga
 * model: つみ式みくさんv4 by つみだんご
 * motion: ぎみぎみ（みっちゃん）_原曲音源 by シガー

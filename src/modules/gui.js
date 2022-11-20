@@ -25,19 +25,45 @@ class MMDGui {
 
     _guiAsset() {
         const folder = this.gui.addFolder( 'Assets' );
-        this.mmd.api.selectChar = () => {
-            document.getElementById('selectFile').click();
-        }
+        this.mmd.api.selectChar = () => {}
         this.mmd.api.selectStage = () => {}
-        this.mmd.api.selectMusic = () => {}
+        this.mmd.api.selectMusic = () => {
+            selectFile.onchange = _makeLoad('music');
+            selectFile.click();
+        }
         this.mmd.api.selectCamera = () => {}
         this.mmd.api.selectMotion = () => {}
+        folder.add(this.mmd.api, 'character')
         folder.add(this.mmd.api, 'selectChar').name('select character..')
+        folder.add(this.mmd.api, 'stage')
         folder.add(this.mmd.api, 'selectStage').name('select stage...')
+        folder.add(this.mmd.api, 'music')
         folder.add(this.mmd.api, 'selectMusic').name('select music...')
+        folder.add(this.mmd.api, 'camera')
         folder.add(this.mmd.api, 'selectCamera').name('select camera...')
+        folder.add(this.mmd.api, 'motion')
         folder.add(this.mmd.api, 'selectMotion').name('select motion...')
         folder.close();
+
+        let player = this.mmd.player;
+        function _makeLoad(itemName) {
+            return function() {
+                localforage.removeItem(itemName);
+                if (this.files[0].type.indexOf('audio/') !== 0) {
+                    alert('Not an audio file...');
+                    return;
+                }
+                localforage.setItem(itemName, this.files[0]).then(_ => {
+                    localforage.getItem(itemName).then(blob => {
+                        if (!blob) {
+                            alert('Please choose an file to be uploaded.');
+                            return;
+                        }
+                        player.src = URL.createObjectURL(blob);
+                    }).catch(e => console.log(e));
+                })
+            }
+          }
     }
 
     _guiColor() {

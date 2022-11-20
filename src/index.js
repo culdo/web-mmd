@@ -7,6 +7,7 @@ import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper.js';
 import {MMDGui} from './modules/gui.js'
+import path from 'path-browserify';
 
 let stats;
 
@@ -51,6 +52,8 @@ function init() {
 
     let player = document.getElementById("player")
     player.src = 'models/mmd/audios/GimmexGimme.m4a';
+    api.music = path.basename(player.src);
+
     player.onplay = () => {
         helper.objects.get( character ).physics.reset();
         gui.close();
@@ -136,15 +139,23 @@ function init() {
     }
 
     const modelFile = 'models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
+    api.character = path.basename(modelFile);
+
     const vmdFiles = [ 'models/mmd/motions/GimmeGimme_with_emotion.vmd'];
+    api.motion = path.basename(vmdFiles[0]);
+
     const cameraFiles = [ 'models/mmd/cameras/GimmexGimme.vmd' ];
+    api.camera = path.basename(cameraFiles[0]);
+
+    const stageFile = 'models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx';
+    api.stage = path.basename(stageFile);
 
     helper = new MMDAnimationHelper();
     
     const loader = new MMDLoader();
 
     // load stage
-    loader.load('models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx', function ( mesh ) {
+    loader.load(stageFile, function ( mesh ) {
         stage = mesh;
         stage.castShadow = true;
         stage.receiveShadow = api['ground shadow'];
@@ -185,7 +196,7 @@ function init() {
         physicsHelper.visible = false;
         scene.add( physicsHelper );
 
-        gui.initGui({api, helper, scene, character, stage, effect, ikHelper, physicsHelper, dirLight, hemiLight});
+        gui.initGui({api, player, helper, scene, character, stage, effect, ikHelper, physicsHelper, dirLight, hemiLight});
         helper.objects.get( character ).physics.reset();
 
     }, onProgress, null );
