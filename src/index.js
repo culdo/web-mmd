@@ -7,12 +7,15 @@ import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
 import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper.js';
 import {MMDGui} from './modules/gui.js'
+import {onProgress} from './modules/utils.js'
 import path from 'path-browserify';
 
 let stats;
 
 let character, camera, scene, renderer, effect, stage;
 let helper, ikHelper, physicsHelper;
+
+let globalParams;
 
 let ready = false;
 let timeoutID;
@@ -36,7 +39,6 @@ const gui = new MMDGui();
 
 const clock = new THREE.Clock();
 
-
 Ammo().then( function () {
 
     init();
@@ -45,14 +47,28 @@ Ammo().then( function () {
 } );
 
 function init() {
+    //Demo files
+    const modelFile = 'models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
+    api.character = path.basename(modelFile);
+
+    const vmdFile = 'models/mmd/motions/GimmeGimme_with_emotion.vmd';
+    api.motion = path.basename(vmdFile);
+
+    const cameraFile = 'models/mmd/cameras/GimmexGimme.vmd';
+    api.camera = path.basename(cameraFile);
+
+    const stageFile = 'models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx';
+    api.stage = path.basename(stageFile);
+
+    const musicFile = 'models/mmd/audios/GimmexGimme.m4a';
+    api.music = path.basename(musicFile);
 
 
     const container = document.createElement( 'div' );
     document.body.appendChild( container );
 
     let player = document.getElementById("player")
-    player.src = 'models/mmd/audios/GimmexGimme.m4a';
-    api.music = path.basename(player.src);
+    player.src = musicFile;
 
     player.onplay = () => {
         helper.objects.get( character ).physics.reset();
@@ -123,33 +139,6 @@ function init() {
     stats = new Stats();
     container.appendChild( stats.dom );
 
-    // log assets downloading progress
-    let loading = document.getElementById("loading");
-
-    function onProgress( xhr ) {
-
-        if ( xhr.lengthComputable ) {
-
-            const percentComplete = Math.round( xhr.loaded / xhr.total * 100, 2 ) ;
-            console.log( percentComplete + '% downloaded' );
-            loading.textContent = "Loading " + percentComplete + "%..."
-
-        }
-
-    }
-
-    const modelFile = 'models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
-    api.character = path.basename(modelFile);
-
-    const vmdFiles = [ 'models/mmd/motions/GimmeGimme_with_emotion.vmd'];
-    api.motion = path.basename(vmdFiles[0]);
-
-    const cameraFiles = [ 'models/mmd/cameras/GimmexGimme.vmd' ];
-    api.camera = path.basename(cameraFiles[0]);
-
-    const stageFile = 'models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx';
-    api.stage = path.basename(stageFile);
-
     helper = new MMDAnimationHelper();
     
     const loader = new MMDLoader();
@@ -164,24 +153,24 @@ function init() {
     }, onProgress, null)
 
     // load character
-    loader.loadWithAnimation( modelFile, vmdFiles, function ( mmd ) {
+    loader.loadWithAnimation( modelFile, vmdFile, function ( mmd ) {
 
         character = mmd.mesh;
         character.castShadow = true;
         character.receiveShadow = api["self shadow"];
+        scene.add(character);
 
         helper.add( character, {
             animation: mmd.animation,
             physics: true
         } );
 
-        loader.loadAnimation( cameraFiles, camera, function ( cameraAnimation ) {
+        loader.loadAnimation( cameraFile, camera, function ( cameraAnimation ) {
 
             helper.add( camera, {
                 animation: cameraAnimation
             } );
 
-            scene.add(character);
             ready = true;
             loading.style.display = "none";
 
@@ -195,8 +184,9 @@ function init() {
         physicsHelper = helper.objects.get( character ).physics.createHelper();
         physicsHelper.visible = false;
         scene.add( physicsHelper );
-
-        gui.initGui({api, player, helper, scene, character, stage, effect, ikHelper, physicsHelper, dirLight, hemiLight});
+        globalParams = {api, loader, camera, player, helper, scene, character, stage, 
+            effect, ikHelper, physicsHelper, dirLight, hemiLight};
+        gui.initGui(globalParams);
         helper.objects.get( character ).physics.reset();
 
     }, onProgress, null );
@@ -230,6 +220,8 @@ function animate() {
 }
 
 function render() {
+    let character = globalParams.character;
+
     let currTime = player.currentTime
     let delta = currTime - prevTime;
 

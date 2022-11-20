@@ -1,5 +1,7 @@
 import localforage from 'localforage';
+import path from 'path-browserify';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+import { onProgress } from './utils';
 
 class MMDGui {
     constructor() {
@@ -25,41 +27,87 @@ class MMDGui {
 
     _guiFile() {
         const folder = this.gui.addFolder( 'Files' );
-        this.mmd.api.selectChar = () => {}
-        this.mmd.api.selectStage = () => {}
-        this.mmd.api.selectMusic = () => {
-            selectFile.onchange = _makeLoad('music');
+        let mmd = this.mmd;
+
+        mmd.api.selectChar = () => {
+            selectFile.onchange = _makeLoadFn('character', (url)=>{
+            });
             selectFile.click();
         }
-        this.mmd.api.selectCamera = () => {}
-        this.mmd.api.selectMotion = () => {}
-        folder.add(this.mmd.api, 'character')
-        folder.add(this.mmd.api, 'selectChar').name('select character..')
-        folder.add(this.mmd.api, 'stage')
-        folder.add(this.mmd.api, 'selectStage').name('select stage...')
-        folder.add(this.mmd.api, 'music')
-        folder.add(this.mmd.api, 'selectMusic').name('select music...')
-        folder.add(this.mmd.api, 'camera')
-        folder.add(this.mmd.api, 'selectCamera').name('select camera...')
-        folder.add(this.mmd.api, 'motion')
-        folder.add(this.mmd.api, 'selectMotion').name('select motion...')
+        mmd.api.selectStage = () => {
+            selectFile.onchange = _makeLoadFn('stage', (url, ext)=>{
+                mmd.scene.remove(mmd.stage);
+                console.log("remove stage")
+                // load stage
+                mmd.loader.load(url, function ( mesh ) {
+                    console.log("load stage")
+
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = mmd.api['ground shadow'];
+                    
+                    mmd.scene.add( mesh );
+                    mmd.stage = mesh;
+                }, onProgress, null, ext)
+            });
+            selectFile.click();
+        }
+
+        mmd.api.selectMusic = () => {
+            selectFile.onchange = _makeLoadFn('music', (url)=>{
+                mmd.player.src = url;
+            });
+            selectFile.click();
+        }
+        mmd.api.selectCamera = () => {
+            selectFile.onchange = _makeLoadFn('camera', (url)=>{
+                mmd.helper.remove(mmd.camera);
+                mmd.loader.loadAnimation( url, mmd.camera, function ( cameraAnimation ) {
+
+                    mmd.helper.add( mmd.camera, {
+                        animation: cameraAnimation
+                    } );
+        
+                }, onProgress, null );
+            });
+            selectFile.click();
+        }
+        mmd.api.selectMotion = () => {
+            selectFile.onchange = _makeLoadFn('motion', (url)=>{
+                mmd.helper.objects.get( mmd.character ).mixer.uncacheRoot(mmd.character);
+                mmd.helper.remove(mmd.character);
+                mmd.loader.loadAnimation( url, mmd.character, function ( mmdAnimation ) {
+                    mmd.helper.add( mmd.character, {
+                        animation: mmdAnimation,
+                        physics: true
+                    } );
+        
+                }, onProgress, null );
+            });
+            selectFile.click();
+        }
+        folder.add(mmd.api, 'character')
+        folder.add(mmd.api, 'selectChar').name('select character..')
+        folder.add(mmd.api, 'stage')
+        folder.add(mmd.api, 'selectStage').name('select stage...')
+        folder.add(mmd.api, 'music')
+        folder.add(mmd.api, 'selectMusic').name('select music...')
+        folder.add(mmd.api, 'camera')
+        folder.add(mmd.api, 'selectCamera').name('select camera...')
+        folder.add(mmd.api, 'motion')
+        folder.add(mmd.api, 'selectMotion').name('select motion...')
         folder.close();
 
-        let player = this.mmd.player;
-        function _makeLoad(itemName) {
+        function _makeLoadFn(itemName, cb) {
             return function() {
                 localforage.removeItem(itemName);
-                if (this.files[0].type.indexOf('audio/') !== 0) {
-                    alert('Not an audio file...');
-                    return;
-                }
                 localforage.setItem(itemName, this.files[0]).then(_ => {
                     localforage.getItem(itemName).then(blob => {
+                        console.log(blob.name);
                         if (!blob) {
                             alert('Please choose an file to be uploaded.');
                             return;
                         }
-                        player.src = URL.createObjectURL(blob);
+                        cb(URL.createObjectURL(blob), path.extname(blob.name).slice(1));
                     }).catch(e => console.log(e));
                 })
             }
