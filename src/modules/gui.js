@@ -65,12 +65,10 @@ class MMDGui {
 
                     mmd.character = character;
 
-                    setTimeout(() => {
-                        mmd.helper.objects.get( character ).physics.reset();
-                        console.log("loaded reset")
-                        mmd.ready = true;
-                        loading.style.display = 'none';
-                    }, 100); 
+                    mmd.helper.objects.get( character ).physics.reset();
+                    console.log("loaded reset")
+                    mmd.ready = true;
+                    loading.style.display = 'none';
 
                 }, onProgress, null, params)
                 mmd.api.character = filename;
@@ -174,7 +172,7 @@ class MMDGui {
         function _makeLoadModel(itemName, cb) {
             return function() {
                 let textures = modelTextures[itemName];
-                // clear textures
+                // clear previous model and textures
                 for( const key of Object.keys(textures)) {
                     localforage.removeItem(key);
                     for (var item in textures) delete textures[item];

@@ -47,9 +47,8 @@ Ammo().then( function () {
 } );
 
 function init() {
-    //Demo files
+    // Demo files
     const modelFile = 'models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
-    // const modelFile = 'models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
     api.character = path.basename(modelFile);
 
     const motionFile = 'models/mmd/motions/GimmeGimme_with_emotion.vmd';
