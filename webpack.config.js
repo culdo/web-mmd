@@ -67,6 +67,7 @@ module.exports = () => {
     config.plugins.push(new MiniCssExtractPlugin());
   } else {
     config.mode = "development";
+    config.devtool = "inline-source-map";
   }
   return config;
 };
