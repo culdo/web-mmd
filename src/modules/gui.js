@@ -10,8 +10,8 @@ class MMDGui {
         this.close = () => this.gui.close();
         this.mmd = null;
         this.modelTextures = {
-            character: [],
-            stage: [],
+            character: {},
+            stage: {},
         };
     }
 
@@ -37,7 +37,43 @@ class MMDGui {
         // TODO: use unzip tools to unzip model files, because it has many texture images
         mmd.api.selectChar = () => {
             selectFile.webkitdirectory = true;
-            selectFile.onchange = _makeLoadFolder('character', (url)=>{
+            selectFile.onchange = _makeLoadModel('character', (url, filename)=>{
+                mmd.ready = false;
+                mmd.helper.objects.get( mmd.character ).mixer.uncacheRoot(mmd.character);
+                mmd.scene.remove(mmd.character);
+                mmd.helper.remove(mmd.character);
+
+                console.log("remove character")
+                let params = {
+                    modelExtension: path.extname(filename).slice(1),
+                    modelTextures: modelTextures['character'],
+                }
+                // load character
+                loading.style.display = 'block';
+                mmd.loader.loadWithAnimation(url, mmd.animationURL, function ( obj ) {
+                    console.log("loading character...")
+
+                    let character = obj.mesh;
+                    character.castShadow = true;
+                    character.receiveShadow = mmd.api["self shadow"];
+                    mmd.scene.add(character);
+
+                    mmd.helper.add( character, {
+                        animation: obj.animation,
+                        physics: true
+                    } );
+
+                    mmd.character = character;
+
+                    setTimeout(() => {
+                        mmd.helper.objects.get( character ).physics.reset();
+                        console.log("loaded reset")
+                        mmd.ready = true;
+                        loading.style.display = 'none';
+                    }, 100); 
+
+                }, onProgress, null, params)
+                mmd.api.character = filename;
             });
             selectFile.click();
             selectFile.webkitdirectory = false;
@@ -45,14 +81,15 @@ class MMDGui {
         // TODO: same above
         mmd.api.selectStage = () => {
             selectFile.webkitdirectory = true;
-            selectFile.onchange = _makeLoadFolder('stage', (url, filename)=>{
+            selectFile.onchange = _makeLoadModel('stage', (url, filename)=>{
                 mmd.scene.remove(mmd.stage);
                 console.log("remove stage")
                 let params = {
                     modelExtension: path.extname(filename).slice(1),
-                    modelTextures: modelTextures,
+                    modelTextures: modelTextures['stage'],
                 }
                 // load stage
+                loading.style.display = 'block';
                 mmd.loader.load(url, function ( mesh ) {
                     console.log("load stage")
 
@@ -61,8 +98,10 @@ class MMDGui {
                     
                     mmd.scene.add( mesh );
                     mmd.stage = mesh;
+                    loading.style.display = 'none';
                 }, onProgress, null, params)
                 mmd.api.stage = filename;
+                
             });
             selectFile.click();
             selectFile.webkitdirectory = false;
@@ -93,6 +132,7 @@ class MMDGui {
             selectFile.onchange = _makeLoadFn('motion', (url, filename)=>{
                 mmd.helper.objects.get( mmd.character ).mixer.uncacheRoot(mmd.character);
                 mmd.helper.remove(mmd.character);
+                mmd.animationURL = url;
                 mmd.loader.loadAnimation( url, mmd.character, function ( mmdAnimation ) {
                     mmd.helper.add( mmd.character, {
                         animation: mmdAnimation,
@@ -131,13 +171,15 @@ class MMDGui {
             }
         }
 
-        function _makeLoadFolder(itemName, cb) {
+        function _makeLoadModel(itemName, cb) {
             return function() {
                 let textures = modelTextures[itemName];
+                // clear textures
                 for( const key of Object.keys(textures)) {
                     localforage.removeItem(key);
-                    textures.pop();
+                    for (var item in textures) delete textures[item];
                 }
+                // load model and textures from unzipped folder
                 for(const f of this.files) {
                     let relativePath = f.webkitRelativePath.split( '/' ).slice( 1 ).join( '/' );
                     localforage.setItem(relativePath, f).then(_ => {
@@ -147,9 +189,8 @@ class MMDGui {
                                 return;
                             }
                             let url = URL.createObjectURL(blob);
-                            var obj = {};
-                            obj[relativePath] = url;
-                            textures.push(obj);
+
+                            textures[relativePath] = url;
 
                             if(blob.name.includes(".pmx") || blob.name.includes(".pmd")) {
                                 cb(url, blob.name);

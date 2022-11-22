@@ -23,5 +23,5 @@ It is improved version from [three.js example](https://threejs.org/examples/#web
 - [x] turn on/off shawdow
 - [x] choose light color
 - [x] player control bar
-- [ ] can choose different model, motion, camera, music
+- [x] can choose different model, motion, camera, music
 - [ ] timeline editor

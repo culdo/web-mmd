@@ -49,10 +49,11 @@ Ammo().then( function () {
 function init() {
     //Demo files
     const modelFile = 'models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
+    // const modelFile = 'models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
     api.character = path.basename(modelFile);
 
-    const vmdFile = 'models/mmd/motions/GimmeGimme_with_emotion.vmd';
-    api.motion = path.basename(vmdFile);
+    const motionFile = 'models/mmd/motions/GimmeGimme_with_emotion.vmd';
+    api.motion = path.basename(motionFile);
 
     const cameraFile = 'models/mmd/cameras/GimmexGimme.vmd';
     api.camera = path.basename(cameraFile);
@@ -153,7 +154,7 @@ function init() {
     }, onProgress, null)
 
     // load character
-    loader.loadWithAnimation( modelFile, vmdFile, function ( mmd ) {
+    loader.loadWithAnimation( modelFile, motionFile, function ( mmd ) {
 
         character = mmd.mesh;
         character.castShadow = true;
@@ -165,6 +166,7 @@ function init() {
             physics: true
         } );
 
+        // load camera
         loader.loadAnimation( cameraFile, camera, function ( cameraAnimation ) {
 
             helper.add( camera, {
@@ -184,9 +186,13 @@ function init() {
         physicsHelper = helper.objects.get( character ).physics.createHelper();
         physicsHelper.visible = false;
         scene.add( physicsHelper );
+
         globalParams = {api, loader, camera, player, helper, scene, character, stage, 
             effect, ikHelper, physicsHelper, dirLight, hemiLight};
+        globalParams.animationURL = motionFile;
+        globalParams.ready = true;
         gui.initGui(globalParams);
+        
         helper.objects.get( character ).physics.reset();
 
     }, onProgress, null );
@@ -212,7 +218,7 @@ function animate() {
 
     requestAnimationFrame( animate );
 
-    if(ready){
+    if(ready && globalParams.ready){
         stats.begin();
         render();
         stats.end();
@@ -220,7 +226,7 @@ function animate() {
 }
 
 function render() {
-    let character = globalParams.character;
+    character = globalParams.character;
 
     let currTime = player.currentTime
     let delta = currTime - prevTime;

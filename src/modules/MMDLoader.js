@@ -125,11 +125,16 @@ class MMDLoader extends Loader {
 			resourcePath = this.path;
 
 		} else {
-
-			resourcePath = LoaderUtils.extractUrlBase( url );
-
+			if(!params) {
+				resourcePath = LoaderUtils.extractUrlBase( url );
+			}else{
+				resourcePath = '';
+			}
 		}
-		if(!params.modelExtension) {
+
+		let modelExtension;
+
+		if(!params) {
 			modelExtension = this._extractExtension( url ).toLowerCase();
 		} else {
 			modelExtension = params.modelExtension;
@@ -145,7 +150,12 @@ class MMDLoader extends Loader {
 		}
 
 		this[ modelExtension === 'pmd' ? 'loadPMD' : 'loadPMX' ]( url, function ( data ) {
-			
+			if(params) {
+				data.textures.forEach((texturePath, index) => {
+					texturePath = texturePath.replace('\\', '/');
+					data.textures[index] = params.modelTextures[texturePath];
+				});
+			}
 			onLoad(	builder.build( data, resourcePath, onProgress, onError )	);
 
 		}, onProgress, onError );
@@ -187,7 +197,7 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	loadWithAnimation( modelUrl, vmdUrl, onLoad, onProgress, onError ) {
+	loadWithAnimation( modelUrl, vmdUrl, onLoad, onProgress, onError, params = null) {
 
 		const scope = this;
 
@@ -202,7 +212,7 @@ class MMDLoader extends Loader {
 
 			}, onProgress, onError );
 
-		}, onProgress, onError );
+		}, onProgress, onError, params );
 
 	}
 
