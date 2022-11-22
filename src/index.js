@@ -4,8 +4,8 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
-import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader.js';
-import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper.js';
+import { MMDLoader } from './modules/MMDLoader.js';
+import { MMDAnimationHelper } from './modules/MMDAnimationHelper.js';
 import {MMDGui} from './modules/gui.js'
 import {onProgress} from './modules/utils.js'
 import path from 'path-browserify';

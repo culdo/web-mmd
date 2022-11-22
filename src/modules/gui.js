@@ -9,6 +9,10 @@ class MMDGui {
         this.open = () => this.gui.open();
         this.close = () => this.gui.close();
         this.mmd = null;
+        this.modelTextures = {
+            character: [],
+            stage: [],
+        };
     }
 
     initGui(params){
@@ -28,18 +32,26 @@ class MMDGui {
     _guiFile() {
         const folder = this.gui.addFolder( 'Files' );
         let mmd = this.mmd;
+        let modelTextures = this.modelTextures;
 
         // TODO: use unzip tools to unzip model files, because it has many texture images
         mmd.api.selectChar = () => {
-            selectFile.onchange = _makeLoadFn('character', (url)=>{
+            selectFile.webkitdirectory = true;
+            selectFile.onchange = _makeLoadFolder('character', (url)=>{
             });
             selectFile.click();
+            selectFile.webkitdirectory = false;
         }
         // TODO: same above
         mmd.api.selectStage = () => {
-            selectFile.onchange = _makeLoadFn('stage', (url, filename)=>{
+            selectFile.webkitdirectory = true;
+            selectFile.onchange = _makeLoadFolder('stage', (url, filename)=>{
                 mmd.scene.remove(mmd.stage);
                 console.log("remove stage")
+                let params = {
+                    modelExtension: path.extname(filename).slice(1),
+                    modelTextures: modelTextures,
+                }
                 // load stage
                 mmd.loader.load(url, function ( mesh ) {
                     console.log("load stage")
@@ -49,10 +61,11 @@ class MMDGui {
                     
                     mmd.scene.add( mesh );
                     mmd.stage = mesh;
-                }, onProgress, null, path.extname(filename).slice(1))
+                }, onProgress, null, params)
                 mmd.api.stage = filename;
             });
             selectFile.click();
+            selectFile.webkitdirectory = false;
         }
 
         mmd.api.selectMusic = () => {
@@ -108,7 +121,6 @@ class MMDGui {
                 localforage.removeItem(itemName);
                 localforage.setItem(itemName, this.files[0]).then(_ => {
                     localforage.getItem(itemName).then(blob => {
-                        console.log(blob.name);
                         if (!blob) {
                             alert('Please choose an file to be uploaded.');
                             return;
@@ -117,7 +129,36 @@ class MMDGui {
                     }).catch(e => console.log(e));
                 })
             }
-          }
+        }
+
+        function _makeLoadFolder(itemName, cb) {
+            return function() {
+                let textures = modelTextures[itemName];
+                for( const key of Object.keys(textures)) {
+                    localforage.removeItem(key);
+                    textures.pop();
+                }
+                for(const f of this.files) {
+                    let relativePath = f.webkitRelativePath.split( '/' ).slice( 1 ).join( '/' );
+                    localforage.setItem(relativePath, f).then(_ => {
+                        localforage.getItem(relativePath).then(blob => {
+                            if (!blob) {
+                                alert('Please choose an file to be uploaded.');
+                                return;
+                            }
+                            let url = URL.createObjectURL(blob);
+                            var obj = {};
+                            obj[relativePath] = url;
+                            textures.push(obj);
+
+                            if(blob.name.includes(".pmx") || blob.name.includes(".pmd")) {
+                                cb(url, blob.name);
+                            }
+                        }).catch(e => console.log(e));
+                    })
+                }
+            }
+        }
     }
 
     _guiColor() {
