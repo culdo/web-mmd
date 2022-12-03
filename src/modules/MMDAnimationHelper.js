@@ -4,7 +4,7 @@ import {
 	Object3D,
 	Quaternion,
 	Vector3
-} from 'three';
+} from './three.module';
 import { CCDIKSolver } from 'three/examples/jsm/animation/CCDIKSolver.js';
 import { MMDPhysics } from 'three/examples/jsm/animation/MMDPhysics.js';
 
