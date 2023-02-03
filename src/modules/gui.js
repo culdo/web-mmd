@@ -1,7 +1,7 @@
 import localforage from 'localforage';
 import path from 'path-browserify';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
-import { onProgress } from './utils';
+import { onProgress, loadMusicFromYT } from './utils';
 
 class MMDGui {
     constructor() {
@@ -106,11 +106,7 @@ class MMDGui {
         }
 
         mmd.api.selectMusic = () => {
-            selectFile.onchange = _makeLoadFn('music', (url, filename)=>{
-                mmd.player.src = url;
-                mmd.api.music = filename;
-            });
-            selectFile.click();
+            loadMusicFromYT(mmd.api.music);
         }
         mmd.api.selectCamera = () => {
             selectFile.onchange = _makeLoadFn('camera', (url, filename)=>{
@@ -143,11 +139,11 @@ class MMDGui {
             selectFile.click();
         }
         folder.add(mmd.api, 'character').listen()
-        folder.add(mmd.api, 'selectChar').name('select character..')
+        folder.add(mmd.api, 'selectChar').name('select character directory..')
         folder.add(mmd.api, 'stage').listen()
-        folder.add(mmd.api, 'selectStage').name('select stage...')
-        folder.add(mmd.api, 'music').listen()
-        folder.add(mmd.api, 'selectMusic').name('select music...')
+        folder.add(mmd.api, 'selectStage').name('select stage directory...')
+        folder.add(mmd.api, 'music').name('music from YT').listen()
+        folder.add(mmd.api, 'selectMusic').name('change use above url...')
         folder.add(mmd.api, 'camera').listen()
         folder.add(mmd.api, 'selectCamera').name('select camera...')
         folder.add(mmd.api, 'motion').listen()

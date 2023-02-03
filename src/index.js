@@ -7,7 +7,7 @@ import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { MMDLoader } from './modules/MMDLoader.js';
 import { MMDAnimationHelper } from './modules/MMDAnimationHelper.js';
 import {MMDGui} from './modules/gui.js'
-import {onProgress} from './modules/utils.js'
+import {onProgress, loadMusicFromYT} from './modules/utils.js'
 import path from 'path-browserify';
 
 let stats;
@@ -60,15 +60,15 @@ function init() {
     const stageFile = 'models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx';
     api.stage = path.basename(stageFile);
 
-    const musicFile = 'models/mmd/audios/GimmexGimme.m4a';
-    api.music = path.basename(musicFile);
+    const musicURL = 'https://www.youtube.com/watch?v=ERo-sPa1a5g';
+    api.music = musicURL;
 
 
     const container = document.createElement( 'div' );
     document.body.appendChild( container );
 
-    let player = document.getElementById("player")
-    player.src = musicFile;
+    loadMusicFromYT(musicURL);
+    player.volume = 0.5;
 
     player.onplay = () => {
         helper.objects.get( character ).physics.reset();
