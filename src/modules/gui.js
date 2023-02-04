@@ -140,11 +140,13 @@ class MMDGui {
             });
             selectFile.click();
         }
-        mmd.api.modelChoices = {stage: [mmd.api.stage], character: [mmd.api.character]};
+        
         mmd.api.pmxFiles = {character: {}, stage: {}};
+        mmd.api.pmxFiles.character[mmd.api.character] = mmd.api.character
+        mmd.api.pmxFiles.stage[mmd.api.stage] = mmd.api.stage
         // add folder to avoid ordering problem when change character
         var characterFolder = folder.addFolder('character');
-        var characterDropdown = characterFolder.add(mmd.api, 'character', mmd.api.modelChoices.character).name("model").listen().onChange( value => {
+        var characterDropdown = characterFolder.add(mmd.api, 'character', Object.keys(mmd.api.pmxFiles.character)).listen().name("model").onChange( value => {
             console.log( value );
             loadCharacter(mmd.api.pmxFiles.character[value], value);
         } );
@@ -152,7 +154,7 @@ class MMDGui {
         folder.add(mmd.api, 'selectChar').name('select character pmx directory...')
 
         var stageFolder = folder.addFolder('stage');
-        var stageDropdown = stageFolder.add(mmd.api, 'stage', mmd.api.modelChoices.stage).name("model").listen().onChange( value => {
+        var stageDropdown = stageFolder.add(mmd.api, 'stage', mmd.api.pmxFiles.stage).listen().name("model").onChange( value => {
             console.log( value );
             loadStage(mmd.api.pmxFiles.stage[value], value);
         } );
@@ -193,10 +195,8 @@ class MMDGui {
                     for (var item in textures) delete textures[item];
                 }
                 mmd.api.pmxFiles[itemName] = {};
-                mmd.api.modelChoices[itemName] = [];
 
                 var pmxFiles = mmd.api.pmxFiles[itemName];
-                var modelChoices = mmd.api.modelChoices[itemName];
                 var dropdown = mmd.api.pmxDropdowns[itemName];
                 if(itemName === "character") {
                     var cb = loadCharacter;
@@ -217,8 +217,8 @@ class MMDGui {
                             textures[relativePath] = url;
                             if(blob.name.includes(".pmx") || blob.name.includes(".pmd")) {
                                 pmxFiles[blob.name] = url;
-                                modelChoices.push(blob.name);
-                                dropdown = dropdown.options(modelChoices).onChange( value => {
+                                dropdown = dropdown.options(Object.keys(pmxFiles)).listen().onChange( value => {
+                                    console.log(mmd.api.character)
                                     cb(pmxFiles[value], value);
                                 } );
                                 mmd.api.pmxDropdowns[itemName] = dropdown;

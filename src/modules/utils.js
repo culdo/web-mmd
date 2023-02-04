@@ -19,6 +19,9 @@ function onProgress( xhr ) {
         }
         loading.textContent = "Loading " + Math.round(percentCompleteAll, 2) + "%...";
 
+        if(percentCompleteAll > 100){
+            progressMap = {};
+        }
     }
 
 }
@@ -88,7 +91,6 @@ function loadMusicFromYT(url) {
                             console.log(audio_streams);
             
                             player.src = audio_streams['256kbps'] || audio_streams['128kbps'] || audio_streams['48kbps'];
-                            player.play();
                         })
                     }
                 })
