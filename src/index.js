@@ -59,7 +59,7 @@ function init() {
 
     const stageFile = 'models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx';
     api.stage = path.basename(stageFile);
-
+    
     const musicURL = 'https://www.youtube.com/watch?v=ERo-sPa1a5g';
     api.music = musicURL;
 
