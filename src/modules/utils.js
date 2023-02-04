@@ -1,5 +1,3 @@
-import { DepthStencilFormat } from "three";
-
 // log assets downloading progress
 let loading = document.getElementById("loading");
 
@@ -159,7 +157,4 @@ const parseResponse = (id, playerResponse, decsig) => {
     return { stream, adaptive, details: playerResponse.videoDetails, playerResponse }
 }
 
-const getMusicData = (id, playerResponse, basejs) => {
-    
-}
 export {onProgress, loadMusicFromYT}

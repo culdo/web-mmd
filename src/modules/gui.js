@@ -33,74 +33,76 @@ class MMDGui {
         const folder = this.gui.addFolder( 'Files' );
         let mmd = this.mmd;
         let modelTextures = this.modelTextures;
+        
+        const loadCharacter = (url, filename)=>{
+            mmd.ready = false;
+            mmd.helper.objects.get( mmd.character ).mixer.uncacheRoot(mmd.character);
+            mmd.scene.remove(mmd.character);
+            mmd.helper.remove(mmd.character);
 
+            console.log("remove character")
+            let params = {
+                modelExtension: path.extname(filename).slice(1),
+                modelTextures: modelTextures['character'],
+            }
+            // load character
+            loading.style.display = 'block';
+            mmd.loader.loadWithAnimation(url, mmd.animationURL, function ( obj ) {
+                console.log("loading character...")
+
+                let character = obj.mesh;
+                character.castShadow = true;
+                character.receiveShadow = mmd.api["self shadow"];
+                mmd.scene.add(character);
+
+                mmd.helper.add( character, {
+                    animation: obj.animation,
+                    physics: true
+                } );
+
+                mmd.character = character;
+
+                mmd.helper.objects.get( character ).physics.reset();
+                console.log("loaded reset")
+                mmd.ready = true;
+                loading.style.display = 'none';
+
+            }, onProgress, null, params)
+            mmd.api.character = filename;
+        };
         // TODO: use unzip tools to unzip model files, because it has many texture images
         mmd.api.selectChar = () => {
             selectFile.webkitdirectory = true;
-            selectFile.onchange = _makeLoadModel('character', (url, filename)=>{
-                mmd.ready = false;
-                mmd.helper.objects.get( mmd.character ).mixer.uncacheRoot(mmd.character);
-                mmd.scene.remove(mmd.character);
-                mmd.helper.remove(mmd.character);
-
-                console.log("remove character")
-                let params = {
-                    modelExtension: path.extname(filename).slice(1),
-                    modelTextures: modelTextures['character'],
-                }
-                // load character
-                loading.style.display = 'block';
-                mmd.loader.loadWithAnimation(url, mmd.animationURL, function ( obj ) {
-                    console.log("loading character...")
-
-                    let character = obj.mesh;
-                    character.castShadow = true;
-                    character.receiveShadow = mmd.api["self shadow"];
-                    mmd.scene.add(character);
-
-                    mmd.helper.add( character, {
-                        animation: obj.animation,
-                        physics: true
-                    } );
-
-                    mmd.character = character;
-
-                    mmd.helper.objects.get( character ).physics.reset();
-                    console.log("loaded reset")
-                    mmd.ready = true;
-                    loading.style.display = 'none';
-
-                }, onProgress, null, params)
-                mmd.api.character = filename;
-            });
+            selectFile.onchange = _makeLoadModel('character')
             selectFile.click();
             selectFile.webkitdirectory = false;
+        }
+
+        const loadStage = (url, filename) => {
+                mmd.scene.remove(mmd.stage);
+                console.log("remove stage");
+                let params = {
+                    modelExtension: path.extname(filename).slice(1),
+                    modelTextures: modelTextures['stage'],
+                };
+                // load stage
+                loading.style.display = 'block';
+                mmd.loader.load(url, function (mesh) {
+                    console.log("load stage");
+
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = mmd.api['ground shadow'];
+
+                    mmd.scene.add(mesh);
+                    mmd.stage = mesh;
+                    loading.style.display = 'none';
+                }, onProgress, null, params);
+                mmd.api.stage = filename;
         }
         // TODO: same above
         mmd.api.selectStage = () => {
             selectFile.webkitdirectory = true;
-            selectFile.onchange = _makeLoadModel('stage', (url, filename)=>{
-                mmd.scene.remove(mmd.stage);
-                console.log("remove stage")
-                let params = {
-                    modelExtension: path.extname(filename).slice(1),
-                    modelTextures: modelTextures['stage'],
-                }
-                // load stage
-                loading.style.display = 'block';
-                mmd.loader.load(url, function ( mesh ) {
-                    console.log("load stage")
-
-                    mesh.castShadow = true;
-                    mesh.receiveShadow = mmd.api['ground shadow'];
-                    
-                    mmd.scene.add( mesh );
-                    mmd.stage = mesh;
-                    loading.style.display = 'none';
-                }, onProgress, null, params)
-                mmd.api.stage = filename;
-                
-            });
+            selectFile.onchange = _makeLoadModel('stage');
             selectFile.click();
             selectFile.webkitdirectory = false;
         }
@@ -138,16 +140,33 @@ class MMDGui {
             });
             selectFile.click();
         }
-        folder.add(mmd.api, 'character').listen()
-        folder.add(mmd.api, 'selectChar').name('select character directory..')
-        folder.add(mmd.api, 'stage').listen()
-        folder.add(mmd.api, 'selectStage').name('select stage directory...')
+        mmd.api.modelChoices = {stage: [mmd.api.stage], character: [mmd.api.character]};
+        mmd.api.pmxFiles = {character: {}, stage: {}};
+        // add folder to avoid ordering problem when change character
+        var characterFolder = folder.addFolder('character');
+        var characterDropdown = characterFolder.add(mmd.api, 'character', mmd.api.modelChoices.character).name("model").listen().onChange( value => {
+            console.log( value );
+            loadCharacter(mmd.api.pmxFiles.character[value], value);
+        } );
+        characterFolder.open();
+        folder.add(mmd.api, 'selectChar').name('select character pmx directory...')
+
+        var stageFolder = folder.addFolder('stage');
+        var stageDropdown = stageFolder.add(mmd.api, 'stage', mmd.api.modelChoices.stage).name("model").listen().onChange( value => {
+            console.log( value );
+            loadStage(mmd.api.pmxFiles.stage[value], value);
+        } );
+        stageFolder.open();
+        folder.add(mmd.api, 'selectStage').name('select stage pmx directory...')
+
+        mmd.api.pmxDropdowns = {character: characterDropdown, stage: stageDropdown};
+        
         folder.add(mmd.api, 'music').name('music from YT').listen()
         folder.add(mmd.api, 'selectMusic').name('change use above url...')
         folder.add(mmd.api, 'camera').listen()
-        folder.add(mmd.api, 'selectCamera').name('select camera...')
+        folder.add(mmd.api, 'selectCamera').name('select camera vmd file...')
         folder.add(mmd.api, 'motion').listen()
-        folder.add(mmd.api, 'selectMotion').name('select motion...')
+        folder.add(mmd.api, 'selectMotion').name('select motion vmd file...')
         folder.close();
 
         function _makeLoadFn(itemName, cb) {
@@ -165,13 +184,24 @@ class MMDGui {
             }
         }
 
-        function _makeLoadModel(itemName, cb) {
+        function _makeLoadModel(itemName) {
             return function() {
                 let textures = modelTextures[itemName];
                 // clear previous model and textures
                 for( const key of Object.keys(textures)) {
                     localforage.removeItem(key);
                     for (var item in textures) delete textures[item];
+                }
+                mmd.api.pmxFiles[itemName] = {};
+                mmd.api.modelChoices[itemName] = [];
+
+                var pmxFiles = mmd.api.pmxFiles[itemName];
+                var modelChoices = mmd.api.modelChoices[itemName];
+                var dropdown = mmd.api.pmxDropdowns[itemName];
+                if(itemName === "character") {
+                    var cb = loadCharacter;
+                } else {
+                    var cb = loadStage;
                 }
                 // load model and textures from unzipped folder
                 for(const f of this.files) {
@@ -185,9 +215,17 @@ class MMDGui {
                             let url = URL.createObjectURL(blob);
 
                             textures[relativePath] = url;
-
                             if(blob.name.includes(".pmx") || blob.name.includes(".pmd")) {
-                                cb(url, blob.name);
+                                pmxFiles[blob.name] = url;
+                                modelChoices.push(blob.name);
+                                dropdown = dropdown.options(modelChoices).onChange( value => {
+                                    cb(pmxFiles[value], value);
+                                } );
+                                mmd.api.pmxDropdowns[itemName] = dropdown;
+
+                                if(Object.keys(pmxFiles).length <= 1){
+                                    cb(url, blob.name);
+                                }
                             }
                         }).catch(e => console.log(e));
                     })
