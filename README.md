@@ -1,9 +1,9 @@
 # Web-MMD
-Try it now: https://culdo.github.io/web-mmd/
+Try it now -> https://culdo.github.io/web-mmd/
 
-For who want to play MMD in the browser, you can play it everywhere now.
+For who wants to play MMD in the browser, you can now play it anywhere.
 
-It is improved version from [three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio).
+It is improved version of [three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio).
 
 # Features
 * Play MMD with time control bar(time seeking, jump to time...etc)
