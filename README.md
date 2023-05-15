@@ -7,6 +7,7 @@ It is improved version of [three.js example](https://threejs.org/examples/#webgl
 
 # Features
 * Play MMD with time control bar(time seeking, jump to time...etc)
+* Import Model, Stage, Motion, Camera and Music(From YT)
 * Turn on/off auto camera(can playing manually)
 * Adjust shadow/outline/color/...etc
 
