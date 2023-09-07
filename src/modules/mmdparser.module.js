@@ -10621,13 +10621,9 @@ Parser.prototype.parsePmx = function (buffer, leftToRight) {
 				p.skinWeights = dv.getFloat32Array(1);
 				p.skinWeights.push(1.0 - p.skinWeights[0]);
 
-				p.skinC= dv.getFloat32Array(3);
+				p.skinC = dv.getFloat32Array(3);
 				const origR0 = dv.getFloat32Array(3);
 				const origR1 = dv.getFloat32Array(3);
-
-				const centerX = origC[0];
-				const centerY = origC[1];
-				const centerZ = origC[2];
 
 				// calculate rw0 and rw1
 				let r0X = origR0[0];
@@ -10654,17 +10650,19 @@ Parser.prototype.parsePmx = function (buffer, leftToRight) {
 				const cr0Y = (p.skinC[1] + r0Y) * 0.5;
 				const cr0Z = (p.skinC[2] + r0Z) * 0.5;
 
-				const cr1X = (centerX + r1X) * 0.5;
-				const cr1Y = (centerY + r1Y) * 0.5;
-				const cr1Z = (centerZ + r1Z) * 0.5;
-
-				p.skinR0[0] = cr0X;
-				p.skinR0[1] = cr0Y;
-				p.skinR0[2] = cr0Z;
-
-				p.skinR1[0] = cr1X;
-				p.skinR1[1] = cr1Y;
-				p.skinR1[2] = cr1Z;
+				const cr1X = (p.skinC[0] + r1X) * 0.5;
+				const cr1Y = (p.skinC[1] + r1Y) * 0.5;
+				const cr1Z = (p.skinC[2] + r1Z) * 0.5;
+				
+				p.skinR0 = []
+				p.skinR0.push(cr0X);
+				p.skinR0.push(cr0Y);
+				p.skinR0.push(cr0Z);
+				
+				p.skinR1 = []
+				p.skinR1.push(cr1X);
+				p.skinR1.push(cr1Y);
+				p.skinR1.push(cr1Z);
 
 
 			} else {

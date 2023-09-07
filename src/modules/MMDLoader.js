@@ -11,6 +11,7 @@ import {
 	Euler,
 	FileLoader,
 	Float32BufferAttribute,
+	Int32BufferAttribute,
 	FrontSide,
 	Interpolant,
 	Loader,
@@ -37,9 +38,9 @@ import {
 	RGB_ETC1_Format,
 	RGB_ETC2_Format
 } from 'three';
-import { MMDToonShader } from 'three/examples/jsm/shaders/MMDToonShader.js';
+import { MMDToonShader } from './MMDToonShader.js';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
-import { MMDParser } from 'three/examples/jsm/libs/mmdparser.module.js';
+import { MMDParser } from './mmdparser.module.js';
 
 /**
  * Dependencies
@@ -532,6 +533,10 @@ class GeometryBuilder {
 		const bones = [];
 		const skinIndices = [];
 		const skinWeights = [];
+		const skinTypes = [];
+		const skinCs = [];
+		const skinR0s = [];
+		const skinR1s = [];
 
 		const morphTargets = [];
 		const morphPositions = [];
@@ -579,6 +584,31 @@ class GeometryBuilder {
 			for ( let j = 0; j < 4; j ++ ) {
 
 				skinWeights.push( v.skinWeights.length - 1 >= j ? v.skinWeights[ j ] : 0.0 );
+
+			}
+
+			skinTypes.push( v.type );
+
+			if(v.type != 3) {
+				v.skinC = [0.0, 0.0, 0.0]
+				v.skinR0 = [0.0, 0.0, 0.0]
+				v.skinR1 = [0.0, 0.0, 0.0]
+			}
+			for ( let j = 0; j < 3; j ++ ) {
+	
+				skinCs.push( v.skinC[j] );
+
+			}
+
+			for ( let j = 0; j < 3; j ++ ) {
+
+				skinR0s.push( v.skinR0[j] );
+
+			}
+
+			for ( let j = 0; j < 3; j ++ ) {
+
+				skinR1s.push( v.skinR1[j] );
 
 			}
 
@@ -1013,6 +1043,10 @@ class GeometryBuilder {
 		geometry.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
 		geometry.setAttribute( 'skinIndex', new Uint16BufferAttribute( skinIndices, 4 ) );
 		geometry.setAttribute( 'skinWeight', new Float32BufferAttribute( skinWeights, 4 ) );
+		geometry.setAttribute( 'skinType', new Int32BufferAttribute( skinTypes, 1 ) );
+		geometry.setAttribute( 'skinC', new Float32BufferAttribute( skinCs, 3 ) );
+		geometry.setAttribute( 'skinR0', new Float32BufferAttribute( skinR0s, 3 ) );
+		geometry.setAttribute( 'skinR1', new Float32BufferAttribute( skinR1s, 3 ) );
 		geometry.setIndex( indices );
 
 		for ( let i = 0, il = groups.length; i < il; i ++ ) {
@@ -2110,6 +2144,7 @@ class MMDToonMaterial extends ShaderMaterial {
 
 		this.vertexShader = MMDToonShader.vertexShader;
 		this.fragmentShader = MMDToonShader.fragmentShader;
+		this.defaultAttributeValues = Object.assign( this.defaultAttributeValues, MMDToonShader.defaultAttributeValues);
 
 		this.defines = Object.assign( {}, MMDToonShader.defines );
 		Object.defineProperty( this, 'matcapCombine', {
