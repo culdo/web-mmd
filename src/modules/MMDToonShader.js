@@ -210,7 +210,9 @@ const MMDToonShader = {
 		ShaderLib.matcap.uniforms,
 	]),
 
-	vertexShader: ShaderLib.phong.vertexShader
+	vertexShader: ShaderLib.phong.vertexShader,
+
+	sdefVertexShader: ShaderLib.phong.vertexShader
 		.replace(
 			'#include <skinning_pars_vertex>',
 			sdefSkinningParsVertex

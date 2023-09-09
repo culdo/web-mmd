@@ -76,7 +76,7 @@ import { MMDParser } from './mmdparser.module.js';
  */
 class MMDLoader extends Loader {
 
-	constructor( manager ) {
+	constructor( {manager, enableSdef=false} ) {
 
 		super( manager );
 
@@ -86,6 +86,8 @@ class MMDLoader extends Loader {
 		this.meshBuilder = new MeshBuilder( this.manager );
 		this.animationBuilder = new AnimationBuilder();
 
+		this.enableSdef = enableSdef;
+		console.log(`sdef: ${enableSdef}`);
 	}
 
 	/**
@@ -257,6 +259,8 @@ class MMDLoader extends Loader {
 
 		const parser = this._getParser();
 
+		const enableSdef = this.enableSdef;
+
 		this.loader
 			.setMimeType( undefined )
 			.setPath( this.path )
@@ -265,7 +269,7 @@ class MMDLoader extends Loader {
 			.setWithCredentials( this.withCredentials )
 			.load( url, function ( buffer ) {
 
-				onLoad( parser.parsePmx( buffer, true ) );
+				onLoad( {...parser.parsePmx( buffer, true ), enableSdef} );
 
 			}, onProgress, onError );
 
@@ -1319,6 +1323,7 @@ class MaterialBuilder {
 				params.emissive.multiplyScalar( 0.2 );
 
 			}
+			params.enableSdef = data.enableSdef;
 
 			materials.push( new MMDToonMaterial( params ) );
 
@@ -2145,7 +2150,7 @@ class MMDToonMaterial extends ShaderMaterial {
 
 		this.lights = true;
 
-		this.vertexShader = MMDToonShader.vertexShader;
+		this.vertexShader = parameters.enableSdef ? MMDToonShader.sdefVertexShader : MMDToonShader.vertexShader;
 		this.fragmentShader = MMDToonShader.fragmentShader;
 		this.defaultAttributeValues = Object.assign( this.defaultAttributeValues, MMDToonShader.defaultAttributeValues);
 
