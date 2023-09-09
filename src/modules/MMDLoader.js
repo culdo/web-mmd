@@ -76,7 +76,7 @@ import { MMDParser } from './mmdparser.module.js';
  */
 class MMDLoader extends Loader {
 
-	constructor( {manager, enableSdef=false} ) {
+	constructor( manager, enableSdef=false ) {
 
 		super( manager );
 
