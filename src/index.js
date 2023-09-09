@@ -32,6 +32,7 @@ const api = {
     'Hemisphere ground': 0x482e2e,
     'Directional': 0xffffff,
     // debug
+    'show FPS': false,
     'show outline': true,
     'show IK bones': false,
     'show rigid bodies': false,
@@ -75,10 +76,10 @@ function init() {
 
     player.onplay = () => {
         helper.objects.get( character ).physics.reset();
-        gui.close();
+        gui.gui.hide();
     }
     player.onpause = () => {
-        gui.open();
+        gui.gui.show();
     }
     // control bar
     document.addEventListener( 'mousemove', ( e ) => {
@@ -140,6 +141,8 @@ function init() {
 
     // FPS stats
     stats = new Stats();
+    stats.dom.id = "fps";
+    stats.dom.style.display = api["show FPS"] ? "block" : "none";
     container.appendChild( stats.dom );
 
     helper = new MMDAnimationHelper();

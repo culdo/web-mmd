@@ -284,6 +284,9 @@ class MMDGui {
     _guiDebug() {
         const folder = this.gui.addFolder( 'Debug' );
 
+        folder.add( this.mmd.api, 'show FPS' ).onChange( (state) => {
+            document.getElementById("fps").style.display = state ? "block" : "none";
+        } );
         folder.add( this.mmd.api, 'show outline' ).onChange( (state) => {
             this.mmd.effect.enabled = state;
         } );
