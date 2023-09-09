@@ -18,10 +18,12 @@ class MMDGui {
     initGui(params){
         this.mmd = params;
 
-        this.gui.add( this.mmd.api, 'auto camera' ).onChange( (state) => {
+        this.gui.add( this.mmd.api, 'camera motion' ).onChange( (state) => {
             this.mmd.helper.enable( 'cameraAnimation', state );
         } );
-        this.gui.add( this.mmd.api, 'physics on pause' );
+        this.gui.add( this.mmd.api, 'physics' ).onChange((state)=> {
+            this.mmd.helper.enable('physics', state)
+        });
         this._guiFile();
         this._guiColor();
         this._guiLight();
@@ -38,6 +40,8 @@ class MMDGui {
             mmd.ready = false;
             mmd.helper.objects.get( mmd.character ).mixer.uncacheRoot(mmd.character);
             mmd.scene.remove(mmd.character);
+            mmd.scene.remove(mmd.ikHelper);
+            mmd.scene.remove(mmd.physicsHelper);
             mmd.helper.remove(mmd.character);
 
             console.log("remove character")
@@ -59,6 +63,14 @@ class MMDGui {
                     animation: obj.animation,
                     physics: true
                 } );
+
+                mmd.ikHelper = mmd.helper.objects.get( character ).ikSolver.createHelper();
+                mmd.ikHelper.visible = mmd.api["show IK bones"];
+                mmd.scene.add( mmd.ikHelper );
+
+                mmd.physicsHelper = mmd.helper.objects.get( character ).physics.createHelper();
+                mmd.physicsHelper.visible = mmd.api["show rigid bodies"];
+                mmd.scene.add( mmd.physicsHelper );
 
                 mmd.character = character;
 
@@ -280,6 +292,9 @@ class MMDGui {
         } );
         folder.add( this.mmd.api, 'show rigid bodies' ).onChange( (state) => {
             if ( this.mmd.physicsHelper !== undefined ) this.mmd.physicsHelper.visible = state;
+        } );
+        folder.add( this.mmd.api, 'show skeleton' ).onChange( (state) => {
+            if ( this.mmd.skeletonHelper !== undefined ) this.mmd.skeletonHelper.visible = state;
         } );
         folder.close();
     }

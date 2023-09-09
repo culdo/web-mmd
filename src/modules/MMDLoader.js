@@ -1676,7 +1676,7 @@ class AnimationBuilder {
 
 		for ( let i = 0, il = bones.length; i < il; i ++ ) {
 
-			boneNameDictionary[ bones[ i ].name ] = true;
+			boneNameDictionary[ bones[ i ].name ] = false;
 
 		}
 
@@ -1686,6 +1686,7 @@ class AnimationBuilder {
 			const boneName = motion.boneName;
 
 			if ( boneNameDictionary[ boneName ] === undefined ) continue;
+			boneNameDictionary[ boneName ] = true;
 
 			motions[ boneName ] = motions[ boneName ] || [];
 			motions[ boneName ].push( motion );
@@ -1733,6 +1734,8 @@ class AnimationBuilder {
 			tracks.push( this._createTrack( targetName + '.quaternion', QuaternionKeyframeTrack, times, rotations, rInterpolations ) );
 
 		}
+
+		mesh.animationBones = Object.entries(boneNameDictionary).filter(item => item[1]).map(item=>item[0])
 
 		return new AnimationClip( '', - 1, tracks );
 

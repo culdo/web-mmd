@@ -22,18 +22,20 @@ let timeoutID;
 let prevTime = 0.0;
 
 const api = {
-    'auto camera': true,
-    'physics on pause': true,
+    'camera motion': true,
+    'physics': true,
     'ground shadow': true,
     'self shadow': true,
     'fog color': 0x43a0ad,
-    'show outline': true,
-    'show IK bones': false,
-    'show rigid bodies': false,
     // light
     'Hemisphere sky': 0x666666,
     'Hemisphere ground': 0x482e2e,
     'Directional': 0xffffff,
+    // debug
+    'show outline': true,
+    'show IK bones': false,
+    'show rigid bodies': false,
+    'show skeleton': false
 };
 const gui = new MMDGui();
 
@@ -49,6 +51,7 @@ Ammo().then( function () {
 function init() {
     // Demo files
     const modelFile = 'models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
+    // const modelFile = 'models/mmd/Sour式初音ミクVer.1.02/Black.pmx';
     api.character = path.basename(modelFile);
 
     const motionFile = 'models/mmd/motions/GimmeGimme_with_emotion.vmd';
@@ -162,7 +165,7 @@ function init() {
 
         helper.add( character, {
             animation: mmd.animation,
-            physics: true
+            physics: api["physics"]
         } );
 
         // load camera
@@ -179,15 +182,19 @@ function init() {
         }, onProgress, null );
         
         ikHelper = helper.objects.get( character ).ikSolver.createHelper();
-        ikHelper.visible = false;
+        ikHelper.visible = api['show IK bones'];
         scene.add( ikHelper );
 
         physicsHelper = helper.objects.get( character ).physics.createHelper();
-        physicsHelper.visible = false;
+        physicsHelper.visible = api['show rigid bodies'];
         scene.add( physicsHelper );
 
+        const skeletonHelper = new THREE.SkeletonHelper( character );
+        skeletonHelper.visible = api['show skeleton'];
+        scene.add( skeletonHelper );
+
         globalParams = {api, loader, camera, player, helper, scene, character, stage, 
-            effect, ikHelper, physicsHelper, dirLight, hemiLight};
+            effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight};
         globalParams.animationURL = motionFile;
         globalParams.ready = true;
         gui.initGui(globalParams);
@@ -231,12 +238,14 @@ function render() {
     let delta = currTime - prevTime;
 
     if(Math.abs(delta) > 0) {
+        // for time seeking using player control
         if(Math.abs(delta) > 0.1) {
             helper.enable('physics', false);
         }
 
         helper.update( delta , currTime);
 
+        // for time seeking using player control
         if(Math.abs(delta) > 0.1) {
             helper.objects.get( character ).physics.reset();
             helper.enable('physics', true);
@@ -244,7 +253,7 @@ function render() {
         }
         prevTime = currTime
 
-    } else if(api['physics on pause']) {
+    }else if(api['physics']) {
 
         let delta = clock.getDelta()
         helper.objects.get(character).physics.update( delta );

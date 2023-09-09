@@ -51,7 +51,6 @@ function loadMusicFromYT(url) {
                 var matches = regex.exec(data);
                 var data = matches && matches.length > 1 ? JSON.parse(matches[1]) : false;
                 var playerResponse = data;
-                console.log(data);
 
                 fetch("https://images" + ~~(Math.random() * 33) + "-focus-opensocial.googleusercontent.com/gadgets/proxy?container=none&url=" + encodeURIComponent(basejs)).then(response => {
                     if (response.ok) {
@@ -88,7 +87,7 @@ function loadMusicFromYT(url) {
                                 if (quality) audio_streams[quality] = stream.url;
                             });
             
-                            console.log(audio_streams);
+                            // console.log(audio_streams);
             
                             player.src = audio_streams['256kbps'] || audio_streams['128kbps'] || audio_streams['48kbps'];
                         })
