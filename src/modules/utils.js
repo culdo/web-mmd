@@ -57,13 +57,13 @@ function loadMusicFromYT(url) {
                         response.text().then(data => {
                             var decsig;
                             decsig = parseDecsig(data);
-                            console.log(decsig);
+                            // console.log(decsig);
                             var streams = parseResponse(url, playerResponse, decsig).adaptive;
 
                             streams.forEach(function(stream, n) {
                                 var itag = stream.itag * 1,
                                 quality = false;
-                                console.log(stream);
+                                // console.log(stream);
                                 switch (itag) {
                                 case 139:
                                     quality = "48kbps";
@@ -126,13 +126,13 @@ const parseDecsig = data => {
 const parseQuery = s => [...new URLSearchParams(s).entries()].reduce((acc, [k, v]) => ((acc[k] = v), acc), {})
 
 const parseResponse = (id, playerResponse, decsig) => {
-    console.log(`video %s playerResponse: %o`, id, playerResponse)
+    // console.log(`video %s playerResponse: %o`, id, playerResponse)
     let stream = []
     if (playerResponse.streamingData.formats) {
         stream = playerResponse.streamingData.formats.map(x =>
             Object.assign({}, x, parseQuery(x.cipher || x.signatureCipher))
         )
-        console.log(`video %s stream: %o`, id, stream)
+        // console.log(`video %s stream: %o`, id, stream)
         for (const obj of stream) {
             if (obj.s) {
                 obj.s = decsig(obj.s)
@@ -146,7 +146,7 @@ const parseResponse = (id, playerResponse, decsig) => {
         adaptive = playerResponse.streamingData.adaptiveFormats.map(x =>
             Object.assign({}, x, parseQuery(x.cipher || x.signatureCipher))
         )
-        console.log(`video %s adaptive: %o`, id, adaptive)
+        // console.log(`video %s adaptive: %o`, id, adaptive)
         for (const obj of adaptive) {
             if (obj.s) {
                 obj.s = decsig(obj.s)
@@ -154,7 +154,7 @@ const parseResponse = (id, playerResponse, decsig) => {
             }
         }
     }
-    console.log(`video %s result: %o`, id, { stream, adaptive })
+    // console.log(`video %s result: %o`, id, { stream, adaptive })
     return { stream, adaptive, details: playerResponse.videoDetails, playerResponse }
 }
 
