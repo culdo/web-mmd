@@ -11,7 +11,7 @@ import { onProgress, loadMusicFromYT } from './modules/utils.js'
 import path from 'path-browserify';
 import localforage from 'localforage';
 
-localforage.clear();
+// localforage.clear();
 async function getConfig() {
     const pmxFileSaver = {
         set: function (target, key, value, receiver) {
