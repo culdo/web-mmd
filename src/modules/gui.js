@@ -94,6 +94,7 @@ class MMDGui {
 
             }, onProgress, null, params)
             mmd.api.character = filename;
+            mmd.api.characterFile = url;
         };
         // TODO: use unzip tools to unzip model files, because it has many texture images
         this.guiFn.selectChar = () => {
@@ -123,6 +124,7 @@ class MMDGui {
                 loading.style.display = 'none';
             }, onProgress, null, params);
             mmd.api.stage = filename;
+            mmd.api.stageFile = url;
         }
         // TODO: same above
         this.guiFn.selectStage = () => {
@@ -145,8 +147,8 @@ class MMDGui {
                     });
 
                 }, onProgress, null);
-                mmd.api.cameraFile = url;
                 mmd.api.camera = filename;
+                mmd.api.cameraFile = url;
             });
             selectFile.click();
         }
@@ -163,6 +165,7 @@ class MMDGui {
 
                 }, onProgress, null);
                 mmd.api.motion = filename;
+                mmd.api.motionFile = url;
             });
             selectFile.click();
         }
@@ -216,9 +219,9 @@ class MMDGui {
                 for (const f of this.files) {
                     let relativePath = f.webkitRelativePath;
                     const resourcePath = relativePath.split("/").slice(1).join("/")
-
-                    await localforage.setItem(relativePath, f)
-                    const blob = await localforage.getItem(relativePath)
+                    
+                    await localforage.setItem(resourcePath, f)
+                    const blob = await localforage.getItem(resourcePath)
                     let url = URL.createObjectURL(blob);
 
                     // save modelTextures

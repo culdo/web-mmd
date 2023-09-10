@@ -11,6 +11,7 @@ import { onProgress, loadMusicFromYT } from './modules/utils.js'
 import path from 'path-browserify';
 import localforage from 'localforage';
 
+// for debug
 // localforage.clear();
 async function getConfig() {
     const pmxFileSaver = {
@@ -25,13 +26,13 @@ async function getConfig() {
     const configSaver = {
         set: function (target, key, value) {
             localforage.setItem("userConfig", target);
-            console.log(key);
+            console.log(value);
             return Reflect.set(...arguments);
         }
     };
 
     const prevConfig = await localforage.getItem("userConfig");
-    const prevPmxFilesObj = await localforage.getItem("pmxFiles")
+    let prevPmxFilesObj = await localforage.getItem("pmxFiles")
 
     const defaultPmxFiles = { character: {}, stage: {}, modelTextures: {} }
 
@@ -41,13 +42,41 @@ async function getConfig() {
     file = defaultConfig.stageFile;
     defaultPmxFiles.stage[path.basename(file)] = file
 
+    async function parseBlob(obj) {
+        for(const [key2, value2] of Object.entries(obj)) {
+            if(value2 instanceof Object) {
+                await parseBlob(value2)
+            }else if(value2.startsWith("blob:")) {
+                let blob = await localforage.getItem(key2);
+                obj[key2] = URL.createObjectURL(blob)
+            }
+        }
+    }
+
+    if(prevPmxFilesObj) {
+        let obj = JSON.parse(prevPmxFilesObj)
+        for(const [key, value] of Object.entries(obj)) {
+            await parseBlob(value)
+        }
+        prevPmxFilesObj = obj;
+    }
     const prevPmxFiles = {
-        obj: prevPmxFilesObj ? JSON.parse(prevPmxFilesObj) : defaultPmxFiles
+        obj: prevPmxFilesObj ? prevPmxFilesObj : defaultPmxFiles
     }
 
     api = new Proxy(prevConfig ? prevConfig : defaultConfig, configSaver);
-    pmxFiles = new Proxy(prevPmxFiles, pmxFileSaver)
-    console.log(pmxFiles)
+    pmxFiles = new Proxy(prevPmxFiles, pmxFileSaver);
+
+    if(!prevPmxFilesObj) {
+        api.character = path.basename(api.characterFile);
+        api.motion = path.basename(api.motionFile);
+        api.camera = path.basename(api.cameraFile);
+        api.stage = path.basename(api.stageFile);
+    } else {
+        api.characterFile = pmxFiles.obj.character[api.character]
+        console.log(pmxFiles.obj)
+        console.log(api)
+    }
 }
 
 let stats;
@@ -103,10 +132,6 @@ async function main() {
 main();
 
 function init() {
-    api.character = path.basename(api.characterFile);
-    api.motion = path.basename(api.motionFile);
-    api.camera = path.basename(api.cameraFile);
-    api.stage = path.basename(api.stageFile);
 
     const container = document.createElement('div');
     document.body.appendChild(container);
@@ -198,9 +223,16 @@ function init() {
         scene.add(stage);
     }, onProgress, null)
 
+    let params = null;
+    if(api.characterFile.startsWith("blob:")) {
+        params = {
+            modelExtension: path.extname(api.character).slice(1),
+            modelTextures: pmxFiles.obj.modelTextures[api.character],
+        };
+    }
+
     // load character
     loader.loadWithAnimation(api.characterFile, api.motionFile, function (mmd) {
-
         character = mmd.mesh;
         character.castShadow = true;
         character.receiveShadow = api["self shadow"];
@@ -245,7 +277,7 @@ function init() {
 
         helper.objects.get(character).physics.reset();
 
-    }, onProgress, null);
+    }, onProgress, null, params);
 
     //
 
