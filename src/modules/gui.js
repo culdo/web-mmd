@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 import localforage from 'localforage';
 import path from 'path-browserify';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
@@ -33,7 +35,7 @@ class MMDGui {
 
     _guiFile() {
         const folder = this.gui.addFolder( 'Files' );
-        let mmd = this.mmd;
+        const mmd = this.mmd;
         let modelTextures = this.modelTextures;
         
         const loadCharacter = (url, filename)=>{
@@ -42,12 +44,16 @@ class MMDGui {
             mmd.scene.remove(mmd.character);
             mmd.scene.remove(mmd.ikHelper);
             mmd.scene.remove(mmd.physicsHelper);
+            mmd.scene.remove(mmd.skeletonHelper);
             mmd.helper.remove(mmd.character);
 
             console.log("remove character")
-            let params = {
-                modelExtension: path.extname(filename).slice(1),
-                modelTextures: modelTextures['character'],
+            let params = null;
+            if(url.startsWith("blob:")) {
+                params = {
+                    modelExtension: path.extname(filename).slice(1),
+                    modelTextures: modelTextures['character'],
+                };
             }
             // load character
             loading.style.display = 'block';
@@ -72,6 +78,10 @@ class MMDGui {
                 mmd.physicsHelper.visible = mmd.api["show rigid bodies"];
                 mmd.scene.add( mmd.physicsHelper );
 
+                mmd.skeletonHelper = new THREE.SkeletonHelper( character );
+                mmd.skeletonHelper.visible = mmd.api['show skeleton'];
+                mmd.scene.add( mmd.skeletonHelper );
+
                 mmd.character = character;
 
                 mmd.helper.objects.get( character ).physics.reset();
@@ -85,7 +95,7 @@ class MMDGui {
         // TODO: use unzip tools to unzip model files, because it has many texture images
         mmd.api.selectChar = () => {
             selectFile.webkitdirectory = true;
-            selectFile.onchange = _makeLoadModel('character')
+            selectFile.onchange = _makeLoadModelFn('character')
             selectFile.click();
             selectFile.webkitdirectory = false;
         }
@@ -114,7 +124,7 @@ class MMDGui {
         // TODO: same above
         mmd.api.selectStage = () => {
             selectFile.webkitdirectory = true;
-            selectFile.onchange = _makeLoadModel('stage');
+            selectFile.onchange = _makeLoadModelFn('stage');
             selectFile.click();
             selectFile.webkitdirectory = false;
         }
@@ -123,7 +133,7 @@ class MMDGui {
             loadMusicFromYT(mmd.api.music);
         }
         mmd.api.selectCamera = () => {
-            selectFile.onchange = _makeLoadFn('camera', (url, filename)=>{
+            selectFile.onchange = _makeLoadFileFn('camera', (url, filename)=>{
                 mmd.helper.remove(mmd.camera);
                 mmd.loader.loadAnimation( url, mmd.camera, function ( cameraAnimation ) {
 
@@ -137,7 +147,7 @@ class MMDGui {
             selectFile.click();
         }
         mmd.api.selectMotion = () => {
-            selectFile.onchange = _makeLoadFn('motion', (url, filename)=>{
+            selectFile.onchange = _makeLoadFileFn('motion', (url, filename)=>{
                 mmd.helper.objects.get( mmd.character ).mixer.uncacheRoot(mmd.character);
                 mmd.helper.remove(mmd.character);
                 mmd.animationURL = url;
@@ -154,7 +164,7 @@ class MMDGui {
         }
         
         mmd.api.pmxFiles = {character: {}, stage: {}};
-        mmd.api.pmxFiles.character[mmd.api.character] = mmd.api.character
+        mmd.api.pmxFiles.character[mmd.api.character] = mmd.api.characterFile
         mmd.api.pmxFiles.stage[mmd.api.stage] = mmd.api.stage
         // add folder to avoid ordering problem when change character
         var characterFolder = folder.addFolder('character');
@@ -183,65 +193,58 @@ class MMDGui {
         folder.add(mmd.api, 'selectMotion').name('select motion vmd file...')
         folder.close();
 
-        function _makeLoadFn(itemName, cb) {
-            return function() {
+        function _makeLoadFileFn(itemName, cb) {
+            return async function() {
                 localforage.removeItem(itemName);
-                localforage.setItem(itemName, this.files[0]).then(_ => {
-                    localforage.getItem(itemName).then(blob => {
-                        if (!blob) {
-                            alert('Please choose an file to be uploaded.');
-                            return;
-                        }
-                        cb(URL.createObjectURL(blob), blob.name);
-                    }).catch(e => console.log(e));
-                })
+                await localforage.setItem(itemName, this.files[0])
+                cb(URL.createObjectURL(this.files[0]), this.files[0].name);
             }
         }
 
-        function _makeLoadModel(itemName) {
-            return function() {
-                let textures = modelTextures[itemName];
-                // clear previous model and textures
-                for( const key of Object.keys(textures)) {
-                    localforage.removeItem(key);
-                    for (var item in textures) delete textures[item];
-                }
-                mmd.api.pmxFiles[itemName] = {};
+        function _makeLoadModelFn(itemType) {
+            return async function() {
+                let resources = modelTextures[itemType];
 
-                var pmxFiles = mmd.api.pmxFiles[itemName];
-                var dropdown = mmd.api.pmxDropdowns[itemName];
-                if(itemName === "character") {
-                    var cb = loadCharacter;
+                console.log(mmd.api.pmxFiles[itemType]);
+                let pmxFilesByType = mmd.api.pmxFiles[itemType];
+                let cb;
+                if(itemType === "character") {
+                    cb = loadCharacter;
                 } else {
-                    var cb = loadStage;
+                    cb = loadStage;
                 }
+                let firstKey;
                 // load model and textures from unzipped folder
                 for(const f of this.files) {
-                    let relativePath = f.webkitRelativePath.split( '/' ).slice( 1 ).join( '/' );
-                    localforage.setItem(relativePath, f).then(_ => {
-                        localforage.getItem(relativePath).then(blob => {
-                            if (!blob) {
-                                alert('Please choose an file to be uploaded.');
-                                return;
-                            }
-                            let url = URL.createObjectURL(blob);
+                    const pathName = f.webkitRelativePath.split( '/' );
+                    let relativePath = pathName.slice( 1 ).join( '/' );
+                    if (!f) {
+                        alert('Please choose an file to be uploaded.');
+                        return;
+                    }
+                    await localforage.setItem(relativePath, f)
+                    const blob = await localforage.getItem(relativePath)
+                    console.log(blob)
+                    let url = URL.createObjectURL(blob);
 
-                            textures[relativePath] = url;
-                            if(blob.name.includes(".pmx") || blob.name.includes(".pmd")) {
-                                pmxFiles[blob.name] = url;
-                                dropdown = dropdown.options(Object.keys(pmxFiles)).listen().onChange( value => {
-                                    console.log(mmd.api.character)
-                                    cb(pmxFiles[value], value);
-                                } );
-                                mmd.api.pmxDropdowns[itemName] = dropdown;
-
-                                if(Object.keys(pmxFiles).length <= 1){
-                                    cb(url, blob.name);
-                                }
-                            }
-                        }).catch(e => console.log(e));
-                    })
+                    resources[relativePath] = url;
+                    if(blob.name.includes(".pmx") || blob.name.includes(".pmd")) {
+                        if(!firstKey) firstKey = blob.name
+                        pmxFilesByType[blob.name] = url;
+                    }
                 }
+                // full replace the old dropdown
+                let dropdown = mmd.api.pmxDropdowns[itemType];
+                dropdown = dropdown.options(Object.keys(pmxFilesByType)).listen().onChange( value => {
+                    console.log(pmxFilesByType[value])
+                    cb(pmxFilesByType[value], value);
+                } );
+                mmd.api.pmxDropdowns[itemType] = dropdown;
+
+                // select first pmx as default
+                cb(pmxFilesByType[firstKey], firstKey);
+                
+                console.log(resources);
             }
         }
     }
@@ -299,6 +302,7 @@ class MMDGui {
         folder.add( this.mmd.api, 'show skeleton' ).onChange( (state) => {
             if ( this.mmd.skeletonHelper !== undefined ) this.mmd.skeletonHelper.visible = state;
         } );
+        folder.add( this.mmd.api, 'auto hide GUI' );
         folder.close();
     }
 

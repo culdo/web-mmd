@@ -89,6 +89,7 @@ class MMDAnimationHelper {
 		if (object.isSkinnedMesh) {
 
 			this._addMesh(object, params);
+			this.animations = params.animation
 
 		} else if (object.isCamera) {
 
@@ -525,7 +526,6 @@ class MMDAnimationHelper {
 		const ikSolver = objects.ikSolver;
 		const grantSolver = objects.grantSolver;
 		const physics = objects.physics;
-		const looped = objects.looped;
 
 		if (mixer && this.enabled.animation) {
 
@@ -571,15 +571,6 @@ class MMDAnimationHelper {
 
 		}
 
-		if (looped === true && this.enabled.physics) {
-			this.enable('physics', false);
-			if (physics && this.configuration.resetPhysicsOnLoop) physics.reset();
-			this.enable('physics', true);
-
-			objects.looped = false;
-
-		}
-
 		if (physics && this.enabled.physics && !this.sharedPhysics) {
 
 			this.onBeforePhysics(mesh);
@@ -622,9 +613,9 @@ class MMDAnimationHelper {
 		_quaternionIndex = 0;
 		_grantResultMap.clear();
 
-		for (let i = 0, il = sortedBonesData.length; i < il; i++) {
+		for (const bone of mesh.geometry.userData.MMD.bones) {
 
-			updateOne(mesh, sortedBonesData[i].index, ikSolver, grantSolver);
+			updateOne(mesh, bone.index, ikSolver, grantSolver);
 
 		}
 
@@ -992,6 +983,31 @@ class MMDAnimationHelper {
 
 	}
 
+	stopAll() {
+		for(const mesh in this.meshes) {
+
+			const objects = this.objects.get(mesh);
+			for (let i = 0, il = this.animations.length; i < il; i++) {
+	
+				objects.mixer.clipAction(this.animations[i]).reset();
+	
+			}
+		}
+	}
+
+	playAll() {
+		for(const mesh in this.meshes) {
+
+			const objects = this.objects.get(mesh);
+			for (let i = 0, il = this.animations.length; i < il; i++) {
+	
+				objects.mixer.clipAction(this.animations[i]).play();
+	
+			}
+		}
+	}
+
+
 }
 
 // Keep working quaternions for less GC
@@ -1051,12 +1067,19 @@ function updateOne(mesh, boneIndex, ikSolver, grantSolver) {
 
 		}
 
+		// console.log("grant bone:")
+		// console.log(boneData.index)
+		// console.log("parent:")
+		// console.log(bonesData[parentIndex].index)
 		grantSolver.addGrantRotation(bone, _grantResultMap.get(parentIndex), ratio);
 
 	}
 
 	if (ikSolver && boneData.ik) {
 
+		// console.log("ik bone:")
+		// console.log(boneData.index)
+		// console.log(boneData.ik)
 		// @TODO: Updating world matrices every time solving an IK bone is
 		// costly. Optimize if possible.
 		mesh.updateMatrixWorld(true);
@@ -1075,7 +1098,7 @@ function updateOne(mesh, boneIndex, ikSolver, grantSolver) {
 
 			if (_grantResultMap.has(linkIndex)) {
 
-				_grantResultMap.set(linkIndex, _grantResultMap.get(linkIndex).copy(bones[linkIndex].quaternion));
+				_grantResultMap.get(linkIndex).copy(bones[linkIndex].quaternion);
 
 			}
 

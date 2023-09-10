@@ -36,7 +36,8 @@ const api = {
     'show outline': true,
     'show IK bones': false,
     'show rigid bodies': false,
-    'show skeleton': false
+    'show skeleton': false,
+    'auto hide GUI': false,
 };
 const gui = new MMDGui();
 
@@ -51,9 +52,10 @@ Ammo().then( function () {
 
 function init() {
     // Demo files
-    const modelFile = 'models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
-    // const modelFile = 'models/mmd/Sour式初音ミクVer.1.02/Black.pmx';
+    const modelFile = '/models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx';
+    // const modelFile = '/models/mmd/Sour式初/音ミクVer.1.02/Black.pmx';
     api.character = path.basename(modelFile);
+    api.characterFile = modelFile;
 
     const motionFile = 'models/mmd/motions/GimmeGimme_with_emotion.vmd';
     api.motion = path.basename(motionFile);
@@ -76,7 +78,7 @@ function init() {
 
     player.onplay = () => {
         helper.objects.get( character ).physics.reset();
-        gui.gui.hide();
+        if(api["auto hide GUI"]) gui.gui.hide();
     }
     player.onpause = () => {
         gui.gui.show();
@@ -147,7 +149,7 @@ function init() {
 
     helper = new MMDAnimationHelper();
     
-    const loader = new MMDLoader();
+    const loader = new MMDLoader( null, false);
 
     // load stage
     loader.load(stageFile, function ( mesh ) {
@@ -236,6 +238,7 @@ function animate() {
 
 function render() {
     character = globalParams.character;
+    const runtimeCharacter = helper.objects.get( character );
 
     let currTime = player.currentTime
     let delta = currTime - prevTime;
@@ -250,8 +253,8 @@ function render() {
 
         // for time seeking using player control
         if(Math.abs(delta) > 0.1) {
-            helper.objects.get( character ).physics.reset();
-            helper.enable('physics', true);
+            runtimeCharacter.physics.reset();
+            helper.enable('physics', api['physics']);
             console.log('time seeked. physics reset.')
         }
         prevTime = currTime
@@ -264,10 +267,10 @@ function render() {
     }
 
     // stop when motion is finished
-    if(helper.objects.get(character).looped) {
+    if(runtimeCharacter.looped) {
         player.pause();
         player.currentTime = 0.0;
-        helper.objects.get(character).looped = false;
+        runtimeCharacter.looped = false;
     }
 
     effect.render( scene, camera );
