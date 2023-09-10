@@ -39,7 +39,7 @@ class MMDGui {
         const folder = this.gui.addFolder('Files');
         const mmd = this.mmd;
         let pmxDropdowns = this.pmxDropdowns;
-        let modelTextures = this.modelTextures;
+        const modelTextures = mmd.pmxFiles.obj.modelTextures;
 
         const loadCharacter = (url, filename) => {
             mmd.ready = false;
@@ -169,17 +169,17 @@ class MMDGui {
         
         // add folder to avoid ordering problem when change character
         var characterFolder = folder.addFolder('character');
-        var characterDropdown = characterFolder.add(mmd.api, 'character', Object.keys(mmd.pmxFiles.character)).listen().name("model").onChange(value => {
+        var characterDropdown = characterFolder.add(mmd.api, 'character', Object.keys(mmd.pmxFiles.obj.character)).listen().name("model").onChange(value => {
             console.log(value);
-            loadCharacter(mmd.pmxFiles.character[value], value);
+            loadCharacter(mmd.pmxFiles.obj.character[value], value);
         });
         characterFolder.open();
         folder.add(this.guiFn, 'selectChar').name('select character pmx directory...')
 
         var stageFolder = folder.addFolder('stage');
-        var stageDropdown = stageFolder.add(mmd.api, 'stage', mmd.pmxFiles.stage).listen().name("model").onChange(value => {
+        var stageDropdown = stageFolder.add(mmd.api, 'stage', mmd.pmxFiles.obj.stage).listen().name("model").onChange(value => {
             console.log(value);
-            loadStage(mmd.pmxFiles.stage[value], value);
+            loadStage(mmd.pmxFiles.obj.stage[value], value);
         });
         stageFolder.open();
         folder.add(this.guiFn, 'selectStage').name('select stage pmx directory...')
@@ -204,7 +204,7 @@ class MMDGui {
 
         function _makeLoadModelFn(itemType, cb) {
             return async function () {
-                let pmxFilesByType = mmd.pmxFiles[itemType];
+                let pmxFilesByType = mmd.pmxFiles.obj[itemType];
 
                 // load model and textures from unzipped folder
                 let firstKey;
@@ -244,7 +244,7 @@ class MMDGui {
                 cb(pmxFilesByType[firstKey], firstKey);
 
                 // trigger Proxy
-                mmd.pmxFiles[itemType] = pmxFilesByType;
+                mmd.pmxFiles.obj = mmd.pmxFiles.obj;
             }
         }
     }

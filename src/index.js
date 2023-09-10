@@ -15,9 +15,9 @@ import localforage from 'localforage';
 async function getConfig() {
     const pmxFileSaver = {
         set: function (target, key, value, receiver) {
-            localforage.setItem(key, value);
-            console.log(`pmxFiles.${key}`);
-            console.log(value);
+            localforage.setItem('pmxFiles', JSON.stringify(value));
+            console.log(`pmxFiles saved`);
+            console.log(JSON.stringify(value));
             return Reflect.set(...arguments);
         }
     }
@@ -31,21 +31,11 @@ async function getConfig() {
     };
 
     const prevConfig = await localforage.getItem("userConfig");
-    const character = await localforage.getItem("character")
-    const stage = await localforage.getItem("stage")
+    const prevPmxFilesObj = await localforage.getItem("pmxFiles")
 
-    const prevPmxFiles = {character: {}, stage: {}}
-    if (character) {
-        prevPmxFiles.character = character
-    } else {
-        const file = defaultConfig.characterFile
-        prevPmxFiles.character[path.basename(file)] = file
-    }
-    if (stage) {
-        prevPmxFiles.stage = stage
-    } else {
-        const file = defaultConfig.stageFile
-        prevPmxFiles.stage[path.basename(file)] = file
+    const prevPmxFiles = {
+        obj:
+            prevPmxFilesObj ? JSON.parse(prevPmxFilesObj) : { character: {}, stage: {}, modelTextures: {} }
     }
 
     api = new Proxy(prevConfig ? prevConfig : defaultConfig, configSaver);
