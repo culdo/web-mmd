@@ -33,9 +33,16 @@ async function getConfig() {
     const prevConfig = await localforage.getItem("userConfig");
     const prevPmxFilesObj = await localforage.getItem("pmxFiles")
 
+    const defaultPmxFiles = { character: {}, stage: {}, modelTextures: {} }
+
+    let file = defaultConfig.characterFile;
+    defaultPmxFiles.character[path.basename(file)] = file
+
+    file = defaultConfig.stageFile;
+    defaultPmxFiles.stage[path.basename(file)] = file
+
     const prevPmxFiles = {
-        obj:
-            prevPmxFilesObj ? JSON.parse(prevPmxFilesObj) : { character: {}, stage: {}, modelTextures: {} }
+        obj: prevPmxFilesObj ? JSON.parse(prevPmxFilesObj) : defaultPmxFiles
     }
 
     api = new Proxy(prevConfig ? prevConfig : defaultConfig, configSaver);
