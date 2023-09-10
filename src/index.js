@@ -212,7 +212,7 @@ function init() {
 
     helper = new MMDAnimationHelper();
 
-    const loader = new MMDLoader(null, false);
+    const loader = new MMDLoader(null, true);
 
     // load stage
     loader.load(api.stageFile, function (mesh) {
@@ -249,6 +249,7 @@ function init() {
             helper.add(camera, {
                 animation: cameraAnimation
             });
+            helper.enable('cameraAnimation', api["camera motion"]);
 
             ready = true;
             loading.style.display = "none";
