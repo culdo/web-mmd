@@ -327,15 +327,15 @@ function render() {
 
     let currTime = player.currentTime
     // save current Time in browser
-    api["currentTime"] = currTime
     let delta = currTime - prevTime;
-
+    
     if (Math.abs(delta) > 0) {
         // for time seeking using player control
         if (Math.abs(delta) > 0.1) {
             helper.enable('physics', false);
         }
-
+        
+        api["currentTime"] = currTime
         helper.update(delta, currTime);
 
         // for time seeking using player control
