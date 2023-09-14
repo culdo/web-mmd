@@ -37,7 +37,7 @@ class MMDGui {
     }
 
     _guiFile() {
-        const folder = this.gui.addFolder('Files');
+        const folder = this.gui.addFolder('MMD files');
         const mmd = this.mmd;
         let pmxDropdowns = this.pmxDropdowns;
         const modelTextures = mmd.pmxFiles.obj.modelTextures;
@@ -320,7 +320,9 @@ class MMDGui {
         folder.add(this.mmd.api, 'show skeleton').onChange((state) => {
             if (this.mmd.skeletonHelper !== undefined) this.mmd.skeletonHelper.visible = state;
         });
-        folder.add(this.mmd.api, 'auto hide GUI');
+        folder.add(this.mmd.api, 'auto hide GUI').onChange((state) => {
+            if(!this.mmd.player.paused) this.gui.hide();
+        });
         folder.close();
     }
 
