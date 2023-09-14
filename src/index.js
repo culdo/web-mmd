@@ -326,7 +326,6 @@ function render() {
     const runtimeCharacter = helper.objects.get(character);
 
     let currTime = player.currentTime
-    // save current Time in browser
     let delta = currTime - prevTime;
     
     if (Math.abs(delta) > 0) {
@@ -335,7 +334,10 @@ function render() {
             helper.enable('physics', false);
         }
         
+        // save current Time in browser
         api["currentTime"] = currTime
+        
+        // animation updating
         helper.update(delta, currTime);
 
         // for time seeking using player control
