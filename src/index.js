@@ -26,7 +26,6 @@ async function getConfig() {
     const configSaver = {
         set: function (target, key, value) {
             localforage.setItem("userConfig", target);
-            console.log(value);
             return Reflect.set(...arguments);
         }
     };
@@ -71,7 +70,7 @@ async function getConfig() {
     for(const key of newKeys) {
         prevConfig[key] = defaultConfig[key]
     }
-    
+
     api = new Proxy(prevConfig ? prevConfig : defaultConfig, configSaver);
     pmxFiles = new Proxy(prevPmxFiles, pmxFileSaver);
 
