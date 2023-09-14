@@ -32,6 +32,7 @@ class MMDGui {
         this._guiColor();
         this._guiLight();
         this._guiShadow();
+        this._guiRefresh();
         this._guiDebug();
     }
 
@@ -169,7 +170,7 @@ class MMDGui {
             });
             selectFile.click();
         }
-        
+
         // add folder to avoid ordering problem when change character
         var characterFolder = folder.addFolder('character');
         var characterDropdown = characterFolder.add(mmd.api, 'character', Object.keys(mmd.pmxFiles.obj.character)).listen().name("model").onChange(value => {
@@ -219,7 +220,7 @@ class MMDGui {
                 for (const f of this.files) {
                     let relativePath = f.webkitRelativePath;
                     const resourcePath = relativePath.split("/").slice(1).join("/")
-                    
+
                     await localforage.setItem(resourcePath, f)
                     const blob = await localforage.getItem(resourcePath)
                     let url = URL.createObjectURL(blob);
@@ -285,6 +286,20 @@ class MMDGui {
                 color.setHex(value);
             }
         }
+    }
+
+    _guiRefresh() {
+        const folder = this.gui.addFolder('Need Refresh');
+        folder.add(this.mmd.api, 'enable SDEF').onChange((state) => {
+            location.reload()
+        })
+        folder.add({
+            'clear config': () => {
+                localforage.clear();
+                location.reload();
+            }
+        }, 'clear config')
+        folder.close();
     }
 
     _guiDebug() {

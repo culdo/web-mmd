@@ -99,6 +99,8 @@ const defaultConfig = {
     'cameraFile': 'models/mmd/cameras/GimmexGimme.vmd',
     'stageFile': 'models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx',
     'musicURL': 'https://www.youtube.com/watch?v=ERo-sPa1a5g',
+    //player
+    'currentTime': 0.0,
     // basic
     'camera motion': true,
     'physics': true,
@@ -109,6 +111,8 @@ const defaultConfig = {
     'Hemisphere sky': 0x666666,
     'Hemisphere ground': 0x482e2e,
     'Directional': 0xffffff,
+    // need refresh
+    'enable SDEF': true,
     // debug
     'show FPS': false,
     'show outline': true,
@@ -137,6 +141,8 @@ function init() {
     document.body.appendChild(container);
 
     loadMusicFromYT(api.musicURL);
+
+    player.currentTime = api["currentTime"]
     player.volume = 0.5;
 
     player.onplay = () => {
@@ -212,7 +218,7 @@ function init() {
 
     helper = new MMDAnimationHelper();
 
-    const loader = new MMDLoader(null, true);
+    const loader = new MMDLoader(null, api["enable SDEF"]);
 
     // load stage
     loader.load(api.stageFile, function (mesh) {
@@ -313,6 +319,8 @@ function render() {
     const runtimeCharacter = helper.objects.get(character);
 
     let currTime = player.currentTime
+    // save current Time in browser
+    api["currentTime"] = currTime
     let delta = currTime - prevTime;
 
     if (Math.abs(delta) > 0) {

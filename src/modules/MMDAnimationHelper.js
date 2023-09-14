@@ -45,8 +45,7 @@ class MMDAnimationHelper {
 		this.configuration = {
 			sync: params.sync !== undefined ? params.sync : true,
 			afterglow: params.afterglow !== undefined ? params.afterglow : 0.0,
-			resetPhysicsOnLoop: params.resetPhysicsOnLoop !== undefined ? params.resetPhysicsOnLoop : true,
-			pmxAnimation: params.pmxAnimation !== undefined ? params.pmxAnimation : true
+			resetPhysicsOnLoop: params.resetPhysicsOnLoop !== undefined ? params.resetPhysicsOnLoop : true
 		};
 
 		this.enabled = {
@@ -220,8 +219,7 @@ class MMDAnimationHelper {
 		mesh.updateMatrixWorld(true);
 
 		// PMX animation system special path
-		if (this.configuration.pmxAnimation &&
-			mesh.geometry.userData.MMD && mesh.geometry.userData.MMD.format === 'pmx') {
+		if (mesh.geometry.userData.MMD && mesh.geometry.userData.MMD.format === 'pmx') {
 
 			const sortedBonesData = this._sortBoneDataArray(mesh.geometry.userData.MMD.bones.slice());
 			const ikSolver = params.ik !== false ? this._createCCDIKSolver(mesh) : null;
