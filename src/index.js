@@ -258,8 +258,7 @@ function init() {
         scene.add(character);
 
         helper.add(character, {
-            animation: mmd.animation,
-            physics: api["physics"]
+            animation: mmd.animation
         });
 
         // load camera
@@ -282,6 +281,7 @@ function init() {
 
         physicsHelper = helper.objects.get(character).physics.createHelper();
         physicsHelper.visible = api['show rigid bodies'];
+        helper.enable('physics', api['physics']);
         scene.add(physicsHelper);
 
         const skeletonHelper = new THREE.SkeletonHelper(character);
@@ -332,6 +332,11 @@ function render() {
     const runtimeCharacter = helper.objects.get(character);
 
     let currTime = player.currentTime
+    // player has a bug that sometime jump to end(duration)
+    // so we just skip that frame
+    if(currTime == player.duration) {
+        return
+    }
     let delta = currTime - prevTime;
     
     if (Math.abs(delta) > 0) {
@@ -357,14 +362,18 @@ function render() {
     } else if (api['physics']) {
 
         let delta = clock.getDelta()
-        helper.objects.get(character).physics.update(delta);
+        runtimeCharacter.physics.update(delta);
 
     }
 
-    // stop when motion is finished
+    // stop when motion is finished then fix physics
     if (runtimeCharacter.looped) {
         player.pause();
         player.currentTime = 0.0;
+
+        runtimeCharacter.physics.reset();
+        runtimeCharacter.physics.update(0.1)
+
         runtimeCharacter.looped = false;
     }
 
