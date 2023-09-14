@@ -538,8 +538,7 @@ class MMDAnimationHelper {
 			this._saveBones(mesh);
 
 			// PMX animation system special path
-			if (this.configuration.pmxAnimation &&
-				mesh.geometry.userData.MMD && mesh.geometry.userData.MMD.format === 'pmx') {
+			if (mesh.geometry.userData.MMD && mesh.geometry.userData.MMD.format === 'pmx') {
 
 				if (!objects.sortedBonesData) objects.sortedBonesData = this._sortBoneDataArray(mesh.geometry.userData.MMD.bones.slice());
 
