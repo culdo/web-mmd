@@ -56,18 +56,20 @@ async function getConfig() {
             await parseBlob(value)
         }
         prevPmxFilesObj = obj;
+
+        // update prev version config already saved in browser
+        const aKeys = Object.keys(prevConfig)
+        const bKeys = Object.keys(defaultConfig)
+        let newKeys = bKeys.filter(x => !aKeys.includes(x));
+        for(const key of newKeys) {
+            prevConfig[key] = defaultConfig[key]
+        }
     }
     const prevPmxFiles = {
         obj: prevPmxFilesObj ? prevPmxFilesObj : defaultPmxFiles
     }
 
-    // update prev version config already saved in browser
-    const aKeys = Object.keys(prevConfig)
-    const bKeys = Object.keys(defaultConfig)
-    let newKeys = bKeys.filter(x => !aKeys.includes(x));
-    for(const key of newKeys) {
-        prevConfig[key] = defaultConfig[key]
-    }
+    
 
     api = new Proxy(prevConfig ? prevConfig : defaultConfig, configSaver);
     pmxFiles = new Proxy(prevPmxFiles, pmxFileSaver);
@@ -104,6 +106,7 @@ const defaultConfig = {
     'musicURL': 'https://www.youtube.com/watch?v=ERo-sPa1a5g',
     //player
     'currentTime': 0.0,
+    'volume': 0.2,
     // basic
     'camera motion': true,
     'physics': true,
@@ -145,8 +148,15 @@ function init() {
 
     loadMusicFromYT(api.musicURL);
 
-    player.currentTime = api["currentTime"]
-    player.volume = 0.5;
+    player.currentTime = api["currentTime"];
+    player.volume = api['volume'];
+
+    player.onvolumechange = () => {
+        api['volume'] = player.volume;
+        if(player.muted) {
+            api['volume'] = 0.0;
+        }
+    }
 
     player.onplay = () => {
         helper.objects.get(character).physics.reset();
