@@ -270,7 +270,7 @@ function init() {
             helper.enable('cameraAnimation', api["camera motion"]);
 
             ready = true;
-            loading.style.display = "none";
+            overlay.style.display = "none";
 
 
         }, onProgress, null);

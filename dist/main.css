@@ -58,7 +58,6 @@ a, button, input, select {
 
 #overlay {
 	position: absolute;
-	font-size: 16px;
 	z-index: 2;
 	top: 0;
 	left: 0;
@@ -68,7 +67,7 @@ a, button, input, select {
 	align-items: center;
 	justify-content: center;
 	flex-direction: column;
-	background: rgba(0,0,0,0.7);
+	background: rgba(0,0,0,0.1);
 }
 
 	#overlay button {
@@ -103,13 +102,5 @@ a, button, input, select {
 }
 
 #loading {
-	position: absolute; 
-	margin-right: auto;
-	margin-left: auto;
-	left: 0;
-	right: 0;
-	top: 0;
-	bottom: 0;
-	margin-top: 30%;
-	text-align: center;
+	/* font-size: 16px; */
 }

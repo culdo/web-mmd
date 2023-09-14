@@ -60,7 +60,7 @@ class MMDGui {
                 };
             }
             // load character
-            loading.style.display = 'block';
+            overlay.style.display = 'flex';
             mmd.loader.loadWithAnimation(url, mmd.api.motionFile, function (obj) {
                 console.log("loading character...")
 
@@ -91,7 +91,7 @@ class MMDGui {
                 mmd.helper.objects.get(character).physics.reset();
                 console.log("loaded reset")
                 mmd.ready = true;
-                loading.style.display = 'none';
+                overlay.style.display = 'none';
 
             }, onProgress, null, params)
             mmd.api.character = filename;
@@ -113,7 +113,7 @@ class MMDGui {
                 modelTextures: modelTextures[filename],
             };
             // load stage
-            loading.style.display = 'block';
+            overlay.style.display = 'flex';
             mmd.loader.load(url, function (mesh) {
                 console.log("load stage");
 
@@ -122,7 +122,7 @@ class MMDGui {
 
                 mmd.scene.add(mesh);
                 mmd.stage = mesh;
-                loading.style.display = 'none';
+                overlay.style.display = 'none';
             }, onProgress, null, params);
             mmd.api.stage = filename;
             mmd.api.stageFile = url;
