@@ -64,6 +64,14 @@ async function getConfig() {
         obj: prevPmxFilesObj ? prevPmxFilesObj : defaultPmxFiles
     }
 
+    // update prev version config already saved in browser
+    const aKeys = Object.keys(prevConfig)
+    const bKeys = Object.keys(defaultConfig)
+    let newKeys = bKeys.filter(x => !aKeys.includes(x));
+    for(const key of newKeys) {
+        prevConfig[key] = defaultConfig[key]
+    }
+    
     api = new Proxy(prevConfig ? prevConfig : defaultConfig, configSaver);
     pmxFiles = new Proxy(prevPmxFiles, pmxFileSaver);
 

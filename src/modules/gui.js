@@ -294,11 +294,11 @@ class MMDGui {
             location.reload()
         })
         folder.add({
-            'clear config': () => {
+            'reset config': () => {
                 localforage.clear();
                 location.reload();
             }
-        }, 'clear config')
+        }, 'reset config')
         folder.close();
     }
 
