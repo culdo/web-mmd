@@ -17,8 +17,6 @@ async function getConfig() {
     const pmxFileSaver = {
         set: function (target, key, value, receiver) {
             localforage.setItem('pmxFiles', JSON.stringify(value));
-            console.log(`pmxFiles saved`);
-            console.log(JSON.stringify(value));
             return Reflect.set(...arguments);
         }
     }
@@ -81,8 +79,6 @@ async function getConfig() {
         api.stage = path.basename(api.stageFile);
     } else {
         api.characterFile = pmxFiles.obj.character[api.character]
-        console.log(pmxFiles.obj)
-        console.log(api)
     }
 }
 
@@ -312,13 +308,13 @@ function onWindowResize() {
 
 function animate() {
 
-    requestAnimationFrame(animate);
-
     if (ready && globalParams.ready) {
         stats.begin();
         render();
         stats.end();
     }
+
+    requestAnimationFrame(animate);
 }
 
 function render() {
@@ -336,7 +332,7 @@ function render() {
         
         // save current Time in browser
         api["currentTime"] = currTime
-        
+
         // animation updating
         helper.update(delta, currTime);
 
