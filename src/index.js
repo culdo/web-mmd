@@ -14,30 +14,15 @@ import localforage from 'localforage';
 // for debug
 // localforage.clear();
 async function getConfig() {
-    const pmxFileSaver = {
-        set: function (target, key, value, receiver) {
-            localforage.setItem('pmxFiles', JSON.stringify(value));
-            return Reflect.set(...arguments);
-        }
-    }
 
     const configSaver = {
         set: function (target, key, value) {
-            localforage.setItem("userConfig", target);
+            localforage.setItem("userConfig", JSON.stringify(target));
             return Reflect.set(...arguments);
         }
     };
 
-    const prevConfig = await localforage.getItem("userConfig");
-    let prevPmxFilesObj = await localforage.getItem("pmxFiles")
-
-    const defaultPmxFiles = { character: {}, stage: {}, modelTextures: {} }
-
-    let file = defaultConfig.characterFile;
-    defaultPmxFiles.character[path.basename(file)] = file
-
-    file = defaultConfig.stageFile;
-    defaultPmxFiles.stage[path.basename(file)] = file
+    const prevConfigJSON = await localforage.getItem("userConfig");
 
     async function parseBlob(obj) {
         for(const [key2, value2] of Object.entries(obj)) {
@@ -50,38 +35,53 @@ async function getConfig() {
         }
     }
 
-    if(prevPmxFilesObj) {
-        let obj = JSON.parse(prevPmxFilesObj)
-        for(const [key, value] of Object.entries(obj)) {
-            await parseBlob(value)
-        }
-        prevPmxFilesObj = obj;
+    let userConfig = {};
 
+    // if we have saved user config
+    if(prevConfigJSON) {
+        // forward compatability
+        if(typeof prevConfigJSON === "string") {
+            userConfig = JSON.parse(prevConfigJSON);
+        }
+        // transfer old version pmxFiles
+        const oldPmxFiles = await localforage.getItem("pmxFiles");
+        if(oldPmxFiles) {
+            userConfig["pmxFiles"] = oldPmxFiles;
+            await localforage.removeItem("pmxFiles");
+        }
+        
         // update prev version config already saved in browser
-        const aKeys = Object.keys(prevConfig)
+        const aKeys = Object.keys(userConfig)
         const bKeys = Object.keys(defaultConfig)
         let newKeys = bKeys.filter(x => !aKeys.includes(x));
         for(const key of newKeys) {
-            prevConfig[key] = defaultConfig[key]
+            userConfig[key] = defaultConfig[key]
         }
-    }
-    const prevPmxFiles = {
-        obj: prevPmxFilesObj ? prevPmxFilesObj : defaultPmxFiles
-    }
 
-    
+        for(const [key, value] of Object.entries(userConfig.pmxFiles)) {
+            await parseBlob(value)
+        }
 
-    api = new Proxy(prevConfig ? prevConfig : defaultConfig, configSaver);
-    pmxFiles = new Proxy(prevPmxFiles, pmxFileSaver);
+        userConfig.characterFile = userConfig.pmxFiles.character[userConfig.character]
 
-    if(!prevPmxFilesObj) {
-        api.character = path.basename(api.characterFile);
-        api.motion = path.basename(api.motionFile);
-        api.camera = path.basename(api.cameraFile);
-        api.stage = path.basename(api.stageFile);
+    // if we not have saved user config
     } else {
-        api.characterFile = pmxFiles.obj.character[api.character]
+        userConfig = {...defaultConfig}
+
+        let file = defaultConfig.characterFile;
+        userConfig.pmxFiles.character[path.basename(file)] = file
+
+        file = defaultConfig.stageFile;
+        userConfig.pmxFiles.stage[path.basename(file)] = file
+        
+        userConfig.character = path.basename(defaultConfig.characterFile);
+        userConfig.motion = path.basename(defaultConfig.motionFile);
+        userConfig.camera = path.basename(defaultConfig.cameraFile);
+        userConfig.stage = path.basename(defaultConfig.stageFile);
     }
+    
+    api = new Proxy(userConfig, configSaver);
+
 }
 
 let stats;
@@ -95,7 +95,7 @@ let ready = false;
 let timeoutID;
 let prevTime = 0.0;
 
-let api, pmxFiles;
+let api;
 
 const defaultConfig = {
     // files
@@ -104,6 +104,8 @@ const defaultConfig = {
     'cameraFile': 'models/mmd/cameras/GimmexGimme.vmd',
     'stageFile': 'models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx',
     'musicURL': 'https://www.youtube.com/watch?v=ERo-sPa1a5g',
+    //pmx files
+    'pmxFiles': { character: {}, stage: {}, modelTextures: {} },
     //player
     'currentTime': 0.0,
     'volume': 0.2,
@@ -126,6 +128,9 @@ const defaultConfig = {
     'show rigid bodies': false,
     'show skeleton': false,
     'auto hide GUI': false,
+    // preset
+    'preset': "Default",
+    'presets': {}
 }
 
 const gui = new MMDGui();
@@ -246,7 +251,7 @@ function init() {
     if(api.characterFile.startsWith("blob:")) {
         params = {
             modelExtension: path.extname(api.character).slice(1),
-            modelTextures: pmxFiles.obj.modelTextures[api.character],
+            modelTextures: api.pmxFiles.modelTextures[api.character],
         };
     }
 
@@ -289,7 +294,7 @@ function init() {
         scene.add(skeletonHelper);
 
         globalParams = {
-            api, pmxFiles, loader, camera, player, helper, scene, character, stage,
+            api, loader, camera, player, helper, scene, character, stage,
             effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight
         };
         globalParams.ready = true;

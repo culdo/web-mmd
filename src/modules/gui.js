@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import localforage from 'localforage';
 import path from 'path-browserify';
-import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+import { GUI } from 'lil-gui';
 import { onProgress, loadMusicFromYT } from './utils';
 
 class MMDGui {
@@ -34,13 +34,82 @@ class MMDGui {
         this._guiShadow();
         this._guiRefresh();
         this._guiDebug();
+        this._guiPreset();
+    }
+
+    _guiPreset() {
+        const mmd = this.mmd
+
+        const folder = this.gui.addFolder('Preset');
+
+        const loadPreset = (value) => {
+            mmd.api.preset = value;
+            this.gui.load(mmd.api.presets[value]);
+        }
+
+        const updateDropdown = () => {
+            if(mmd.api.preset == "Default" ) {
+                deleteBt.disable();
+            } else {
+                deleteBt.enable();
+            }
+            presetDropdown = presetDropdown
+            .options(Object.keys(mmd.api.presets))
+            .listen()
+            .onChange(loadPreset);
+        }
+
+        const presetFn = {
+            savePreset: () => {
+                mmd.api.presets[mmd.api.preset] = this.gui.save();
+                // trigger Proxy
+                mmd.api.presets = mmd.api.presets;
+            },
+            saveAsNewPreset: () => {
+                let newName = prompt("New preset name:");
+                if(newName) {
+                    mmd.api.preset = newName;
+                    presetFn.savePreset();
+                    updateDropdown();
+                }
+            },
+            deletePreset: () => {
+                if(confirm("Are you sure?")) {
+                    delete mmd.api.presets[mmd.api.preset]
+                    // trigger Proxy
+                    mmd.api.presets = mmd.api.presets;
+                    
+                    const presetNames = Object.keys(mmd.api.presets);
+                    loadPreset(presetNames[presetNames.length - 1]);
+                    updateDropdown();
+                }
+            }
+        }
+
+        if (Object.keys(mmd.api.presets).length < 1) {
+            presetFn.savePreset();
+        }
+        
+        const presetsFolder = folder.addFolder('Presets');
+        let presetDropdown = presetsFolder.add(
+            mmd.api, 
+            'preset', 
+            Object.keys(mmd.api.presets)
+        )
+        
+        folder.add(presetFn, 'savePreset').name('Save preset...');
+        folder.add(presetFn, 'saveAsNewPreset').name('Save as new preset...');
+        const deleteBt = folder.add(presetFn, 'deletePreset').name('Delete current preset...');
+
+        // init dropdown
+        updateDropdown();
     }
 
     _guiFile() {
         const folder = this.gui.addFolder('MMD files');
         const mmd = this.mmd;
         let pmxDropdowns = this.pmxDropdowns;
-        const modelTextures = mmd.pmxFiles.obj.modelTextures;
+        const modelTextures = mmd.api.pmxFiles.modelTextures;
 
         const loadCharacter = (url, filename) => {
             mmd.ready = false;
@@ -173,17 +242,17 @@ class MMDGui {
 
         // add folder to avoid ordering problem when change character
         var characterFolder = folder.addFolder('character');
-        var characterDropdown = characterFolder.add(mmd.api, 'character', Object.keys(mmd.pmxFiles.obj.character)).listen().name("model").onChange(value => {
+        var characterDropdown = characterFolder.add(mmd.api, 'character', Object.keys(mmd.api.pmxFiles.character)).listen().name("model").onChange(value => {
             console.log(value);
-            loadCharacter(mmd.pmxFiles.obj.character[value], value);
+            loadCharacter(mmd.api.pmxFiles.character[value], value);
         });
         characterFolder.open();
         folder.add(this.guiFn, 'selectChar').name('select character pmx directory...')
 
         var stageFolder = folder.addFolder('stage');
-        var stageDropdown = stageFolder.add(mmd.api, 'stage', mmd.pmxFiles.obj.stage).listen().name("model").onChange(value => {
+        var stageDropdown = stageFolder.add(mmd.api, 'stage', mmd.api.pmxFiles.stage).listen().name("model").onChange(value => {
             console.log(value);
-            loadStage(mmd.pmxFiles.obj.stage[value], value);
+            loadStage(mmd.api.pmxFiles.stage[value], value);
         });
         stageFolder.open();
         folder.add(this.guiFn, 'selectStage').name('select stage pmx directory...')
@@ -208,7 +277,7 @@ class MMDGui {
 
         function _makeLoadModelFn(itemType, cb) {
             return async function () {
-                let pmxFilesByType = mmd.pmxFiles.obj[itemType];
+                let pmxFilesByType = mmd.api.pmxFiles[itemType];
 
                 // load model and textures from unzipped folder
                 let firstKey;
@@ -248,7 +317,7 @@ class MMDGui {
                 cb(pmxFilesByType[firstKey], firstKey);
 
                 // trigger Proxy
-                mmd.pmxFiles.obj = mmd.pmxFiles.obj;
+                mmd.api.pmxFiles = mmd.api.pmxFiles;
             }
         }
     }
@@ -321,7 +390,7 @@ class MMDGui {
             if (this.mmd.skeletonHelper !== undefined) this.mmd.skeletonHelper.visible = state;
         });
         folder.add(this.mmd.api, 'auto hide GUI').onChange((state) => {
-            if(!this.mmd.player.paused) this.gui.hide();
+            if (!this.mmd.player.paused) this.gui.hide();
         });
         folder.close();
     }
