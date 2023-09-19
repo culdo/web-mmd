@@ -18,18 +18,25 @@ async function getConfig() {
     const configSaver = {
         set: function (target, key, value) {
             const result = Reflect.set(...arguments)
-            localforage.setItem("userConfig", JSON.stringify(target));
+            if (key != 'preset') {
+                localStorage.setItem(target.preset, JSON.stringify(target));
+            } else {
+                localStorage.setItem("currentPreset", target.preset);    
+            }
+            if (key == 'presets') {
+                localStorage.setItem("presets", JSON.stringify(value));
+            }
             return result;
         }
     };
 
-    const prevConfigJSON = await localforage.getItem("userConfig");
+    const currentPreset = localStorage.getItem("currentPreset");
 
     async function parseBlob(obj) {
-        for(const [key2, value2] of Object.entries(obj)) {
-            if(value2 instanceof Object) {
+        for (const [key2, value2] of Object.entries(obj)) {
+            if (value2 instanceof Object) {
                 await parseBlob(value2)
-            }else if(value2.startsWith("blob:")) {
+            } else if (value2.startsWith("blob:")) {
                 let blob = await localforage.getItem(key2);
                 obj[key2] = URL.createObjectURL(blob)
             }
@@ -39,37 +46,29 @@ async function getConfig() {
     let userConfig = {};
 
     // if we have saved user config
-    if(prevConfigJSON) {
-        // forward compatability
-        if(typeof prevConfigJSON === "string") {
-            userConfig = JSON.parse(prevConfigJSON);
-        }
-        // transfer old version pmxFiles
-        const oldPmxFiles = await localforage.getItem("pmxFiles");
-        if(oldPmxFiles) {
-            userConfig["pmxFiles"] = oldPmxFiles;
-            await localforage.removeItem("pmxFiles");
-        }
-        
+    if (currentPreset) {
+        userConfig = JSON.parse(localStorage.getItem(currentPreset));
+        userConfig.presets = JSON.parse(localStorage.getItem("presets"));
+
         // update prev version config already saved in browser
         const aKeys = Object.keys(userConfig)
         const bKeys = Object.keys(defaultConfig)
         let newKeys = bKeys.filter(x => !aKeys.includes(x));
-        for(const key of newKeys) {
+        for (const key of newKeys) {
             userConfig[key] = defaultConfig[key]
         }
 
-        for(const [key, value] of Object.entries(userConfig.pmxFiles)) {
+        for (const [key, value] of Object.entries(userConfig.pmxFiles)) {
             await parseBlob(value)
         }
 
-    // if we not have saved user config
+        // if we not have saved user config
     } else {
-        userConfig = {...defaultConfig}
+        userConfig = { ...defaultConfig }
 
         let file = userConfig.characterFile;
         userConfig.pmxFiles.character[path.basename(file)] = file
-    
+
         file = userConfig.stageFile;
         userConfig.pmxFiles.stage[path.basename(file)] = file
     }
@@ -78,7 +77,7 @@ async function getConfig() {
     userConfig.motion = path.basename(userConfig.motionFile);
     userConfig.camera = path.basename(userConfig.cameraFile);
     userConfig.stage = path.basename(userConfig.stageFile);
-    
+
     api = new Proxy(userConfig, configSaver);
 
 }
@@ -157,7 +156,7 @@ function init() {
 
     player.onvolumechange = () => {
         api['volume'] = player.volume;
-        if(player.muted) {
+        if (player.muted) {
             api['volume'] = 0.0;
         }
     }
@@ -247,7 +246,7 @@ function init() {
     }, onProgress, null)
 
     let params = null;
-    if(api.characterFile.startsWith("blob:")) {
+    if (api.characterFile.startsWith("blob:")) {
         params = {
             modelExtension: path.extname(api.character).slice(1),
             modelTextures: api.pmxFiles.modelTextures[api.character],
@@ -336,13 +335,13 @@ function render() {
     let currTime = player.currentTime
     // player has a bug that sometime jump to end(duration)
     // so we just skip that frame
-    if(currTime == player.duration) {
+    if (currTime == player.duration) {
         return
     }
     let delta = currTime - prevTime;
 
     saveCurrTime(api);
-    
+
     if (Math.abs(delta) > 0) {
         // for time seeking using player control
         if (Math.abs(delta) > 0.1) {

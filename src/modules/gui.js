@@ -44,7 +44,7 @@ class MMDGui {
 
         const loadPreset = (value) => {
             mmd.api.preset = value;
-            this.gui.load(mmd.api.presets[value]);
+            location.reload();
         }
 
         const updateDropdown = () => {
@@ -365,6 +365,7 @@ class MMDGui {
         folder.add({
             'reset config': () => {
                 localforage.clear();
+                localStorage.clear();
                 location.reload();
             }
         }, 'reset config')
