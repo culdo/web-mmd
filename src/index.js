@@ -64,6 +64,8 @@ async function getConfig() {
 
         // if we not have saved user config
     } else {
+        localStorage.setItem("currentPreset", defaultConfig.preset);
+         
         userConfig = { ...defaultConfig }
 
         let file = userConfig.characterFile;
