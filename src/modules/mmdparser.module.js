@@ -10654,15 +10654,8 @@ Parser.prototype.parsePmx = function (buffer, leftToRight) {
 				const cr1Y = (p.skinC[1] + r1Y) * 0.5;
 				const cr1Z = (p.skinC[2] + r1Z) * 0.5;
 				
-				p.skinR0 = []
-				p.skinR0.push(cr0X);
-				p.skinR0.push(cr0Y);
-				p.skinR0.push(cr0Z);
-				
-				p.skinR1 = []
-				p.skinR1.push(cr1X);
-				p.skinR1.push(cr1Y);
-				p.skinR1.push(cr1Z);
+				p.skinR0 = [cr0X, cr0Y, cr0Z]
+				p.skinR1 = [cr1X, cr1Y, cr1Z]
 
 
 			} else {
