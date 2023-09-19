@@ -17,8 +17,9 @@ async function getConfig() {
 
     const configSaver = {
         set: function (target, key, value) {
+            const result = Reflect.set(...arguments)
             localforage.setItem("userConfig", JSON.stringify(target));
-            return Reflect.set(...arguments);
+            return result;
         }
     };
 
@@ -62,23 +63,21 @@ async function getConfig() {
             await parseBlob(value)
         }
 
-        userConfig.characterFile = userConfig.pmxFiles.character[userConfig.character]
-
     // if we not have saved user config
     } else {
         userConfig = {...defaultConfig}
 
-        let file = defaultConfig.characterFile;
+        let file = userConfig.characterFile;
         userConfig.pmxFiles.character[path.basename(file)] = file
-
-        file = defaultConfig.stageFile;
+    
+        file = userConfig.stageFile;
         userConfig.pmxFiles.stage[path.basename(file)] = file
-        
-        userConfig.character = path.basename(defaultConfig.characterFile);
-        userConfig.motion = path.basename(defaultConfig.motionFile);
-        userConfig.camera = path.basename(defaultConfig.cameraFile);
-        userConfig.stage = path.basename(defaultConfig.stageFile);
     }
+
+    userConfig.character = path.basename(userConfig.characterFile);
+    userConfig.motion = path.basename(userConfig.motionFile);
+    userConfig.camera = path.basename(userConfig.cameraFile);
+    userConfig.stage = path.basename(userConfig.stageFile);
     
     api = new Proxy(userConfig, configSaver);
 
