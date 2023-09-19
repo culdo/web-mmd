@@ -7,7 +7,7 @@ import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { MMDLoader } from './modules/MMDLoader.js';
 import { MMDAnimationHelper } from './modules/MMDAnimationHelper.js';
 import { MMDGui } from './modules/gui.js'
-import { onProgress, loadMusicFromYT } from './modules/utils.js'
+import { onProgress, loadMusicFromYT, saveCurrTime } from './modules/utils.js'
 import path from 'path-browserify';
 import localforage from 'localforage';
 
@@ -314,8 +314,6 @@ function onWindowResize() {
 
 }
 
-//
-
 function animate() {
 
     if (ready && globalParams.ready) {
@@ -338,15 +336,14 @@ function render() {
         return
     }
     let delta = currTime - prevTime;
+
+    saveCurrTime(api);
     
     if (Math.abs(delta) > 0) {
         // for time seeking using player control
         if (Math.abs(delta) > 0.1) {
             helper.enable('physics', false);
         }
-        
-        // save current Time in browser
-        api["currentTime"] = currTime
 
         // animation updating
         helper.update(delta, currTime);

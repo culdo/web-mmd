@@ -158,4 +158,15 @@ const parseResponse = (id, playerResponse, decsig) => {
     return { stream, adaptive, details: playerResponse.videoDetails, playerResponse }
 }
 
-export {onProgress, loadMusicFromYT}
+let _currTimePrevUpdate = 0;
+function saveCurrTime(api) {
+    let now = Date.now();
+    // update current time every one secs
+    if(now - _currTimePrevUpdate < 1000) {
+        // save current Time in browser
+        api["currentTime"] = currTime;
+        _currTimePrevUpdate = now;
+    }
+}
+
+export {onProgress, loadMusicFromYT, saveCurrTime}
