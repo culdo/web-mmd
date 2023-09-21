@@ -32,7 +32,6 @@ class MMDGui {
         this._guiColor();
         this._guiLight();
         this._guiShadow();
-        this._guiRefresh();
         this._guiDebug();
         this._guiPreset();
     }
@@ -83,6 +82,10 @@ class MMDGui {
                     loadPreset(presetNames[presetNames.length - 1]);
                     updateDropdown();
                 }
+            },
+            resetPreset: () => {
+                Object.assign(mmd.api, mmd.defaultConfig);
+                location.reload();
             }
         }
 
@@ -97,7 +100,7 @@ class MMDGui {
             Object.keys(mmd.api.presets)
         )
         
-        folder.add(presetFn, 'savePreset').name('Save preset...');
+        folder.add(presetFn, 'resetPreset').name('Reset current preset...');
         folder.add(presetFn, 'saveAsNewPreset').name('Save as new preset...');
         const deleteBt = folder.add(presetFn, 'deletePreset').name('Delete current preset...');
 
@@ -357,19 +360,20 @@ class MMDGui {
         }
     }
 
-    _guiRefresh() {
-        const folder = this.gui.addFolder('Need Refresh');
+    _guiRefresh(parentFolder) {
+        const folder = parentFolder.addFolder('Need Refresh');
         folder.add(this.mmd.api, 'enable SDEF').onChange((state) => {
             location.reload()
         })
         folder.add({
-            'reset config': () => {
-                localforage.clear();
-                localStorage.clear();
-                location.reload();
+            'clear localStorage': () => {
+                if(confirm("Be carful!! You will lost all your Models files、Presets...etc.")) {
+                    localforage.clear();
+                    localStorage.clear();
+                    location.reload();
+                }
             }
-        }, 'reset config')
-        folder.close();
+        }, 'clear localStorage')
     }
 
     _guiDebug() {
@@ -393,6 +397,8 @@ class MMDGui {
         folder.add(this.mmd.api, 'auto hide GUI').onChange((state) => {
             if (!this.mmd.player.paused) this.gui.hide();
         });
+        this._guiRefresh(folder);
+
         folder.close();
     }
 

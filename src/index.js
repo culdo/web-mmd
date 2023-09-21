@@ -294,7 +294,7 @@ function init() {
         scene.add(skeletonHelper);
 
         globalParams = {
-            api, loader, camera, player, helper, scene, character, stage,
+            api, defaultConfig, loader, camera, player, helper, scene, character, stage,
             effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight
         };
         globalParams.ready = true;
