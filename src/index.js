@@ -127,7 +127,7 @@ const defaultConfig = {
     'show IK bones': false,
     'show rigid bodies': false,
     'show skeleton': false,
-    'auto hide GUI': false,
+    'auto hide GUI': true,
     // preset
     'preset': "Default",
     'presets': {}
