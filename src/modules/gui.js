@@ -236,6 +236,7 @@ class MMDGui {
                         animation: mmdAnimation,
                         physics: true
                     });
+                    mmd.runTimeCharacter = mmd.helper.objects.get(character);
 
                 }, onProgress, null);
                 mmd.api.motion = filename;
