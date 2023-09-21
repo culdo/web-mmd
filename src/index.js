@@ -96,6 +96,7 @@ let timeoutID;
 let prevTime = 0.0;
 
 let api;
+let runtimeCharacter;
 
 const defaultConfig = {
     // files
@@ -164,7 +165,7 @@ function init() {
     }
 
     player.onplay = () => {
-        helper.objects.get(character).physics.reset();
+        runtimeCharacter.physics.reset();
         if (api["auto hide GUI"]) gui.gui.hide();
     }
     player.onpause = () => {
@@ -265,6 +266,7 @@ function init() {
         helper.add(character, {
             animation: mmd.animation
         });
+        runtimeCharacter = helper.objects.get(character)
 
         // load camera
         loader.loadAnimation(api.cameraFile, camera, function (cameraAnimation) {
@@ -280,11 +282,11 @@ function init() {
 
         }, onProgress, null);
 
-        ikHelper = helper.objects.get(character).ikSolver.createHelper();
+        ikHelper = runtimeCharacter.ikSolver.createHelper();
         ikHelper.visible = api['show IK bones'];
         scene.add(ikHelper);
 
-        physicsHelper = helper.objects.get(character).physics.createHelper();
+        physicsHelper = runtimeCharacter.physics.createHelper();
         physicsHelper.visible = api['show rigid bodies'];
         helper.enable('physics', api['physics']);
         scene.add(physicsHelper);
@@ -295,12 +297,12 @@ function init() {
 
         globalParams = {
             api, defaultConfig, loader, camera, player, helper, scene, character, stage,
-            effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight
+            effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter
         };
         globalParams.ready = true;
         gui.initGui(globalParams);
 
-        helper.objects.get(character).physics.reset();
+        runtimeCharacter.physics.reset();
 
     }, onProgress, null, params);
 
@@ -331,8 +333,6 @@ function animate() {
 }
 
 function render() {
-    character = globalParams.character;
-    const runtimeCharacter = helper.objects.get(character);
 
     let currTime = player.currentTime
     // player has a bug that sometime jump to end(duration)

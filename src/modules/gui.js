@@ -116,7 +116,7 @@ class MMDGui {
 
         const loadCharacter = (url, filename) => {
             mmd.ready = false;
-            mmd.helper.objects.get(mmd.character).mixer.uncacheRoot(mmd.character);
+            mmd.runTimeCharacter.mixer.uncacheRoot(mmd.character);
             mmd.scene.remove(mmd.character);
             mmd.scene.remove(mmd.ikHelper);
             mmd.scene.remove(mmd.physicsHelper);
@@ -145,12 +145,13 @@ class MMDGui {
                     animation: obj.animation,
                     physics: true
                 });
+                mmd.runTimeCharacter = mmd.helper.objects.get(character)
 
-                mmd.ikHelper = mmd.helper.objects.get(character).ikSolver.createHelper();
+                mmd.ikHelper = mmd.runTimeCharacter.ikSolver.createHelper();
                 mmd.ikHelper.visible = mmd.api["show IK bones"];
                 mmd.scene.add(mmd.ikHelper);
 
-                mmd.physicsHelper = mmd.helper.objects.get(character).physics.createHelper();
+                mmd.physicsHelper = mmd.runTimeCharacter.physics.createHelper();
                 mmd.physicsHelper.visible = mmd.api["show rigid bodies"];
                 mmd.scene.add(mmd.physicsHelper);
 
@@ -160,7 +161,7 @@ class MMDGui {
 
                 mmd.character = character;
 
-                mmd.helper.objects.get(character).physics.reset();
+                mmd.runTimeCharacter.physics.reset();
                 console.log("loaded reset")
                 mmd.ready = true;
                 overlay.style.display = 'none';
@@ -227,7 +228,7 @@ class MMDGui {
         }
         this.guiFn.selectMotion = () => {
             selectFile.onchange = _makeLoadFileFn('motion', (url, filename) => {
-                mmd.helper.objects.get(mmd.character).mixer.uncacheRoot(mmd.character);
+                mmd.runTimeCharacter.mixer.uncacheRoot(mmd.character);
                 mmd.helper.remove(mmd.character);
                 mmd.api.motionFile = url;
                 mmd.loader.loadAnimation(url, mmd.character, function (mmdAnimation) {
