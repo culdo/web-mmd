@@ -146,6 +146,7 @@ async function main() {
         await Ammo();
         init();
     } catch (error) {
+        console.log(error)
         localforage.clear();
         localStorage.clear();
     }
