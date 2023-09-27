@@ -11,9 +11,7 @@ import { onProgress, loadMusicFromYT, saveCurrTime } from './modules/utils.js'
 import path from 'path-browserify';
 import localforage from 'localforage';
 
-// for debug
-// localforage.clear();
-// localStorage.clear();
+
 async function getConfig() {
 
     const configSaver = {
@@ -143,9 +141,14 @@ const gui = new MMDGui();
 const clock = new THREE.Clock();
 
 async function main() {
-    await getConfig();
-    await Ammo();
-    init();
+    try {
+        await getConfig();
+        await Ammo();
+        init();
+    } catch (error) {
+        localforage.clear();
+        localStorage.clear();
+    }
     animate();
 }
 
