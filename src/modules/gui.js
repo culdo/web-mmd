@@ -403,6 +403,13 @@ class MMDGui {
         folder.add(this.mmd.api, 'auto hide GUI').onChange((state) => {
             if (!this.mmd.player.paused) this.gui.hide();
         });
+        folder.add(this.mmd.api, 'set pixelratio 1.0').onChange((state) => {
+            if(state) {
+                this.mmd.renderer.setPixelRatio(1.0);
+            } else {
+                this.mmd.renderer.setPixelRatio(window.devicePixelRatio);
+            }
+        });
         this._guiRefresh(folder);
 
         folder.close();

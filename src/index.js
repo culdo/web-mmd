@@ -13,6 +13,7 @@ import localforage from 'localforage';
 
 // for debug
 // localforage.clear();
+// localStorage.clear();
 async function getConfig() {
 
     const configSaver = {
@@ -131,6 +132,7 @@ const defaultConfig = {
     'show rigid bodies': false,
     'show skeleton': false,
     'auto hide GUI': true,
+    'set pixelratio 1.0': false,
     // preset
     'preset': "Default",
     'presets': {}
@@ -216,7 +218,7 @@ function init() {
 
     // render
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.type = THREE.VSMShadowMap;
     renderer.shadowMap.enabled = true;
@@ -297,6 +299,7 @@ function init() {
         globalParams = {
             api, defaultConfig, loader, camera, player, helper, scene, character, stage,
             effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter,
+            renderer,
         };
         globalParams.ready = true;
         gui.initGui(globalParams);
