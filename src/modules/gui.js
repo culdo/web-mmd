@@ -24,7 +24,8 @@ class MMDGui {
 
         this.gui.add(this.mmd.api, 'camera motion').onChange((state) => {
             if(!state) {
-                this.mmd.controls.reset();
+                this.mmd.camera.up.set(0, 1, 0);
+                this.mmd.camera.updateProjectionMatrix();
             }
             this.mmd.helper.enable('cameraAnimation', state);
         });

@@ -295,7 +295,6 @@ function init() {
         globalParams = {
             api, defaultConfig, loader, camera, player, helper, scene, character, stage,
             effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter,
-            controls
         };
         globalParams.ready = true;
         gui.initGui(globalParams);
