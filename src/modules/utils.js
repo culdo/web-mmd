@@ -159,10 +159,10 @@ const parseResponse = (id, playerResponse, decsig) => {
 }
 
 let _currTimePrevUpdate = 0;
-function saveCurrTime(api) {
+function saveCurrTime(api, currTime) {
     let now = Date.now();
     // update current time every one secs
-    if(now - _currTimePrevUpdate < 1000) {
+    if(now - _currTimePrevUpdate > 1000) {
         // save current Time in browser
         api["currentTime"] = currTime;
         _currTimePrevUpdate = now;

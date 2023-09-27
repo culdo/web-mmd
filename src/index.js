@@ -341,7 +341,7 @@ function render() {
     }
     let delta = currTime - prevTime;
 
-    saveCurrTime(api);
+    saveCurrTime(api, currTime);
 
     if (Math.abs(delta) > 0) {
         // for time seeking using player control
