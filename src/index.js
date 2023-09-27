@@ -48,7 +48,9 @@ async function getConfig() {
     // if we have saved user config
     if (currentPreset) {
         userConfig = JSON.parse(localStorage.getItem(currentPreset));
-        userConfig.presets = JSON.parse(localStorage.getItem("presets"));
+        const savedPresets = localStorage.getItem("presets")
+        userConfig.presets = savedPresets ? JSON.parse(savedPresets) : {};
+
 
         // update prev version config already saved in browser
         const aKeys = Object.keys(userConfig)
