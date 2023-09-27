@@ -193,9 +193,6 @@ function init() {
     camera.position.set(0, 20, 30);
     scene.add(camera);
 
-    const listener = new THREE.AudioListener();
-    scene.add(listener);
-
     // light
     const hemiLight = new THREE.HemisphereLight(api["Hemisphere sky"], api["Hemisphere ground"]);
     hemiLight.position.set(0, 40, 0);
@@ -297,7 +294,8 @@ function init() {
 
         globalParams = {
             api, defaultConfig, loader, camera, player, helper, scene, character, stage,
-            effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter
+            effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter,
+            controls
         };
         globalParams.ready = true;
         gui.initGui(globalParams);

@@ -23,6 +23,9 @@ class MMDGui {
         this.mmd = params;
 
         this.gui.add(this.mmd.api, 'camera motion').onChange((state) => {
+            if(!state) {
+                this.mmd.controls.reset();
+            }
             this.mmd.helper.enable('cameraAnimation', state);
         });
         this.gui.add(this.mmd.api, 'physics').onChange((state) => {
