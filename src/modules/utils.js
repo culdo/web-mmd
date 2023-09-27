@@ -6,11 +6,11 @@ window.onload = () => {
     progressMap = {};
 }
 
-function onProgress( xhr ) {
+function onProgress(xhr) {
 
-    if ( xhr.lengthComputable ) {
+    if (xhr.lengthComputable) {
         // load 3 files
-        let percentComplete =  xhr.loaded / xhr.total * 33.3 ;
+        let percentComplete = xhr.loaded / xhr.total * 33.3;
         progressMap[xhr.total] = percentComplete;
 
         let percentCompleteAll = 0;
@@ -19,83 +19,82 @@ function onProgress( xhr ) {
         }
         loading.textContent = "Loading " + Math.round(percentCompleteAll, 2) + "%...";
 
-        if(percentCompleteAll > 100){
+        if (percentCompleteAll > 100) {
             progressMap = {};
         }
     }
 
 }
 
-function loadMusicFromYT(url) {
+async function loadMusicFromYT(url) {
     let player = document.getElementById("player")
 
     let audio_streams = {};
 
-    fetch("https://images" + ~~(Math.random() * 33) + "-focus-opensocial.googleusercontent.com/gadgets/proxy?container=none&url=" + encodeURIComponent(url)).then(response => {
-        if (response.ok) {
-            response.text().then(data => {
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(data, 'text/html');
-                var a = document.createElement('a');
-                a.href = doc.querySelector('script[src$="base.js"]').src;
-                var basejs = "https://www.youtube.com/" + a.pathname;
+    const response = await fetch("https://images" + ~~(Math.random() * 33) + "-focus-opensocial.googleusercontent.com/gadgets/proxy?container=none&url=" + encodeURIComponent(url));
 
-                var regex = /(?:ytplayer\.config\s*=\s*|ytInitialPlayerResponse\s?=\s?)(.+?)(?:;var|;\(function|\)?;\s*if|;\s*if|;\s*ytplayer\.|;\s*<\/script)/gmsu;
+    if (!response.ok) {
+        return
+    }
 
-                data = data.split('window.getPageData')[0];
-                data = data.replace('ytInitialPlayerResponse = null', '');
-                data = data.replace('ytInitialPlayerResponse=window.ytInitialPlayerResponse', '');
-                data = data.replace('ytplayer.config={args:{raw_player_response:ytInitialPlayerResponse}};', '');
+    let data = await response.text()
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(data, 'text/html');
+    var a = document.createElement('a');
+    a.href = doc.querySelector('script[src$="base.js"]').src;
+    var basejs = "https://www.youtube.com/" + a.pathname;
 
+    var regex = /(?:ytplayer\.config\s*=\s*|ytInitialPlayerResponse\s?=\s?)(.+?)(?:;var|;\(function|\)?;\s*if|;\s*if|;\s*ytplayer\.|;\s*<\/script)/gmsu;
 
-                var matches = regex.exec(data);
-                var data = matches && matches.length > 1 ? JSON.parse(matches[1]) : false;
-                var playerResponse = data;
+    data = data.split('window.getPageData')[0];
+    data = data.replace('ytInitialPlayerResponse = null', '');
+    data = data.replace('ytInitialPlayerResponse=window.ytInitialPlayerResponse', '');
+    data = data.replace('ytplayer.config={args:{raw_player_response:ytInitialPlayerResponse}};', '');
 
-                fetch("https://images" + ~~(Math.random() * 33) + "-focus-opensocial.googleusercontent.com/gadgets/proxy?container=none&url=" + encodeURIComponent(basejs)).then(response => {
-                    if (response.ok) {
-                        response.text().then(data => {
-                            var decsig;
-                            decsig = parseDecsig(data);
-                            // console.log(decsig);
-                            var streams = parseResponse(url, playerResponse, decsig).adaptive;
+    var matches = regex.exec(data);
+    var playerResponse = matches && matches.length > 1 ? JSON.parse(matches[1]) : false;
 
-                            streams.forEach(function(stream, n) {
-                                var itag = stream.itag * 1,
-                                quality = false;
-                                // console.log(stream);
-                                switch (itag) {
-                                case 139:
-                                    quality = "48kbps";
-                                    break;
-                                case 140:
-                                    quality = "128kbps";
-                                    break;
-                                case 141:
-                                    quality = "256kbps";
-                                    break;
-                                case 249:
-                                    quality = "webm_l";
-                                    break;
-                                case 250:
-                                    quality = "webm_m";
-                                    break;
-                                case 251:
-                                    quality = "webm_h";
-                                    break;
-                                }
-                                if (quality) audio_streams[quality] = stream.url;
-                            });
-            
-                            // console.log(audio_streams);
-            
-                            player.src = audio_streams['256kbps'] || audio_streams['128kbps'] || audio_streams['48kbps'];
-                        })
-                    }
-                })
-            })
+    const apiResp = await fetch("https://images" + ~~(Math.random() * 33) + "-focus-opensocial.googleusercontent.com/gadgets/proxy?container=none&url=" + encodeURIComponent(basejs))
+    if (!apiResp.ok) {
+        return
+    }
+    const apiData = await apiResp.text()
+
+    var decsig;
+    decsig = parseDecsig(apiData);
+    // console.log(decsig);
+    var streams = parseResponse(url, playerResponse, decsig).adaptive;
+
+    streams.forEach(function (stream, n) {
+        var itag = stream.itag * 1,
+            quality = false;
+        // console.log(stream);
+        switch (itag) {
+            case 139:
+                quality = "48kbps";
+                break;
+            case 140:
+                quality = "128kbps";
+                break;
+            case 141:
+                quality = "256kbps";
+                break;
+            case 249:
+                quality = "webm_l";
+                break;
+            case 250:
+                quality = "webm_m";
+                break;
+            case 251:
+                quality = "webm_h";
+                break;
         }
+        if (quality) audio_streams[quality] = stream.url;
     });
+
+    // console.log(audio_streams);
+
+    player.src = audio_streams['256kbps'] || audio_streams['128kbps'] || audio_streams['48kbps'];
 }
 
 const escapeRegExp = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -106,7 +105,7 @@ const parseDecsig = data => {
         const obj = {}
         const document = {
             createElement: () => obj,
-            head: { appendChild: () => {} }
+            head: { appendChild: () => { } }
         }
         eval(data)
         data = obj.innerHTML
@@ -162,11 +161,11 @@ let _currTimePrevUpdate = 0;
 function saveCurrTime(api, currTime) {
     let now = Date.now();
     // update current time every one secs
-    if(now - _currTimePrevUpdate > 1000) {
+    if (now - _currTimePrevUpdate > 1000) {
         // save current Time in browser
         api["currentTime"] = currTime;
         _currTimePrevUpdate = now;
     }
 }
 
-export {onProgress, loadMusicFromYT, saveCurrTime}
+export { onProgress, loadMusicFromYT, saveCurrTime }
