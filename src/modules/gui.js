@@ -149,13 +149,13 @@ class MMDGui {
                     animation: obj.animation,
                     physics: true
                 });
-                mmd.runTimeCharacter = mmd.helper.objects.get(character)
+                mmd.runtimeCharacter = mmd.helper.objects.get(character)
 
-                mmd.ikHelper = mmd.runTimeCharacter.ikSolver.createHelper();
+                mmd.ikHelper = mmd.runtimeCharacter.ikSolver.createHelper();
                 mmd.ikHelper.visible = mmd.api["show IK bones"];
                 mmd.scene.add(mmd.ikHelper);
 
-                mmd.physicsHelper = mmd.runTimeCharacter.physics.createHelper();
+                mmd.physicsHelper = mmd.runtimeCharacter.physics.createHelper();
                 mmd.physicsHelper.visible = mmd.api["show rigid bodies"];
                 mmd.scene.add(mmd.physicsHelper);
 
@@ -165,7 +165,7 @@ class MMDGui {
 
                 mmd.character = character;
 
-                mmd.runTimeCharacter.physics.reset();
+                mmd.runtimeCharacter.physics.reset();
                 console.log("loaded reset")
                 mmd.ready = true;
                 overlay.style.display = 'none';
@@ -235,7 +235,7 @@ class MMDGui {
         }
         this.guiFn.selectMotion = () => {
             selectFile.onchange = _makeLoadFileFn('motion', (url, filename) => {
-                mmd.runTimeCharacter.mixer.uncacheRoot(mmd.character);
+                mmd.runtimeCharacter.mixer.uncacheRoot(mmd.character);
                 mmd.helper.remove(mmd.character);
                 mmd.api.motionFile = url;
                 mmd.loader.loadAnimation(url, mmd.character, function (mmdAnimation) {
@@ -243,7 +243,7 @@ class MMDGui {
                         animation: mmdAnimation,
                         physics: true
                     });
-                    mmd.runTimeCharacter = mmd.helper.objects.get(character);
+                    mmd.runtimeCharacter = mmd.helper.objects.get(character);
 
                 }, onProgress, null);
                 mmd.api.motion = filename;
