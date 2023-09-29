@@ -120,7 +120,7 @@ class MMDGui {
 
         const loadCharacter = (url, filename) => {
             mmd.ready = false;
-            mmd.runTimeCharacter.mixer.uncacheRoot(mmd.character);
+            mmd.runtimeCharacter.mixer.uncacheRoot(mmd.character);
             mmd.scene.remove(mmd.character);
             mmd.scene.remove(mmd.ikHelper);
             mmd.scene.remove(mmd.physicsHelper);
