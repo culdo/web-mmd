@@ -246,7 +246,7 @@ class MMDGui {
                         animation: mmdAnimation,
                         physics: true
                     });
-                    mmd.runtimeCharacter = mmd.helper.objects.get(character);
+                    mmd.runtimeCharacter = mmd.helper.objects.get(mmd.character);
 
                 }, onProgress, null);
                 mmd.api.motion = filename;
@@ -284,8 +284,8 @@ class MMDGui {
 
         function _makeLoadFileFn(itemName, cb) {
             return async function () {
-                localforage.removeItem(itemName);
-                await localforage.setItem(itemName, this.files[0])
+                await localforage.removeItem(this.files[0].name);
+                await localforage.setItem(this.files[0].name, this.files[0])
                 cb(URL.createObjectURL(this.files[0]), this.files[0].name);
             }
         }

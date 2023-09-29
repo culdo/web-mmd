@@ -68,6 +68,16 @@ async function getConfig() {
         userConfig.characterFile = userConfig.pmxFiles.character[userConfig.character]
         userConfig.stageFile = userConfig.pmxFiles.stage[userConfig.stage]
 
+        if(userConfig.cameraFile.startsWith("blob:")) {
+            const cameraBlob = await localforage.getItem(userConfig.camera);
+            userConfig.cameraFile = URL.createObjectURL(cameraBlob)
+        }
+
+        if(userConfig.motionFile.startsWith("blob:")) {
+            const motionBlob = await localforage.getItem(userConfig.motion);
+            userConfig.motionFile = URL.createObjectURL(motionBlob)
+        }
+
         // if we not have saved user config
     } else {
         localStorage.setItem("currentPreset", defaultConfig.preset);
