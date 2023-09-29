@@ -77,7 +77,7 @@ import localforage from 'localforage';
  */
 class MMDLoader extends Loader {
 
-	constructor(manager, enableSdef = false) {
+	constructor(manager) {
 
 		if (manager) {
 			super(manager);
@@ -90,9 +90,6 @@ class MMDLoader extends Loader {
 		this.parser = null; // lazy generation
 		this.meshBuilder = new MeshBuilder(this.manager);
 		this.animationBuilder = new AnimationBuilder();
-
-		this.enableSdef = enableSdef;
-		console.log(`sdef: ${enableSdef}`);
 	}
 
 	/**
@@ -165,6 +162,8 @@ class MMDLoader extends Loader {
 					data.textures[index] = params.modelTextures[texturePath];
 				});
 			}
+			data["enableSdef"] = params?.enableSdef ? params.enableSdef : false;
+
 			onLoad(builder.build(data, resourcePath, onProgress, onError));
 
 		}, onProgress, onError);
@@ -265,8 +264,6 @@ class MMDLoader extends Loader {
 
 		const parser = this._getParser();
 
-		const enableSdef = this.enableSdef;
-
 		this.loader
 			.setMimeType(undefined)
 			.setPath(this.path)
@@ -275,7 +272,7 @@ class MMDLoader extends Loader {
 			.setWithCredentials(this.withCredentials)
 			.load(url, function (buffer) {
 
-				onLoad({ ...parser.parsePmx(buffer, true), enableSdef });
+				onLoad({ ...parser.parsePmx(buffer, true) });
 
 			}, onProgress, onError);
 
@@ -1137,6 +1134,7 @@ class MaterialBuilder {
 	 * @return {Array<MMDToonMaterial>}
 	 */
 	build(data, geometry /*, onProgress, onError */) {
+		console.log(`sdef: ${data.enableSdef}`)
 
 		const materials = [];
 

@@ -250,7 +250,7 @@ function init() {
 
     helper = new MMDAnimationHelper();
 
-    const loader = new MMDLoader(null, api["enable SDEF"]);
+    const loader = new MMDLoader();
 
     let stageParams = null;
     if (api.stageFile.startsWith("blob:")) {
@@ -269,11 +269,14 @@ function init() {
         scene.add(stage);
     }, onProgress, null, stageParams)
 
-    let characterParams = null;
+    let characterParams = {
+        enableSdef: api['enable SDEF']
+    };
     if (api.characterFile.startsWith("blob:")) {
         characterParams = {
             modelExtension: path.extname(api.character).slice(1),
             modelTextures: api.pmxFiles.modelTextures[api.character],
+            ...characterParams
         };
     }
 

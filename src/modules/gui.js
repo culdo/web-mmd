@@ -128,11 +128,14 @@ class MMDGui {
             mmd.helper.remove(mmd.character);
 
             console.log("character removed")
-            let params = null;
+            let params = {
+                enableSdef: mmd.api['enable SDEF']
+            };
             if (url.startsWith("blob:")) {
                 params = {
                     modelExtension: path.extname(filename).slice(1),
                     modelTextures: modelTextures[filename],
+                    ...params
                 };
             }
             // load character
