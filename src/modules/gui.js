@@ -291,7 +291,8 @@ class MMDGui {
 
         function _makeLoadFileFn(itemName, cb) {
             return async function () {
-                await localforage.setItem(this.files[0].name, this.files[0])
+                await localforage.removeItem(`${mmd.api.preset}_${itemName}`)
+                await localforage.setItem(`${mmd.api.preset}_${itemName}`, this.files[0])
                 cb(URL.createObjectURL(this.files[0]), this.files[0].name);
             }
         }

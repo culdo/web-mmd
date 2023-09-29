@@ -68,18 +68,18 @@ async function getConfig() {
         if(userConfig.characterFile.startsWith("blob:")) {
             userConfig.characterFile = userConfig.pmxFiles.character[userConfig.character]
         }
-        
+
         if(userConfig.stageFile.startsWith("blob:")) {
             userConfig.stageFile = userConfig.pmxFiles.stage[userConfig.stage]
         }
 
         if(userConfig.cameraFile.startsWith("blob:")) {
-            const cameraBlob = await localforage.getItem(userConfig.camera);
+            const cameraBlob = await localforage.getItem(`${currentPreset}_camera`);
             userConfig.cameraFile = URL.createObjectURL(cameraBlob)
         }
 
         if(userConfig.motionFile.startsWith("blob:")) {
-            const motionBlob = await localforage.getItem(userConfig.motion);
+            const motionBlob = await localforage.getItem(`${currentPreset}_motion`);
             userConfig.motionFile = URL.createObjectURL(motionBlob)
         }
 
