@@ -63,6 +63,9 @@ async function getConfig() {
             await parseBlob(value)
         }
 
+        userConfig.characterFile = userConfig.pmxFiles.character[userConfig.character]
+        userConfig.stageFile = userConfig.pmxFiles.stage[userConfig.stage]        
+
         // if we not have saved user config
     } else {
         localStorage.setItem("currentPreset", defaultConfig.preset);
@@ -74,13 +77,13 @@ async function getConfig() {
 
         file = userConfig.stageFile;
         userConfig.pmxFiles.stage[path.basename(file)] = file
+
+        userConfig.character = path.basename(userConfig.characterFile);
+        userConfig.motion = path.basename(userConfig.motionFile);
+        userConfig.camera = path.basename(userConfig.cameraFile);
+        userConfig.stage = path.basename(userConfig.stageFile);
     }
-
-    userConfig.character = path.basename(userConfig.characterFile);
-    userConfig.motion = path.basename(userConfig.motionFile);
-    userConfig.camera = path.basename(userConfig.cameraFile);
-    userConfig.stage = path.basename(userConfig.stageFile);
-
+    console.log(userConfig)
     api = new Proxy(userConfig, configSaver);
 
 }
@@ -173,7 +176,8 @@ function init() {
     }
 
     player.onplay = () => {
-        runtimeCharacter.physics.reset();
+        globalParams.runtimeCharacter.physics.reset();
+        
         if (api["auto hide GUI"]) gui.gui.hide();
     }
     player.onpause = () => {
@@ -244,6 +248,14 @@ function init() {
 
     const loader = new MMDLoader(null, api["enable SDEF"]);
 
+    let stageParams = null;
+    if (api.stageFile.startsWith("blob:")) {
+        stageParams = {
+            modelExtension: path.extname(api.stage).slice(1),
+            modelTextures: api.pmxFiles.modelTextures[api.stage],
+        };
+    }
+
     // load stage
     loader.load(api.stageFile, function (mesh) {
         stage = mesh;
@@ -251,11 +263,11 @@ function init() {
         stage.receiveShadow = api['ground shadow'];
 
         scene.add(stage);
-    }, onProgress, null)
-
-    let params = null;
+    }, onProgress, null, stageParams)
+    
+    let characterParams = null;
     if (api.characterFile.startsWith("blob:")) {
-        params = {
+        characterParams = {
             modelExtension: path.extname(api.character).slice(1),
             modelTextures: api.pmxFiles.modelTextures[api.character],
         };
@@ -310,7 +322,7 @@ function init() {
 
         runtimeCharacter.physics.reset();
 
-    }, onProgress, null, params);
+    }, onProgress, null, characterParams);
 
     //
 
@@ -339,6 +351,7 @@ function animate() {
 }
 
 function render() {
+    const runtimeCharacter = globalParams.runtimeCharacter;
 
     let currTime = player.currentTime
     // player has a bug that sometime jump to end(duration)

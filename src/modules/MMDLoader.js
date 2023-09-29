@@ -41,6 +41,7 @@ import {
 import { MMDToonShader } from './MMDToonShader.js';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
 import { MMDParser } from './mmdparser.module.js';
+import localforage from 'localforage';
 
 /**
  * Dependencies
@@ -149,7 +150,8 @@ class MMDLoader extends Loader {
 
 		// Should I detect by seeing header?
 		if (modelExtension !== 'pmd' && modelExtension !== 'pmx') {
-
+			localforage.clear();
+        	localStorage.clear();
 			if (onError) onError(new Error('THREE.MMDLoader: Unknown model file extension .' + modelExtension + '.'));
 
 			return;

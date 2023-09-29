@@ -185,10 +185,13 @@ class MMDGui {
         const loadStage = (url, filename) => {
             mmd.scene.remove(mmd.stage);
             console.log("remove stage");
-            let params = {
-                modelExtension: path.extname(filename).slice(1),
-                modelTextures: modelTextures[filename],
-            };
+            let params = null;
+            if (url.startsWith("blob:")) {
+                params = {
+                    modelExtension: path.extname(filename).slice(1),
+                    modelTextures: modelTextures[filename],
+                };
+            }
             // load stage
             overlay.style.display = 'flex';
             mmd.loader.load(url, function (mesh) {
@@ -259,7 +262,7 @@ class MMDGui {
         folder.add(this.guiFn, 'selectChar').name('select character pmx directory...')
 
         var stageFolder = folder.addFolder('stage');
-        var stageDropdown = stageFolder.add(mmd.api, 'stage', mmd.api.pmxFiles.stage).listen().name("model").onChange(value => {
+        var stageDropdown = stageFolder.add(mmd.api, 'stage', Object.keys(mmd.api.pmxFiles.stage)).listen().name("model").onChange(value => {
             console.log(value);
             loadStage(mmd.api.pmxFiles.stage[value], value);
         });
