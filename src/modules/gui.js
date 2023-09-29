@@ -213,7 +213,7 @@ class MMDGui {
         }
 
         this.guiFn.selectMusic = () => {
-            loadMusicFromYT(mmd.api.music);
+            loadMusicFromYT(mmd.api.musicURL);
         }
         this.guiFn.selectCamera = () => {
             selectFile.onchange = _makeLoadFileFn('camera', (url, filename) => {
