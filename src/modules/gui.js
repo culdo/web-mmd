@@ -57,7 +57,7 @@ class MMDGui {
                 deleteBt.enable();
             }
             presetDropdown = presetDropdown
-            .options(Object.keys(mmd.api.presets))
+            .options(Object.keys(mmd.presets))
             .listen()
             .onChange(loadPreset);
         }
@@ -65,9 +65,8 @@ class MMDGui {
         const presetFn = {
             _savePreset: () => {
                 // deep copy to avoid cicular serialization error
-                mmd.api.presets[mmd.api.preset] = JSON.parse(JSON.stringify(mmd.api));
-                // trigger Proxy
-                mmd.api.presets = mmd.api.presets;
+                mmd.presets[mmd.api.preset] = mmd.api;
+                localStorage.setItem("presets", JSON.stringify(mmd.presets));
             },
             saveAsNewPreset: () => {
                 let newName = prompt("New preset name:");
@@ -79,28 +78,25 @@ class MMDGui {
             },
             deletePreset: () => {
                 if(confirm("Are you sure?")) {
-                    delete mmd.api.presets[mmd.api.preset]
-                    // trigger Proxy
-                    mmd.api.presets = mmd.api.presets;
+                    delete mmd.presets[mmd.api.preset]
+                    localStorage.setItem("presets", JSON.stringify(mmd.presets));
                     
-                    const presetNames = Object.keys(mmd.api.presets);
+                    const presetNames = Object.keys(mmd.presets);
                     loadPreset(presetNames[presetNames.length - 1]);
                     updateDropdown();
                 }
             },
             resetPreset: () => {
                 if(confirm("You will lost your presets data. Are you sure?")) {
-                    const presets = mmd.api.presets;
                     const preset = mmd.api.preset;
                     Object.assign(mmd.api, mmd.defaultConfig);
-                    mmd.api.presets = presets;
                     mmd.api.preset = preset;
                     location.reload();
                 }
             }
         }
 
-        if (Object.keys(mmd.api.presets).length < 1) {
+        if (Object.keys(mmd.presets).length < 1) {
             presetFn._savePreset();
         }
         
@@ -108,7 +104,7 @@ class MMDGui {
         let presetDropdown = presetsFolder.add(
             mmd.api, 
             'preset', 
-            Object.keys(mmd.api.presets)
+            Object.keys(mmd.presets)
         )
         
         folder.add(presetFn, 'resetPreset').name('Reset current preset...');
