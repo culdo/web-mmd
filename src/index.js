@@ -20,7 +20,7 @@ async function getConfig() {
             if (key != 'preset') {
                 localStorage.setItem(target.preset, JSON.stringify(target));
             } else {
-                localStorage.setItem("currentPreset", target.preset);    
+                localStorage.setItem("currentPreset", target.preset);
             }
             if (key == 'presets') {
                 localStorage.setItem("presets", JSON.stringify(value));
@@ -64,12 +64,12 @@ async function getConfig() {
         }
 
         userConfig.characterFile = userConfig.pmxFiles.character[userConfig.character]
-        userConfig.stageFile = userConfig.pmxFiles.stage[userConfig.stage]        
+        userConfig.stageFile = userConfig.pmxFiles.stage[userConfig.stage]
 
         // if we not have saved user config
     } else {
         localStorage.setItem("currentPreset", defaultConfig.preset);
-         
+
         userConfig = { ...defaultConfig }
 
         let file = userConfig.characterFile;
@@ -177,7 +177,6 @@ function init() {
 
     player.onplay = () => {
         globalParams.runtimeCharacter.physics.reset();
-        
         if (api["auto hide GUI"]) gui.gui.hide();
     }
     player.onpause = () => {
@@ -234,6 +233,11 @@ function init() {
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, 10, 0);
 
+    controls.domElement.addEventListener('mousedown', () => {
+        camera.up.set(0, 1, 0);
+        camera.updateProjectionMatrix();
+    });
+
     // outline
     effect = new OutlineEffect(renderer);
     effect.enabled = api['show outline']
@@ -264,7 +268,7 @@ function init() {
 
         scene.add(stage);
     }, onProgress, null, stageParams)
-    
+
     let characterParams = null;
     if (api.characterFile.startsWith("blob:")) {
         characterParams = {
