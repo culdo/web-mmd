@@ -63,8 +63,9 @@ class MMDGui {
         }
 
         const presetFn = {
-            savePreset: () => {
-                mmd.api.presets[mmd.api.preset] = this.gui.save();
+            _savePreset: () => {
+                // deep copy to avoid cicular serialization error
+                mmd.api.presets[mmd.api.preset] = JSON.parse(JSON.stringify(mmd.api));
                 // trigger Proxy
                 mmd.api.presets = mmd.api.presets;
             },
@@ -72,7 +73,7 @@ class MMDGui {
                 let newName = prompt("New preset name:");
                 if(newName) {
                     mmd.api.preset = newName;
-                    presetFn.savePreset();
+                    presetFn._savePreset();
                     updateDropdown();
                 }
             },
@@ -100,7 +101,7 @@ class MMDGui {
         }
 
         if (Object.keys(mmd.api.presets).length < 1) {
-            presetFn.savePreset();
+            presetFn._savePreset();
         }
         
         const presetsFolder = folder.addFolder('Presets');
@@ -290,7 +291,6 @@ class MMDGui {
 
         function _makeLoadFileFn(itemName, cb) {
             return async function () {
-                await localforage.removeItem(this.files[0].name);
                 await localforage.setItem(this.files[0].name, this.files[0])
                 cb(URL.createObjectURL(this.files[0]), this.files[0].name);
             }
