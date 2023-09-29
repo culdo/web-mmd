@@ -89,7 +89,7 @@ a, button, input, select {
 	padding: 10px;
 }
 
-#player {
+#myPlayer {
 	position: absolute; 
 	width: 50%; 
 	left: 0; 

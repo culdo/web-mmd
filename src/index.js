@@ -10,7 +10,7 @@ import { MMDGui } from './modules/gui.js'
 import { onProgress, loadMusicFromYT, saveCurrTime } from './modules/utils.js'
 import path from 'path-browserify';
 import localforage from 'localforage';
-
+import 'videojs-youtube'
 
 async function getConfig() {
 
@@ -99,6 +99,8 @@ let prevTime = 0.0;
 let api;
 let runtimeCharacter;
 
+let player;
+
 const defaultConfig = {
     // files
     'characterFile': "models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx",
@@ -110,7 +112,7 @@ const defaultConfig = {
     'pmxFiles': { character: {}, stage: {}, modelTextures: {} },
     //player
     'currentTime': 0.0,
-    'volume': 0.2,
+    'volume': 1.0,
     // basic
     'camera motion': true,
     'physics': true,
@@ -144,13 +146,17 @@ async function main() {
     try {
         await getConfig();
         await Ammo();
-        init();
+        player = loadMusicFromYT(api.musicURL);
+        player.ready(()=>{
+            console.log("ready")
+            init();
+            animate();
+        })
     } catch (error) {
         console.log(error)
         localforage.clear();
         localStorage.clear();
     }
-    animate();
 }
 
 main();
@@ -160,35 +166,35 @@ function init() {
     const container = document.createElement('div');
     document.body.appendChild(container);
 
-    loadMusicFromYT(api.musicURL);
 
-    player.currentTime = api["currentTime"];
-    player.volume = api['volume'];
+    player.currentTime(api["currentTime"]);
+    player.volume(api['volume']);
 
-    player.onvolumechange = () => {
-        api['volume'] = player.volume;
-        if (player.muted) {
+    player.on('volumechange', () => {
+        api['volume'] = player.volume();
+        if (player.muted()) {
             api['volume'] = 0.0;
         }
-    }
+    })
 
-    player.onplay = () => {
+    player.on('play', () => {
         runtimeCharacter.physics.reset();
+        player.volume(api['volume'])
         if (api["auto hide GUI"]) gui.gui.hide();
-    }
-    player.onpause = () => {
+    })
+    player.on('pause', () => {
         gui.gui.show();
-    }
+    })
     // control bar
     document.addEventListener('mousemove', (e) => {
 
-        player.style.opacity = 0.5;
+        myPlayer.style.opacity = 0.5;
         if (timeoutID !== undefined) {
             clearTimeout(timeoutID);
         }
 
         timeoutID = setTimeout(function () {
-            player.style.opacity = 0;
+            myPlayer.style.opacity = 0;
         }, 1000);
     });
 
@@ -340,10 +346,10 @@ function animate() {
 
 function render() {
 
-    let currTime = player.currentTime
+    let currTime = player.currentTime()
     // player has a bug that sometime jump to end(duration)
     // so we just skip that frame
-    if (currTime == player.duration) {
+    if (currTime == player.duration()) {
         return
     }
     let delta = currTime - prevTime;
@@ -377,7 +383,7 @@ function render() {
     // stop when motion is finished then fix physics
     if (runtimeCharacter.looped) {
         player.pause();
-        player.currentTime = 0.0;
+        player.currentTime(0.0);
 
         runtimeCharacter.physics.reset();
         runtimeCharacter.physics.update(0.1)

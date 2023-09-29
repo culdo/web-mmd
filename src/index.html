@@ -6,6 +6,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
         <link type="text/css" rel="stylesheet" href="main.css">
+		<link href="https://vjs.zencdn.net/7.21.2/video-js.css" rel="stylesheet" />
 	</head>
 
 	<body>
@@ -14,7 +15,13 @@
 				Loading files...
 			</h1>
 		</div>
-		<audio id="player" controls></audio>
+		<audio 
+			id="myPlayer" 
+			class="video-js vjs-default-skin"
+			controls
+			width="640" height="50"
+			>
+		</audio>
 		<input id="selectFile" type="file" style="display: none;" />
 	</body>
 </html>
