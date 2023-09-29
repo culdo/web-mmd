@@ -130,19 +130,19 @@ class MMDLoader extends Loader {
 			resourcePath = this.path;
 
 		} else {
-			if (!params) {
-				resourcePath = LoaderUtils.extractUrlBase(url);
-			} else {
+			if (params && params.modelTextures) {
 				resourcePath = '';
+			} else {
+				resourcePath = LoaderUtils.extractUrlBase(url);
 			}
 		}
 
 		let modelExtension;
 
-		if (!params) {
-			modelExtension = this._extractExtension(url).toLowerCase();
-		} else {
+		if (params && params.modelExtension) {
 			modelExtension = params.modelExtension;
+		} else {
+			modelExtension = this._extractExtension(url).toLowerCase();
 		}
 
 		// Should I detect by seeing header?
@@ -156,7 +156,7 @@ class MMDLoader extends Loader {
 		}
 
 		this[modelExtension === 'pmd' ? 'loadPMD' : 'loadPMX'](url, function (data) {
-			if (params) {
+			if (params && params.modelTextures) {
 				data.textures.forEach((texturePath, index) => {
 					texturePath = texturePath.replace('\\', '/');
 					data.textures[index] = params.modelTextures[texturePath];

@@ -11,7 +11,9 @@ import { onProgress, loadMusicFromYT, saveCurrTime } from './modules/utils.js'
 import path from 'path-browserify';
 import localforage from 'localforage';
 
-
+// for debug
+// localforage.clear();
+// localStorage.clear();
 async function getConfig() {
 
     const configSaver = {
