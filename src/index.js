@@ -65,8 +65,13 @@ async function getConfig() {
             await parseBlob(value)
         }
 
-        userConfig.characterFile = userConfig.pmxFiles.character[userConfig.character]
-        userConfig.stageFile = userConfig.pmxFiles.stage[userConfig.stage]
+        if(userConfig.characterFile.startsWith("blob:")) {
+            userConfig.characterFile = userConfig.pmxFiles.character[userConfig.character]
+        }
+        
+        if(userConfig.stageFile.startsWith("blob:")) {
+            userConfig.stageFile = userConfig.pmxFiles.stage[userConfig.stage]
+        }
 
         if(userConfig.cameraFile.startsWith("blob:")) {
             const cameraBlob = await localforage.getItem(userConfig.camera);

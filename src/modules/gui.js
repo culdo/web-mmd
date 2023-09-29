@@ -88,8 +88,14 @@ class MMDGui {
                 }
             },
             resetPreset: () => {
-                Object.assign(mmd.api, mmd.defaultConfig);
-                location.reload();
+                if(confirm("You will lost your presets data. Are you sure?")) {
+                    const presets = mmd.api.presets;
+                    const preset = mmd.api.preset;
+                    Object.assign(mmd.api, mmd.defaultConfig);
+                    mmd.api.presets = presets;
+                    mmd.api.preset = preset;
+                    location.reload();
+                }
             }
         }
 
