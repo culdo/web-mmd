@@ -41,7 +41,6 @@ import {
 import { MMDToonShader } from './MMDToonShader.js';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
 import { MMDParser } from './mmdparser.module.js';
-import localforage from 'localforage';
 
 /**
  * Dependencies

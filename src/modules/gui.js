@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import localforage from 'localforage';
 import path from 'path-browserify';
 import { GUI } from 'lil-gui';
-import { onProgress, loadMusicFromYT } from './utils';
+import { onProgress, loadMusicFromYT, blobToBase64 } from './utils';
 
 class MMDGui {
     constructor() {
@@ -43,7 +43,7 @@ class MMDGui {
 
         const _setPreset = (name) => {
             mmd.preset = name;
-            localStorage.setItem("currentPreset", name);
+            localforage.setItem("currentPreset", name);
         }
         const _loadPreset = (name) => {
             _setPreset(name);
@@ -154,7 +154,7 @@ class MMDGui {
             let params = {
                 enableSdef: mmd.api['enable SDEF']
             };
-            if (url.startsWith("blob:")) {
+            if (url.startsWith("blob:") || url.startsWith("data:")) {
                 params = {
                     modelExtension: path.extname(filename).slice(1),
                     modelTextures: modelTextures.character[filename],
@@ -212,7 +212,7 @@ class MMDGui {
             mmd.scene.remove(mmd.stage);
             console.log("remove stage");
             let params = null;
-            if (url.startsWith("blob:")) {
+            if (url.startsWith("blob:") || url.startsWith("data:")) {
                 params = {
                     modelExtension: path.extname(filename).slice(1),
                     modelTextures: modelTextures.stage[filename],
@@ -308,7 +308,7 @@ class MMDGui {
         function _makeLoadFileFn(itemName, cb) {
             return async function () {
                 await localforage.setItem(`${mmd.preset}_${itemName}`, this.files[0])
-                cb(URL.createObjectURL(this.files[0]), this.files[0].name);
+                cb(await blobToBase64(this.files[0]), this.files[0].name);
             }
         }
 
@@ -328,15 +328,13 @@ class MMDGui {
                     let relativePath = f.webkitRelativePath;
                     const resourcePath = relativePath.split("/").slice(1).join("/")
 
-                    await localforage.setItem(resourcePath, f)
-                    const blob = await localforage.getItem(resourcePath)
-                    let url = URL.createObjectURL(blob);
+                    let url = await blobToBase64(f);
 
                     // save modelTextures
                     resourceMap[resourcePath] = url;
 
-                    if (blob.name.includes(".pmx") || blob.name.includes(".pmd")) {
-                        const modelName = blob.name
+                    if (f.name.includes(".pmx") || f.name.includes(".pmd")) {
+                        const modelName = f.name
                         texFilesByType[modelName] = resourceMap;
 
                         if (!firstKey) firstKey = modelName
@@ -401,14 +399,13 @@ class MMDGui {
             location.reload()
         })
         folder.add({
-            'clear localStorage': () => {
+            'clear localforage': () => {
                 if (confirm("Be carful!! You will lost all your Models files、Presets...etc.")) {
                     localforage.clear();
-                    localStorage.clear();
                     location.reload();
                 }
             }
-        }, 'clear localStorage')
+        }, 'clear localforage')
     }
 
     _guiDebug() {

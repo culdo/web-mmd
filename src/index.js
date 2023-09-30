@@ -13,14 +13,13 @@ import localforage from 'localforage';
 
 // for debug
 // localforage.clear();
-// localStorage.clear();
 async function getConfig() {
 
     const configSaver = {
         set: function (target, key, value) {
             const result = Reflect.set(...arguments)
 
-            localStorage.setItem("presets", JSON.stringify(presets));
+            localforage.setItem("presets", JSON.stringify(presets));
             
             return result;
         }
@@ -37,7 +36,7 @@ async function getConfig() {
         }
     }
 
-    const savedPresetName = localStorage.getItem("currentPreset")
+    const savedPresetName = await localforage.getItem("currentPreset")
     
     preset = "Default"
     presets = {
@@ -47,7 +46,7 @@ async function getConfig() {
 
     // if we have saved user config
     if (savedPresetName) {
-        const savedPresets = localStorage.getItem("presets")
+        const savedPresets = await localforage.getItem("presets")
         if(savedPresets) {
             presets = JSON.parse(savedPresets)
             // keep Default preset unchanged
@@ -89,7 +88,7 @@ async function getConfig() {
 
         // if we not have saved user config
     } else {
-        localStorage.setItem("currentPreset", "Default");
+        await localforage.setItem("currentPreset", "Default");
     }
     console.log(userConfig)
     api = new Proxy(userConfig, configSaver);
@@ -267,7 +266,7 @@ function init() {
     const loader = new MMDLoader();
 
     let stageParams = null;
-    if (api.stageFile.startsWith("blob:")) {
+    if (api.stageFile.startsWith("blob:") || api.stageFile.startsWith("data:")) {
         stageParams = {
             modelExtension: path.extname(api.stage).slice(1),
             modelTextures: api.pmxFiles.modelTextures.stage[api.stage],
@@ -286,7 +285,7 @@ function init() {
     let characterParams = {
         enableSdef: api['enable SDEF']
     };
-    if (api.characterFile.startsWith("blob:")) {
+    if (api.characterFile.startsWith("blob:") || api.characterFile.startsWith("data:")) {
         characterParams = {
             modelExtension: path.extname(api.character).slice(1),
             modelTextures: api.pmxFiles.modelTextures.character[api.character],
