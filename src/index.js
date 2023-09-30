@@ -20,7 +20,9 @@ async function getConfig() {
         set: function (target, key, value) {
             const result = Reflect.set(...arguments)
 
-            localStorage.setItem("presets", JSON.stringify(presets));
+            if(globalParams.preset != "Default") {
+                localStorage.setItem("presets", JSON.stringify(presets));
+            }
             
             return result;
         }
@@ -43,14 +45,16 @@ async function getConfig() {
     presets = {
         Default: defaultConfig
     };
-    let userConfig = presets.Default;
+    let userConfig = defaultConfig;
 
     // if we have saved user config
     if (savedPresetName) {
         const savedPresets = localStorage.getItem("presets")
         if(savedPresets) {
             presets = JSON.parse(savedPresets)
-            userConfig = presets[savedPresetName];
+            if(savedPresetName != "Default") {
+                userConfig = presets[savedPresetName];
+            }
             preset = savedPresetName;
         }
 
@@ -98,7 +102,7 @@ let stats;
 let character, camera, scene, renderer, effect, stage;
 let helper, ikHelper, physicsHelper;
 
-let globalParams;
+let globalParams = {};
 
 let ready = false;
 let timeoutID;

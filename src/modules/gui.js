@@ -76,6 +76,9 @@ class MMDGui {
             copyPreset: () => {
                 let newName = prompt("New preset name:");
                 if (newName) {
+                    // avoid prev preset shared with new preset
+                    mmd.presets[mmd.preset] = JSON.parse(JSON.stringify(mmd.api));
+
                     _setPreset(newName);
                     mmd.presets[newName] = mmd.api;
                     // trigger Proxy
@@ -95,6 +98,15 @@ class MMDGui {
             }
         }
 
+        this.gui.onChange((event)=>{
+            if(event.property !="preset" && mmd.preset == "Default") {
+                _setPreset("Untitled");
+                mmd.presets["Untitled"] = mmd.api;
+                // trigger Proxy
+                mmd.api.currentTime = mmd.api.currentTime
+                updateDropdown();
+            }
+        })
         const presetsFolder = folder.addFolder('Presets');
         let presetDropdown = presetsFolder.add(
             mmd,
