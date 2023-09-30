@@ -113,6 +113,7 @@ function init() {
     }
     player.onpause = () => {
         gui.gui.show();
+        api.currentTime = play.currentTime;
     }
     // control bar
     document.addEventListener('mousemove', (e) => {
@@ -310,8 +311,6 @@ function render() {
 
         // animation updating
         helper.update(delta, currTime);
-        
-        saveCurrTime(api, currTime);
 
         // for time seeking using player control
         if (Math.abs(delta) > 0.1) {
