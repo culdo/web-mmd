@@ -57,47 +57,50 @@ class MMDGui {
                 deleteBt.enable();
             }
             presetDropdown = presetDropdown
-                .options(Object.keys(mmd.presets))
+                .options(Array.from(mmd.presetsList))
                 .listen()
                 .onChange(_loadPreset);
         }
 
+        const _updatePresetList = async (newName) => {
+            mmd.presetsList.add(newName)
+            await localforage.setItem("presetsList", mmd.presetsList)
+        }
+
         const presetFn = {
-            newPreset: () => {
+            newPreset: async () => {
                 let newName = prompt("New preset name:");
                 if (newName) {
-                    mmd.presets[newName] = mmd.defaultConfig;
-                    // trigger Proxy
-                    mmd.api.currentTime = mmd.api.currentTime
-
-                    _loadPreset(newName);
+                    await _updatePresetList(newName)
+                    await _loadPreset(newName);
                 }
             },
-            copyPreset: () => {
+            copyPreset: async () => {
                 let newName = prompt("New preset name:");
                 if (newName) {
-                    // avoid prev preset shared with new preset
-                    mmd.presets[mmd.preset] = JSON.parse(JSON.stringify(mmd.api));
-
-                    _setPreset(newName);
-                    mmd.presets[newName] = mmd.api;
-                    // trigger Proxy
-                    mmd.api.currentTime = mmd.api.currentTime
+                    mmd.preset = newName;
+                    Object.assign(mmd.api, mmd.api);
+                    await _setPreset(newName);
+                    await _updatePresetList(newName)
                     updateDropdown();
                 }
             },
-            deletePreset: () => {
+            deletePreset: async () => {
                 if (confirm("Are you sure?")) {
-                    delete mmd.presets[mmd.preset]
-                    // trigger Proxy
-                    mmd.api.currentTime = mmd.api.currentTime
+                    await localforage.iterate(function (value, key, iterationNumber) {
+                        if (key.startsWith(mmd.preset)) {
+                            localforage.removeItem(key)
+                        }
+                    })
+                    mmd.presetsList.delete(mmd.preset)
+                    await localforage.setItem("presetsList", mmd.presetsList)
 
-                    const presetNames = Object.keys(mmd.presets);
-                    _loadPreset(presetNames[presetNames.length - 1]);
+                    const presetsArr = Array.from(mmd.presetsList)
+                    await _loadPreset(presetsArr[presetsArr.length - 1]);
                 }
             },
             savePreset: () => {
-                const presetBlob = new Blob([JSON.stringify(mmd.api)], {type: 'application/json'})
+                const presetBlob = new Blob([JSON.stringify(mmd.api)], { type: 'application/json' })
                 const dlUrl = URL.createObjectURL(presetBlob)
                 const a = document.createElement('a')
                 a.href = dlUrl
@@ -107,29 +110,28 @@ class MMDGui {
                 document.body.removeChild(a)
             },
             loadPreset: () => {
-                selectFile.onchange = function (e) {
+                selectFile.onchange = async function (e) {
                     const presetFile = this.files[0]
-                    const presetName = path.parse(presetFile.name).name
-                    let reader = new FileReader();
-                    reader.readAsText(presetFile); 
-                    reader.onloadend = () => {
-                        mmd.presets[presetName] = JSON.parse(reader.result);
-                        // trigger Proxy
-                        mmd.api.currentTime = mmd.api.currentTime
+                    const newName = path.parse(presetFile.name).name
+                    await _updatePresetList(newName)
 
-                        _loadPreset(presetName);
+                    let reader = new FileReader();
+                    reader.readAsText(presetFile);
+                    reader.onloadend = async () => {
+                        mmd.preset = newName;
+                        Object.assign(mmd.api, JSON.parse(reader.result));
+                        await _loadPreset(newName);
                     }
                 };
                 selectFile.click();
             }
         }
 
-        this.gui.onChange((event)=>{
-            if(event.property !="preset" && !(event.value instanceof Function) && mmd.preset == "Default") {
-                _setPreset("Untitled");
-                mmd.presets["Untitled"] = mmd.api;
-                // trigger Proxy
-                mmd.api.currentTime = mmd.api.currentTime
+        this.gui.onChange(async (event) => {
+            if (event.property != "preset" && !(event.value instanceof Function) && mmd.preset == "Default") {
+                await localforage.setItem(`Untitled_${event.property}`, event.value);
+                await _updatePresetList("Untitled");
+                await _setPreset("Untitled");
                 updateDropdown();
             }
         })
@@ -137,7 +139,7 @@ class MMDGui {
         let presetDropdown = presetsFolder.add(
             mmd,
             'preset',
-            Object.keys(mmd.presets)
+            Array.from(mmd.presetsList)
         )
 
         folder.add(presetFn, 'newPreset').name('New preset...');
@@ -343,15 +345,15 @@ class MMDGui {
                     const resourcePath = relativePath.split("/").slice(1).join("/")
 
                     let url = await blobToBase64(f);
-                    
+
                     // save model file
                     if (f.name.includes(".pmx") || f.name.includes(".pmd")) {
                         const modelName = f.name
                         texFilesByType[modelName] = resourceMap;
-                        
+
                         if (!firstKey) firstKey = modelName
                         pmxFilesByType[modelName] = url;
-                    // save model textures
+                        // save model textures
                     } else {
                         resourceMap[resourcePath] = url;
                     }

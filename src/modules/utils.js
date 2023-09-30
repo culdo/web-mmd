@@ -163,7 +163,7 @@ function saveCurrTime(api, currTime) {
     // update current time every one secs
     if (now - _currTimePrevUpdate > 1000) {
         // save current Time in browser
-        api["currentTime"] = currTime;
+        api.currentTime = currTime;
         _currTimePrevUpdate = now;
     }
 }
