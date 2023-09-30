@@ -215,7 +215,6 @@ class MMDGui {
 
             }, onProgress, null, params)
             mmd.api.character = filename;
-            mmd.api.characterFile = url;
         };
         // TODO: use unzip tools to unzip model files, because it has many texture images
         this.guiFn.selectChar = () => {
@@ -248,7 +247,6 @@ class MMDGui {
                 overlay.style.display = 'none';
             }, onProgress, null, params);
             mmd.api.stage = filename;
-            mmd.api.stageFile = url;
         }
         // TODO: same above
         this.guiFn.selectStage = () => {
@@ -345,16 +343,17 @@ class MMDGui {
                     const resourcePath = relativePath.split("/").slice(1).join("/")
 
                     let url = await blobToBase64(f);
-
-                    // save modelTextures
-                    resourceMap[resourcePath] = url;
-
+                    
+                    // save model file
                     if (f.name.includes(".pmx") || f.name.includes(".pmd")) {
                         const modelName = f.name
                         texFilesByType[modelName] = resourceMap;
-
+                        
                         if (!firstKey) firstKey = modelName
                         pmxFilesByType[modelName] = url;
+                    // save model textures
+                    } else {
+                        resourceMap[resourcePath] = url;
                     }
                 }
                 // full replace the old dropdown

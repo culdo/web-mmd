@@ -25,14 +25,16 @@ async function getConfig() {
         }
     };
 
-    const savedPresetName = await localforage.getItem("currentPreset")
-    
+    const resp = await fetch('presets/Default.json')
+    defaultConfig = await resp.json()
+
     preset = "Default"
     presets = {
         Default: defaultConfig
     };
     let userConfig = defaultConfig;
 
+    const savedPresetName = await localforage.getItem("currentPreset")
     // if we have saved user config
     if (savedPresetName) {
         const savedPresets = await localforage.getItem("presets")
@@ -52,10 +54,7 @@ async function getConfig() {
         for (const key of newKeys) {
             userConfig[key] = defaultConfig[key]
         }
-
         // if we not have saved user config
-    } else {
-        await localforage.setItem("currentPreset", "Default");
     }
     console.log(userConfig)
     api = new Proxy(userConfig, configSaver);
@@ -76,54 +75,7 @@ let prevTime = 0.0;
 let api, presets, preset;
 let runtimeCharacter;
 
-const defaultConfig = {
-    // files
-    'characterFile': "models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx",
-    'motionFile': 'models/mmd/motions/GimmeGimme_with_emotion.vmd',
-    'cameraFile': 'models/mmd/cameras/GimmexGimme.vmd',
-    'stageFile': 'models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx',
-    'musicURL': 'https://www.youtube.com/watch?v=ERo-sPa1a5g',
-    'character': 'つみ式ミクさんv4.pmx',
-    'motion': 'GimmeGimme_with_emotion.vmd',
-    'camera': 'GimmexGimme.vmd',
-    'stage': 'EPDS.pmx',
-    //pmx files
-    'pmxFiles': { 
-        character: {
-            'つみ式ミクさんv4.pmx': "models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx"
-        }, 
-        stage: {
-            'EPDS.pmx': 'models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx'
-        }, 
-        modelTextures: {
-            character: {}, 
-            stage: {}
-        } 
-    },
-    //player
-    'currentTime': 0.0,
-    'volume': 0.2,
-    // basic
-    'camera motion': true,
-    'physics': true,
-    'ground shadow': true,
-    'self shadow': true,
-    'fog color': 0x43a0ad,
-    // light
-    'Hemisphere sky': 0x666666,
-    'Hemisphere ground': 0x482e2e,
-    'Directional': 0xffffff,
-    // need refresh
-    'enable SDEF': true,
-    // debug
-    'show FPS': false,
-    'show outline': true,
-    'show IK bones': false,
-    'show rigid bodies': false,
-    'show skeleton': false,
-    'auto hide GUI': true,
-    'set pixelratio 1.0': false
-}
+let defaultConfig;
 
 const gui = new MMDGui();
 
@@ -231,9 +183,11 @@ function init() {
     helper = new MMDAnimationHelper();
 
     const loader = new MMDLoader();
+    const characterFile = api.pmxFiles.character[api.character]
+    const stageFile = api.pmxFiles.stage[api.stage]
 
     let stageParams = null;
-    if (api.stageFile.startsWith("data:")) {
+    if (stageFile.startsWith("data:")) {
         stageParams = {
             modelExtension: path.extname(api.stage).slice(1),
             modelTextures: api.pmxFiles.modelTextures.stage[api.stage],
@@ -241,7 +195,7 @@ function init() {
     }
 
     // load stage
-    loader.load(api.stageFile, function (mesh) {
+    loader.load(stageFile, function (mesh) {
         stage = mesh;
         stage.castShadow = true;
         stage.receiveShadow = api['ground shadow'];
@@ -252,7 +206,7 @@ function init() {
     let characterParams = {
         enableSdef: api['enable SDEF']
     };
-    if (api.characterFile.startsWith("data:")) {
+    if (characterFile.startsWith("data:")) {
         characterParams = {
             modelExtension: path.extname(api.character).slice(1),
             modelTextures: api.pmxFiles.modelTextures.character[api.character],
@@ -261,7 +215,7 @@ function init() {
     }
 
     // load character
-    loader.loadWithAnimation(api.characterFile, api.motionFile, function (mmd) {
+    loader.loadWithAnimation(characterFile, api.motionFile, function (mmd) {
         character = mmd.mesh;
         character.castShadow = true;
         character.receiveShadow = api["self shadow"];
