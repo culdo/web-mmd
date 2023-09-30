@@ -11,10 +11,6 @@ class MMDGui {
         this.open = () => this.gui.open();
         this.close = () => this.gui.close();
         this.mmd = null;
-        this.modelTextures = {
-            character: {},
-            stage: {},
-        };
         this.guiFn = {};
         this.pmxDropdowns = {};
     }
@@ -290,7 +286,6 @@ class MMDGui {
 
         function _makeLoadFileFn(itemName, cb) {
             return async function () {
-                await localforage.removeItem(`${mmd.api.preset}_${itemName}`)
                 await localforage.setItem(`${mmd.api.preset}_${itemName}`, this.files[0])
                 cb(URL.createObjectURL(this.files[0]), this.files[0].name);
             }
@@ -298,7 +293,8 @@ class MMDGui {
 
         function _makeLoadModelFn(itemType, cb) {
             return async function () {
-                let pmxFilesByType = mmd.api.pmxFiles[itemType];
+                let pmxFilesByType = mmd.api.pmxFiles[itemType] = {};
+                for (const key in modelTextures) delete modelTextures[key];
 
                 // load model and textures from unzipped folder
                 let firstKey;

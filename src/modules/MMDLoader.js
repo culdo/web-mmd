@@ -147,11 +147,10 @@ class MMDLoader extends Loader {
 
 		// Should I detect by seeing header?
 		if (modelExtension !== 'pmd' && modelExtension !== 'pmx') {
-			localforage.clear();
-        	localStorage.clear();
-			if (onError) onError(new Error('THREE.MMDLoader: Unknown model file extension .' + modelExtension + '.'));
-
-			return;
+			const err = new Error('THREE.MMDLoader: Unknown model file extension .' + modelExtension + '.')
+			
+			if (onError) onError(err);
+			throw err
 
 		}
 
