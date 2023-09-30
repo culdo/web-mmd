@@ -19,18 +19,9 @@ async function getConfig() {
         set: function (target, key, value) {
             const result = Reflect.set(...arguments)
             
-            localforage.setItem(`${preset}_${key}`, value);
+            localforage.setItem(`${globalParams.preset}_${key}`, value);
             
             return result;
-        },
-        get: function(target, key, receiver) {
-            let result;
-            localforage.getItem(`${preset}_${key}`).then(
-                (value) => {
-                    return value
-                }
-            )
-            return result
         }
     };
 
@@ -46,6 +37,9 @@ async function getConfig() {
     // if we have saved user config
     if (savedPresetName) {
         preset = savedPresetName;
+        for(const key in defaultConfig) {
+            userConfig[key] = await localforage.getItem(`${preset}_${key}`)
+        }
         
         const savedPresetsList = await localforage.getItem("presetsList")
         if(savedPresetsList) presetsList = savedPresetsList

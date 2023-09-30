@@ -62,16 +62,23 @@ class MMDGui {
                 .onChange(_loadPreset);
         }
 
+        const _updatePresetList = async (newName) => {
+            mmd.presetsList.push(newName)
+            await localforage.setItem("presetsList", mmd.presetsList)
+        }
+
         const presetFn = {
-            newPreset: () => {
+            newPreset: async () => {
                 let newName = prompt("New preset name:");
                 if (newName) {
-                    _loadPreset(newName);
+                    await _updatePresetList(newName)
+                    await _loadPreset(newName);
                 }
             },
-            copyPreset: () => {
+            copyPreset: async () => {
                 let newName = prompt("New preset name:");
                 if (newName) {
+                    await _updatePresetList(newName)
                     _setPreset(newName);
                     updateDropdown();
                 }
@@ -84,7 +91,7 @@ class MMDGui {
                         }
                     })
 
-                    _loadPreset(mmd.presetsList[mmd.presetsList.length - 1]);
+                    await _loadPreset(mmd.presetsList[mmd.presetsList.length - 1]);
                 }
             },
             savePreset: () => {
@@ -98,14 +105,17 @@ class MMDGui {
                 document.body.removeChild(a)
             },
             loadPreset: () => {
-                selectFile.onchange = function (e) {
+                selectFile.onchange = async function (e) {
                     const presetFile = this.files[0]
-                    const presetName = path.parse(presetFile.name).name
+                    const newName = path.parse(presetFile.name).name
+                    await _updatePresetList(newName)
+
                     let reader = new FileReader();
                     reader.readAsText(presetFile); 
-                    reader.onloadend = () => {
+                    reader.onloadend = async () => {
+                        mmd.preset = newName;
                         Object.assign(mmd.api, JSON.parse(reader.result));
-                        _loadPreset(presetName);
+                        await _loadPreset(newName);
                     }
                 };
                 selectFile.click();
