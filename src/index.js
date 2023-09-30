@@ -19,10 +19,7 @@ async function getConfig() {
     const configSaver = {
         set: function (target, key, value) {
             const result = Reflect.set(...arguments)
-            
-            if (key == 'preset') {
-                localStorage.setItem("currentPreset", value);
-            }
+
             localStorage.setItem("presets", JSON.stringify(presets));
             
             return result;
@@ -42,6 +39,7 @@ async function getConfig() {
 
     const savedPresetName = localStorage.getItem("currentPreset")
     
+    preset = "Default"
     presets = {
         Default: defaultConfig
     };
@@ -53,7 +51,7 @@ async function getConfig() {
         if(savedPresets) {
             presets = JSON.parse(savedPresets)
             userConfig = presets[savedPresetName];
-            userConfig.preset = savedPresetName;
+            preset = savedPresetName;
         }
 
         // update prev version config already saved in browser
@@ -106,7 +104,7 @@ let ready = false;
 let timeoutID;
 let prevTime = 0.0;
 
-let api, presets;
+let api, presets, preset;
 let runtimeCharacter;
 
 const defaultConfig = {
@@ -155,9 +153,7 @@ const defaultConfig = {
     'show rigid bodies': false,
     'show skeleton': false,
     'auto hide GUI': true,
-    'set pixelratio 1.0': false,
-    // preset
-    'preset': "Default"
+    'set pixelratio 1.0': false
 }
 
 const gui = new MMDGui();
@@ -344,7 +340,7 @@ function init() {
         globalParams = {
             api, defaultConfig, loader, camera, player, helper, scene, character, stage,
             effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter,
-            renderer, presets,
+            renderer, presets, preset,
         };
         globalParams.ready = true;
         gui.initGui(globalParams);

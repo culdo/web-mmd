@@ -41,13 +41,17 @@ class MMDGui {
 
         const folder = this.gui.addFolder('Preset');
 
+        const _setPreset = (name) => {
+            mmd.preset = name;
+            localStorage.setItem("currentPreset", name);
+        }
         const _loadPreset = (name) => {
-            mmd.api.preset = name;
+            _setPreset(name);
             location.reload();
         }
 
         const updateDropdown = () => {
-            if (mmd.api.preset == "Default") {
+            if (mmd.preset == "Default") {
                 deleteBt.disable();
             } else {
                 deleteBt.enable();
@@ -72,13 +76,16 @@ class MMDGui {
             copyPreset: () => {
                 let newName = prompt("New preset name:");
                 if (newName) {
-                    mmd.api.preset = newName;
+                    _setPreset(newName);
+                    mmd.presets[newName] = mmd.api;
+                    // trigger Proxy
+                    mmd.api.currentTime = mmd.api.currentTime
                     updateDropdown();
                 }
             },
             deletePreset: () => {
                 if (confirm("Are you sure?")) {
-                    delete mmd.presets[mmd.api.preset]
+                    delete mmd.presets[mmd.preset]
                     // trigger Proxy
                     mmd.api.currentTime = mmd.api.currentTime
 
@@ -90,7 +97,7 @@ class MMDGui {
 
         const presetsFolder = folder.addFolder('Presets');
         let presetDropdown = presetsFolder.add(
-            mmd.api,
+            mmd,
             'preset',
             Object.keys(mmd.presets)
         )
@@ -277,7 +284,7 @@ class MMDGui {
 
         function _makeLoadFileFn(itemName, cb) {
             return async function () {
-                await localforage.setItem(`${mmd.api.preset}_${itemName}`, this.files[0])
+                await localforage.setItem(`${mmd.preset}_${itemName}`, this.files[0])
                 cb(URL.createObjectURL(this.files[0]), this.files[0].name);
             }
         }
