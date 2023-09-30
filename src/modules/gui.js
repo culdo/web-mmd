@@ -57,7 +57,7 @@ class MMDGui {
                 deleteBt.enable();
             }
             presetDropdown = presetDropdown
-                .options(Object.keys(mmd.presets))
+                .options(mmd.presetsList)
                 .listen()
                 .onChange(_loadPreset);
         }
@@ -66,34 +66,25 @@ class MMDGui {
             newPreset: () => {
                 let newName = prompt("New preset name:");
                 if (newName) {
-                    mmd.presets[newName] = mmd.defaultConfig;
-                    // trigger Proxy
-                    mmd.api.currentTime = mmd.api.currentTime
-
                     _loadPreset(newName);
                 }
             },
             copyPreset: () => {
                 let newName = prompt("New preset name:");
                 if (newName) {
-                    // avoid prev preset shared with new preset
-                    mmd.presets[mmd.preset] = JSON.parse(JSON.stringify(mmd.api));
-
                     _setPreset(newName);
-                    mmd.presets[newName] = mmd.api;
-                    // trigger Proxy
-                    mmd.api.currentTime = mmd.api.currentTime
                     updateDropdown();
                 }
             },
-            deletePreset: () => {
+            deletePreset: async () => {
                 if (confirm("Are you sure?")) {
-                    delete mmd.presets[mmd.preset]
-                    // trigger Proxy
-                    mmd.api.currentTime = mmd.api.currentTime
+                    await localforage.iterate(function(value, key, iterationNumber) {
+                        if(key.startsWith(mmd.preset)) {
+                            localforage.removeItem(key)
+                        }
+                    })
 
-                    const presetNames = Object.keys(mmd.presets);
-                    _loadPreset(presetNames[presetNames.length - 1]);
+                    _loadPreset(mmd.presetsList[mmd.presetsList.length - 1]);
                 }
             },
             savePreset: () => {
@@ -113,10 +104,7 @@ class MMDGui {
                     let reader = new FileReader();
                     reader.readAsText(presetFile); 
                     reader.onloadend = () => {
-                        mmd.presets[presetName] = JSON.parse(reader.result);
-                        // trigger Proxy
-                        mmd.api.currentTime = mmd.api.currentTime
-
+                        Object.assign(mmd.api, JSON.parse(reader.result));
                         _loadPreset(presetName);
                     }
                 };
@@ -127,9 +115,6 @@ class MMDGui {
         this.gui.onChange((event)=>{
             if(event.property !="preset" && !(event.value instanceof Function) && mmd.preset == "Default") {
                 _setPreset("Untitled");
-                mmd.presets["Untitled"] = mmd.api;
-                // trigger Proxy
-                mmd.api.currentTime = mmd.api.currentTime
                 updateDropdown();
             }
         })
@@ -137,7 +122,7 @@ class MMDGui {
         let presetDropdown = presetsFolder.add(
             mmd,
             'preset',
-            Object.keys(mmd.presets)
+            mmd.presetsList
         )
 
         folder.add(presetFn, 'newPreset').name('New preset...');

@@ -18,10 +18,19 @@ async function getConfig() {
     const configSaver = {
         set: function (target, key, value) {
             const result = Reflect.set(...arguments)
-
-            localforage.setItem("presets", JSON.stringify(presets));
+            
+            localforage.setItem(`${preset}_${key}`, value);
             
             return result;
+        },
+        get: function(target, key, receiver) {
+            let result;
+            localforage.getItem(`${preset}_${key}`).then(
+                (value) => {
+                    return value
+                }
+            )
+            return result
         }
     };
 
@@ -29,23 +38,17 @@ async function getConfig() {
     defaultConfig = await resp.json()
 
     preset = "Default"
-    presets = {
-        Default: defaultConfig
-    };
+    presetsList = ["Default"]
+
     let userConfig = defaultConfig;
 
     const savedPresetName = await localforage.getItem("currentPreset")
     // if we have saved user config
     if (savedPresetName) {
-        const savedPresets = await localforage.getItem("presets")
-        if(savedPresets) {
-            presets = JSON.parse(savedPresets)
-            // keep Default preset unchanged
-            if(savedPresetName != "Default") {
-                userConfig = presets[savedPresetName];
-            }
-            preset = savedPresetName;
-        }
+        preset = savedPresetName;
+        
+        const savedPresetsList = await localforage.getItem("presetsList")
+        if(savedPresetsList) presetsList = savedPresetsList
 
         // update prev version config already saved in browser
         const aKeys = Object.keys(userConfig)
@@ -72,7 +75,7 @@ let ready = false;
 let timeoutID;
 let prevTime = 0.0;
 
-let api, presets, preset;
+let api, presetsList, preset;
 let runtimeCharacter;
 
 let defaultConfig;
@@ -256,7 +259,7 @@ function init() {
         globalParams = {
             api, defaultConfig, loader, camera, player, helper, scene, character, stage,
             effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter,
-            renderer, presets, preset,
+            renderer, presetsList, preset,
         };
         globalParams.ready = true;
         gui.initGui(globalParams);
