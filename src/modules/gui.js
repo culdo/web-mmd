@@ -125,7 +125,7 @@ class MMDGui {
         }
 
         this.gui.onChange((event)=>{
-            if(event.property !="preset" && mmd.preset == "Default") {
+            if(event.property !="preset" && !(event.value instanceof Function) && mmd.preset == "Default") {
                 _setPreset("Untitled");
                 mmd.presets["Untitled"] = mmd.api;
                 // trigger Proxy
