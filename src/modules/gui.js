@@ -95,6 +95,16 @@ class MMDGui {
                     const presetNames = Object.keys(mmd.presets);
                     _loadPreset(presetNames[presetNames.length - 1]);
                 }
+            },
+            savePreset: () => {
+                const presetBlob = new Blob([JSON.stringify(mmd.api)], {type: 'application/json'})
+                const dlUrl = URL.createObjectURL(presetBlob)
+                const a = document.createElement('a')
+                a.href = dlUrl
+                a.download = `${mmd.preset}.json`
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
             }
         }
 
@@ -117,6 +127,7 @@ class MMDGui {
         folder.add(presetFn, 'newPreset').name('New preset...');
         folder.add(presetFn, 'copyPreset').name('Copy preset...');
         const deleteBt = folder.add(presetFn, 'deletePreset').name('Delete current preset...');
+        folder.add(presetFn, 'savePreset').name('Save preset...');
 
         // init dropdown
         updateDropdown();
