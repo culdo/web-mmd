@@ -19,17 +19,19 @@ async function getConfig() {
     const configSaver = {
         set: function (target, key, value) {
             const result = Reflect.set(...arguments)
-            if (key != 'preset') {
-                localStorage.setItem(target.preset, JSON.stringify(target));
+            
+            if (key == 'preset') {
+                localStorage.setItem("currentPreset", value);
             } else {
-                localStorage.setItem("currentPreset", target.preset);
-            }
+                // deep copy to avoid shared states
+                presets[target.preset] = JSON.parse(JSON.stringify(target))
+                localStorage.setItem("presets", JSON.stringify(presets));
+            } 
+            
             return result;
         }
     };
-
-    const currentPreset = localStorage.getItem("currentPreset");
-
+    
     async function parseBlob(obj) {
         for (const [key2, value2] of Object.entries(obj)) {
             if (value2 instanceof Object) {
@@ -41,15 +43,20 @@ async function getConfig() {
         }
     }
 
-    let userConfig = {};
-    presets = {};
+    const savedPresetName = localStorage.getItem("currentPreset")
+    
+    let userConfig = defaultConfig;
+    presets = {
+        Default: defaultConfig
+    };
 
     // if we have saved user config
-    if (currentPreset) {
-        userConfig = JSON.parse(localStorage.getItem(currentPreset));
+    if (savedPresetName) {
         const savedPresets = localStorage.getItem("presets")
-        presets = savedPresets ? JSON.parse(savedPresets) : {};
-
+        if(savedPresets) {
+            presets = JSON.parse(savedPresets)
+            userConfig = presets[savedPresetName];
+        }
 
         // update prev version config already saved in browser
         const aKeys = Object.keys(userConfig)
@@ -83,9 +90,7 @@ async function getConfig() {
 
         // if we not have saved user config
     } else {
-        localStorage.setItem("currentPreset", defaultConfig.preset);
-
-        userConfig = { ...defaultConfig }
+        localStorage.setItem("currentPreset", "Default");
 
         let file = userConfig.characterFile;
         userConfig.pmxFiles.character[path.basename(file)] = file
@@ -125,7 +130,14 @@ const defaultConfig = {
     'stageFile': 'models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx',
     'musicURL': 'https://www.youtube.com/watch?v=ERo-sPa1a5g',
     //pmx files
-    'pmxFiles': { character: {}, stage: {}, modelTextures: {} },
+    'pmxFiles': { 
+        character: {}, 
+        stage: {}, 
+        modelTextures: {
+            character: {}, 
+            stage: {}
+        } 
+    },
     //player
     'currentTime': 0.0,
     'volume': 0.2,
@@ -166,6 +178,7 @@ async function main() {
         console.log(error)
         localforage.clear();
         localStorage.clear();
+        throw error
     }
     animate();
 }
@@ -270,7 +283,7 @@ function init() {
     if (api.stageFile.startsWith("blob:")) {
         stageParams = {
             modelExtension: path.extname(api.stage).slice(1),
-            modelTextures: api.pmxFiles.modelTextures[api.stage],
+            modelTextures: api.pmxFiles.modelTextures.stage[api.stage],
         };
     }
 
@@ -289,7 +302,7 @@ function init() {
     if (api.characterFile.startsWith("blob:")) {
         characterParams = {
             modelExtension: path.extname(api.character).slice(1),
-            modelTextures: api.pmxFiles.modelTextures[api.character],
+            modelTextures: api.pmxFiles.modelTextures.character[api.character],
             ...characterParams
         };
     }
@@ -382,8 +395,6 @@ function render() {
     }
     let delta = currTime - prevTime;
 
-    saveCurrTime(api, currTime);
-
     if (Math.abs(delta) > 0) {
         // for time seeking using player control
         if (Math.abs(delta) > 0.1) {
@@ -392,6 +403,8 @@ function render() {
 
         // animation updating
         helper.update(delta, currTime);
+        
+        saveCurrTime(api, currTime);
 
         // for time seeking using player control
         if (Math.abs(delta) > 0.1) {

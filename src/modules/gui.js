@@ -41,8 +41,8 @@ class MMDGui {
 
         const folder = this.gui.addFolder('Preset');
 
-        const loadPreset = (value) => {
-            mmd.api.preset = value;
+        const _loadPreset = (name) => {
+            mmd.api.preset = name;
             location.reload();
         }
 
@@ -55,48 +55,37 @@ class MMDGui {
             presetDropdown = presetDropdown
                 .options(Object.keys(mmd.presets))
                 .listen()
-                .onChange(loadPreset);
+                .onChange(_loadPreset);
         }
 
         const presetFn = {
-            _savePresets: () => {
-                localStorage.setItem("presets", JSON.stringify(mmd.presets))
+            newPreset: () => {
+                let newName = prompt("New preset name:");
+                if (newName) {
+                    mmd.presets[newName] = mmd.defaultConfig;
+                    // trigger Proxy
+                    mmd.api.currentTime = mmd.api.currentTime
+
+                    _loadPreset(newName);
+                }
             },
-            _savePreset: () => {
-                // deep copy to avoid cicular serialization error
-                mmd.presets[mmd.api.preset] = mmd.api;
-                presetFn._savePresets();
-            },
-            saveAsNewPreset: () => {
+            copyPreset: () => {
                 let newName = prompt("New preset name:");
                 if (newName) {
                     mmd.api.preset = newName;
-                    presetFn._savePreset();
                     updateDropdown();
                 }
             },
             deletePreset: () => {
                 if (confirm("Are you sure?")) {
                     delete mmd.presets[mmd.api.preset]
-                    presetFn._savePresets();
+                    // trigger Proxy
+                    mmd.api.currentTime = mmd.api.currentTime
 
                     const presetNames = Object.keys(mmd.presets);
-                    loadPreset(presetNames[presetNames.length - 1]);
-                    updateDropdown();
-                }
-            },
-            resetPreset: () => {
-                if (confirm("You will lost your presets data. Are you sure?")) {
-                    const preset = mmd.api.preset;
-                    Object.assign(mmd.api, mmd.defaultConfig);
-                    mmd.api.preset = preset;
-                    location.reload();
+                    _loadPreset(presetNames[presetNames.length - 1]);
                 }
             }
-        }
-
-        if (Object.keys(mmd.presets).length < 1) {
-            presetFn._savePreset();
         }
 
         const presetsFolder = folder.addFolder('Presets');
@@ -106,8 +95,8 @@ class MMDGui {
             Object.keys(mmd.presets)
         )
 
-        folder.add(presetFn, 'resetPreset').name('Reset current preset...');
-        folder.add(presetFn, 'saveAsNewPreset').name('Save as new preset...');
+        folder.add(presetFn, 'newPreset').name('New preset...');
+        folder.add(presetFn, 'copyPreset').name('Copy preset...');
         const deleteBt = folder.add(presetFn, 'deletePreset').name('Delete current preset...');
 
         // init dropdown
@@ -118,7 +107,9 @@ class MMDGui {
         const folder = this.gui.addFolder('MMD files');
         const mmd = this.mmd;
         let pmxDropdowns = this.pmxDropdowns;
-        const modelTextures = mmd.api.pmxFiles.modelTextures;
+
+        const pmxFiles = mmd.api.pmxFiles;
+        const modelTextures = pmxFiles.modelTextures;
 
         const loadCharacter = (url, filename) => {
             mmd.ready = false;
@@ -136,7 +127,7 @@ class MMDGui {
             if (url.startsWith("blob:")) {
                 params = {
                     modelExtension: path.extname(filename).slice(1),
-                    modelTextures: modelTextures[filename],
+                    modelTextures: modelTextures.character[filename],
                     ...params
                 };
             }
@@ -194,7 +185,7 @@ class MMDGui {
             if (url.startsWith("blob:")) {
                 params = {
                     modelExtension: path.extname(filename).slice(1),
-                    modelTextures: modelTextures[filename],
+                    modelTextures: modelTextures.stage[filename],
                 };
             }
             // load stage
@@ -259,17 +250,17 @@ class MMDGui {
 
         // add folder to avoid ordering problem when change character
         var characterFolder = folder.addFolder('character');
-        var characterDropdown = characterFolder.add(mmd.api, 'character', Object.keys(mmd.api.pmxFiles.character)).listen().name("model").onChange(value => {
+        var characterDropdown = characterFolder.add(mmd.api, 'character', Object.keys(pmxFiles.character)).listen().name("model").onChange(value => {
             console.log(value);
-            loadCharacter(mmd.api.pmxFiles.character[value], value);
+            loadCharacter(pmxFiles.character[value], value);
         });
         characterFolder.open();
         folder.add(this.guiFn, 'selectChar').name('select character pmx directory...')
 
         var stageFolder = folder.addFolder('stage');
-        var stageDropdown = stageFolder.add(mmd.api, 'stage', Object.keys(mmd.api.pmxFiles.stage)).listen().name("model").onChange(value => {
+        var stageDropdown = stageFolder.add(mmd.api, 'stage', Object.keys(pmxFiles.stage)).listen().name("model").onChange(value => {
             console.log(value);
-            loadStage(mmd.api.pmxFiles.stage[value], value);
+            loadStage(pmxFiles.stage[value], value);
         });
         stageFolder.open();
         folder.add(this.guiFn, 'selectStage').name('select stage pmx directory...')
@@ -293,8 +284,8 @@ class MMDGui {
 
         function _makeLoadModelFn(itemType, cb) {
             return async function () {
-                let pmxFilesByType = mmd.api.pmxFiles[itemType] = {};
-                for (const key in modelTextures) delete modelTextures[key];
+                let pmxFilesByType = pmxFiles[itemType] = {};
+                let texFilesByType = modelTextures[itemType] = {};
 
                 // load model and textures from unzipped folder
                 let firstKey;
@@ -316,7 +307,7 @@ class MMDGui {
 
                     if (blob.name.includes(".pmx") || blob.name.includes(".pmd")) {
                         const modelName = blob.name
-                        modelTextures[modelName] = resourceMap;
+                        texFilesByType[modelName] = resourceMap;
 
                         if (!firstKey) firstKey = modelName
                         pmxFilesByType[modelName] = url;
@@ -334,7 +325,7 @@ class MMDGui {
                 cb(pmxFilesByType[firstKey], firstKey);
 
                 // trigger Proxy
-                mmd.api.pmxFiles = mmd.api.pmxFiles;
+                mmd.api.pmxFiles = pmxFiles;
             }
         }
     }
