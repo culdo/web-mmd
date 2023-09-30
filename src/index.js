@@ -25,8 +25,8 @@ async function getConfig() {
             } else {
                 // deep copy to avoid shared states
                 presets[target.preset] = JSON.parse(JSON.stringify(target))
-                localStorage.setItem("presets", JSON.stringify(presets));
             } 
+            localStorage.setItem("presets", JSON.stringify(presets));
             
             return result;
         }
