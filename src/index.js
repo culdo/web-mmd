@@ -113,7 +113,7 @@ function init() {
     }
     player.onpause = () => {
         gui.gui.show();
-        api.currentTime = play.currentTime;
+        api.currentTime = player.currentTime;
     }
     // control bar
     document.addEventListener('mousemove', (e) => {
