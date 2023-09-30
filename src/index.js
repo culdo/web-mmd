@@ -22,10 +22,7 @@ async function getConfig() {
             
             if (key == 'preset') {
                 localStorage.setItem("currentPreset", value);
-            } else {
-                // deep copy to avoid shared states
-                presets[target.preset] = JSON.parse(JSON.stringify(target))
-            } 
+            }
             localStorage.setItem("presets", JSON.stringify(presets));
             
             return result;
@@ -45,10 +42,10 @@ async function getConfig() {
 
     const savedPresetName = localStorage.getItem("currentPreset")
     
-    let userConfig = defaultConfig;
     presets = {
         Default: defaultConfig
     };
+    let userConfig = presets.Default;
 
     // if we have saved user config
     if (savedPresetName) {
@@ -56,6 +53,7 @@ async function getConfig() {
         if(savedPresets) {
             presets = JSON.parse(savedPresets)
             userConfig = presets[savedPresetName];
+            userConfig.preset = savedPresetName;
         }
 
         // update prev version config already saved in browser
@@ -91,17 +89,6 @@ async function getConfig() {
         // if we not have saved user config
     } else {
         localStorage.setItem("currentPreset", "Default");
-
-        let file = userConfig.characterFile;
-        userConfig.pmxFiles.character[path.basename(file)] = file
-
-        file = userConfig.stageFile;
-        userConfig.pmxFiles.stage[path.basename(file)] = file
-
-        userConfig.character = path.basename(userConfig.characterFile);
-        userConfig.motion = path.basename(userConfig.motionFile);
-        userConfig.camera = path.basename(userConfig.cameraFile);
-        userConfig.stage = path.basename(userConfig.stageFile);
     }
     console.log(userConfig)
     api = new Proxy(userConfig, configSaver);
@@ -129,10 +116,18 @@ const defaultConfig = {
     'cameraFile': 'models/mmd/cameras/GimmexGimme.vmd',
     'stageFile': 'models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx',
     'musicURL': 'https://www.youtube.com/watch?v=ERo-sPa1a5g',
+    'character': 'つみ式ミクさんv4.pmx',
+    'motion': 'GimmeGimme_with_emotion.vmd',
+    'camera': 'GimmexGimme.vmd',
+    'stage': 'EPDS.pmx',
     //pmx files
     'pmxFiles': { 
-        character: {}, 
-        stage: {}, 
+        character: {
+            'つみ式ミクさんv4.pmx': "models/mmd/つみ式ミクさんv4/つみ式ミクさんv4.pmx"
+        }, 
+        stage: {
+            'EPDS.pmx': 'models/mmd/stages/RedialC_EpRoomDS/EPDS.pmx'
+        }, 
         modelTextures: {
             character: {}, 
             stage: {}
