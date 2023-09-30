@@ -20,9 +20,7 @@ async function getConfig() {
         set: function (target, key, value) {
             const result = Reflect.set(...arguments)
 
-            if(globalParams.preset != "Default") {
-                localStorage.setItem("presets", JSON.stringify(presets));
-            }
+            localStorage.setItem("presets", JSON.stringify(presets));
             
             return result;
         }
@@ -52,6 +50,7 @@ async function getConfig() {
         const savedPresets = localStorage.getItem("presets")
         if(savedPresets) {
             presets = JSON.parse(savedPresets)
+            // keep Default preset unchanged
             if(savedPresetName != "Default") {
                 userConfig = presets[savedPresetName];
             }
@@ -79,12 +78,12 @@ async function getConfig() {
         }
 
         if(userConfig.cameraFile.startsWith("blob:")) {
-            const cameraBlob = await localforage.getItem(`${currentPreset}_camera`);
+            const cameraBlob = await localforage.getItem(`${savedPresetName}_camera`);
             userConfig.cameraFile = URL.createObjectURL(cameraBlob)
         }
 
         if(userConfig.motionFile.startsWith("blob:")) {
-            const motionBlob = await localforage.getItem(`${currentPreset}_motion`);
+            const motionBlob = await localforage.getItem(`${savedPresetName}_motion`);
             userConfig.motionFile = URL.createObjectURL(motionBlob)
         }
 
@@ -165,16 +164,9 @@ const gui = new MMDGui();
 const clock = new THREE.Clock();
 
 async function main() {
-    try {
-        await getConfig();
-        await Ammo();
-        init();
-    } catch (error) {
-        console.log(error)
-        localforage.clear();
-        localStorage.clear();
-        throw error
-    }
+    await getConfig();
+    await Ammo();
+    init();
     animate();
 }
 
