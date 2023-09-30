@@ -23,7 +23,7 @@ class MMDGui {
         this.mmd = params;
 
         this.gui.add(this.mmd.api, 'camera motion').onChange((state) => {
-            if(!state) {
+            if (!state) {
                 this.mmd.camera.up.set(0, 1, 0);
                 this.mmd.camera.updateProjectionMatrix();
             }
@@ -51,43 +51,46 @@ class MMDGui {
         }
 
         const updateDropdown = () => {
-            if(mmd.api.preset == "Default" ) {
+            if (mmd.api.preset == "Default") {
                 deleteBt.disable();
             } else {
                 deleteBt.enable();
             }
             presetDropdown = presetDropdown
-            .options(Object.keys(mmd.presets))
-            .listen()
-            .onChange(loadPreset);
+                .options(Object.keys(mmd.presets))
+                .listen()
+                .onChange(loadPreset);
         }
 
         const presetFn = {
+            _savePresets: () => {
+                localStorage.setItem("presets", JSON.stringify(mmd.presets))
+            },
             _savePreset: () => {
                 // deep copy to avoid cicular serialization error
                 mmd.presets[mmd.api.preset] = mmd.api;
-                localStorage.setItem("presets", JSON.stringify(mmd.presets));
+                presetFn._savePresets();
             },
             saveAsNewPreset: () => {
                 let newName = prompt("New preset name:");
-                if(newName) {
+                if (newName) {
                     mmd.api.preset = newName;
                     presetFn._savePreset();
                     updateDropdown();
                 }
             },
             deletePreset: () => {
-                if(confirm("Are you sure?")) {
+                if (confirm("Are you sure?")) {
                     delete mmd.presets[mmd.api.preset]
-                    localStorage.setItem("presets", JSON.stringify(mmd.presets));
-                    
+                    presetFn._savePresets();
+
                     const presetNames = Object.keys(mmd.presets);
                     loadPreset(presetNames[presetNames.length - 1]);
                     updateDropdown();
                 }
             },
             resetPreset: () => {
-                if(confirm("You will lost your presets data. Are you sure?")) {
+                if (confirm("You will lost your presets data. Are you sure?")) {
                     const preset = mmd.api.preset;
                     Object.assign(mmd.api, mmd.defaultConfig);
                     mmd.api.preset = preset;
@@ -99,14 +102,14 @@ class MMDGui {
         if (Object.keys(mmd.presets).length < 1) {
             presetFn._savePreset();
         }
-        
+
         const presetsFolder = folder.addFolder('Presets');
         let presetDropdown = presetsFolder.add(
-            mmd.api, 
-            'preset', 
+            mmd.api,
+            'preset',
             Object.keys(mmd.presets)
         )
-        
+
         folder.add(presetFn, 'resetPreset').name('Reset current preset...');
         folder.add(presetFn, 'saveAsNewPreset').name('Save as new preset...');
         const deleteBt = folder.add(presetFn, 'deletePreset').name('Delete current preset...');
@@ -382,7 +385,7 @@ class MMDGui {
         })
         folder.add({
             'clear localStorage': () => {
-                if(confirm("Be carful!! You will lost all your Models files、Presets...etc.")) {
+                if (confirm("Be carful!! You will lost all your Models files、Presets...etc.")) {
                     localforage.clear();
                     localStorage.clear();
                     location.reload();
@@ -413,7 +416,7 @@ class MMDGui {
             if (!this.mmd.player.paused) this.gui.hide();
         });
         folder.add(this.mmd.api, 'set pixelratio 1.0').onChange((state) => {
-            if(state) {
+            if (state) {
                 this.mmd.renderer.setPixelRatio(1.0);
             } else {
                 this.mmd.renderer.setPixelRatio(window.devicePixelRatio);
