@@ -154,7 +154,7 @@ class MMDGui {
             let params = {
                 enableSdef: mmd.api['enable SDEF']
             };
-            if (url.startsWith("blob:") || url.startsWith("data:")) {
+            if (url.startsWith("data:")) {
                 params = {
                     modelExtension: path.extname(filename).slice(1),
                     modelTextures: modelTextures.character[filename],
@@ -212,7 +212,7 @@ class MMDGui {
             mmd.scene.remove(mmd.stage);
             console.log("remove stage");
             let params = null;
-            if (url.startsWith("blob:") || url.startsWith("data:")) {
+            if (url.startsWith("data:")) {
                 params = {
                     modelExtension: path.extname(filename).slice(1),
                     modelTextures: modelTextures.stage[filename],
@@ -307,7 +307,6 @@ class MMDGui {
 
         function _makeLoadFileFn(itemName, cb) {
             return async function () {
-                await localforage.setItem(`${mmd.preset}_${itemName}`, this.files[0])
                 cb(await blobToBase64(this.files[0]), this.files[0].name);
             }
         }

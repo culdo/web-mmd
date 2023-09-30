@@ -24,17 +24,6 @@ async function getConfig() {
             return result;
         }
     };
-    
-    async function parseBlob(obj) {
-        for (const [key2, value2] of Object.entries(obj)) {
-            if (value2 instanceof Object) {
-                await parseBlob(value2)
-            } else if (value2.startsWith("blob:")) {
-                let blob = await localforage.getItem(key2);
-                obj[key2] = URL.createObjectURL(blob)
-            }
-        }
-    }
 
     const savedPresetName = await localforage.getItem("currentPreset")
     
@@ -62,28 +51,6 @@ async function getConfig() {
         let newKeys = bKeys.filter(x => !aKeys.includes(x));
         for (const key of newKeys) {
             userConfig[key] = defaultConfig[key]
-        }
-
-        for (const [key, value] of Object.entries(userConfig.pmxFiles)) {
-            await parseBlob(value)
-        }
-
-        if(userConfig.characterFile.startsWith("blob:")) {
-            userConfig.characterFile = userConfig.pmxFiles.character[userConfig.character]
-        }
-
-        if(userConfig.stageFile.startsWith("blob:")) {
-            userConfig.stageFile = userConfig.pmxFiles.stage[userConfig.stage]
-        }
-
-        if(userConfig.cameraFile.startsWith("blob:")) {
-            const cameraBlob = await localforage.getItem(`${savedPresetName}_camera`);
-            userConfig.cameraFile = URL.createObjectURL(cameraBlob)
-        }
-
-        if(userConfig.motionFile.startsWith("blob:")) {
-            const motionBlob = await localforage.getItem(`${savedPresetName}_motion`);
-            userConfig.motionFile = URL.createObjectURL(motionBlob)
         }
 
         // if we not have saved user config
@@ -266,7 +233,7 @@ function init() {
     const loader = new MMDLoader();
 
     let stageParams = null;
-    if (api.stageFile.startsWith("blob:") || api.stageFile.startsWith("data:")) {
+    if (api.stageFile.startsWith("data:")) {
         stageParams = {
             modelExtension: path.extname(api.stage).slice(1),
             modelTextures: api.pmxFiles.modelTextures.stage[api.stage],
@@ -285,7 +252,7 @@ function init() {
     let characterParams = {
         enableSdef: api['enable SDEF']
     };
-    if (api.characterFile.startsWith("blob:") || api.characterFile.startsWith("data:")) {
+    if (api.characterFile.startsWith("data:")) {
         characterParams = {
             modelExtension: path.extname(api.character).slice(1),
             modelTextures: api.pmxFiles.modelTextures.character[api.character],
