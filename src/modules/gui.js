@@ -41,12 +41,12 @@ class MMDGui {
 
         const folder = this.gui.addFolder('Preset');
 
-        const _setPreset = (name) => {
+        const _setPreset = async (name) => {
             mmd.preset = name;
-            localforage.setItem("currentPreset", name);
+            await localforage.setItem("currentPreset", name);
         }
-        const _loadPreset = (name) => {
-            _setPreset(name);
+        const _loadPreset = async (name) => {
+            await _setPreset(name);
             location.reload();
         }
 
@@ -105,6 +105,22 @@ class MMDGui {
                 document.body.appendChild(a)
                 a.click()
                 document.body.removeChild(a)
+            },
+            loadPreset: () => {
+                selectFile.onchange = function (e) {
+                    const presetFile = this.files[0]
+                    const presetName = path.parse(presetFile.name).name
+                    let reader = new FileReader();
+                    reader.readAsText(presetFile); 
+                    reader.onloadend = () => {
+                        mmd.presets[presetName] = JSON.parse(reader.result);
+                        // trigger Proxy
+                        mmd.api.currentTime = mmd.api.currentTime
+
+                        _loadPreset(presetName);
+                    }
+                };
+                selectFile.click();
             }
         }
 
@@ -128,6 +144,7 @@ class MMDGui {
         folder.add(presetFn, 'copyPreset').name('Copy preset...');
         const deleteBt = folder.add(presetFn, 'deletePreset').name('Delete current preset...');
         folder.add(presetFn, 'savePreset').name('Save preset...');
+        folder.add(presetFn, 'loadPreset').name('Load preset...');
 
         // init dropdown
         updateDropdown();
