@@ -38,7 +38,8 @@ async function getConfig() {
     if (savedPresetName) {
         preset = savedPresetName;
         for(const key in defaultConfig) {
-            userConfig[key] = await localforage.getItem(`${preset}_${key}`)
+            const value = await localforage.getItem(`${preset}_${key}`)
+            if(value) userConfig[key] = value
         }
         
         const savedPresetsList = await localforage.getItem("presetsList")
