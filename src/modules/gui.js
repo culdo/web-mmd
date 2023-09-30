@@ -57,13 +57,13 @@ class MMDGui {
                 deleteBt.enable();
             }
             presetDropdown = presetDropdown
-                .options(mmd.presetsList)
+                .options(Array.from(mmd.presetsList))
                 .listen()
                 .onChange(_loadPreset);
         }
 
         const _updatePresetList = async (newName) => {
-            mmd.presetsList.push(newName)
+            mmd.presetsList.add(newName)
             await localforage.setItem("presetsList", mmd.presetsList)
         }
 
@@ -78,24 +78,29 @@ class MMDGui {
             copyPreset: async () => {
                 let newName = prompt("New preset name:");
                 if (newName) {
+                    mmd.preset = newName;
+                    Object.assign(mmd.api, mmd.api);
+                    await _setPreset(newName);
                     await _updatePresetList(newName)
-                    _setPreset(newName);
                     updateDropdown();
                 }
             },
             deletePreset: async () => {
                 if (confirm("Are you sure?")) {
-                    await localforage.iterate(function(value, key, iterationNumber) {
-                        if(key.startsWith(mmd.preset)) {
+                    await localforage.iterate(function (value, key, iterationNumber) {
+                        if (key.startsWith(mmd.preset)) {
                             localforage.removeItem(key)
                         }
                     })
+                    mmd.presetsList.delete(mmd.preset)
+                    await localforage.setItem("presetsList", mmd.presetsList)
 
-                    await _loadPreset(mmd.presetsList[mmd.presetsList.length - 1]);
+                    const presetsArr = Array.from(mmd.presetsList)
+                    await _loadPreset(presetsArr[presetsArr.length - 1]);
                 }
             },
             savePreset: () => {
-                const presetBlob = new Blob([JSON.stringify(mmd.api)], {type: 'application/json'})
+                const presetBlob = new Blob([JSON.stringify(mmd.api)], { type: 'application/json' })
                 const dlUrl = URL.createObjectURL(presetBlob)
                 const a = document.createElement('a')
                 a.href = dlUrl
@@ -111,7 +116,7 @@ class MMDGui {
                     await _updatePresetList(newName)
 
                     let reader = new FileReader();
-                    reader.readAsText(presetFile); 
+                    reader.readAsText(presetFile);
                     reader.onloadend = async () => {
                         mmd.preset = newName;
                         Object.assign(mmd.api, JSON.parse(reader.result));
@@ -122,9 +127,11 @@ class MMDGui {
             }
         }
 
-        this.gui.onChange((event)=>{
-            if(event.property !="preset" && !(event.value instanceof Function) && mmd.preset == "Default") {
-                _setPreset("Untitled");
+        this.gui.onChange(async (event) => {
+            if (event.property != "preset" && !(event.value instanceof Function) && mmd.preset == "Default") {
+                await localforage.setItem(`Untitled_${event.property}`, event.value);
+                await _updatePresetList("Untitled");
+                await _setPreset("Untitled");
                 updateDropdown();
             }
         })
@@ -132,7 +139,7 @@ class MMDGui {
         let presetDropdown = presetsFolder.add(
             mmd,
             'preset',
-            mmd.presetsList
+            Array.from(mmd.presetsList)
         )
 
         folder.add(presetFn, 'newPreset').name('New preset...');
@@ -338,15 +345,15 @@ class MMDGui {
                     const resourcePath = relativePath.split("/").slice(1).join("/")
 
                     let url = await blobToBase64(f);
-                    
+
                     // save model file
                     if (f.name.includes(".pmx") || f.name.includes(".pmd")) {
                         const modelName = f.name
                         texFilesByType[modelName] = resourceMap;
-                        
+
                         if (!firstKey) firstKey = modelName
                         pmxFilesByType[modelName] = url;
-                    // save model textures
+                        // save model textures
                     } else {
                         resourceMap[resourcePath] = url;
                     }
