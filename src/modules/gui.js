@@ -29,127 +29,12 @@ class MMDGui {
             this.mmd.helper.enable('physics', state)
         });
         this._guiFile();
+        this._guiSync();
         this._guiColor();
         this._guiLight();
         this._guiShadow();
         this._guiDebug();
         this._guiPreset();
-    }
-
-    _guiPreset() {
-        const mmd = this.mmd
-
-        const folder = this.gui.addFolder('Preset');
-
-        const _setPreset = async (name) => {
-            mmd.preset = name;
-            await localforage.setItem("currentPreset", name);
-        }
-        const _loadPreset = async (name) => {
-            await _setPreset(name);
-            location.reload();
-        }
-
-        const updateDropdown = () => {
-            if (mmd.preset == "Default") {
-                deleteBt.disable();
-            } else {
-                deleteBt.enable();
-            }
-            presetDropdown = presetDropdown
-                .options(Array.from(mmd.presetsList))
-                .listen()
-                .onChange(_loadPreset);
-        }
-
-        const _updatePresetList = async (newName) => {
-            mmd.presetsList.add(newName)
-            await localforage.setItem("presetsList", mmd.presetsList)
-        }
-
-        const presetFn = {
-            newPreset: async () => {
-                let newName = prompt("New preset name:");
-                if (newName) {
-                    await _updatePresetList(newName)
-                    await _loadPreset(newName);
-                }
-            },
-            copyPreset: async () => {
-                let newName = prompt("New preset name:");
-                if (newName) {
-                    mmd.preset = newName;
-                    Object.assign(mmd.api, mmd.api);
-                    await _setPreset(newName);
-                    await _updatePresetList(newName)
-                    updateDropdown();
-                }
-            },
-            deletePreset: async () => {
-                if (confirm("Are you sure?")) {
-                    await localforage.iterate(function (value, key, iterationNumber) {
-                        if (key.startsWith(mmd.preset)) {
-                            localforage.removeItem(key)
-                        }
-                    })
-                    mmd.presetsList.delete(mmd.preset)
-                    await localforage.setItem("presetsList", mmd.presetsList)
-
-                    const presetsArr = Array.from(mmd.presetsList)
-                    await _loadPreset(presetsArr[presetsArr.length - 1]);
-                }
-            },
-            savePreset: () => {
-                const presetBlob = new Blob([JSON.stringify(mmd.api)], { type: 'application/json' })
-                const dlUrl = URL.createObjectURL(presetBlob)
-                const a = document.createElement('a')
-                a.href = dlUrl
-                a.download = `${mmd.preset}.json`
-                document.body.appendChild(a)
-                a.click()
-                document.body.removeChild(a)
-            },
-            loadPreset: () => {
-                selectFile.onchange = async function (e) {
-                    const presetFile = this.files[0]
-                    const newName = path.parse(presetFile.name).name
-                    await _updatePresetList(newName)
-
-                    let reader = new FileReader();
-                    reader.readAsText(presetFile);
-                    reader.onloadend = async () => {
-                        mmd.preset = newName;
-                        Object.assign(mmd.api, JSON.parse(reader.result));
-                        await _loadPreset(newName);
-                    }
-                };
-                selectFile.click();
-            }
-        }
-
-        this.gui.onChange(async (event) => {
-            if (event.property != "preset" && !(event.value instanceof Function) && mmd.preset == "Default") {
-                await localforage.setItem(`Untitled_${event.property}`, event.value);
-                await _updatePresetList("Untitled");
-                await _setPreset("Untitled");
-                updateDropdown();
-            }
-        })
-        const presetsFolder = folder.addFolder('Presets');
-        let presetDropdown = presetsFolder.add(
-            mmd,
-            'preset',
-            Array.from(mmd.presetsList)
-        )
-
-        folder.add(presetFn, 'newPreset').name('New preset...');
-        folder.add(presetFn, 'copyPreset').name('Copy preset...');
-        const deleteBt = folder.add(presetFn, 'deletePreset').name('Delete current preset...');
-        folder.add(presetFn, 'savePreset').name('Save preset...');
-        folder.add(presetFn, 'loadPreset').name('Load preset...');
-
-        // init dropdown
-        updateDropdown();
     }
 
     _guiFile() {
@@ -375,6 +260,11 @@ class MMDGui {
         }
     }
 
+    _guiSync() {
+        const folder = this.gui.addFolder('Sync');
+        folder.add(this.mmd.api, "motionOffset", -1000, 1000, 10).name("motion offset (ms)")
+    }
+
     _guiColor() {
         const folder = this.gui.addFolder('Color');
         folder.addColor(this.mmd.api, 'fog color').onChange((value) => {
@@ -456,6 +346,122 @@ class MMDGui {
         this._guiRefresh(folder);
 
         folder.close();
+    }
+
+    _guiPreset() {
+        const mmd = this.mmd
+
+        const folder = this.gui.addFolder('Preset');
+
+        const _setPreset = async (name) => {
+            mmd.preset = name;
+            await localforage.setItem("currentPreset", name);
+        }
+        const _loadPreset = async (name) => {
+            await _setPreset(name);
+            location.reload();
+        }
+
+        const updateDropdown = () => {
+            if (mmd.preset == "Default") {
+                deleteBt.disable();
+            } else {
+                deleteBt.enable();
+            }
+            presetDropdown = presetDropdown
+                .options(Array.from(mmd.presetsList))
+                .listen()
+                .onChange(_loadPreset);
+        }
+
+        const _updatePresetList = async (newName) => {
+            mmd.presetsList.add(newName)
+            await localforage.setItem("presetsList", mmd.presetsList)
+        }
+
+        const presetFn = {
+            newPreset: async () => {
+                let newName = prompt("New preset name:");
+                if (newName) {
+                    await _updatePresetList(newName)
+                    await _loadPreset(newName);
+                }
+            },
+            copyPreset: async () => {
+                let newName = prompt("New preset name:");
+                if (newName) {
+                    mmd.preset = newName;
+                    Object.assign(mmd.api, mmd.api);
+                    await _setPreset(newName);
+                    await _updatePresetList(newName)
+                    updateDropdown();
+                }
+            },
+            deletePreset: async () => {
+                if (confirm("Are you sure?")) {
+                    await localforage.iterate(function (value, key, iterationNumber) {
+                        if (key.startsWith(mmd.preset)) {
+                            localforage.removeItem(key)
+                        }
+                    })
+                    mmd.presetsList.delete(mmd.preset)
+                    await localforage.setItem("presetsList", mmd.presetsList)
+
+                    const presetsArr = Array.from(mmd.presetsList)
+                    await _loadPreset(presetsArr[presetsArr.length - 1]);
+                }
+            },
+            savePreset: () => {
+                const presetBlob = new Blob([JSON.stringify(mmd.api)], { type: 'application/json' })
+                const dlUrl = URL.createObjectURL(presetBlob)
+                const a = document.createElement('a')
+                a.href = dlUrl
+                a.download = `${mmd.preset}.json`
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+            },
+            loadPreset: () => {
+                selectFile.onchange = async function (e) {
+                    const presetFile = this.files[0]
+                    const newName = path.parse(presetFile.name).name
+                    await _updatePresetList(newName)
+
+                    let reader = new FileReader();
+                    reader.readAsText(presetFile);
+                    reader.onloadend = async () => {
+                        mmd.preset = newName;
+                        Object.assign(mmd.api, JSON.parse(reader.result));
+                        await _loadPreset(newName);
+                    }
+                };
+                selectFile.click();
+            }
+        }
+
+        this.gui.onChange(async (event) => {
+            if (event.property != "preset" && !(event.value instanceof Function) && mmd.preset == "Default") {
+                await localforage.setItem(`Untitled_${event.property}`, event.value);
+                await _updatePresetList("Untitled");
+                await _setPreset("Untitled");
+                updateDropdown();
+            }
+        })
+        const presetsFolder = folder.addFolder('Presets');
+        let presetDropdown = presetsFolder.add(
+            mmd,
+            'preset',
+            Array.from(mmd.presetsList)
+        )
+
+        folder.add(presetFn, 'newPreset').name('New preset...');
+        folder.add(presetFn, 'copyPreset').name('Copy preset...');
+        const deleteBt = folder.add(presetFn, 'deletePreset').name('Delete current preset...');
+        folder.add(presetFn, 'savePreset').name('Save preset...');
+        folder.add(presetFn, 'loadPreset').name('Load preset...');
+
+        // init dropdown
+        updateDropdown();
     }
 
 }

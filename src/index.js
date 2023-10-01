@@ -298,7 +298,7 @@ function animate() {
 function render() {
     const runtimeCharacter = globalParams.runtimeCharacter;
 
-    let currTime = player.currentTime
+    let currTime = player.currentTime + (api.motionOffset * 0.001)
     // player has a bug that sometime jump to end(duration)
     // so we just skip that frame
     if (currTime == player.duration) {
