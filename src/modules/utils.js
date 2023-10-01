@@ -36,7 +36,7 @@ function withProgress(resp) {
             for (; ;) {
                 const { done, value } = await reader.read();
                 if (done) break;
-                loaded += value.byteLength;
+                loaded += value.length;
                 if (totalSize) {
                     loading.textContent = "Loading " + Math.round((loaded / totalSize) * 100) + "%...";
                 }
