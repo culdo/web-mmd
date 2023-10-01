@@ -26,6 +26,27 @@ function onProgress(xhr) {
 
 }
 
+function withProgress(resp) {
+    const totalSize = parseInt(resp.headers.get('content-length'));
+
+    return new Response(new ReadableStream({
+        async start(controller) {
+            const reader = resp.body.getReader();
+            let loaded = 0
+            for (; ;) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                loaded += value.byteLength;
+                if (totalSize) {
+                    loading.textContent = "Loading " + Math.round(loaded / totalSize, 2) + "%...";
+                }
+                controller.enqueue(value);
+            }
+            controller.close();
+        },
+    }));
+}
+
 async function loadMusicFromYT(url) {
     let player = document.getElementById("player")
 
@@ -176,4 +197,4 @@ function blobToBase64(blob) {
     });
 }
 
-export { onProgress, loadMusicFromYT, saveCurrTime, blobToBase64 }
+export { onProgress, loadMusicFromYT, saveCurrTime, blobToBase64, withProgress }

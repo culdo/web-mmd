@@ -7,7 +7,7 @@ import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { MMDLoader } from './modules/MMDLoader.js';
 import { MMDAnimationHelper } from './modules/MMDAnimationHelper.js';
 import { MMDGui } from './modules/gui.js'
-import { onProgress, loadMusicFromYT, saveCurrTime } from './modules/utils.js'
+import { onProgress, loadMusicFromYT, saveCurrTime, streamAsyncIterable, withProgress } from './modules/utils.js'
 import path from 'path-browserify';
 import localforage from 'localforage';
 
@@ -28,7 +28,10 @@ async function getConfig() {
     };
 
     const resp = await fetch('presets/Default.json')
-    defaultConfig = await resp.json()
+    
+    const res = withProgress(resp)
+
+    defaultConfig = await res.json()
 
     preset = "Default"
     presetsList = new Set(["Default"]);
