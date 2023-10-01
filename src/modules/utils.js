@@ -17,7 +17,7 @@ function onProgress(xhr) {
         for (const progress of Object.values(progressMap)) {
             percentCompleteAll += progress;
         }
-        loading.textContent = "Loading " + Math.round(percentCompleteAll, 2) + "%...";
+        loading.textContent = "Loading " + Math.round(percentCompleteAll) + "%...";
 
         if (percentCompleteAll > 100) {
             progressMap = {};
@@ -38,7 +38,7 @@ function withProgress(resp) {
                 if (done) break;
                 loaded += value.byteLength;
                 if (totalSize) {
-                    loading.textContent = "Loading " + Math.round((loaded / totalSize) * 100, 2) + "%...";
+                    loading.textContent = "Loading " + Math.round((loaded / totalSize) * 100) + "%...";
                 }
                 controller.enqueue(value);
             }
