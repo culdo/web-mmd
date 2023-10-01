@@ -29,7 +29,7 @@ async function getConfig() {
 
     const resp = await fetch('presets/Default.json')
     
-    const res = withProgress(resp)
+    const res = withProgress(resp, 38204598)
 
     defaultConfig = await res.json()
 

@@ -26,8 +26,10 @@ function onProgress(xhr) {
 
 }
 
-function withProgress(resp) {
-    const totalSize = parseInt(resp.headers.get('content-length'), 10);
+function withProgress(resp, totalSize = null) {
+    if (!totalSize) {
+        totalSize = parseInt(resp.headers.get('content-length'), 10);
+    }
 
     return new Response(new ReadableStream({
         async start(controller) {
