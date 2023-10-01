@@ -38,7 +38,7 @@ function withProgress(resp) {
                 if (done) break;
                 loaded += value.byteLength;
                 if (totalSize) {
-                    loading.textContent = "Loading " + Math.round(loaded / totalSize, 2) + "%...";
+                    loading.textContent = "Loading " + Math.round((loaded / totalSize) * 100, 2) + "%...";
                 }
                 controller.enqueue(value);
             }
