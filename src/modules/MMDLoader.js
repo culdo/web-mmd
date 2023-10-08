@@ -1970,10 +1970,6 @@ class AnimationBuilder {
 
 			}
 
-			times.length = index + 1;
-			values.length = (index + 1) * stride;
-			interpolations.length = (index + 1) * interpolateStride;
-
 		}
 
 		const track = new typedKeyframeTrack(node, times, values);
@@ -2012,10 +2008,7 @@ class CubicBezierInterpolation extends Interpolant {
 		const offset1 = i1 * stride;
 		const offset0 = offset1 - stride;
 
-		// No interpolation if next key frame is in one frame in 30fps.
-		// This is from MMD animation spec.
-		// '1.5' is for precision loss. times are Float32 in Three.js Animation system.
-		const weight1 = ((t1 - t0) < 1 / 30 * 1.5) ? 0.0 : (t - t0) / (t1 - t0);
+		const weight1 = (t - t0) / (t1 - t0);
 
 		if (stride === 4) { // Quaternion
 
