@@ -341,8 +341,9 @@ class MMDGui {
         folder.add({
             'clear localforage': () => {
                 if (confirm("Be carful!! You will lost all your Models files、Presets...etc.")) {
-                    localforage.clear();
-                    location.reload();
+                    localforage.clear(()=>{
+                        location.reload();
+                    });
                 }
             }
         }, 'clear localforage')
