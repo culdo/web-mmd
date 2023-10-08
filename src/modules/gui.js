@@ -7,7 +7,7 @@ import { onProgress, loadMusicFromYT, blobToBase64 } from './utils';
 
 class MMDGui {
     constructor() {
-        this.gui = new GUI();
+        this.gui = new GUI({ closeFolders: true });
         this.open = () => this.gui.open();
         this.close = () => this.gui.close();
         this.mmd = null;
@@ -28,6 +28,7 @@ class MMDGui {
         this.gui.add(this.mmd.api, 'physics').onChange((state) => {
             this.mmd.helper.enable('physics', state)
         });
+        this._guiMorph();
         this._guiFile();
         this._guiSync();
         this._guiColor();
@@ -44,6 +45,7 @@ class MMDGui {
 
         const pmxFiles = mmd.api.pmxFiles;
         const modelTextures = pmxFiles.modelTextures;
+        const updateMorphFolder = this.updateMorphFolder
 
         const loadCharacter = (url, filename) => {
             mmd.ready = false;
@@ -95,11 +97,17 @@ class MMDGui {
 
                 mmd.character = character;
 
+                mmd.helper.enable('physics', false);
+                mmd.helper.update(0.0, player.currentTime)
                 mmd.runtimeCharacter.physics.reset();
+                mmd.helper.enable('physics', true);
+
                 console.log("loaded reset")
+
                 mmd.ready = true;
                 overlay.style.display = 'none';
-
+                
+                updateMorphFolder();
             }, onProgress, null, params)
             mmd.api.character = filename;
         };
@@ -205,7 +213,6 @@ class MMDGui {
         folder.add(this.guiFn, 'selectCamera').name('select camera vmd file...')
         folder.add(mmd.api, 'motion').listen()
         folder.add(this.guiFn, 'selectMotion').name('select motion vmd file...')
-        folder.close();
 
         function _makeLoadFileFn(itemName, cb) {
             return async function () {
@@ -260,6 +267,33 @@ class MMDGui {
         }
     }
 
+    _guiMorph() {
+        
+        const buildOnChangeMorph = (key) => {
+            return () => 
+                this.mmd.character.morphTargetInfluences[ this.mmd.character.morphTargetDictionary[key] ] = this.mmd.api[key];
+        }
+
+        const folder = this.gui.addFolder('Morph');
+        let morphFolder = folder.addFolder('morph')
+
+        const updateMorphFolder = () => {
+            morphFolder.destroy()
+            morphFolder = folder.addFolder('morph')
+
+            for(const key in this.mmd.character.morphTargetDictionary) {
+                if(!(key in this.mmd.api)) {
+                    this.mmd.api[key] = 0.0;
+                }
+                buildOnChangeMorph(key)()
+                morphFolder.add(this.mmd.api, key, 0.0, 1.0, 0.01).onChange(buildOnChangeMorph(key))
+            }
+        }
+        updateMorphFolder();
+
+        this.updateMorphFolder = updateMorphFolder;
+    }
+
     _guiSync() {
         const folder = this.gui.addFolder('Sync');
         folder.add(this.mmd.api, "motionOffset", -1000, 1000, 10).name("motion offset (ms)")
@@ -270,7 +304,6 @@ class MMDGui {
         folder.addColor(this.mmd.api, 'fog color').onChange((value) => {
             this.mmd.scene.fog.color.setHex(value);
         });
-        folder.close();
     }
 
     _guiShadow() {
@@ -281,7 +314,6 @@ class MMDGui {
         folder.add(this.mmd.api, 'self shadow').onChange((state) => {
             this.mmd.character.receiveShadow = state;
         });
-        folder.close();
     }
 
     _guiLight() {
@@ -290,7 +322,6 @@ class MMDGui {
         folder.addColor(this.mmd.api, 'Directional').onChange(setColor(this.mmd.dirLight.color));
         folder.addColor(this.mmd.api, 'Hemisphere sky').onChange(setColor(this.mmd.hemiLight.color));
         folder.addColor(this.mmd.api, 'Hemisphere ground').onChange(setColor(this.mmd.hemiLight.groundColor));
-        folder.close();
 
         // handle gui color change
         function setColor(color) {
@@ -345,7 +376,6 @@ class MMDGui {
         });
         this._guiRefresh(folder);
 
-        folder.close();
     }
 
     _guiPreset() {

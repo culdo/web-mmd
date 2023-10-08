@@ -42,22 +42,15 @@ async function getConfig() {
     // if we have saved user config
     if (savedPresetName) {
         preset = savedPresetName;
-        for(const key in defaultConfig) {
-            const value = await localforage.getItem(`${preset}_${key}`)
-            if(value != null) userConfig[key] = value
-        }
+        await localforage.iterate((val, key) => {
+            if(key.startsWith(`${preset}_`)) {
+                const configKey = key.split(/_(.*)/s)[1]
+                userConfig[configKey] = val
+            }
+        })
         
         const savedPresetsList = await localforage.getItem("presetsList")
         if(savedPresetsList) presetsList = savedPresetsList
-
-        // update prev version config already saved in browser
-        const aKeys = Object.keys(userConfig)
-        const bKeys = Object.keys(defaultConfig)
-        let newKeys = bKeys.filter(x => !aKeys.includes(x));
-        for (const key of newKeys) {
-            userConfig[key] = defaultConfig[key]
-        }
-        // if we not have saved user config
     }
     console.log(userConfig)
     api = new Proxy(userConfig, configSaver);
@@ -116,6 +109,10 @@ function init() {
     }
     player.onpause = () => {
         gui.gui.show();
+        api.currentTime = player.currentTime;
+    }
+
+    player.onseeked = () => {
         api.currentTime = player.currentTime;
     }
     // control bar
@@ -260,7 +257,7 @@ function init() {
         globalParams = {
             api, defaultConfig, loader, camera, player, helper, scene, character, stage,
             effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter,
-            renderer, presetsList, preset,
+            renderer, presetsList, preset
         };
         globalParams.ready = true;
         gui.initGui(globalParams);
