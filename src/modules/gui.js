@@ -275,18 +275,20 @@ class MMDGui {
         }
 
         const folder = this.gui.addFolder('Morph');
-        let morphFolder = folder.addFolder('morph')
+
 
         const updateMorphFolder = () => {
-            morphFolder.destroy()
-            morphFolder = folder.addFolder('morph')
-
+            const controllers = [...folder.controllers]
+            for(const controller of controllers) {
+                controller.destroy()
+            }
             for(const key in this.mmd.character.morphTargetDictionary) {
                 if(!(key in this.mmd.api)) {
                     this.mmd.api[key] = 0.0;
                 }
-                buildOnChangeMorph(key)()
-                morphFolder.add(this.mmd.api, key, 0.0, 1.0, 0.01).onChange(buildOnChangeMorph(key))
+                const onChangeMorph = buildOnChangeMorph(key)
+                onChangeMorph()
+                folder.add(this.mmd.api, key, 0.0, 1.0, 0.01).onChange(onChangeMorph)
             }
         }
         updateMorphFolder();
@@ -477,12 +479,13 @@ class MMDGui {
                 updateDropdown();
             }
         })
-        const presetsFolder = folder.addFolder('Presets');
+        const presetsFolder = folder.addFolder('presets');
         let presetDropdown = presetsFolder.add(
             mmd,
             'preset',
             Array.from(mmd.presetsList)
         )
+        presetsFolder.open()
 
         folder.add(presetFn, 'newPreset').name('New preset...');
         folder.add(presetFn, 'copyPreset').name('Copy preset...');
