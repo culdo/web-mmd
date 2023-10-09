@@ -1906,11 +1906,11 @@ class AnimationBuilder {
 		const tracks = [];
 
 		// I expect an object whose name 'target' exists under THREE.Camera
-		tracks.push(this._createTrack('target.position', VectorKeyframeTrack, times, centers, cInterpolations));
+		tracks.push(this._createTrack('target.position', VectorKeyframeTrack, times, centers, cInterpolations, true));
 
-		tracks.push(this._createTrack('.quaternion', QuaternionKeyframeTrack, times, quaternions, qInterpolations));
-		tracks.push(this._createTrack('.position', VectorKeyframeTrack, times, positions, pInterpolations));
-		tracks.push(this._createTrack('.fov', NumberKeyframeTrack, times, fovs, fInterpolations));
+		tracks.push(this._createTrack('.quaternion', QuaternionKeyframeTrack, times, quaternions, qInterpolations, true));
+		tracks.push(this._createTrack('.position', VectorKeyframeTrack, times, positions, pInterpolations, true));
+		tracks.push(this._createTrack('.fov', NumberKeyframeTrack, times, fovs, fInterpolations, true));
 
 		return new AnimationClip('', - 1, tracks);
 
@@ -1918,7 +1918,7 @@ class AnimationBuilder {
 
 	// private method
 
-	_createTrack(node, typedKeyframeTrack, times, values, interpolations) {
+	_createTrack(node, typedKeyframeTrack, times, values, interpolations, isCamera=false) {
 
 		/*
 			 * optimizes here not to let KeyframeTrackPrototype optimize
@@ -1976,7 +1976,7 @@ class AnimationBuilder {
 
 		track.createInterpolant = function InterpolantFactoryMethodCubicBezier(result) {
 
-			return new CubicBezierInterpolation(this.times, this.values, this.getValueSize(), result, new Float32Array(interpolations));
+			return new CubicBezierInterpolation(this.times, this.values, this.getValueSize(), result, new Float32Array(interpolations), isCamera);
 
 		};
 
@@ -1990,11 +1990,12 @@ class AnimationBuilder {
 
 class CubicBezierInterpolation extends Interpolant {
 
-	constructor(parameterPositions, sampleValues, sampleSize, resultBuffer, params) {
+	constructor(parameterPositions, sampleValues, sampleSize, resultBuffer, params, isCamera=false) {
 
 		super(parameterPositions, sampleValues, sampleSize, resultBuffer);
 
 		this.interpolationParams = params;
+		this.isCamera = isCamera;
 
 	}
 
@@ -2008,7 +2009,10 @@ class CubicBezierInterpolation extends Interpolant {
 		const offset1 = i1 * stride;
 		const offset0 = offset1 - stride;
 
-		const weight1 = (t - t0) / (t1 - t0);
+		// No interpolation if next camera key frame is in one frame in 30fps.
+		// This is from MMD animation spec.
+		// '1.5' is for precision loss. times are Float32 in Three.js Animation system.
+		const weight1 = (((t1 - t0) < 1 / 30 * 1.5) && this.isCamera) ? 0.0 : (t - t0) / (t1 - t0);
 
 		if (stride === 4) { // Quaternion
 
