@@ -52,6 +52,7 @@ async function getConfig() {
         const savedPresetsList = await localforage.getItem("presetsList")
         if(savedPresetsList) presetsList = savedPresetsList
     }
+    globalParams["preset"] = preset;
     console.log(userConfig)
     api = new Proxy(userConfig, configSaver);
 
@@ -91,7 +92,11 @@ function init() {
     const container = document.createElement('div');
     document.body.appendChild(container);
 
-    loadMusicFromYT(api.musicURL);
+    if(api.musicURL.startsWith("data:")) {
+        player.src = api.musicURL
+    } else {
+        loadMusicFromYT(api);
+    }
 
     player.currentTime = api["currentTime"];
     player.volume = api['volume'];

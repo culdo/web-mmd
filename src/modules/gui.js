@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import localforage from 'localforage';
 import path from 'path-browserify';
 import { GUI } from 'lil-gui';
-import { onProgress, loadMusicFromYT, blobToBase64 } from './utils';
+import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, createAudioLink } from './utils';
 
 class MMDGui {
     constructor() {
@@ -114,7 +114,7 @@ class MMDGui {
         // TODO: use unzip tools to unzip model files, because it has many texture images
         this.guiFn.selectChar = () => {
             selectFile.webkitdirectory = true;
-            selectFile.onchange = _makeLoadModelFn('character', loadCharacter)
+            selectFile.onchange = _buildLoadModelFn('character', loadCharacter)
             selectFile.click();
             selectFile.webkitdirectory = false;
         }
@@ -146,16 +146,28 @@ class MMDGui {
         // TODO: same above
         this.guiFn.selectStage = () => {
             selectFile.webkitdirectory = true;
-            selectFile.onchange = _makeLoadModelFn('stage', loadStage);
+            selectFile.onchange = _buildLoadModelFn('stage', loadStage);
             selectFile.click();
             selectFile.webkitdirectory = false;
         }
 
-        this.guiFn.selectMusic = () => {
-            loadMusicFromYT(mmd.api.musicURL);
+        this.guiFn.changeYtMusic = () => {
+            loadMusicFromYT(mmd.api);
         }
+
+        this.guiFn.saveMusic = () => {}
+
+        this.guiFn.selectMusic = () => {
+            selectFile.onchange = _buildLoadFileFn((url, filename) => {
+                player.src = url;
+                mmd.api.musicURL = url;
+                mmd.api.musicName = filename;
+            });
+            selectFile.click();
+        }
+
         this.guiFn.selectCamera = () => {
-            selectFile.onchange = _makeLoadFileFn('camera', (url, filename) => {
+            selectFile.onchange = _buildLoadFileFn((url, filename) => {
                 mmd.helper.remove(mmd.camera);
                 mmd.loader.loadAnimation(url, mmd.camera, function (cameraAnimation) {
 
@@ -170,7 +182,7 @@ class MMDGui {
             selectFile.click();
         }
         this.guiFn.selectMotion = () => {
-            selectFile.onchange = _makeLoadFileFn('motion', (url, filename) => {
+            selectFile.onchange = _buildLoadFileFn((url, filename) => {
                 mmd.runtimeCharacter.mixer.uncacheRoot(mmd.character);
                 mmd.helper.remove(mmd.character);
                 mmd.api.motionFile = url;
@@ -207,31 +219,37 @@ class MMDGui {
 
         pmxDropdowns = { character: characterDropdown, stage: stageDropdown };
 
-        folder.add(mmd.api, 'musicURL').name('music from YT').listen()
-        folder.add(this.guiFn, 'selectMusic').name('change use above url...')
+        folder.add(mmd.api, 'musicName').name('music').listen()
+        folder.add(mmd.api, 'musicYtURL').name('music from YT').listen()
+        
+        const saveBt = folder.add(this.guiFn, 'saveMusic').name('save music')
+        const a = createAudioLink();
+        saveBt.domElement.replaceWith(a)
+        
+        folder.add(this.guiFn, 'changeYtMusic').name('change use above url...')
+        folder.add(this.guiFn, 'selectMusic').name('select audio file...')
+
         folder.add(mmd.api, 'camera').listen()
         folder.add(this.guiFn, 'selectCamera').name('select camera vmd file...')
         folder.add(mmd.api, 'motion').listen()
         folder.add(this.guiFn, 'selectMotion').name('select motion vmd file...')
 
-        function _makeLoadFileFn(itemName, cb) {
+        function _buildLoadFileFn(cb) {
             return async function () {
+                if (this.files.length < 1) return;
                 cb(await blobToBase64(this.files[0]), this.files[0].name);
             }
         }
 
-        function _makeLoadModelFn(itemType, cb) {
+        function _buildLoadModelFn(itemType, cb) {
             return async function () {
+                if (this.files.length < 1) return;
                 let pmxFilesByType = pmxFiles[itemType] = {};
                 let texFilesByType = modelTextures[itemType] = {};
 
                 // load model and textures from unzipped folder
                 let firstKey;
                 const resourceMap = {};
-                if (this.files.length < 1) {
-                    alert('Please choose an file to be uploaded.');
-                    return;
-                }
                 for (const f of this.files) {
                     let relativePath = f.webkitRelativePath;
                     const resourcePath = relativePath.split("/").slice(1).join("/")
@@ -447,12 +465,7 @@ class MMDGui {
             savePreset: () => {
                 const presetBlob = new Blob([JSON.stringify(mmd.api)], { type: 'application/json' })
                 const dlUrl = URL.createObjectURL(presetBlob)
-                const a = document.createElement('a')
-                a.href = dlUrl
-                a.download = `${mmd.preset}.json`
-                document.body.appendChild(a)
-                a.click()
-                document.body.removeChild(a)
+                startFileDownload(dlUrl, `${mmd.preset}.json`)
             },
             loadPreset: () => {
                 selectFile.onchange = async function (e) {
@@ -473,8 +486,10 @@ class MMDGui {
         }
 
         this.gui.onChange(async (event) => {
-            if (event.property != "preset" && !(event.value instanceof Function) && mmd.preset == "Default") {
-                await localforage.setItem(`Untitled_${event.property}`, event.value);
+            if (event.property != "preset" && mmd.preset == "Default") {
+                if(!(event.value instanceof Function)) {
+                    await localforage.setItem(`Untitled_${event.property}`, event.value);
+                }
                 await _updatePresetList("Untitled");
                 await _setPreset("Untitled");
                 updateDropdown();
