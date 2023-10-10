@@ -28,6 +28,7 @@ class MMDGui {
         this.gui.add(this.mmd.api, 'physics').onChange((state) => {
             this.mmd.helper.enable('physics', state)
         });
+        this._guiCamera();
         this._guiMorph();
         this._guiFile();
         this._guiSync();
@@ -36,6 +37,40 @@ class MMDGui {
         this._guiShadow();
         this._guiDebug();
         this._guiPreset();
+    }
+
+    _guiCamera() {
+        const camera = this.mmd.camera
+
+        if(this.mmd.api.fov && this.mmd.api.zoom) {
+            camera.fov = this.mmd.api.fov
+            camera.zoom = this.mmd.api.zoom
+            camera.updateProjectionMatrix();
+        } else {
+            this.mmd.api["fov"] = camera.fov
+            this.mmd.api["zoom"] = camera.zoom
+        }
+
+        const folder = this.gui.addFolder('Camera');
+        const guiFn = {
+            reset: () => {
+                this.mmd.api.fov = 50;
+                this.mmd.api.zoom = 1;
+                camera.fov = 50;
+                camera.zoom = 1;
+                camera.updateProjectionMatrix();
+            }
+        }
+        folder.add(this.mmd.api, "fov", 0, 100, 1).listen().onChange((value) => {
+            camera.fov = value
+            camera.updateProjectionMatrix();
+        })
+        folder.add(this.mmd.api, "zoom", 0, 5, 0.1).listen().onChange((value) => {
+            camera.zoom = value
+            camera.updateProjectionMatrix();
+        })
+        folder.add(guiFn, "reset")
+
     }
 
     _guiFile() {

@@ -629,10 +629,10 @@ class MMDAnimationHelper {
 
 			mixer.setTime(time, this.enabled.cameraAnimation);
 			if (this.enabled.cameraAnimation) {
-				camera.updateProjectionMatrix();
 				camera.up.set(0, 1, 0);
 				camera.up.applyQuaternion(camera.quaternion);
 				camera.lookAt(this.cameraTarget.position);
+				camera.updateProjectionMatrix();
 			}
 
 		}
