@@ -44,7 +44,7 @@ async function getConfig() {
         preset = savedPresetName;
         await localforage.iterate((val, key) => {
             if(key.startsWith(`${preset}_`)) {
-                const configKey = key.split(/_(.*)/s)[1]
+                const configKey = key.split(`${preset}_`)[1]
                 userConfig[configKey] = val
             }
         })
