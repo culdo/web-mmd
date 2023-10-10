@@ -95,6 +95,10 @@ function init() {
     if(api.musicURL.startsWith("data:")) {
         player.src = api.musicURL
     } else {
+        // old version fallback
+        if(api.musicURL.startsWith("http")) {
+            api.musicYtURL = api.musicURL;
+        }
         loadMusicFromYT(api);
     }
 
