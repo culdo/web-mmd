@@ -185,6 +185,9 @@ function init() {
 
     // effect composer
     postprocessor = new PostProcessor(scene, camera, renderer)
+    if(!api['enable bokeh']) {
+        api['enable bokeh'] = false;
+    }
     postprocessor.outline.enabled = api['show outline']
     postprocessor.bokeh.enabled = api['enable bokeh']
     composer = postprocessor.composer

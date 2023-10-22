@@ -41,9 +41,7 @@ class MMDGui {
     }
 
     _guiEffect() {
-        if(!this.mmd.api['enable bokeh']) {
-            this.mmd.api['enable bokeh'] = false;
-        }
+        
         const folder = this.gui.addFolder('Effect');
         folder.add(this.mmd.api, 'enable bokeh').onChange((state) => {
             this.mmd.postprocessor.bokeh.enabled = state;
