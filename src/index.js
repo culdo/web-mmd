@@ -3,11 +3,12 @@ import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { MMDLoader } from './modules/MMDLoader.js';
 import { MMDAnimationHelper } from './modules/MMDAnimationHelper.js';
 import { MMDGui } from './modules/gui.js'
 import { onProgress, loadMusicFromYT, saveCurrTime, streamAsyncIterable, withProgress } from './modules/utils.js'
+import {PostProcessor} from './modules/postProcessor.js'
+
 import path from 'path-browserify';
 import localforage from 'localforage';
 
@@ -60,7 +61,9 @@ async function getConfig() {
 
 let stats;
 
-let character, camera, scene, renderer, effect, stage;
+let character, camera, scene, renderer, stage;
+let postprocessor, composer;
+
 let helper, ikHelper, physicsHelper;
 
 let globalParams = {};
@@ -180,9 +183,11 @@ function init() {
         camera.updateProjectionMatrix();
     });
 
-    // outline
-    effect = new OutlineEffect(renderer);
-    effect.enabled = api['show outline']
+    // effect composer
+    postprocessor = new PostProcessor(scene, camera, renderer)
+    postprocessor.outline.enabled = api['show outline']
+    postprocessor.bokeh.enabled = api['enable bokeh']
+    composer = postprocessor.composer
 
     // FPS stats
     stats = new Stats();
@@ -265,7 +270,7 @@ function init() {
 
         globalParams = {
             api, defaultConfig, loader, camera, player, helper, scene, character, stage,
-            effect, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter,
+            postprocessor, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter,
             renderer, presetsList, preset
         };
         globalParams.ready = true;
@@ -286,7 +291,7 @@ function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 
-    effect.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(window.innerWidth, window.innerHeight);
 
 }
 
@@ -347,6 +352,6 @@ function render() {
         runtimeCharacter.looped = false;
     }
 
-    effect.render(scene, camera);
+    composer.render(scene, camera);
 
 }

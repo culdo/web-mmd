@@ -28,6 +28,7 @@ class MMDGui {
         this.gui.add(this.mmd.api, 'physics').onChange((state) => {
             this.mmd.helper.enable('physics', state)
         });
+        this._guiEffect();
         this._guiCamera();
         this._guiMorph();
         this._guiFile();
@@ -37,6 +38,19 @@ class MMDGui {
         this._guiShadow();
         this._guiDebug();
         this._guiPreset();
+    }
+
+    _guiEffect() {
+        if(!this.mmd.api['enable bokeh']) {
+            this.mmd.api['enable bokeh'] = false;
+        }
+        const folder = this.gui.addFolder('Effect');
+        folder.add(this.mmd.api, 'enable bokeh').onChange((state) => {
+            this.mmd.postprocessor.bokeh.enabled = state;
+        });
+        folder.add(this.mmd.api, 'show outline').onChange((state) => {
+            this.mmd.postprocessor.outline.enabled = state;
+        });
     }
 
     _guiCamera() {
@@ -407,9 +421,6 @@ class MMDGui {
 
         folder.add(this.mmd.api, 'show FPS').onChange((state) => {
             document.getElementById("fps").style.display = state ? "block" : "none";
-        });
-        folder.add(this.mmd.api, 'show outline').onChange((state) => {
-            this.mmd.effect.enabled = state;
         });
         folder.add(this.mmd.api, 'show IK bones').onChange((state) => {
             this.mmd.ikHelper.visible = state;
