@@ -1,7 +1,7 @@
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass';
 import { OutlinePass } from './effects/OutlinePass';
+import { BokehPass } from './effects/BokehPass';
+import { EffectComposer } from './effects/EffectComposer';
 
 class PostProcessor {
     constructor(scene, camera, renderer) {
