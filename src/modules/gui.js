@@ -386,9 +386,22 @@ class MMDGui {
     _guiLight() {
         const folder = this.gui.addFolder('Light');
 
-        folder.addColor(this.mmd.api, 'Directional').onChange(setColor(this.mmd.dirLight.color));
-        folder.addColor(this.mmd.api, 'Hemisphere sky').onChange(setColor(this.mmd.hemiLight.color));
-        folder.addColor(this.mmd.api, 'Hemisphere ground').onChange(setColor(this.mmd.hemiLight.groundColor));
+        const directLightFolder = folder.addFolder("Directional")
+        directLightFolder.addColor(this.mmd.api, 'Directional').name("Color").onChange(setColor(this.mmd.dirLight.color));
+        directLightFolder.add(this.mmd.api, 'Directional intensity', 0, 10, 0.1).name("Intensity").onChange(
+            (value) => {
+                this.mmd.dirLight.intensity = value
+            }
+        );
+        
+        const hemisphereLightFolder = folder.addFolder("Hemisphere")
+        hemisphereLightFolder.addColor(this.mmd.api, 'Hemisphere sky').onChange(setColor(this.mmd.hemiLight.color));
+        hemisphereLightFolder.addColor(this.mmd.api, 'Hemisphere ground').onChange(setColor(this.mmd.hemiLight.groundColor));
+        hemisphereLightFolder.add(this.mmd.api, 'Hemisphere intensity', 0, 10, 0.1).name("Intensity").onChange(
+            (value) => {
+                this.mmd.hemiLight.intensity = value
+            }
+        );
 
         // handle gui color change
         function setColor(color) {
