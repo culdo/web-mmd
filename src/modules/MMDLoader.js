@@ -1325,9 +1325,8 @@ class MaterialBuilder {
 				params.emissive.multiplyScalar(0.2);
 
 			}
-			params.enableSdef = data.enableSdef;
 
-			materials.push(new MMDToonMaterial(params));
+			materials.push(new MMDToonMaterial(params, data.enableSdef));
 
 		}
 
@@ -2131,7 +2130,7 @@ class CubicBezierInterpolation extends Interpolant {
 
 class MMDToonMaterial extends ShaderMaterial {
 
-	constructor(parameters) {
+	constructor(parameters, enableSdef) {
 
 		super();
 
@@ -2150,7 +2149,7 @@ class MMDToonMaterial extends ShaderMaterial {
 
 		this.lights = true;
 
-		this.vertexShader = parameters.enableSdef ? MMDToonShader.sdefVertexShader : MMDToonShader.vertexShader;
+		this.vertexShader = enableSdef ? MMDToonShader.sdefVertexShader : MMDToonShader.vertexShader;
 		this.fragmentShader = MMDToonShader.fragmentShader;
 		this.defaultAttributeValues = Object.assign(this.defaultAttributeValues, MMDToonShader.defaultAttributeValues);
 

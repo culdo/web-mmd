@@ -41,12 +41,26 @@ class MMDGui {
     }
 
     _guiEffect() {
-        
+
         const folder = this.gui.addFolder('Effect');
-        folder.add(this.mmd.api, 'enable bokeh').onChange((state) => {
+        const bokehFolder = folder.addFolder('Bokeh');
+        bokehFolder.add(this.mmd.api, 'enable bokeh').onChange((state) => {
             this.mmd.postprocessor.bokeh.enabled = state;
         });
-        folder.add(this.mmd.api, 'show outline').onChange((state) => {
+        bokehFolder.add(this.mmd.api, 'bokeh focus', 10.0, 3000.0, 10).onChange((value) => {
+            this.mmd.postprocessor.bokeh.uniforms['focus'].value = value
+        });
+        bokehFolder.add(this.mmd.api, 'bokeh aperture', 0, 50, 1).onChange((value) => {
+            this.mmd.postprocessor.bokeh.uniforms['aperture'].value = value * 0.00001
+        });
+        bokehFolder.add(this.mmd.api, 'bokeh maxblur', 0.0, 0.1, 0.01).onChange((value) => {
+            this.mmd.postprocessor.bokeh.uniforms['maxblur'].value = value
+        });
+
+
+        const outlineFolder = folder.addFolder('Outline');
+
+        outlineFolder.add(this.mmd.api, 'show outline').onChange((state) => {
             this.mmd.postprocessor.outline.enabled = state;
         });
     }
@@ -54,7 +68,7 @@ class MMDGui {
     _guiCamera() {
         const camera = this.mmd.camera
 
-        if(this.mmd.api.fov && this.mmd.api.zoom) {
+        if (this.mmd.api.fov && this.mmd.api.zoom) {
             camera.fov = this.mmd.api.fov
             camera.zoom = this.mmd.api.zoom
             camera.updateProjectionMatrix();
@@ -153,7 +167,7 @@ class MMDGui {
 
                 mmd.ready = true;
                 overlay.style.display = 'none';
-                
+
                 updateMorphFolder();
             }, onProgress, null, params)
             mmd.api.character = filename;
@@ -202,7 +216,7 @@ class MMDGui {
             loadMusicFromYT(mmd.api);
         }
 
-        this.guiFn.saveMusic = () => {}
+        this.guiFn.saveMusic = () => { }
 
         this.guiFn.selectMusic = () => {
             selectFile.onchange = _buildLoadFileFn((url, filename) => {
@@ -268,11 +282,11 @@ class MMDGui {
 
         folder.add(mmd.api, 'musicName').name('music').listen()
         folder.add(mmd.api, 'musicYtURL').name('music from YT').listen()
-        
+
         const saveBt = folder.add(this.guiFn, 'saveMusic').name('save music')
         const a = createAudioLink();
         saveBt.domElement.replaceWith(a)
-        
+
         folder.add(this.guiFn, 'changeYtMusic').name('change use above url...')
         folder.add(this.guiFn, 'selectMusic').name('select audio file...')
 
@@ -333,10 +347,10 @@ class MMDGui {
     }
 
     _guiMorph() {
-        
+
         const buildOnChangeMorph = (key) => {
-            return () => 
-                this.mmd.character.morphTargetInfluences[ this.mmd.character.morphTargetDictionary[key] ] = this.mmd.api[key];
+            return () =>
+                this.mmd.character.morphTargetInfluences[this.mmd.character.morphTargetDictionary[key]] = this.mmd.api[key];
         }
 
         const folder = this.gui.addFolder('Morph');
@@ -344,11 +358,11 @@ class MMDGui {
 
         const updateMorphFolder = () => {
             const controllers = [...folder.controllers]
-            for(const controller of controllers) {
+            for (const controller of controllers) {
                 controller.destroy()
             }
-            for(const key in this.mmd.character.morphTargetDictionary) {
-                if(!(key in this.mmd.api)) {
+            for (const key in this.mmd.character.morphTargetDictionary) {
+                if (!(key in this.mmd.api)) {
                     this.mmd.api[key] = 0.0;
                 }
                 const onChangeMorph = buildOnChangeMorph(key)
@@ -393,11 +407,11 @@ class MMDGui {
                 this.mmd.dirLight.intensity = value
             }
         );
-        
+
         const hemisphereLightFolder = folder.addFolder("Hemisphere")
         hemisphereLightFolder.addColor(this.mmd.api, 'Hemisphere sky').onChange(setColor(this.mmd.hemiLight.color));
         hemisphereLightFolder.addColor(this.mmd.api, 'Hemisphere ground').onChange(setColor(this.mmd.hemiLight.groundColor));
-        hemisphereLightFolder.add(this.mmd.api, 'Hemisphere intensity', 0, 10, 0.1).name("Intensity").onChange(
+        hemisphereLightFolder.add(this.mmd.api, 'Hemisphere intensity', 0, 30, 0.1).name("Intensity").onChange(
             (value) => {
                 this.mmd.hemiLight.intensity = value
             }
@@ -419,7 +433,7 @@ class MMDGui {
         folder.add({
             'clear localforage': () => {
                 if (confirm("Be carful!! You will lost all your Models files、Presets...etc.")) {
-                    localforage.clear(()=>{
+                    localforage.clear(() => {
                         location.reload();
                     });
                 }
@@ -448,8 +462,10 @@ class MMDGui {
         folder.add(this.mmd.api, 'set pixelratio 1.0').onChange((state) => {
             if (state) {
                 this.mmd.renderer.setPixelRatio(1.0);
+                this.mmd.postprocessor.composer.setPixelRatio(1.0);
             } else {
                 this.mmd.renderer.setPixelRatio(window.devicePixelRatio);
+                this.mmd.postprocessor.composer.setPixelRatio(window.devicePixelRatio);
             }
         });
         this._guiRefresh(folder);
@@ -544,7 +560,7 @@ class MMDGui {
 
         this.gui.onChange(async (event) => {
             if (event.property != "preset" && mmd.preset == "Default") {
-                if(!(event.value instanceof Function)) {
+                if (!(event.value instanceof Function)) {
                     await localforage.setItem(`Untitled_${event.property}`, event.value);
                 }
                 await _updatePresetList("Untitled");

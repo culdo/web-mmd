@@ -6,7 +6,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MMDLoader } from './modules/MMDLoader.js';
 import { MMDAnimationHelper } from './modules/MMDAnimationHelper.js';
 import { MMDGui } from './modules/gui.js'
-import { onProgress, loadMusicFromYT, saveCurrTime, streamAsyncIterable, withProgress } from './modules/utils.js'
+import { onProgress, loadMusicFromYT, withProgress } from './modules/utils.js'
 import {PostProcessor} from './modules/postProcessor.js'
 
 import path from 'path-browserify';
@@ -150,11 +150,11 @@ function init() {
     scene.add(camera);
 
     // light
-    const hemiLight = new THREE.HemisphereLight(api["Hemisphere sky"], api["Hemisphere ground"]);
+    const hemiLight = new THREE.HemisphereLight(api["Hemisphere sky"], api["Hemisphere ground"], api["Hemisphere intensity"]);
     hemiLight.position.set(0, 40, 0);
     scene.add(hemiLight);
 
-    const dirLight = new THREE.DirectionalLight(api["Directional"], 0.45);
+    const dirLight = new THREE.DirectionalLight(api["Directional"], api["Directional intensity"]);
     dirLight.position.set(3, 10, 10);
     dirLight.castShadow = true;
     dirLight.shadow.camera.top = 25;
@@ -185,12 +185,14 @@ function init() {
 
     // effect composer
     postprocessor = new PostProcessor(scene, camera, renderer)
-    if(!api['enable bokeh']) {
-        api['enable bokeh'] = false;
-    }
     postprocessor.outline.enabled = api['show outline']
     postprocessor.bokeh.enabled = api['enable bokeh']
+    postprocessor.bokeh.uniforms[ 'focus' ].value = api['bokeh focus']
+    postprocessor.bokeh.uniforms[ 'aperture' ].value = api['bokeh aperture'] * 0.00001
+    postprocessor.bokeh.uniforms[ 'maxblur' ].value = api['bokeh maxblur']
+    
     composer = postprocessor.composer
+    composer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
 
     // FPS stats
     stats = new Stats();
@@ -238,6 +240,8 @@ function init() {
         character.castShadow = true;
         character.receiveShadow = api["self shadow"];
         scene.add(character);
+
+        postprocessor.outline.selectedObjects = [character]
 
         helper.add(character, {
             animation: mmd.animation
@@ -295,6 +299,7 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
 
     composer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
 }
 
