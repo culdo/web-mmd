@@ -210,7 +210,16 @@ const MMDToonShader = {
 		ShaderLib.matcap.uniforms,
 	]),
 
-	vertexShader: ShaderLib.phong.vertexShader,
+	vertexShader:
+		ShaderLib.phong.vertexShader
+			.replace(
+				'#include <envmap_pars_vertex>',
+				''
+			)
+			.replace(
+				'#include <envmap_vertex>',
+				''
+			),
 
 	sdefVertexShader: ShaderLib.phong.vertexShader
 		.replace(
@@ -240,10 +249,11 @@ const MMDToonShader = {
 			)
 			.replace(
 				'#include <envmap_common_pars_fragment>',
-				`
-					#include <gradientmap_pars_fragment>
-					#include <envmap_common_pars_fragment>
-				`
+				'#include <gradientmap_pars_fragment>'
+			)
+			.replace(
+				'#include <envmap_pars_fragment>',
+				''
 			)
 			.replace(
 				'#include <lights_phong_pars_fragment>',
@@ -251,11 +261,8 @@ const MMDToonShader = {
 			)
 			.replace(
 				'#include <envmap_fragment>',
-				`
-					#include <envmap_fragment>
-					${mmd_toon_matcap_fragment}
-				`
-			),
+				mmd_toon_matcap_fragment
+			)
 
 };
 

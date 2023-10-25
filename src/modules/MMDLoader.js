@@ -1209,12 +1209,12 @@ class MaterialBuilder {
 
 						const extension = fileNames[1].slice(- 4).toLowerCase();
 
-						params.envMap = this._loadTexture(
+						params.matcap = this._loadTexture(
 							fileNames[1],
 							textures
 						);
 
-						params.combine = extension === '.sph'
+						params.matcapCombine = extension === '.sph'
 							? MultiplyOperation
 							: AddOperation;
 
@@ -2220,7 +2220,6 @@ class MMDToonMaterial extends ShaderMaterial {
 
 			'alphaMap',
 
-			'envMap',
 			'reflectivity',
 			'refractionRatio',
 		];
