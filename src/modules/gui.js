@@ -43,25 +43,58 @@ class MMDGui {
     _guiEffect() {
 
         const folder = this.gui.addFolder('Effect');
+
+        const api = this.mmd.api
+        const postprocessor = this.mmd.postprocessor
+
         const bokehFolder = folder.addFolder('Bokeh');
-        bokehFolder.add(this.mmd.api, 'enable bokeh').onChange((state) => {
-            this.mmd.postprocessor.bokeh.enabled = state;
-        });
-        bokehFolder.add(this.mmd.api, 'bokeh focus', 10.0, 3000.0, 10).onChange((value) => {
-            this.mmd.postprocessor.bokeh.uniforms['focus'].value = value
-        });
-        bokehFolder.add(this.mmd.api, 'bokeh aperture', 0, 50, 1).onChange((value) => {
-            this.mmd.postprocessor.bokeh.uniforms['aperture'].value = value * 0.00001
-        });
-        bokehFolder.add(this.mmd.api, 'bokeh maxblur', 0.0, 0.1, 0.01).onChange((value) => {
-            this.mmd.postprocessor.bokeh.uniforms['maxblur'].value = value
-        });
+        const matChanger = postprocessor.bokeh.buildMatChanger(api)
+        const shaderUpdate = postprocessor.bokeh.buildShaderUpdate(api)
+
+        for (const key in postprocessor.bokeh.effectController) {
+            if (!api[`bokeh ${key}`]) {
+                api[`bokeh ${key}`] = postprocessor.bokeh.effectController[key]
+            }
+        }
+
+        matChanger();
+        shaderUpdate();
+
+        bokehFolder.add(api, 'bokeh enabled').onChange(matChanger);
+        bokehFolder.add(api, 'bokeh shaderFocus').onChange(matChanger);
+        bokehFolder.add(api, 'bokeh focalDepth', 0.0, 200.0).listen().onChange(matChanger);
+
+        bokehFolder.add(api, 'bokeh fstop', 0.1, 22, 0.001).onChange(matChanger);
+        bokehFolder.add(api, 'bokeh maxblur', 0.0, 5.0, 0.025).onChange(matChanger);
+
+        bokehFolder.add(api, 'bokeh showFocus').onChange(matChanger);
+        bokehFolder.add(api, 'bokeh manualdof').onChange(matChanger);
+        bokehFolder.add(api, 'bokeh vignetting').onChange(matChanger);
+
+        bokehFolder.add(api, 'bokeh depthblur').onChange(matChanger);
+
+        bokehFolder.add(api, 'bokeh threshold', 0, 1, 0.001).onChange(matChanger);
+        bokehFolder.add(api, 'bokeh gain', 0, 100, 0.001).onChange(matChanger);
+        bokehFolder.add(api, 'bokeh bias', 0, 3, 0.001).onChange(matChanger);
+        bokehFolder.add(api, 'bokeh fringe', 0, 5, 0.001).onChange(matChanger);
+
+        bokehFolder.add(api, 'bokeh focalLength', 16, 80, 0.001).onChange(matChanger);
+
+        bokehFolder.add(api, 'bokeh noise').onChange(matChanger);
+
+        bokehFolder.add(api, 'bokeh dithering', 0, 0.001, 0.0001).onChange(matChanger);
+
+        bokehFolder.add(api, 'bokeh pentagon').onChange(matChanger);
+
+        bokehFolder.add(api, 'bokeh rings', 1, 8).step(1).onChange(shaderUpdate);
+        bokehFolder.add(api, 'bokeh samples', 1, 13).step(1).onChange(shaderUpdate);
 
 
         const outlineFolder = folder.addFolder('Outline');
+        postprocessor.outline.enabled = api['show outline']
 
-        outlineFolder.add(this.mmd.api, 'show outline').onChange((state) => {
-            this.mmd.postprocessor.outline.enabled = state;
+        outlineFolder.add(api, 'show outline').onChange((state) => {
+            postprocessor.outline.enabled = state;
         });
     }
 
@@ -462,10 +495,10 @@ class MMDGui {
         folder.add(this.mmd.api, 'set pixelratio 1.0').onChange((state) => {
             if (state) {
                 this.mmd.renderer.setPixelRatio(1.0);
-                this.mmd.postprocessor.composer.setPixelRatio(1.0);
+                postprocessor.composer.setPixelRatio(1.0);
             } else {
                 this.mmd.renderer.setPixelRatio(window.devicePixelRatio);
-                this.mmd.postprocessor.composer.setPixelRatio(window.devicePixelRatio);
+                postprocessor.composer.setPixelRatio(window.devicePixelRatio);
             }
         });
         this._guiRefresh(folder);

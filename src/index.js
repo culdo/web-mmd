@@ -189,11 +189,6 @@ function init() {
 
     // effect composer
     postprocessor = new PostProcessor(scene, camera, renderer)
-    postprocessor.outline.enabled = api['show outline']
-    postprocessor.bokeh.enabled = api['enable bokeh']
-    postprocessor.bokeh.uniforms[ 'focus' ].value = api['bokeh focus']
-    postprocessor.bokeh.uniforms[ 'aperture' ].value = api['bokeh aperture'] * 0.00001
-    postprocessor.bokeh.uniforms[ 'maxblur' ].value = api['bokeh maxblur']
     
     composer = postprocessor.composer
     composer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);

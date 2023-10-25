@@ -10,11 +10,7 @@ class PostProcessor {
 
         const renderPass = new RenderPass(scene, camera);
         const outlinePass = new OutlinePass(scene, camera);
-        const bokehPass = new BokehPass(scene, camera, {
-            focus: 1.0,
-            aperture: 0.025,
-            maxblur: 0.01
-        });
+        const bokehPass = new BokehPass(scene, camera);
 
         for (const pass of [renderPass, outlinePass, bokehPass]) {
             composer.addPass(pass)
