@@ -2,11 +2,15 @@ import {
 	ShaderMaterial,
 	UniformsUtils,
 	WebGLRenderTarget,
-	HalfFloatType
+	HalfFloatType,
+	MeshDepthMaterial,
+	RGBADepthPacking,
+	NoBlending,
+	NearestFilter
 } from 'three';
 
 import { Pass, FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass';
-import { BokehShader, BokehDepthShader } from 'three/examples/jsm/shaders/BokehShader2';
+import { BokehShader, BokehDepthShader } from './shaders/BokehShader2';
 
 /**
  * Depth-of-field post-process with bokeh shader
@@ -51,31 +55,25 @@ class BokehPass extends Pass {
 		};
 
 		// render targets
-		this.renderTargetDepth = new WebGLRenderTarget(
-			window.innerWidth,
-			window.innerHeight,
-			{ type: HalfFloatType }
-		);
+		this.renderTargetDepth = new WebGLRenderTarget( 1, 1, { // will be resized later
+			minFilter: NearestFilter,
+			magFilter: NearestFilter
+		} );
+
+		this.renderTargetDepth.texture.name = 'BokehPass.depth';
 
 		// depth material
 
 		const depthShader = BokehDepthShader;
 
-		this.materialDepth = new ShaderMaterial({
-			uniforms: depthShader.uniforms,
-			vertexShader: depthShader.vertexShader,
-			fragmentShader: depthShader.fragmentShader
-		});
-
-		this.materialDepth.uniforms['mNear'].value = camera.near;
-		this.materialDepth.uniforms['mFar'].value = camera.far;
+		this.materialDepth = new MeshDepthMaterial();
+		this.materialDepth.depthPacking = RGBADepthPacking;
+		this.materialDepth.blending = NoBlending;
 
 		// bokeh material
 
 		const bokehShader = BokehShader;
 		this.uniforms = UniformsUtils.clone(bokehShader.uniforms);
-
-		this.uniforms['tDepth'].value = this.renderTargetDepth.texture;
 
 		this.uniforms['textureWidth'].value = window.innerWidth;
 		this.uniforms['textureHeight'].value = window.innerHeight;
@@ -98,7 +96,7 @@ class BokehPass extends Pass {
 
 	buildMatChanger(api) {
 		return () => {
-			for (const e in api) {
+			for (const e in this.effectController) {
 				if (e in this.uniforms) {
 					this.uniforms[e].value = api[`bokeh ${e}`];
 				}
@@ -130,6 +128,7 @@ class BokehPass extends Pass {
 		renderer.render(this.scene, this.camera);
 		
 		this.uniforms['tColor'].value = readBuffer.texture[0];
+		this.uniforms['tDepth'].value = this.renderTargetDepth.texture;
 		
 		// Render bokeh composite
 		if (this.renderToScreen) {
