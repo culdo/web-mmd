@@ -1,15 +1,12 @@
 import {
-	Color,
-	MeshDepthMaterial,
-	NearestFilter,
-	NoBlending,
-	RGBADepthPacking,
 	ShaderMaterial,
 	UniformsUtils,
-	WebGLRenderTarget
+	WebGLRenderTarget,
+	HalfFloatType
 } from 'three';
+
 import { Pass, FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass';
-import { BokehShader } from 'three/examples/jsm/shaders/BokehShader';
+import { BokehShader, BokehDepthShader } from 'three/examples/jsm/shaders/BokehShader2';
 
 /**
  * Depth-of-field post-process with bokeh shader
@@ -17,115 +14,139 @@ import { BokehShader } from 'three/examples/jsm/shaders/BokehShader';
 
 class BokehPass extends Pass {
 
-	constructor( scene, camera, params ) {
+	constructor(scene, camera, params) {
 
 		super();
 
 		this.scene = scene;
 		this.camera = camera;
 
-		const focus = ( params.focus !== undefined ) ? params.focus : 1.0;
-		const aspect = ( params.aspect !== undefined ) ? params.aspect : camera.aspect;
-		const aperture = ( params.aperture !== undefined ) ? params.aperture : 0.025;
-		const maxblur = ( params.maxblur !== undefined ) ? params.maxblur : 1.0;
+		// effect controller default values
+		this.effectController = {
+			enabled: true,
+			shaderFocus: false,
+
+			fstop: 2.2,
+			maxblur: 1.0,
+
+			showFocus: false,
+			focalDepth: 2.8,
+			manualdof: false,
+			vignetting: false,
+			depthblur: false,
+
+			threshold: 0.5,
+			gain: 2.0,
+			bias: 0.5,
+			fringe: 0.7,
+
+			focalLength: 35,
+			noise: true,
+			pentagon: false,
+
+			dithering: 0.0001,
+			// shader settings
+			rings: 3,
+			samples: 4
+		};
 
 		// render targets
-
-		this.renderTargetDepth = new WebGLRenderTarget( 1, 1, { // will be resized later
-			minFilter: NearestFilter,
-			magFilter: NearestFilter
-		} );
-
-		this.renderTargetDepth.texture.name = 'BokehPass.depth';
+		this.renderTargetDepth = new WebGLRenderTarget(
+			window.innerWidth,
+			window.innerHeight,
+			{ type: HalfFloatType }
+		);
 
 		// depth material
 
-		this.materialDepth = new MeshDepthMaterial();
-		this.materialDepth.depthPacking = RGBADepthPacking;
-		this.materialDepth.blending = NoBlending;
+		const depthShader = BokehDepthShader;
+
+		this.materialDepth = new ShaderMaterial({
+			uniforms: depthShader.uniforms,
+			vertexShader: depthShader.vertexShader,
+			fragmentShader: depthShader.fragmentShader
+		});
+
+		this.materialDepth.uniforms['mNear'].value = camera.near;
+		this.materialDepth.uniforms['mFar'].value = camera.far;
 
 		// bokeh material
 
-		if ( BokehShader === undefined ) {
-
-			console.error( 'THREE.BokehPass relies on BokehShader' );
-
-		}
-
 		const bokehShader = BokehShader;
-		const bokehUniforms = UniformsUtils.clone( bokehShader.uniforms );
+		this.uniforms = UniformsUtils.clone(bokehShader.uniforms);
 
-		bokehUniforms[ 'tDepth' ].value = this.renderTargetDepth.texture;
+		this.uniforms['tDepth'].value = this.renderTargetDepth.texture;
 
-		bokehUniforms[ 'focus' ].value = focus;
-		bokehUniforms[ 'aspect' ].value = aspect;
-		bokehUniforms[ 'aperture' ].value = aperture;
-		bokehUniforms[ 'maxblur' ].value = maxblur;
-		bokehUniforms[ 'nearClip' ].value = camera.near;
-		bokehUniforms[ 'farClip' ].value = camera.far;
+		this.uniforms['textureWidth'].value = window.innerWidth;
+		this.uniforms['textureHeight'].value = window.innerHeight;
 
-		this.materialBokeh = new ShaderMaterial( {
-			defines: Object.assign( {}, bokehShader.defines ),
-			uniforms: bokehUniforms,
+		this.materialBokeh = new ShaderMaterial({
+			uniforms: this.uniforms,
 			vertexShader: bokehShader.vertexShader,
-			fragmentShader: bokehShader.fragmentShader
-		} );
+			fragmentShader: bokehShader.fragmentShader,
+			defines: {
+				RINGS: this.effectController.rings,
+				SAMPLES: this.effectController.samples
+			}
+		});
 
-		this.uniforms = bokehUniforms;
 		this.needsSwap = false;
 
-		this.fsQuad = new FullScreenQuad( this.materialBokeh );
-
-		this._oldClearColor = new Color();
+		this.fsQuad = new FullScreenQuad(this.materialBokeh);
 
 	}
 
-	render( renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/ ) {
+	buildMatChanger(api) {
+		return () => {
+			for (const e in api) {
+				if (e in this.uniforms) {
+					this.uniforms[e].value = api[`bokeh ${e}`];
+				}
+			}
 
-		// Render depth into texture
-
-		this.scene.overrideMaterial = this.materialDepth;
-
-		renderer.getClearColor( this._oldClearColor );
-		const oldClearAlpha = renderer.getClearAlpha();
-		const oldAutoClear = renderer.autoClear;
-		renderer.autoClear = false;
-
-		renderer.setClearColor( 0xffffff );
-		renderer.setClearAlpha( 1.0 );
-		renderer.setRenderTarget( this.renderTargetDepth );
-		renderer.clear();
-		renderer.render( this.scene, this.camera );
-
-		// Render bokeh composite
-
-		this.uniforms[ 'tColor' ].value = readBuffer.texture[0];
-		this.uniforms[ 'nearClip' ].value = this.camera.near;
-		this.uniforms[ 'farClip' ].value = this.camera.far;
-
-		if ( this.renderToScreen ) {
-
-			renderer.setRenderTarget( null );
-			this.fsQuad.render( renderer );
-
-		} else {
-
-			renderer.setRenderTarget( writeBuffer );
-			renderer.clear();
-			this.fsQuad.render( renderer );
-
+			this.enabled = api["bokeh enabled"];
+			this.uniforms['znear'].value = this.camera.near;
+			this.uniforms['zfar'].value = this.camera.far;
+			this.camera.setFocalLength(api["bokeh focalLength"]);
 		}
 
-		this.scene.overrideMaterial = null;
-		renderer.setClearColor( this._oldClearColor );
-		renderer.setClearAlpha( oldClearAlpha );
-		renderer.autoClear = oldAutoClear;
+	};
 
+	buildShaderUpdate(api) {
+		return () => {
+			this.materialBokeh.defines.RINGS = api["bokeh rings"];
+			this.materialBokeh.defines.SAMPLES = api["bokeh samples"];
+			this.materialBokeh.needsUpdate = true;
+		}
 	}
 
-	setSize( width, height ) {
+	render(renderer, writeBuffer, readBuffer/*, deltaTime, maskActive*/) {
 
-		this.renderTargetDepth.setSize( width, height );
+		// Render depth into texture
+		this.scene.overrideMaterial = this.materialDepth;
+
+		renderer.setRenderTarget(this.renderTargetDepth);
+		renderer.clear();
+		renderer.render(this.scene, this.camera);
+		
+		this.uniforms['tColor'].value = readBuffer.texture[0];
+		
+		// Render bokeh composite
+		if (this.renderToScreen) {
+			renderer.setRenderTarget(null);
+			this.fsQuad.render(renderer);
+		} else {
+			renderer.setRenderTarget(writeBuffer);
+			renderer.clear();
+			this.fsQuad.render(renderer);
+		}
+		
+		this.scene.overrideMaterial = null;
+	}
+
+	setSize(width, height) {
+
+		this.renderTargetDepth.setSize(width, height);
 
 	}
 
