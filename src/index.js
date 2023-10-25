@@ -170,6 +170,10 @@ function init() {
 
     // render
     renderer = new THREE.WebGLRenderer({ antialias: true });
+    
+    // recover to legacy colorspaces
+    renderer.outputColorSpace = THREE.LinearSRGBColorSpace
+
     renderer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.type = THREE.VSMShadowMap;
