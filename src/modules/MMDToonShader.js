@@ -71,7 +71,7 @@ const mmd_toon_matcap_fragment = /* glsl */`
 #endif
 `;
 
-const sdefSkinningParsVertex = `
+export const sdefSkinningParsVertex = `
 #define QUATERNION_IDENTITY vec4(0, 0, 0, 1)
 vec4 m2q( mat4 a ) {
 	vec4 q;
@@ -166,7 +166,7 @@ attribute vec3 skinR1;
 #include <skinning_pars_vertex>
 `
 
-const sdefSkinningVertex = `
+export const sdefSkinningVertex = `
 #ifdef USE_SKINNING	
 
 	if (skinType == 3) {	
@@ -181,7 +181,7 @@ const sdefSkinningVertex = `
 #endif
 `
 
-const sdefSkinningNormVertex = `
+export const sdefSkinningNormVertex = `
 #ifdef USE_SKINNING	
 
 	if (skinType == 3) {	

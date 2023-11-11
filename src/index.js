@@ -188,7 +188,7 @@ function init() {
     });
 
     // effect composer
-    postprocessor = new PostProcessor(scene, camera, renderer)
+    postprocessor = new PostProcessor(scene, camera, renderer, {isSdefEnabled: api["enable SDEF"]})
     
     composer = postprocessor.composer
     composer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);

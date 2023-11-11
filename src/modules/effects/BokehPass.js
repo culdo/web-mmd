@@ -18,7 +18,7 @@ import { BokehShader, BokehDepthShader } from './shaders/BokehShader2';
 
 class BokehPass extends Pass {
 
-	constructor(scene, camera, params) {
+	constructor(scene, camera, parameters={}) {
 
 		super();
 
