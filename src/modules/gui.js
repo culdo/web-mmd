@@ -52,7 +52,7 @@ class MMDGui {
         const shaderUpdate = postprocessor.bokeh.buildShaderUpdate(api)
 
         for (const key in postprocessor.bokeh.effectController) {
-            if (!api[`bokeh ${key}`]) {
+            if (!(`bokeh ${key}` in api)) {
                 api[`bokeh ${key}`] = postprocessor.bokeh.effectController[key]
             }
         }
