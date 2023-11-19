@@ -44,6 +44,7 @@ function withProgress(resp, totalSize = null) {
                 }
                 controller.enqueue(value);
             }
+            console.log(`${resp.url}: ${loaded} bytes`)
             controller.close();
         },
     }));

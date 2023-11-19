@@ -28,11 +28,13 @@ async function getConfig() {
         }
     };
 
-    const resp = await fetch('presets/Default.json')
+    const configResp = await fetch('presets/Default_config.json')
+    const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
     
-    const res = withProgress(resp, 38204598)
+    const configOnly = await configResp.json()
+    const dataOnly = await dataResp.json()
 
-    defaultConfig = await res.json()
+    defaultConfig = {...configOnly, ...dataOnly}
 
     preset = "Default"
     presetsList = new Set(["Default"]);
