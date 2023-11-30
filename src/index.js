@@ -7,7 +7,7 @@ import { MMDLoader } from './modules/MMDLoader.js';
 import { MMDAnimationHelper } from './modules/MMDAnimationHelper.js';
 import { MMDGui } from './modules/gui.js'
 import { onProgress, loadMusicFromYT, withProgress } from './modules/utils.js'
-import {PostProcessor} from './modules/postProcessor.js'
+import { PostProcessor } from './modules/postProcessor.js'
 
 import path from 'path-browserify';
 import localforage from 'localforage';
@@ -19,22 +19,22 @@ async function getConfig() {
     const configSaver = {
         set: function (target, key, value) {
             const result = Reflect.set(...arguments)
-            
-            if(globalParams.preset != "Default") {
+
+            if (globalParams.preset != "Default") {
                 localforage.setItem(`${globalParams.preset}_${key}`, value);
             }
-            
+
             return result;
         }
     };
 
     const configResp = await fetch('presets/Default_config.json')
     const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
-    
+
     const configOnly = await configResp.json()
     const dataOnly = await dataResp.json()
 
-    defaultConfig = {...configOnly, ...dataOnly}
+    defaultConfig = { ...configOnly, ...dataOnly }
 
     preset = "Default"
     presetsList = new Set(["Default"]);
@@ -46,14 +46,14 @@ async function getConfig() {
     if (savedPresetName) {
         preset = savedPresetName;
         await localforage.iterate((val, key) => {
-            if(key.startsWith(`${preset}_`)) {
+            if (key.startsWith(`${preset}_`)) {
                 const configKey = key.split(`${preset}_`)[1]
                 userConfig[configKey] = val
             }
         })
-        
+
         const savedPresetsList = await localforage.getItem("presetsList")
-        if(savedPresetsList) presetsList = savedPresetsList
+        if (savedPresetsList) presetsList = savedPresetsList
     }
     globalParams["preset"] = preset;
     console.log(userConfig)
@@ -97,11 +97,11 @@ function init() {
     const container = document.createElement('div');
     document.body.appendChild(container);
 
-    if(api.musicURL.startsWith("data:")) {
+    if (api.musicURL.startsWith("data:")) {
         player.src = api.musicURL
     } else {
         // old version fallback
-        if(api.musicURL.startsWith("http")) {
+        if (api.musicURL.startsWith("http")) {
             api.musicYtURL = api.musicURL;
         }
         loadMusicFromYT(api);
@@ -129,16 +129,27 @@ function init() {
     player.onseeked = () => {
         api.currentTime = player.currentTime;
     }
+    button.onclick = () => {
+        let elem = document.querySelector("body");
+
+        if (!document.fullscreenElement) {
+            elem.requestFullscreen()
+        } else {
+            document.exitFullscreen();
+        }
+    }
     // control bar
     document.addEventListener('mousemove', (e) => {
 
         player.style.opacity = 0.5;
+        button.style.opacity = 0.5;
         if (timeoutID !== undefined) {
             clearTimeout(timeoutID);
         }
 
         timeoutID = setTimeout(function () {
             player.style.opacity = 0;
+            button.style.opacity = 0;
         }, 1000);
     });
 
@@ -172,7 +183,7 @@ function init() {
 
     // render
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    
+
     // recover to legacy colorspaces
     renderer.outputColorSpace = THREE.LinearSRGBColorSpace
 
@@ -190,8 +201,8 @@ function init() {
     });
 
     // effect composer
-    postprocessor = new PostProcessor(scene, camera, renderer, {isSdefEnabled: api["enable SDEF"]})
-    
+    postprocessor = new PostProcessor(scene, camera, renderer, { isSdefEnabled: api["enable SDEF"] })
+
     composer = postprocessor.composer
     composer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
 
