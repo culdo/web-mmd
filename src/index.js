@@ -15,13 +15,14 @@ import localforage from 'localforage';
 // for debug
 // localforage.clear();
 async function getConfig() {
+    const configSep = "."
 
     const configSaver = {
         set: function (target, key, value) {
             const result = Reflect.set(...arguments)
 
             if (globalParams.preset != "Default") {
-                localforage.setItem(`${globalParams.preset}_${key}`, value);
+                localforage.setItem(`${globalParams.preset}${configSep}${key}`, value);
             }
 
             return result;
@@ -29,32 +30,42 @@ async function getConfig() {
     };
 
     const configResp = await fetch('presets/Default_config.json')
-    const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
-
+    
     const configOnly = await configResp.json()
-    const dataOnly = await dataResp.json()
 
-    defaultConfig = { ...configOnly, ...dataOnly }
-
-    preset = "Default"
-    presetsList = new Set(["Default"]);
+    defaultConfig = configOnly
 
     let userConfig = defaultConfig;
 
     const savedPresetName = await localforage.getItem("currentPreset")
-    // if we have saved user config
-    if (savedPresetName) {
-        preset = savedPresetName;
-        await localforage.iterate((val, key) => {
-            if (key.startsWith(`${preset}_`)) {
-                const configKey = key.split(`${preset}_`)[1]
-                userConfig[configKey] = val
-            }
-        })
+    preset = savedPresetName ?? "Default"
+    
+    const savedPresetsList = await localforage.getItem("presetsList")
+    presetsList = savedPresetsList ?? new Set(["Default"])
 
-        const savedPresetsList = await localforage.getItem("presetsList")
-        if (savedPresetsList) presetsList = savedPresetsList
+    if(!savedPresetName) {
+        await localforage.setItem("currentPreset", "Default")
+
+        const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
+        const defaultData = await dataResp.json()
+        for(const [key, val] of Object.entries(defaultData)) {
+            await localforage.setItem(`Default${configSep}${key}`, val);
+        }
     }
+    
+    // always loads config from localforage (include data)
+    await localforage.iterate((val, key) => {
+        if (key.startsWith(`${preset}${configSep}`)) {
+            const configKey = key.split(`${preset}${configSep}`)[1]
+            userConfig[configKey] = val
+        }
+    })
+
+    if(!("pmxFiles" in userConfig)) {
+        await localforage.clear()
+        location.reload()
+    }
+
     globalParams["preset"] = preset;
     console.log(userConfig)
     api = new Proxy(userConfig, configSaver);
