@@ -154,6 +154,7 @@ function init() {
 
         player.style.opacity = 0.5;
         button.style.opacity = 0.5;
+        document.body.style.cursor = "default"
         if (timeoutID !== undefined) {
             clearTimeout(timeoutID);
         }
@@ -161,6 +162,9 @@ function init() {
         timeoutID = setTimeout(function () {
             player.style.opacity = 0;
             button.style.opacity = 0;
+            if(!player.paused) {
+                document.body.style.cursor = "none"
+            }
         }, 1000);
     });
 
