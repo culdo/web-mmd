@@ -4,7 +4,7 @@ import {
 	Object3D,
 	Quaternion,
 	Vector3
-} from './three.module';
+} from 'three';
 import { CCDIKSolver } from 'three/examples/jsm/animation/CCDIKSolver.js';
 import { MMDPhysics } from 'three/examples/jsm/animation/MMDPhysics.js';
 
@@ -478,10 +478,13 @@ class MMDAnimationHelper {
 		const objects = this.objects.get(camera);
 
 		objects.mixer = new AnimationMixer(camera);
+		objects.actions = []
 
 		for (let i = 0, il = animations.length; i < il; i++) {
-
-			objects.mixer.clipAction(animations[i]).play();
+			const action =  objects.mixer.clipAction(animations[i])
+			action.enabled = this.enabled.cameraAnimation
+			action.play();
+			objects.actions.push(action)
 
 		}
 
@@ -627,8 +630,8 @@ class MMDAnimationHelper {
 
 		if (mixer) {
 
-			mixer.setTime(time, this.enabled.cameraAnimation);
 			if (this.enabled.cameraAnimation) {
+				mixer.setTime(time);
 				camera.up.set(0, 1, 0);
 				camera.up.applyQuaternion(camera.quaternion);
 				camera.lookAt(this.cameraTarget.position);

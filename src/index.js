@@ -278,10 +278,10 @@ function init() {
         // load camera
         loader.loadAnimation(api.cameraFile, camera, function (cameraAnimation) {
 
+            helper.enable('cameraAnimation', api["camera motion"]);
             helper.add(camera, {
                 animation: cameraAnimation
             });
-            helper.enable('cameraAnimation', api["camera motion"]);
 
             ready = true;
             overlay.style.display = "none";
