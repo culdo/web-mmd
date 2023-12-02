@@ -19,13 +19,6 @@ class MMDGui {
         this.mmd = params;
 
         this.gui.add(this.mmd.api, 'camera motion').onChange((state) => {
-            for(const action of this.mmd.helper.objects.get(this.mmd.camera).actions) {
-                action.enabled = state
-            }
-            // if (!state) {
-            //     this.mmd.camera.up.set(0, 1, 0);
-            //     this.mmd.camera.updateProjectionMatrix();
-            // }
             this.mmd.helper.enable('cameraAnimation', state);
         });
         this.gui.add(this.mmd.api, 'physics').onChange((state) => {
@@ -269,7 +262,8 @@ class MMDGui {
                 mmd.loader.loadAnimation(url, mmd.camera, function (cameraAnimation) {
 
                     mmd.helper.add(mmd.camera, {
-                        animation: cameraAnimation
+                        animation: cameraAnimation,
+                        enabled: mmd.api["camera motion"]
                     });
 
                 }, onProgress, null);

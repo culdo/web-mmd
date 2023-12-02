@@ -278,9 +278,9 @@ function init() {
         // load camera
         loader.loadAnimation(api.cameraFile, camera, function (cameraAnimation) {
 
-            helper.enable('cameraAnimation', api["camera motion"]);
             helper.add(camera, {
-                animation: cameraAnimation
+                animation: cameraAnimation,
+                enabled: api["camera motion"]
             });
 
             ready = true;

@@ -272,6 +272,10 @@ class MMDAnimationHelper {
 
 			}
 
+		} else if (key === 'cameraAnimation') {
+			for (const action of this.objects.get(this.camera).actions) {
+				action.enabled = enabled;
+			}
 		}
 
 		return this;
@@ -335,7 +339,7 @@ class MMDAnimationHelper {
 
 		if (params.animation !== undefined) {
 
-			this._setupCameraAnimation(camera, params.animation);
+			this._setupCameraAnimation(camera, params);
 
 		}
 
@@ -470,10 +474,10 @@ class MMDAnimationHelper {
 
 	}
 
-	_setupCameraAnimation(camera, animation) {
+	_setupCameraAnimation(camera, params) {
 
-		const animations = Array.isArray(animation)
-			? animation : [animation];
+		const animations = Array.isArray(params.animation)
+			? params.animation : [params.animation];
 
 		const objects = this.objects.get(camera);
 
@@ -481,11 +485,11 @@ class MMDAnimationHelper {
 		objects.actions = []
 
 		for (let i = 0, il = animations.length; i < il; i++) {
-			const action =  objects.mixer.clipAction(animations[i])
-			action.enabled = this.enabled.cameraAnimation
+			const action = objects.mixer.clipAction(animations[i])
+			action.enabled = params.enabled
 			action.play();
-			objects.actions.push(action)
 
+			objects.actions.push(action)
 		}
 
 	}
@@ -556,7 +560,7 @@ class MMDAnimationHelper {
 
 				if (ikSolver && this.enabled.ik) {
 
-					mesh.updateMatrixWorld(true);					
+					mesh.updateMatrixWorld(true);
 					ikSolver.update();
 
 				}
@@ -655,12 +659,12 @@ class MMDAnimationHelper {
 
 		let newIks = []
 		for (const ik of iks) {
-			
+
 			if (animationBones.includes(bones[ik.effector].name)) {
 				newIks.push(ik)
 			}
 			let linkNames = []
-			for(const link of ik.links) {
+			for (const link of ik.links) {
 				linkNames.push(bones[link.index].name)
 			}
 			console.log(`effector: ${bones[ik.effector].name}, link: ${linkNames}, target: ${bones[ik.target].name}`)
@@ -669,7 +673,7 @@ class MMDAnimationHelper {
 		console.log(bones)
 		console.log(mesh.animationBones)
 		console.log(newIks)
-		
+
 		mesh.geometry.userData.MMD.iks = newIks;
 	}
 
@@ -714,7 +718,7 @@ class MMDAnimationHelper {
 		}
 
 		// this._filterIKs(mesh);
-	
+
 		return new CCDIKSolver(mesh, mesh.geometry.userData.MMD.iks);
 
 	}
@@ -984,25 +988,25 @@ class MMDAnimationHelper {
 	}
 
 	stopAll() {
-		for(const mesh in this.meshes) {
+		for (const mesh in this.meshes) {
 
 			const objects = this.objects.get(mesh);
 			for (let i = 0, il = this.animations.length; i < il; i++) {
-	
+
 				objects.mixer.clipAction(this.animations[i]).reset();
-	
+
 			}
 		}
 	}
 
 	playAll() {
-		for(const mesh in this.meshes) {
+		for (const mesh in this.meshes) {
 
 			const objects = this.objects.get(mesh);
 			for (let i = 0, il = this.animations.length; i < il; i++) {
-	
+
 				objects.mixer.clipAction(this.animations[i]).play();
-	
+
 			}
 		}
 	}
