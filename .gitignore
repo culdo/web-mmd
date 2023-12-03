@@ -2,3 +2,5 @@ node_modules
 .DS_STORE
 *.zip
 *.ini
+
+dist/camera-clips/

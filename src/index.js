@@ -11,6 +11,7 @@ import { PostProcessor } from './modules/postProcessor.js'
 
 import path from 'path-browserify';
 import localforage from 'localforage';
+import { MMDCameraWorkHelper } from './modules/MMDCameraWorkHelper.js';
 
 // for debug
 // localforage.clear();
@@ -30,7 +31,7 @@ async function getConfig() {
     };
 
     const configResp = await fetch('presets/Default_config.json')
-    
+
     const configOnly = await configResp.json()
 
     defaultConfig = configOnly
@@ -39,20 +40,20 @@ async function getConfig() {
 
     const savedPresetName = await localforage.getItem("currentPreset")
     preset = savedPresetName ?? "Default"
-    
+
     const savedPresetsList = await localforage.getItem("presetsList")
     presetsList = savedPresetsList ?? new Set(["Default"])
 
-    if(!savedPresetName) {
+    if (!savedPresetName) {
         await localforage.setItem("currentPreset", "Default")
 
         const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
         const defaultData = await dataResp.json()
-        for(const [key, val] of Object.entries(defaultData)) {
+        for (const [key, val] of Object.entries(defaultData)) {
             await localforage.setItem(`Default${configSep}${key}`, val);
         }
     }
-    
+
     // always loads config from localforage (include data)
     await localforage.iterate((val, key) => {
         if (key.startsWith(`${preset}${configSep}`)) {
@@ -61,7 +62,7 @@ async function getConfig() {
         }
     })
 
-    if(!("pmxFiles" in userConfig)) {
+    if (!("pmxFiles" in userConfig)) {
         await localforage.clear()
         location.reload()
     }
@@ -77,11 +78,10 @@ let stats;
 let character, camera, scene, renderer, stage;
 let postprocessor, composer;
 
-let helper, ikHelper, physicsHelper;
+let helper, ikHelper, physicsHelper, cwHelper;
 
 let globalParams = {};
 
-let ready = false;
 let timeoutID;
 let prevTime = 0.0;
 
@@ -97,13 +97,13 @@ const clock = new THREE.Clock();
 async function main() {
     await getConfig();
     await Ammo();
-    init();
+    await init();
     animate();
 }
 
 main();
 
-function init() {
+async function init() {
 
     const container = document.createElement('div');
     document.body.appendChild(container);
@@ -162,11 +162,13 @@ function init() {
         timeoutID = setTimeout(function () {
             player.style.opacity = 0;
             button.style.opacity = 0;
-            if(!player.paused) {
+            if (!player.paused) {
                 document.body.style.cursor = "none"
             }
         }, 1000);
     });
+
+    window.addEventListener('resize', onWindowResize);
 
     // scene
     scene = new THREE.Scene();
@@ -227,6 +229,7 @@ function init() {
     stats.dom.style.display = api["show FPS"] ? "block" : "none";
     container.appendChild(stats.dom);
 
+    // Helpers
     helper = new MMDAnimationHelper();
 
     const loader = new MMDLoader();
@@ -242,13 +245,27 @@ function init() {
     }
 
     // load stage
-    loader.load(stageFile, function (mesh) {
+    const loadStage = async () => {
+        const mesh = await loader.load(stageFile, onProgress, null, stageParams)
         stage = mesh;
         stage.castShadow = true;
         stage.receiveShadow = api['ground shadow'];
 
         scene.add(stage);
-    }, onProgress, null, stageParams)
+    }
+
+    // load camera
+    const loadCamera = async () => {
+        const cameraAnimation = await loader.loadAnimation(api.cameraFile, camera, onProgress, null);
+        helper.add(camera, {
+            animation: cameraAnimation,
+            enabled: api["camera motion"]
+        });
+
+        cwHelper = await MMDCameraWorkHelper.init(helper.get(camera));
+
+        overlay.style.display = "none";
+    }
 
     let characterParams = {
         enableSdef: api['enable SDEF']
@@ -262,7 +279,8 @@ function init() {
     }
 
     // load character
-    loader.loadWithAnimation(characterFile, api.motionFile, function (mmd) {
+    const loadCharacter = async () => {
+        const mmd = await loader.loadWithAnimation(characterFile, api.motionFile, onProgress, null, characterParams);
         character = mmd.mesh;
         character.castShadow = true;
         character.receiveShadow = api["self shadow"];
@@ -274,20 +292,6 @@ function init() {
             animation: mmd.animation
         });
         runtimeCharacter = helper.objects.get(character)
-
-        // load camera
-        loader.loadAnimation(api.cameraFile, camera, function (cameraAnimation) {
-
-            helper.add(camera, {
-                animation: cameraAnimation,
-                enabled: api["camera motion"]
-            });
-
-            ready = true;
-            overlay.style.display = "none";
-
-
-        }, onProgress, null);
 
         ikHelper = runtimeCharacter.ikSolver.createHelper();
         ikHelper.visible = api['show IK bones'];
@@ -311,13 +315,9 @@ function init() {
         gui.initGui(globalParams);
 
         runtimeCharacter.physics.reset();
+    }
 
-    }, onProgress, null, characterParams);
-
-    //
-
-    window.addEventListener('resize', onWindowResize);
-
+    await Promise.all([loadCamera(), loadStage(), loadCharacter()])
 }
 
 function onWindowResize() {
@@ -332,7 +332,7 @@ function onWindowResize() {
 
 function animate() {
 
-    if (ready && globalParams.ready) {
+    if (globalParams.ready) {
         stats.begin();
         render();
         stats.end();
@@ -351,6 +351,8 @@ function render() {
         return
     }
     let delta = currTime - prevTime;
+
+    cwHelper.setTime(currTime);
 
     if (Math.abs(delta) > 0) {
         // for time seeking using player control

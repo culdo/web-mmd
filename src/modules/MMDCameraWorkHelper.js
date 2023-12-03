@@ -1,0 +1,110 @@
+import { AnimationClip, LoopOnce } from "three"
+import { createTrackInterpolant } from "./MMDLoader"
+
+export class MMDCameraWorkHelper {
+    constructor({ cameraObj, cutClips, cutActionMap, modeKeys, cutKeys }) {
+        this.scrollingDuration = 3.0
+
+        this.camera = cameraObj.camera
+        this.modeKeys = modeKeys
+        this.cutKeys = cutKeys
+        this.cutActionMap = cutActionMap
+        this.origAction = cameraObj.actions[0]
+        this.cameraMixer = cameraObj.mixer
+        this.cutClips = cutClips
+        this.mode = "1"
+        this.currentAction = null
+        this.cutOffset = 0
+
+        this.cameraMixer.addEventListener('finished', function (e) {
+            this.finished = true
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (this.modeKeys.includes(e.key)) {
+                this.mode = e.key
+            } else if (this.cutKeys.includes(e.key)) {
+                // pause previous action
+                if (this.currentAction) {
+                    this.currentAction.stop()
+                }
+                this.cutOffset = player.currentTime;
+                this.currentAction = this.cutActionMap[this.mode + e.key]
+                this.currentAction.play()
+            }
+        })
+    }
+    static async init(cameraObj, modeKeys = "1234567890-=", cutKeys = "qwertyuiop[]\\asdfghjkl;'zxcvbnm,./") {
+        const scrollingBar = document.querySelector(".scrolling-bar")
+
+        const resp = await fetch("/camera-clips/cut-times.json")
+        const cutTimes = await resp.json()
+        const cutClips = []
+        const cutActionMap = {}
+
+        for (const [idx, cutTime] of cutTimes.entries()) {
+            const resp = await fetch(`/camera-clips/${idx}.json`)
+            const json = await resp.json()
+            const clip = AnimationClip.parse(json.clip)
+            for(const track of clip.tracks) {
+                createTrackInterpolant(track, json.interpolations[track.name], true)
+            }
+
+            // scrolling bar beat key binding
+            const mode = modeKeys[Math.floor(idx / cutKeys.length)]
+            const cutKey = cutKeys[idx % cutKeys.length]
+            const keyBinding = mode + cutKey
+            const action = cameraObj.mixer.clipAction(clip)
+            action.setLoop(LoopOnce)
+            cutActionMap[keyBinding] = action
+
+            // scrolling bar beat
+            const beatEl = document.createElement("div")
+            beatEl.id = `beat${idx}`
+            beatEl.textContent = keyBinding.toUpperCase()
+            beatEl.className = "cut"
+            scrollingBar.appendChild(beatEl)
+
+            cutClips.push({
+                clip,
+                cutTime,
+                beatEl,
+                keyBinding
+            })
+        }
+
+        return new MMDCameraWorkHelper({ cameraObj, cutClips, cutActionMap, modeKeys, cutKeys })
+
+    }
+    setTime(time) {
+        if (this.origAction.enabled) {
+            this.cameraMixer.setTime(time)
+        } else if (this.currentAction?.isRunning()) {
+            this.cameraMixer.setTime(time - this.cutOffset)
+        }
+        if (this.origAction.enabled || this.currentAction?.isRunning()) {
+            // console.log(this.camera.quaternion)
+            // console.log(this.camera.getObjectByName("target").position)
+            this.camera.up.set(0, 1, 0);
+            this.camera.up.applyQuaternion(this.camera.quaternion);
+            this.camera.lookAt(this.camera.getObjectByName("target").position);
+            this.camera.updateProjectionMatrix();
+        }
+
+        for (const { cutTime, beatEl } of this.cutClips) {
+            if (time <= cutTime && cutTime <= time + this.scrollingDuration) {
+                const timeDiff = cutTime - time
+                beatEl.style.left = `${100 * (timeDiff / this.scrollingDuration)}%`;
+                beatEl.style.display = "block";
+
+                if (timeDiff < 0.1) {
+                    beatEl.style.backgroundColor = "#ffdd00"
+                } else {
+                    beatEl.style.backgroundColor = "aqua"
+                }
+            } else {
+                beatEl.style.display = "none";
+            }
+        }
+    }
+}

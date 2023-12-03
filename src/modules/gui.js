@@ -137,7 +137,7 @@ class MMDGui {
         const modelTextures = pmxFiles.modelTextures;
         const updateMorphFolder = this.updateMorphFolder
 
-        const loadCharacter = (url, filename) => {
+        const loadCharacter = async (url, filename) => {
             mmd.ready = false;
             mmd.runtimeCharacter.mixer.uncacheRoot(mmd.character);
             mmd.scene.remove(mmd.character);
@@ -159,46 +159,46 @@ class MMDGui {
             }
             // load character
             overlay.style.display = 'flex';
-            mmd.loader.loadWithAnimation(url, mmd.api.motionFile, function (obj) {
-                console.log("loading character...")
 
-                let character = obj.mesh;
-                character.castShadow = true;
-                character.receiveShadow = mmd.api["self shadow"];
-                mmd.scene.add(character);
+            const obj = await mmd.loader.loadWithAnimation(url, mmd.api.motionFile, onProgress, null, params)
+            console.log("loading character...")
 
-                mmd.helper.add(character, {
-                    animation: obj.animation,
-                    physics: true
-                });
-                mmd.runtimeCharacter = mmd.helper.objects.get(character)
+            let character = obj.mesh;
+            character.castShadow = true;
+            character.receiveShadow = mmd.api["self shadow"];
+            mmd.scene.add(character);
 
-                mmd.ikHelper = mmd.runtimeCharacter.ikSolver.createHelper();
-                mmd.ikHelper.visible = mmd.api["show IK bones"];
-                mmd.scene.add(mmd.ikHelper);
+            mmd.helper.add(character, {
+                animation: obj.animation,
+                physics: true
+            });
+            mmd.runtimeCharacter = mmd.helper.objects.get(character)
 
-                mmd.physicsHelper = mmd.runtimeCharacter.physics.createHelper();
-                mmd.physicsHelper.visible = mmd.api["show rigid bodies"];
-                mmd.scene.add(mmd.physicsHelper);
+            mmd.ikHelper = mmd.runtimeCharacter.ikSolver.createHelper();
+            mmd.ikHelper.visible = mmd.api["show IK bones"];
+            mmd.scene.add(mmd.ikHelper);
 
-                mmd.skeletonHelper = new THREE.SkeletonHelper(character);
-                mmd.skeletonHelper.visible = mmd.api['show skeleton'];
-                mmd.scene.add(mmd.skeletonHelper);
+            mmd.physicsHelper = mmd.runtimeCharacter.physics.createHelper();
+            mmd.physicsHelper.visible = mmd.api["show rigid bodies"];
+            mmd.scene.add(mmd.physicsHelper);
 
-                mmd.character = character;
+            mmd.skeletonHelper = new THREE.SkeletonHelper(character);
+            mmd.skeletonHelper.visible = mmd.api['show skeleton'];
+            mmd.scene.add(mmd.skeletonHelper);
 
-                mmd.helper.enable('physics', false);
-                mmd.helper.update(0.0, player.currentTime)
-                mmd.runtimeCharacter.physics.reset();
-                mmd.helper.enable('physics', true);
+            mmd.character = character;
 
-                console.log("loaded reset")
+            mmd.helper.enable('physics', false);
+            mmd.helper.update(0.0, player.currentTime)
+            mmd.runtimeCharacter.physics.reset();
+            mmd.helper.enable('physics', true);
 
-                mmd.ready = true;
-                overlay.style.display = 'none';
+            console.log("loaded reset")
 
-                updateMorphFolder();
-            }, onProgress, null, params)
+            mmd.ready = true;
+            overlay.style.display = 'none';
+
+            updateMorphFolder();
             mmd.api.character = filename;
         };
         // TODO: use unzip tools to unzip model files, because it has many texture images
@@ -209,7 +209,7 @@ class MMDGui {
             selectFile.webkitdirectory = false;
         }
 
-        const loadStage = (url, filename) => {
+        const loadStage = async (url, filename) => {
             mmd.scene.remove(mmd.stage);
             console.log("remove stage");
             let params = null;
@@ -221,16 +221,16 @@ class MMDGui {
             }
             // load stage
             overlay.style.display = 'flex';
-            mmd.loader.load(url, function (mesh) {
-                console.log("load stage");
+            const mesh = await mmd.loader.load(url, onProgress, null, params);
+            console.log("load stage");
 
-                mesh.castShadow = true;
-                mesh.receiveShadow = mmd.api['ground shadow'];
+            mesh.castShadow = true;
+            mesh.receiveShadow = mmd.api['ground shadow'];
 
-                mmd.scene.add(mesh);
-                mmd.stage = mesh;
-                overlay.style.display = 'none';
-            }, onProgress, null, params);
+            mmd.scene.add(mesh);
+            mmd.stage = mesh;
+            overlay.style.display = 'none';
+
             mmd.api.stage = filename;
         }
         // TODO: same above
@@ -257,34 +257,33 @@ class MMDGui {
         }
 
         this.guiFn.selectCamera = () => {
-            selectFile.onchange = _buildLoadFileFn((url, filename) => {
+            selectFile.onchange = _buildLoadFileFn(async (url, filename) => {
                 mmd.helper.remove(mmd.camera);
-                mmd.loader.loadAnimation(url, mmd.camera, function (cameraAnimation) {
 
-                    mmd.helper.add(mmd.camera, {
-                        animation: cameraAnimation,
-                        enabled: mmd.api["camera motion"]
-                    });
+                const cameraAnimation = await mmd.loader.loadAnimation(url, mmd.camera, onProgress, null);
+                mmd.helper.add(mmd.camera, {
+                    animation: cameraAnimation,
+                    enabled: mmd.api["camera motion"]
+                });
 
-                }, onProgress, null);
                 mmd.api.camera = filename;
                 mmd.api.cameraFile = url;
             });
             selectFile.click();
         }
         this.guiFn.selectMotion = () => {
-            selectFile.onchange = _buildLoadFileFn((url, filename) => {
+            selectFile.onchange = _buildLoadFileFn(async (url, filename) => {
                 mmd.runtimeCharacter.mixer.uncacheRoot(mmd.character);
                 mmd.helper.remove(mmd.character);
                 mmd.api.motionFile = url;
-                mmd.loader.loadAnimation(url, mmd.character, function (mmdAnimation) {
-                    mmd.helper.add(mmd.character, {
-                        animation: mmdAnimation,
-                        physics: true
-                    });
-                    mmd.runtimeCharacter = mmd.helper.objects.get(mmd.character);
 
-                }, onProgress, null);
+                const mmdAnimation = await mmd.loader.loadAnimation(url, mmd.character, onProgress, null);
+                mmd.helper.add(mmd.character, {
+                    animation: mmdAnimation,
+                    physics: true
+                });
+                mmd.runtimeCharacter = mmd.helper.objects.get(mmd.character);
+
                 mmd.api.motion = filename;
                 mmd.api.motionFile = url;
             });

@@ -112,7 +112,7 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	load(url, onLoad, onProgress, onError, params = null) {
+	async load(url, onProgress, onError, params = null) {
 
 		const builder = this.meshBuilder.setCrossOrigin(this.crossOrigin);
 
@@ -147,24 +147,23 @@ class MMDLoader extends Loader {
 		// Should I detect by seeing header?
 		if (modelExtension !== 'pmd' && modelExtension !== 'pmx') {
 			const err = new Error('THREE.MMDLoader: Unknown model file extension .' + modelExtension + '.')
-			
+
 			if (onError) onError(err);
 			throw err
 
 		}
 
-		this[modelExtension === 'pmd' ? 'loadPMD' : 'loadPMX'](url, function (data) {
-			if (params && params.modelTextures) {
-				data.textures.forEach((texturePath, index) => {
-					texturePath = texturePath.replace('\\', '/');
-					data.textures[index] = params.modelTextures[texturePath];
-				});
-			}
-			data["enableSdef"] = params?.enableSdef ? params.enableSdef : false;
+		const data = await this[modelExtension === 'pmd' ? 'loadPMD' : 'loadPMX'](url, onProgress, onError);
 
-			onLoad(builder.build(data, resourcePath, onProgress, onError));
+		if (params && params.modelTextures) {
+			data.textures.forEach((texturePath, index) => {
+				texturePath = texturePath.replace('\\', '/');
+				data.textures[index] = params.modelTextures[texturePath];
+			});
+		}
+		data["enableSdef"] = params?.enableSdef ? params.enableSdef : false;
 
-		}, onProgress, onError);
+		return builder.build(data, resourcePath, onProgress, onError);
 
 	}
 
@@ -178,17 +177,15 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	loadAnimation(url, object, onLoad, onProgress, onError) {
+	async loadAnimation(url, object, onProgress, onError) {
 
 		const builder = this.animationBuilder;
 
-		this.loadVMD(url, function (vmd) {
+		const vmd = await this.loadVMD(url, onProgress, onError);
 
-			onLoad(object.isCamera
-				? builder.buildCameraAnimation(vmd)
-				: builder.build(vmd, object));
-
-		}, onProgress, onError);
+		return object.isCamera
+			? builder.buildCameraAnimation(vmd)
+			: builder.build(vmd, object)
 
 	}
 
@@ -203,22 +200,18 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	loadWithAnimation(modelUrl, vmdUrl, onLoad, onProgress, onError, params = null) {
+	async loadWithAnimation(modelUrl, vmdUrl, onProgress, onError, params = null) {
 
 		const scope = this;
 
-		this.load(modelUrl, function (mesh) {
+		const mesh = await this.load(modelUrl, onProgress, onError, params);
 
-			scope.loadAnimation(vmdUrl, mesh, function (animation) {
+		const animation = await scope.loadAnimation(vmdUrl, mesh, onProgress, onError);
 
-				onLoad({
-					mesh: mesh,
-					animation: animation
-				});
-
-			}, onProgress, onError);
-
-		}, onProgress, onError, params);
+		return {
+			mesh: mesh,
+			animation: animation
+		}
 
 	}
 
@@ -228,51 +221,45 @@ class MMDLoader extends Loader {
 	 * Loads .pmd file as an Object.
 	 *
 	 * @param {string} url - url to .pmd file
-	 * @param {function} onLoad
 	 * @param {function} onProgress
 	 * @param {function} onError
+	 * @returns {Promise}
 	 */
-	loadPMD(url, onLoad, onProgress, onError) {
+	async loadPMD(url, onProgress, onError) {
 
 		const parser = this._getParser();
 
-		this.loader
+		const buffer = await this.loader
 			.setMimeType(undefined)
 			.setPath(this.path)
 			.setResponseType('arraybuffer')
 			.setRequestHeader(this.requestHeader)
 			.setWithCredentials(this.withCredentials)
-			.load(url, function (buffer) {
+			.loadAsync(url, onProgress, onError);
 
-				onLoad(parser.parsePmd(buffer, true));
-
-			}, onProgress, onError);
-
+		return parser.parsePmd(buffer, true)
 	}
 
 	/**
 	 * Loads .pmx file as an Object.
 	 *
 	 * @param {string} url - url to .pmx file
-	 * @param {function} onLoad
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	loadPMX(url, onLoad, onProgress, onError) {
+	async loadPMX(url, onProgress, onError) {
 
 		const parser = this._getParser();
 
-		this.loader
+		const buffer = await this.loader
 			.setMimeType(undefined)
 			.setPath(this.path)
 			.setResponseType('arraybuffer')
 			.setRequestHeader(this.requestHeader)
 			.setWithCredentials(this.withCredentials)
-			.load(url, function (buffer) {
+			.loadAsync(url, onProgress, onError);
 
-				onLoad({ ...parser.parsePmx(buffer, true) });
-
-			}, onProgress, onError);
+		return { ...parser.parsePmx(buffer, true) }
 
 	}
 
@@ -285,7 +272,7 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	loadVMD(url, onLoad, onProgress, onError) {
+	async loadVMD(url, onProgress, onError) {
 
 		const urls = Array.isArray(url) ? url : [url];
 
@@ -302,16 +289,11 @@ class MMDLoader extends Loader {
 			.setWithCredentials(this.withCredentials);
 
 		for (let i = 0, il = urls.length; i < il; i++) {
-
-			this.loader.load(urls[i], function (buffer) {
-
-				vmds.push(parser.parseVmd(buffer, true));
-
-				if (vmds.length === vmdNum) onLoad(parser.mergeVmds(vmds));
-
-			}, onProgress, onError);
-
+			const buffer = await this.loader.loadAsync(urls[i], onProgress, onError);
+			vmds.push(parser.parseVmd(buffer, true));
 		}
+
+		return parser.mergeVmds(vmds);
 
 	}
 
@@ -1869,12 +1851,12 @@ class AnimationBuilder {
 			times.push(time);
 
 			position.set(0, 0, - distance);
-			
+
 			center.set(pos[0], pos[1], pos[2]);
-			
+
 			euler.set(- rot[0], - rot[1], - rot[2]);
 			quaternion.setFromEuler(euler);
-			
+
 			position.applyQuaternion(quaternion);
 			position.add(center);
 
@@ -1918,7 +1900,7 @@ class AnimationBuilder {
 
 	// private method
 
-	_createTrack(node, typedKeyframeTrack, times, values, interpolations, isCamera=false) {
+	_createTrack(node, typedKeyframeTrack, times, values, interpolations, isCamera = false) {
 
 		/*
 			 * optimizes here not to let KeyframeTrackPrototype optimize
@@ -1974,11 +1956,7 @@ class AnimationBuilder {
 
 		const track = new typedKeyframeTrack(node, times, values);
 
-		track.createInterpolant = function InterpolantFactoryMethodCubicBezier(result) {
-
-			return new CubicBezierInterpolation(this.times, this.values, this.getValueSize(), result, new Float32Array(interpolations), isCamera);
-
-		};
+		createTrackInterpolant(track, interpolations, isCamera)
 
 		return track;
 
@@ -1986,11 +1964,19 @@ class AnimationBuilder {
 
 }
 
+export function createTrackInterpolant(track, interpolations, isCamera) {
+	track.createInterpolant = function (result) {
+
+		return new CubicBezierInterpolation(track.times, track.values, this.getValueSize(), result, new Float32Array(interpolations), isCamera);
+
+	};
+}
+
 // interpolation
 
 class CubicBezierInterpolation extends Interpolant {
 
-	constructor(parameterPositions, sampleValues, sampleSize, resultBuffer, params, isCamera=false) {
+	constructor(parameterPositions, sampleValues, sampleSize, resultBuffer, params, isCamera = false) {
 
 		super(parameterPositions, sampleValues, sampleSize, resultBuffer);
 
@@ -2013,6 +1999,9 @@ class CubicBezierInterpolation extends Interpolant {
 		// This is from MMD animation spec.
 		// '1.5' is for precision loss. times are Float32 in Three.js Animation system.
 		const weight1 = (((t1 - t0) < 1 / 30 * 1.5) && this.isCamera) ? 0.0 : (t - t0) / (t1 - t0);
+		if(this.isCamera) {
+			console.log(weight1)
+		}
 
 		if (stride === 4) { // Quaternion
 

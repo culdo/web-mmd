@@ -115,6 +115,15 @@ class MMDAnimationHelper {
 	}
 
 	/**
+	 * Shortcut for this.objects.get()
+	 * @param {*} object 
+	 * @returns 
+	 */
+	get(object) {
+		return this.objects.get(object)
+	}
+
+	/**
 	 * Removes an Three.js Object from helper.
 	 *
 	 * @param {THREE.SkinnedMesh|THREE.Camera|THREE.Audio} object
@@ -335,7 +344,7 @@ class MMDAnimationHelper {
 
 		camera.add(this.cameraTarget);
 
-		this.objects.set(camera, {});
+		this.objects.set(camera, {camera});
 
 		if (params.animation !== undefined) {
 
@@ -628,21 +637,7 @@ class MMDAnimationHelper {
 
 	}
 
-	_animateCamera(camera, time) {
-
-		const mixer = this.objects.get(camera).mixer;
-
-		if (mixer) {
-
-			if (this.enabled.cameraAnimation) {
-				mixer.setTime(time);
-				camera.up.set(0, 1, 0);
-				camera.up.applyQuaternion(camera.quaternion);
-				camera.lookAt(this.cameraTarget.position);
-				camera.updateProjectionMatrix();
-			}
-
-		}
+	_animateCamera(camera) {
 
 	}
 
