@@ -2000,7 +2000,7 @@ class CubicBezierInterpolation extends Interpolant {
 		// '1.5' is for precision loss. times are Float32 in Three.js Animation system.
 		const weight1 = (((t1 - t0) < 1 / 30 * 1.5) && this.isCamera) ? 0.0 : (t - t0) / (t1 - t0);
 		if(this.isCamera && stride === 4) {
-			debugger
+			
 		}
 
 		if (stride === 4) { // Quaternion

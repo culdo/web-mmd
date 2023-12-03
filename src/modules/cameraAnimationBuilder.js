@@ -67,7 +67,6 @@ export class CameraAnimationBuilder {
 		const euler = new Euler();
 		const position = new Vector3();
 		const center = new Vector3();
-		let prevFrameNum = -2;
 		const jsonResult = {
 			clips: [],
 			cutTimes: []
@@ -79,47 +78,6 @@ export class CameraAnimationBuilder {
 		for (let i = 0, il = cameras.length; i < il; i++) {
 
 			const motion = cameras[i];
-
-			if ((motion.frameNum - prevFrameNum) <= 1) {
-				cutTimes.push(motion.frameNum / 30)
-
-				const tracks = [];
-
-				// I expect an object whose name 'target' exists under THREE.Camera
-				const tTrack = this._createTrack('target.position', VectorKeyframeTrack, times, centers, cInterpolations, true)
-				const qTrack = this._createTrack('.quaternion', QuaternionKeyframeTrack, times, quaternions, qInterpolations, true)
-				const pTrack = this._createTrack('.position', VectorKeyframeTrack, times, positions, pInterpolations, true)
-				const fTrack = this._createTrack('.fov', NumberKeyframeTrack, times, fovs, fInterpolations, true)
-
-				tracks.push(tTrack.track);
-				tracks.push(qTrack.track);
-				tracks.push(pTrack.track);
-				tracks.push(fTrack.track);
-
-				const clip = new AnimationClip('', - 1, tracks);
-				clips.push({
-					clip: AnimationClip.toJSON(clip),
-					interpolations: {
-						'target.position': tTrack.interpolations,
-						'.quaternion': qTrack.interpolations,
-						'.position': pTrack.interpolations,
-						'.fov': fTrack.interpolations
-					}
-				})
-
-				times.length = 0
-				centers.length = 0
-				quaternions.length = 0
-				positions.length = 0
-				fovs.length = 0
-
-				cInterpolations.length = 0
-				qInterpolations.length = 0
-				pInterpolations.length = 0
-				fInterpolations.length = 0
-			}
-			prevFrameNum = motion.frameNum
-
 			const time = motion.frameNum / 30;
 			const pos = motion.position;
 			const rot = motion.rotation;
@@ -163,40 +121,57 @@ export class CameraAnimationBuilder {
 
 			pushInterpolation(fInterpolations, interpolation, 5);
 
-		}
-		const tracks = [];
+			if (i == cameras.length - 1 || (cameras[i + 1].frameNum - motion.frameNum) <= 1) {
+				if (i < cameras.length - 1) {
+					cutTimes.push(motion.frameNum / 30)
+				}
 
-		// I expect an object whose name 'target' exists under THREE.Camera
-		const tTrack = this._createTrack('target.position', VectorKeyframeTrack, times, centers, cInterpolations, true)
-		const qTrack = this._createTrack('.quaternion', QuaternionKeyframeTrack, times, quaternions, qInterpolations, true)
-		const pTrack = this._createTrack('.position', VectorKeyframeTrack, times, positions, pInterpolations, true)
-		const fTrack = this._createTrack('.fov', NumberKeyframeTrack, times, fovs, fInterpolations, true)
+				const tracks = [];
 
-		tracks.push(tTrack.track);
-		tracks.push(qTrack.track);
-		tracks.push(pTrack.track);
-		tracks.push(fTrack.track);
+				// I expect an object whose name 'target' exists under THREE.Camera
+				const tTrack = this._createTrack('target.position', VectorKeyframeTrack, times, centers, cInterpolations)
+				const qTrack = this._createTrack('.quaternion', QuaternionKeyframeTrack, times, quaternions, qInterpolations)
+				const pTrack = this._createTrack('.position', VectorKeyframeTrack, times, positions, pInterpolations)
+				const fTrack = this._createTrack('.fov', NumberKeyframeTrack, times, fovs, fInterpolations)
 
-		const clip = new AnimationClip('', - 1, tracks);
-		clips.push({
-			clip: AnimationClip.toJSON(clip),
-			interpolations: {
-				'target.position': tTrack.interpolations,
-				'.quaternion': qTrack.interpolations,
-				'.position': pTrack.interpolations,
-				'.fov': fTrack.interpolations
+				tracks.push(tTrack.track);
+				tracks.push(qTrack.track);
+				tracks.push(pTrack.track);
+				tracks.push(fTrack.track);
+
+				const clip = new AnimationClip('', - 1, tracks);
+				clips.push({
+					clip: AnimationClip.toJSON(clip),
+					interpolations: {
+						'target.position': tTrack.interpolations.slice(),
+						'.quaternion': qTrack.interpolations.slice(),
+						'.position': pTrack.interpolations.slice(),
+						'.fov': fTrack.interpolations.slice()
+					}
+				})
+
+				times.length = 0
+				centers.length = 0
+				quaternions.length = 0
+				positions.length = 0
+				fovs.length = 0
+
+				cInterpolations.length = 0
+				qInterpolations.length = 0
+				pInterpolations.length = 0
+				fInterpolations.length = 0
 			}
-		})
+		}
 
 		if (clips.length != cutTimes.length) {
-			throw "clips.length != cutTimes.length"
+			throw `clips.length: ${clips.length} != cutTimes.length: ${cutTimes.length}`
 		}
 		return jsonResult
 	}
 
 	// private method
 
-	_createTrack(node, typedKeyframeTrack, times, values, interpolations, isCamera = false) {
+	_createTrack(node, typedKeyframeTrack, times, values, interpolations) {
 
 		/*
 			 * optimizes here not to let KeyframeTrackPrototype optimize

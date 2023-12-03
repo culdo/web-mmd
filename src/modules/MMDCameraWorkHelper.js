@@ -25,7 +25,7 @@ export class MMDCameraWorkHelper {
                     this.currentAction.stop()
                 }
                 this.cutOffset = player.currentTime;
-                if (!this.origAction.enabled) {
+                if (!this.origAction.isRunning()) {
                     this.currentAction = this.cutActionMap[this.mode + e.key]
                     this.currentAction.play()
                 }
@@ -54,7 +54,6 @@ export class MMDCameraWorkHelper {
             for(const track of clip.tracks) {
                 createTrackInterpolant(track, clipInfo.interpolations[track.name], true)
             }
-            debugger
 
             // scrolling bar beat key binding
             const mode = modeKeys[Math.floor(idx / cutKeys.length)]
@@ -83,13 +82,15 @@ export class MMDCameraWorkHelper {
 
     }
     setTime(time) {
-        if (this.origAction.enabled) {
+        if (this.origAction.isRunning()) {
+            if(this.currentAction?.isRunning()) {
+                this.currentAction.stop()
+            }
             this.cameraMixer.setTime(time)
         } else if (this.currentAction?.isRunning()) {
             this.cameraMixer.setTime(time - this.cutOffset)
         }
-        if (this.origAction.enabled || this.currentAction?.isRunning()) {
-            console.log(this.camera.quaternion)
+        if (this.origAction.isRunning() || this.currentAction?.isRunning()) {
             this.camera.up.set(0, 1, 0);
             this.camera.up.applyQuaternion(this.camera.quaternion);
             this.camera.lookAt(this.camera.getObjectByName("target").position);
