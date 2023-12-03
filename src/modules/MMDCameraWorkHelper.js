@@ -16,10 +16,6 @@ export class MMDCameraWorkHelper {
         this.currentAction = null
         this.cutOffset = 0
 
-        this.cameraMixer.addEventListener('finished', function (e) {
-            this.finished = true
-        });
-
         document.addEventListener("keydown", (e) => {
             if (this.modeKeys.includes(e.key)) {
                 this.mode = e.key
@@ -29,26 +25,36 @@ export class MMDCameraWorkHelper {
                     this.currentAction.stop()
                 }
                 this.cutOffset = player.currentTime;
-                this.currentAction = this.cutActionMap[this.mode + e.key]
-                this.currentAction.play()
+                if (!this.origAction.enabled) {
+                    this.currentAction = this.cutActionMap[this.mode + e.key]
+                    this.currentAction.play()
+                }
+            } else if(e.key == " ") {
+                if(player.paused) {
+                    player.play()
+                } else {
+                    player.pause()
+                }
+            } else {
+                console.log(e.key == "Home")
             }
         })
     }
     static async init(cameraObj, modeKeys = "1234567890-=", cutKeys = "qwertyuiop[]\\asdfghjkl;'zxcvbnm,./") {
         const scrollingBar = document.querySelector(".scrolling-bar")
 
-        const resp = await fetch("/camera-clips/cut-times.json")
-        const cutTimes = await resp.json()
+        const resp = await fetch("/camera-clips/rabbit-hole.json")
+        const {cutTimes, clips} = await resp.json()
         const cutClips = []
         const cutActionMap = {}
 
         for (const [idx, cutTime] of cutTimes.entries()) {
-            const resp = await fetch(`/camera-clips/${idx}.json`)
-            const json = await resp.json()
-            const clip = AnimationClip.parse(json.clip)
+            const clipInfo = clips[idx]
+            const clip = AnimationClip.parse(clipInfo.clip)
             for(const track of clip.tracks) {
-                createTrackInterpolant(track, json.interpolations[track.name], true)
+                createTrackInterpolant(track, clipInfo.interpolations[track.name], true)
             }
+            debugger
 
             // scrolling bar beat key binding
             const mode = modeKeys[Math.floor(idx / cutKeys.length)]
@@ -83,8 +89,7 @@ export class MMDCameraWorkHelper {
             this.cameraMixer.setTime(time - this.cutOffset)
         }
         if (this.origAction.enabled || this.currentAction?.isRunning()) {
-            // console.log(this.camera.quaternion)
-            // console.log(this.camera.getObjectByName("target").position)
+            console.log(this.camera.quaternion)
             this.camera.up.set(0, 1, 0);
             this.camera.up.applyQuaternion(this.camera.quaternion);
             this.camera.lookAt(this.camera.getObjectByName("target").position);
