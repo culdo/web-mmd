@@ -7,10 +7,11 @@ import {
 	Vector3,
 	VectorKeyframeTrack
 } from 'three';
+import { MMDParser } from './mmdparser.module.js';
 
 //
 
-export class CameraAnimationBuilder {
+export class CameraClipsBuilder {
 
 	/**
 	 * @param {Object} vmd - parsed VMD data
@@ -230,3 +231,10 @@ export class CameraAnimationBuilder {
 
 }
 
+export function cameraToClips(vmdBuffer) {
+	const parser = new MMDParser.Parser()
+
+	const vmd = parser.parseVmd(vmdBuffer)
+	const animationBuilder = new CameraClipsBuilder();
+	return animationBuilder.buildCameraAnimation(vmd)
+}

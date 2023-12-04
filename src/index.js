@@ -262,7 +262,7 @@ async function init() {
             enabled: api["camera motion"]
         });
 
-        cwHelper = await MMDCameraWorkHelper.init(helper.get(camera));
+        cwHelper = await MMDCameraWorkHelper.init(helper.get(camera), api.cameraFile);
 
         overlay.style.display = "none";
     }
@@ -347,7 +347,7 @@ function render() {
     let currTime = player.currentTime + (api.motionOffset * 0.001)
     // player has a bug that sometime jump to end(duration)
     // so we just skip that frame
-    if (currTime == player.duration) {
+    if (player.currentTime == player.duration) {
         return
     }
     let delta = currTime - prevTime;

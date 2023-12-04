@@ -1,5 +1,6 @@
 import { AnimationClip, LoopOnce } from "three"
 import { createTrackInterpolant } from "./MMDLoader"
+import { cameraToClips } from "./cameraClipsBuilder"
 
 export class MMDCameraWorkHelper {
     constructor({ cameraObj, cutClips, cutActionMap, modeKeys, cutKeys }) {
@@ -40,11 +41,11 @@ export class MMDCameraWorkHelper {
             }
         })
     }
-    static async init(cameraObj, modeKeys = "1234567890-=", cutKeys = "qwertyuiop[]\\asdfghjkl;'zxcvbnm,./") {
+    static async init(cameraObj, cameraUrl, modeKeys = "1234567890-=", cutKeys = "qwertyuiop[]\\asdfghjkl;'zxcvbnm,./") {
         const scrollingBar = document.querySelector(".scrolling-bar")
 
-        const resp = await fetch("/camera-clips/rabbit-hole.json")
-        const {cutTimes, clips} = await resp.json()
+        const resp = await fetch(cameraUrl)
+        const {cutTimes, clips} = cameraToClips(await resp.arrayBuffer())
         const cutClips = []
         const cutActionMap = {}
 
