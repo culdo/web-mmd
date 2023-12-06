@@ -115,5 +115,8 @@
     "bokeh maxblur": 0.01,
     "bokeh enabled": false,
     "fov": 45,
-    "zoom": 1
+    "zoom": 1,
+    "cameraWork enabled": false,
+    "modeKeys": "1234567890-=",
+    "cutKeys": "qwertyuiop[]\\asdfghjkl;'zxcvbnm,./"
 }

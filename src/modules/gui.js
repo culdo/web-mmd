@@ -126,6 +126,15 @@ class MMDGui {
         })
         folder.add(guiFn, "reset")
 
+        const cameraWorkFolder = folder.addFolder('Camera work');
+        const scrollingEl = document.querySelector(".scrolling-bar")
+        scrollingEl.style.display = this.mmd.api["cameraWork enabled"] ? "block" : "none"
+
+        cameraWorkFolder.add(this.mmd.api, 'cameraWork enabled').name("enabled").onChange((state) => {
+            scrollingEl.style.display = state ? "block" : "none"
+        });
+        cameraWorkFolder.add(this.mmd.api, 'modeKeys');
+        cameraWorkFolder.add(this.mmd.api, 'cutKeys');
     }
 
     _guiFile() {

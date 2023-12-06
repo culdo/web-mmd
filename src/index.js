@@ -262,7 +262,7 @@ async function init() {
             enabled: api["camera motion"]
         });
 
-        cwHelper = await MMDCameraWorkHelper.init(helper.get(camera), api.cameraFile);
+        cwHelper = await MMDCameraWorkHelper.init(helper.get(camera), api);
 
         overlay.style.display = "none";
     }
