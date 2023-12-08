@@ -234,7 +234,7 @@ export class CameraClipsBuilder {
 export function cameraToClips(vmdBuffer) {
 	const parser = new MMDParser.Parser()
 
-	const vmd = parser.parseVmd(vmdBuffer)
+	const vmd = parser.parseVmd(vmdBuffer, true)
 	const animationBuilder = new CameraClipsBuilder();
 	return animationBuilder.buildCameraAnimation(vmd)
 }
