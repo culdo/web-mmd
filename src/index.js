@@ -353,14 +353,14 @@ function render() {
     }
     let delta = currTime - prevTime;
 
-    cwHelper.setTime(currTime);
-
+    
     if (Math.abs(delta) > 0) {
         // for time seeking using player control
         if (Math.abs(delta) > 0.1) {
             helper.enable('physics', false);
         }
-
+        
+        cwHelper.setTime(currTime);
         // animation updating
         helper.update(delta, currTime);
 
