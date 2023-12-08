@@ -35,30 +35,30 @@ export class MMDCameraWorkHelper {
                 let minDiff = null
                 let prevCutTime = null
                 for (const { cutTime } of this.cutClips) {
-                    if(cutTime <= player.currentTime) {
-                        const diff = player.currentTime - cutTime
+                    const diff = player.currentTime.toFixed(2) - cutTime.toFixed(2)
+                    if(diff > 0) {
                         if(minDiff == null || diff < minDiff ) {
                             minDiff = diff
                             prevCutTime = cutTime
                         }
                     }
                 }
-                if(prevCutTime) {
+                if(prevCutTime != null) {
                     player.currentTime = prevCutTime
                 }
             } else if(e.key == "ArrowRight"){
                 let minDiff = null
                 let nextCutTime = null
                 for (const { cutTime } of this.cutClips) {
-                    if(player.currentTime <= cutTime) {
-                        const diff = cutTime - player.currentTime
+                    const diff = cutTime.toFixed(2) - player.currentTime.toFixed(2)
+                    if(diff > 0) {
                         if(minDiff == null || diff < minDiff) {
                             minDiff = diff
                             nextCutTime = cutTime
                         }
                     }
                 }
-                if(nextCutTime) {
+                if(nextCutTime != null) {
                     player.currentTime = nextCutTime
                 }
             }
