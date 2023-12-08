@@ -18,7 +18,20 @@ class MMDGui {
     initGui(params) {
         this.mmd = params;
 
-        this.gui.add(this.mmd.api, 'camera motion').onChange((state) => {
+        document.addEventListener("keydown", (e) => {
+            if(e.key == " ") {
+                if(player.paused) {
+                    player.play()
+                } else {
+                    player.pause()
+                }
+            } else if(e.key == "`") {
+                const toggledState = !this.mmd.api['camera motion']
+                this.mmd.helper.enable('cameraAnimation', toggledState)
+                this.mmd.api['camera motion'] = toggledState
+            }
+        })
+        this.gui.add(this.mmd.api, 'camera motion').listen().onChange((state) => {
             this.mmd.helper.enable('cameraAnimation', state);
         });
         this.gui.add(this.mmd.api, 'physics').onChange((state) => {
@@ -133,8 +146,12 @@ class MMDGui {
         cameraWorkFolder.add(this.mmd.api, 'cameraWork enabled').name("enabled").onChange((state) => {
             scrollingEl.style.display = state ? "block" : "none"
         });
-        cameraWorkFolder.add(this.mmd.api, 'modeKeys');
-        cameraWorkFolder.add(this.mmd.api, 'cutKeys');
+        cameraWorkFolder.add(this.mmd.api, 'modeKeys').onChange((value) => {
+            this.mmd.cwHelper.updateKeyBinding()
+        });
+        cameraWorkFolder.add(this.mmd.api, 'cutKeys').onChange((value) => {
+            this.mmd.cwHelper.updateKeyBinding()
+        });
     }
 
     _guiFile() {

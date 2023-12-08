@@ -309,7 +309,8 @@ async function init() {
         globalParams = {
             api, defaultConfig, loader, camera, player, helper, scene, character, stage,
             postprocessor, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter,
-            renderer, presetsList, preset
+            renderer, presetsList, preset,
+            cwHelper
         };
         globalParams.ready = true;
         gui.initGui(globalParams);
