@@ -102,8 +102,10 @@ export class MMDCameraWorkHelper {
                 keyBinding
             })
         }
+        const helper = new MMDCameraWorkHelper({ cameraObj, cutClips, cutActionMap, api })
+        helper.setTime(api.currentTime)
 
-        return new MMDCameraWorkHelper({ cameraObj, cutClips, cutActionMap, api })
+        return helper
 
     }
     setTime(time) {
@@ -119,8 +121,6 @@ export class MMDCameraWorkHelper {
         if (this.origAction.isRunning() || enabled) {
             this.camera.up.set(0, 1, 0);
             this.camera.up.applyQuaternion(this.camera.quaternion);
-            // console.log(this.camera.quaternion)
-            // console.log(this.camera.getObjectByName("target").position)
             this.camera.lookAt(this.camera.getObjectByName("target").position);
             this.camera.updateProjectionMatrix();
         }
