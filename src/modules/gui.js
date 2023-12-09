@@ -61,10 +61,7 @@ class MMDGui {
             
             toggleScrollingBar(!motionFileEnabled)
         });
-
-        this.gui.add(this.mmd.api, 'physics').onChange((state) => {
-            this.mmd.helper.enable('physics', state)
-        });
+        this._guiPhysic();
         this._guiEffect();
         this._guiCamera();
         this._guiMorph();
@@ -75,6 +72,16 @@ class MMDGui {
         this._guiShadow();
         this._guiDebug();
         this._guiPreset();
+    }
+
+    _guiPhysic() {
+        const folder = this.gui.addFolder('Physic');
+        folder.add(this.mmd.api, 'physics').onChange((state) => {
+            this.mmd.helper.enable('physics', state)
+        });
+        folder.add(this.mmd.api, 'gravity', -50, 50, 0.1).onChange((val) => {
+            this.mmd.helper.get(this.mmd.character).physics.setGravity(new THREE.Vector3(0, val, 0))
+        });
     }
 
     _guiEffect() {
@@ -317,6 +324,8 @@ class MMDGui {
 
                 mmd.api.camera = filename;
                 mmd.api.cameraFile = url;
+
+                await mmd.cwHelper.updateClips(mmd.helper.get(mmd.camera));
             });
             selectFile.click();
         }
