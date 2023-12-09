@@ -72,7 +72,7 @@ select {
 	align-items: center;
 	justify-content: center;
 	flex-direction: column;
-	background: rgba(0, 0, 0, 0.1);
+	background: rgba(0, 0, 0, 0.5);
 }
 
 #overlay button {
