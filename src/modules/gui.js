@@ -4,6 +4,7 @@ import localforage from 'localforage';
 import path from 'path-browserify';
 import { GUI } from 'lil-gui';
 import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, createAudioLink } from './utils';
+import { CameraMode } from './MMDCameraWorkHelper';
 
 class MMDGui {
     constructor() {
@@ -17,23 +18,50 @@ class MMDGui {
 
     initGui(params) {
         this.mmd = params;
+        this.prevCameraMode = CameraMode.CREATIVE
+
+        const scrollingEl = document.querySelector(".scrolling-bar")
+        const toggleScrollingBar = (enabled) => {
+            scrollingEl.style.display = enabled ? "block" : "none"
+        }
+
+        toggleScrollingBar(this.mmd.api["camera mode"] != CameraMode.MOTION_FILE)
+
 
         document.addEventListener("keydown", (e) => {
-            if(e.key == " ") {
-                if(player.paused) {
+            if (e.key == " ") {
+                if (player.paused) {
                     player.play()
                 } else {
                     player.pause()
                 }
-            } else if(e.key == "`") {
-                const toggledState = !this.mmd.api['camera motion']
-                this.mmd.helper.enable('cameraAnimation', toggledState)
-                this.mmd.api['camera motion'] = toggledState
+            } else if (e.key == "`") {
+                const isEditMode = this.mmd.api["camera mode"] != CameraMode.MOTION_FILE
+                if (isEditMode) {
+                    this.prevCameraMode = this.mmd.api["camera mode"]
+                    this.mmd.api["camera mode"] = CameraMode.MOTION_FILE
+                } else {
+                    this.mmd.api["camera mode"] = this.prevCameraMode
+                }
+
+                const isEditModeNow = !isEditMode
+
+                toggleScrollingBar(isEditModeNow)
+                this.mmd.helper.enable('cameraAnimation', !isEditModeNow)
             }
         })
-        this.gui.add(this.mmd.api, 'camera motion').listen().onChange((state) => {
-            this.mmd.helper.enable('cameraAnimation', state);
+
+        this.gui.add(this.mmd.api, 'camera mode', {
+            "Motion File": CameraMode.MOTION_FILE,
+            "Composition": CameraMode.COMPOSITION,
+            "Creative": CameraMode.CREATIVE
+        }).listen().onChange((state) => {
+            const motionFileEnabled = state == CameraMode.MOTION_FILE
+            this.mmd.helper.enable('cameraAnimation', motionFileEnabled);
+            
+            toggleScrollingBar(!motionFileEnabled)
         });
+
         this.gui.add(this.mmd.api, 'physics').onChange((state) => {
             this.mmd.helper.enable('physics', state)
         });
@@ -140,12 +168,7 @@ class MMDGui {
         folder.add(guiFn, "reset")
 
         const cameraWorkFolder = folder.addFolder('Camera work');
-        const scrollingEl = document.querySelector(".scrolling-bar")
-        scrollingEl.style.display = this.mmd.api["cameraWork enabled"] ? "block" : "none"
 
-        cameraWorkFolder.add(this.mmd.api, 'cameraWork enabled').name("enabled").onChange((state) => {
-            scrollingEl.style.display = state ? "block" : "none"
-        });
         cameraWorkFolder.add(this.mmd.api, 'modeKeys').onChange((value) => {
             this.mmd.cwHelper.updateKeyBinding()
         });
@@ -289,7 +312,7 @@ class MMDGui {
                 const cameraAnimation = await mmd.loader.loadAnimation(url, mmd.camera, onProgress, null);
                 mmd.helper.add(mmd.camera, {
                     animation: cameraAnimation,
-                    enabled: mmd.api["camera motion"]
+                    enabled: mmd.api["camera mode"] == CameraMode.MOTION_FILE
                 });
 
                 mmd.api.camera = filename;
@@ -487,7 +510,7 @@ class MMDGui {
         })
         folder.add({
             'clear localforage': () => {
-                if (confirm("Be carful!! You will lost all your Models files、Presets...etc.")) {
+                if (confirm("Be careful!! You will lost all your Models files、Presets...etc.")) {
                     localforage.clear(() => {
                         location.reload();
                     });

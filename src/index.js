@@ -11,7 +11,7 @@ import { PostProcessor } from './modules/postProcessor.js'
 
 import path from 'path-browserify';
 import localforage from 'localforage';
-import { MMDCameraWorkHelper } from './modules/MMDCameraWorkHelper.js';
+import { CameraMode, MMDCameraWorkHelper } from './modules/MMDCameraWorkHelper.js';
 
 // for debug
 // localforage.clear();
@@ -259,7 +259,7 @@ async function init() {
         const cameraAnimation = await loader.loadAnimation(api.cameraFile, camera, onProgress, null);
         helper.add(camera, {
             animation: cameraAnimation,
-            enabled: api["camera motion"]
+            enabled: api["camera mode"] == CameraMode.MOTION_FILE
         });
 
         cwHelper = await MMDCameraWorkHelper.init(helper.get(camera), api);

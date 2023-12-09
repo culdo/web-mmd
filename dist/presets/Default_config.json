@@ -6,7 +6,7 @@
     "stage": "EPDS.pmx",
     "currentTime": 0,
     "volume": 0.2,
-    "camera motion": true,
+    "camera mode": 0,
     "physics": true,
     "ground shadow": true,
     "self shadow": true,
