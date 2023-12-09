@@ -338,8 +338,6 @@ class MMDAnimationHelper {
 
 		}
 
-		if (this.camera) this.clearCamera(this.camera);
-
 		this.camera = camera;
 
 		camera.add(this.cameraTarget);

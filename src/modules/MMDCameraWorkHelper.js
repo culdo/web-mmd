@@ -21,8 +21,6 @@ export class MMDCameraWorkHelper {
         this.mode = "1"
         this.currentAction = null
         this.cutOffset = 0
-        this.preCutTime = null
-        this.nextDiff = null
 
         document.addEventListener("keydown", (e) => {
             if (this.api.modeKeys.includes(e.key)) {
@@ -70,7 +68,16 @@ export class MMDCameraWorkHelper {
             }
         })
     }
+
     static async init(cameraObj, api) {
+        const { cutClips, cutActionMap } = await MMDCameraWorkHelper.setup(cameraObj.mixer, api)
+        const helper = new MMDCameraWorkHelper({ cameraObj, cutClips, cutActionMap, api })
+
+        helper.updateScrollingBar(api.currentTime)
+        return helper
+    }
+
+    static async setup(cameraMixer, api) {
         const scrollingBar = document.querySelector(".scrolling-bar")
 
         const resp = await fetch(api.cameraFile)
@@ -89,7 +96,7 @@ export class MMDCameraWorkHelper {
             const modeKey = api.modeKeys[Math.floor(idx / api.cutKeys.length)]
             const cutKey = api.cutKeys[idx % api.cutKeys.length]
             const keyBinding = modeKey + cutKey
-            const action = cameraObj.mixer.clipAction(clip)
+            const action = cameraMixer.clipAction(clip)
             action.setLoop(LoopOnce)
             cutActionMap[keyBinding] = action
 
@@ -102,22 +109,37 @@ export class MMDCameraWorkHelper {
 
             cutClips.push({
                 action,
-                clip,
                 cutTime,
                 beatEl,
                 keyBinding
             })
         }
-        const helper = new MMDCameraWorkHelper({ cameraObj, cutClips, cutActionMap, api })
-        helper.updateScrollingBar(api.currentTime)
-
-        return helper
-
+        
+        return { cutClips, cutActionMap }
     }
+
+    async updateClips(cameraObj) {
+        // remove all beats on scrolling bar
+        for(const beat of document.querySelectorAll(".cut")) {
+            beat.remove()
+        }
+        const { cutClips, cutActionMap } = await MMDCameraWorkHelper.setup(cameraObj.mixer, this.api)
+
+        this.cutClips = cutClips
+        this.updateScrollingBar(this.api.currentTime)
+
+        this.cutActionMap = cutActionMap
+        this.currentAction = null
+        this.origAction = cameraObj.actions[0]
+        this.cameraMixer = cameraObj.mixer
+    }
+
     setTime(time) {
-        const isMotionFile = this.api["camera mode"] != CameraMode.MOTION_FILE
-        const enabled = this.currentAction?.isRunning() && isMotionFile
-        if (this.origAction.isRunning()) {
+        const isEditMode = this.api["camera mode"] != CameraMode.MOTION_FILE
+        const enabled = this.currentAction?.isRunning() && isEditMode
+        const isOrig = this.origAction.isRunning()
+
+        if (isOrig) {
             if (this.currentAction?.isRunning()) {
                 this.currentAction.stop()
             }
@@ -125,17 +147,17 @@ export class MMDCameraWorkHelper {
         } else if (enabled) {
             this.cameraMixer.setTime(time - this.cutOffset)
         }
-        if (this.origAction.isRunning() || enabled) {
+        if (isOrig || enabled) {
+            console.log(this.camera.quaternion.toArray())
             this.camera.up.set(0, 1, 0);
             this.camera.up.applyQuaternion(this.camera.quaternion);
             this.camera.lookAt(this.camera.getObjectByName("target").position);
             this.camera.updateProjectionMatrix();
         }
 
-        if (isMotionFile) {
+        if (isEditMode) {
             this.updateScrollingBar(time)
         }
-        
     }
 
     updateScrollingBar(time) {
