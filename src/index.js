@@ -32,17 +32,15 @@ async function getConfig() {
 
     const configResp = await fetch('presets/Default_config.json')
 
-    const configOnly = await configResp.json()
-
-    defaultConfig = configOnly
+    const defaultConfig = await configResp.json()
 
     let userConfig = defaultConfig;
 
     const savedPresetName = await localforage.getItem("currentPreset")
-    preset = savedPresetName ?? "Default"
+    const preset = savedPresetName ?? "Default"
 
     const savedPresetsList = await localforage.getItem("presetsList")
-    presetsList = savedPresetsList ?? new Set(["Default"])
+    const presetsList = savedPresetsList ?? new Set(["Default"])
 
     if (!savedPresetName) {
         await localforage.setItem("currentPreset", "Default")
@@ -67,30 +65,16 @@ async function getConfig() {
         location.reload()
     }
 
-    globalParams["preset"] = preset;
     console.log(userConfig)
-    api = new Proxy(userConfig, configSaver);
+    const api = new Proxy(userConfig, configSaver);
 
+    Object.assign(globalParams, { defaultConfig, api, preset, presetsList })
 }
 
-let stats;
-
-let character, camera, scene, renderer, stage;
-let postprocessor, composer;
-
-let helper, ikHelper, skeletonHelper, physicsHelper, cwHelper;
-
-let globalParams = {};
+const globalParams = {};
 
 let timeoutID;
 let prevTime = 0.0;
-
-let api, presetsList, preset;
-let runtimeCharacter;
-
-let defaultConfig;
-
-const gui = new MMDGui();
 
 const clock = new THREE.Clock();
 
@@ -104,6 +88,9 @@ async function main() {
 main();
 
 async function init() {
+    const { api } = globalParams
+
+    const gui = new MMDGui();
 
     const container = document.createElement('div');
     document.body.appendChild(container);
@@ -168,14 +155,12 @@ async function init() {
         }, 1000);
     });
 
-    window.addEventListener('resize', onWindowResize);
-
     // scene
-    scene = new THREE.Scene();
+    const scene = new THREE.Scene();
     scene.fog = new THREE.Fog(api['fog color'], 10, 500);
 
     // camera
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
     camera.position.set(0, 20, 30);
     scene.add(camera);
 
@@ -199,7 +184,7 @@ async function init() {
     scene.add(dirLight);
 
     // render
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
 
     // recover to legacy colorspaces
     renderer.outputColorSpace = THREE.LinearSRGBColorSpace
@@ -223,36 +208,51 @@ async function init() {
     const composer = postprocessor.composer
     composer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
 
+    window.addEventListener('resize', (e) => {
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        composer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+    });
+
     // FPS stats
-    stats = new Stats();
+    const stats = new Stats();
     stats.dom.id = "fps";
     stats.dom.style.display = api["show FPS"] ? "block" : "none";
     container.appendChild(stats.dom);
 
     // Helpers
-    helper = new MMDAnimationHelper();
+    const helper = new MMDAnimationHelper();
 
     const loader = new MMDLoader();
     const characterFile = api.pmxFiles.character[api.character]
     const stageFile = api.pmxFiles.stage[api.stage]
 
-    let stageParams = null;
-    if (stageFile.startsWith("data:")) {
-        stageParams = {
-            modelExtension: path.extname(api.stage).slice(1),
-            modelTextures: api.pmxFiles.modelTextures.stage[api.stage],
-        };
-    }
+    Object.assign(globalParams, {
+        loader, camera, player, helper, scene, stats,
+        postprocessor, dirLight, hemiLight, renderer, composer
+    })
 
     // load stage
     const loadStage = async () => {
+        let stageParams = null;
+        if (stageFile.startsWith("data:")) {
+            stageParams = {
+                modelExtension: path.extname(api.stage).slice(1),
+                modelTextures: api.pmxFiles.modelTextures.stage[api.stage],
+            };
+        }
+
         const mesh = await loader.load(stageFile, onProgress, null, stageParams)
         const stage = mesh;
         stage.castShadow = true;
         stage.receiveShadow = api['ground shadow'];
 
         scene.add(stage);
-        return { stage }
+        Object.assign(globalParams, { stage })
     }
 
     // load camera
@@ -266,7 +266,7 @@ async function init() {
         const cwHelper = await MMDCameraWorkHelper.init(helper.get(camera), api);
 
         overlay.style.display = "none";
-        return { cwHelper }
+        Object.assign(globalParams, { cwHelper })
     }
 
     // load character
@@ -308,15 +308,15 @@ async function init() {
         skeletonHelper.visible = api['show skeleton'];
         scene.add(skeletonHelper);
 
-        runtimeCharacter.physics.reset(); 
+        runtimeCharacter.physics.reset();
 
-        return {
+        Object.assign(globalParams, {
             character,
             runtimeCharacter,
             ikHelper,
             physicsHelper,
             skeletonHelper
-        }
+        })
     }
 
     await Promise.all([loadStage(), loadCharacter()]);
@@ -324,29 +324,13 @@ async function init() {
     await loadCamera();
 
     // load gui
-    globalParams = {
-        api, defaultConfig, loader, camera, player, helper, scene, character, stage,
-        postprocessor, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter,
-        renderer, presetsList, preset,
-        cwHelper
-    };
     globalParams.ready = true;
     gui.initGui(globalParams);
 }
 
-function onWindowResize() {
-
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-
-    composer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-}
-
 function animate() {
-
-    if (globalParams.ready) {
+    const { ready, stats } = globalParams
+    if (ready) {
         stats.begin();
         render();
         stats.end();
@@ -356,7 +340,11 @@ function animate() {
 }
 
 function render() {
-    const runtimeCharacter = globalParams.runtimeCharacter;
+    const {
+        api,
+        runtimeCharacter, helper, cwHelper,
+        composer, scene, camera
+    } = globalParams;
 
     let currTime = player.currentTime + (api.motionOffset * 0.001)
     // player has a bug that sometime jump to end(duration)
@@ -375,7 +363,7 @@ function render() {
 
         cwHelper.setTime(currTime);
         // animation updating
-        // helper.update(delta, currTime);
+        helper.update(delta, currTime);
 
         // for time seeking using player control
         if (Math.abs(delta) > 0.1) {
