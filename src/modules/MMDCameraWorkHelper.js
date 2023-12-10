@@ -98,6 +98,7 @@ export class MMDCameraWorkHelper {
             const keyBinding = modeKey + cutKey
             const action = cameraMixer.clipAction(clip)
             action.setLoop(LoopOnce)
+            action.clampWhenFinished = true
             cutActionMap[keyBinding] = action
 
             // scrolling bar beat
@@ -148,7 +149,6 @@ export class MMDCameraWorkHelper {
             this.cameraMixer.setTime(time - this.cutOffset)
         }
         if (isOrig || enabled) {
-            console.log(this.camera.quaternion.toArray())
             this.camera.up.set(0, 1, 0);
             this.camera.up.applyQuaternion(this.camera.quaternion);
             this.camera.lookAt(this.camera.getObjectByName("target").position);
