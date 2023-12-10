@@ -124,7 +124,7 @@ export class CameraClipsBuilder {
 
 			if (i == cameras.length - 1 || (cameras[i + 1].frameNum - motion.frameNum) <= 1) {
 				if (i < cameras.length - 1) {
-					cutTimes.push(motion.frameNum / 30)
+					cutTimes.push(cameras[i + 1].frameNum / 30)
 				}
 
 				const tracks = [];
