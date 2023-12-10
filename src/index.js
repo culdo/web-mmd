@@ -78,7 +78,7 @@ let stats;
 let character, camera, scene, renderer, stage;
 let postprocessor, composer;
 
-let helper, ikHelper, physicsHelper, cwHelper;
+let helper, ikHelper, skeletonHelper, physicsHelper, cwHelper;
 
 let globalParams = {};
 
@@ -218,9 +218,9 @@ async function init() {
     });
 
     // effect composer
-    postprocessor = new PostProcessor(scene, camera, renderer, { isSdefEnabled: api["enable SDEF"] })
+    const postprocessor = new PostProcessor(scene, camera, renderer, { isSdefEnabled: api["enable SDEF"] })
 
-    composer = postprocessor.composer
+    const composer = postprocessor.composer
     composer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
 
     // FPS stats
@@ -247,11 +247,12 @@ async function init() {
     // load stage
     const loadStage = async () => {
         const mesh = await loader.load(stageFile, onProgress, null, stageParams)
-        stage = mesh;
+        const stage = mesh;
         stage.castShadow = true;
         stage.receiveShadow = api['ground shadow'];
 
         scene.add(stage);
+        return { stage }
     }
 
     // load camera
@@ -262,26 +263,27 @@ async function init() {
             enabled: api["camera mode"] == CameraMode.MOTION_FILE
         });
 
-        cwHelper = await MMDCameraWorkHelper.init(helper.get(camera), api);
+        const cwHelper = await MMDCameraWorkHelper.init(helper.get(camera), api);
 
         overlay.style.display = "none";
-    }
-
-    let characterParams = {
-        enableSdef: api['enable SDEF']
-    };
-    if (characterFile.startsWith("data:")) {
-        characterParams = {
-            modelExtension: path.extname(api.character).slice(1),
-            modelTextures: api.pmxFiles.modelTextures.character[api.character],
-            ...characterParams
-        };
+        return { cwHelper }
     }
 
     // load character
     const loadCharacter = async () => {
+        let characterParams = {
+            enableSdef: api['enable SDEF']
+        };
+        if (characterFile.startsWith("data:")) {
+            characterParams = {
+                modelExtension: path.extname(api.character).slice(1),
+                modelTextures: api.pmxFiles.modelTextures.character[api.character],
+                ...characterParams
+            };
+        }
+
         const mmd = await loader.loadWithAnimation(characterFile, api.motionFile, onProgress, null, characterParams);
-        character = mmd.mesh;
+        const character = mmd.mesh;
         character.castShadow = true;
         character.receiveShadow = api["self shadow"];
         scene.add(character);
@@ -291,13 +293,13 @@ async function init() {
         helper.add(character, {
             animation: mmd.animation
         });
-        runtimeCharacter = helper.objects.get(character)
+        const runtimeCharacter = helper.objects.get(character)
 
-        ikHelper = runtimeCharacter.ikSolver.createHelper();
+        const ikHelper = runtimeCharacter.ikSolver.createHelper();
         ikHelper.visible = api['show IK bones'];
         scene.add(ikHelper);
 
-        physicsHelper = runtimeCharacter.physics.createHelper();
+        const physicsHelper = runtimeCharacter.physics.createHelper();
         physicsHelper.visible = api['show rigid bodies'];
         helper.enable('physics', api['physics']);
         scene.add(physicsHelper);
@@ -306,19 +308,30 @@ async function init() {
         skeletonHelper.visible = api['show skeleton'];
         scene.add(skeletonHelper);
 
-        globalParams = {
-            api, defaultConfig, loader, camera, player, helper, scene, character, stage,
-            postprocessor, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter,
-            renderer, presetsList, preset,
-            cwHelper
-        };
-        globalParams.ready = true;
-        gui.initGui(globalParams);
+        runtimeCharacter.physics.reset(); 
 
-        runtimeCharacter.physics.reset();
+        return {
+            character,
+            runtimeCharacter,
+            ikHelper,
+            physicsHelper,
+            skeletonHelper
+        }
     }
 
-    await Promise.all([loadCamera(), loadStage(), loadCharacter()])
+    await Promise.all([loadStage(), loadCharacter()]);
+    // load camera at last let camera work clips durations be not changed ( because helper._syncDuration() )
+    await loadCamera();
+
+    // load gui
+    globalParams = {
+        api, defaultConfig, loader, camera, player, helper, scene, character, stage,
+        postprocessor, ikHelper, physicsHelper, skeletonHelper, dirLight, hemiLight, runtimeCharacter,
+        renderer, presetsList, preset,
+        cwHelper
+    };
+    globalParams.ready = true;
+    gui.initGui(globalParams);
 }
 
 function onWindowResize() {
@@ -353,16 +366,16 @@ function render() {
     }
     let delta = currTime - prevTime;
 
-    
+
     if (Math.abs(delta) > 0) {
         // for time seeking using player control
         if (Math.abs(delta) > 0.1) {
             helper.enable('physics', false);
         }
-        
+
         cwHelper.setTime(currTime);
         // animation updating
-        helper.update(delta, currTime);
+        // helper.update(delta, currTime);
 
         // for time seeking using player control
         if (Math.abs(delta) > 0.1) {
