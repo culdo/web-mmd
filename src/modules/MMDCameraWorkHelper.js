@@ -43,7 +43,7 @@ export class MMDCameraWorkHelper {
                 let minDiff = null
                 let prevCutTime = null
                 for (const { cutTime } of this.cutClips) {
-                    const diff = this._mmd.motionTime.toFixed(2) - cutTime.toFixed(2)
+                    const diff = Math.round((this._mmd.motionTime - cutTime) * 100)
                     if (diff > 0) {
                         if (minDiff == null || diff < minDiff) {
                             minDiff = diff
@@ -58,7 +58,7 @@ export class MMDCameraWorkHelper {
                 let minDiff = null
                 let nextCutTime = null
                 for (const { cutTime } of this.cutClips) {
-                    const diff = cutTime.toFixed(2) - this._mmd.motionTime.toFixed(2)
+                    const diff = Math.round((cutTime - this._mmd.motionTime) * 100)
                     if (diff > 0) {
                         if (minDiff == null || diff < minDiff) {
                             minDiff = diff
@@ -148,7 +148,8 @@ export class MMDCameraWorkHelper {
         let targetAction = null
         let targetCutTime = null
         for (const { cutTime, action } of this.cutClips) {
-            const diff = time.toFixed(2) - cutTime.toFixed(2)
+            // round to fix cutTime precision problem
+            const diff = Math.round(time * 1000) - Math.round(cutTime * 1000)
             if (diff >= 0) {
                 if (minDiff == null || diff < minDiff) {
                     minDiff = diff
@@ -170,19 +171,20 @@ export class MMDCameraWorkHelper {
     }
 
     setTime(time) {
-        const isCustom = this._currentAction?.isRunning() && !this.isMotionFile
-        const isOrig = this._origAction.isRunning()
-
         if (this.isComposite) {
             this.playComposite(time)
         }
+        const isCustom = this._currentAction?.isRunning() && !this.isMotionFile
+        const isOrig = this._origAction.isRunning()
         if (isOrig) {
             if (this._currentAction?.isRunning()) {
                 this._currentAction.stop()
             }
             this._cameraMixer.setTime(time)
         } else if (isCustom) {
-            this._cameraMixer.setTime(time - this._cutOffset)
+            // condition to fix cutTime precision problem that cause action be disabled
+            const frameTime = (time - this._cutOffset) < 0 ? 0 : (time - this._cutOffset)
+            this._cameraMixer.setTime(frameTime)
         }
         if (isOrig || isCustom) {
             this._camera.up.set(0, 1, 0);
