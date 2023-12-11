@@ -5,59 +5,36 @@ import path from 'path-browserify';
 import { GUI } from 'lil-gui';
 import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, createAudioLink } from './utils';
 import { CameraMode } from './MMDCameraWorkHelper';
+import logging from 'webpack/lib/logging/runtime'
 
 class MMDGui {
     constructor() {
-        this.gui = new GUI({ closeFolders: true });
-        this.open = () => this.gui.open();
-        this.close = () => this.gui.close();
-        this.mmd = null;
-        this.guiFn = {};
-        this.pmxDropdowns = {};
+        this.panel = new GUI({ closeFolders: true });
+        this._mmd = null;
+        this._guiFn = {};
+        this._pmxDropdowns = {};
+        this._prevCameraMode = CameraMode.CREATIVE
+        this._logger = logging.getLogger("MMDGui")
     }
 
-    initGui(params) {
-        this.mmd = params;
-        this.prevCameraMode = CameraMode.CREATIVE
+    init(params) {
+        this._mmd = params;
+        this._addEventHandlers();
 
         const scrollingEl = document.querySelector(".scrolling-bar")
         const toggleScrollingBar = (enabled) => {
             scrollingEl.style.display = enabled ? "block" : "none"
         }
 
-        toggleScrollingBar(this.mmd.api["camera mode"] != CameraMode.MOTION_FILE)
+        toggleScrollingBar(this._mmd.api["camera mode"] != CameraMode.MOTION_FILE)
 
-
-        document.addEventListener("keydown", (e) => {
-            if (e.key == " ") {
-                if (player.paused) {
-                    player.play()
-                } else {
-                    player.pause()
-                }
-            } else if (e.key == "`") {
-                const isEditMode = this.mmd.api["camera mode"] != CameraMode.MOTION_FILE
-                if (isEditMode) {
-                    this.prevCameraMode = this.mmd.api["camera mode"]
-                    this.mmd.api["camera mode"] = CameraMode.MOTION_FILE
-                } else {
-                    this.mmd.api["camera mode"] = this.prevCameraMode
-                }
-
-                const isEditModeNow = !isEditMode
-
-                toggleScrollingBar(isEditModeNow)
-                this.mmd.helper.enable('cameraAnimation', !isEditModeNow)
-            }
-        })
-
-        this.gui.add(this.mmd.api, 'camera mode', {
+        this.panel.add(this._mmd.api, 'camera mode', {
             "Motion File": CameraMode.MOTION_FILE,
             "Composition": CameraMode.COMPOSITION,
             "Creative": CameraMode.CREATIVE
         }).listen().onChange((state) => {
             const motionFileEnabled = state == CameraMode.MOTION_FILE
-            this.mmd.helper.enable('cameraAnimation', motionFileEnabled);
+            this._mmd.helper.enable('cameraAnimation', motionFileEnabled);
             
             toggleScrollingBar(!motionFileEnabled)
         });
@@ -74,22 +51,108 @@ class MMDGui {
         this._guiPreset();
     }
 
-    _guiPhysic() {
-        const folder = this.gui.addFolder('Physic');
-        folder.add(this.mmd.api, 'physics').onChange((state) => {
-            this.mmd.helper.enable('physics', state)
+    _addEventHandlers() {
+        const { api, camera, composer, renderer } = this._mmd
+        const scope = this
+
+        player.onvolumechange = () => {
+            api['volume'] = player.volume;
+            if (player.muted) {
+                api['volume'] = 0.0;
+            }
+        }
+
+        player.onplay = () => {
+            scope.runtimeCharacter.physics.reset();
+            if (api["auto hide GUI"]) this._gui.panel.hide();
+        }
+        player.onpause = () => {
+            this._gui.panel.show();
+            api.currentTime = player.currentTime;
+        }
+
+        player.onseeked = () => {
+            api.currentTime = player.currentTime;
+        }
+        button.onclick = () => {
+            let elem = document.querySelector("body");
+
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen()
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // control bar
+        document.addEventListener('mousemove', (e) => {
+
+            player.style.opacity = 0.5;
+            button.style.opacity = 0.5;
+            document.body.style.cursor = "default"
+            if (this._timeoutID !== undefined) {
+                clearTimeout(this._timeoutID);
+            }
+
+            this._timeoutID = setTimeout(function () {
+                player.style.opacity = 0;
+                button.style.opacity = 0;
+                if (!player.paused) {
+                    document.body.style.cursor = "none"
+                }
+            }, 1000);
         });
-        folder.add(this.mmd.api, 'gravity', -50, 50, 0.1).onChange((val) => {
-            this.mmd.helper.get(this.mmd.character).physics.setGravity(new THREE.Vector3(0, val, 0))
+
+        // window resize
+        window.addEventListener('resize', (e) => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+
+            composer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // keyboard shortcuts
+        document.addEventListener("keydown", (e) => {
+            if (e.key == " ") {
+                if (player.paused) {
+                    player.play()
+                } else {
+                    player.pause()
+                }
+            } else if (e.key == "`") {
+                const isEditMode = this._mmd.api["camera mode"] != CameraMode.MOTION_FILE
+                if (isEditMode) {
+                    this._prevCameraMode = this._mmd.api["camera mode"]
+                    this._mmd.api["camera mode"] = CameraMode.MOTION_FILE
+                } else {
+                    this._mmd.api["camera mode"] = this._prevCameraMode
+                }
+
+                const isEditModeNow = !isEditMode
+
+                toggleScrollingBar(isEditModeNow)
+                this._mmd.helper.enable('cameraAnimation', !isEditModeNow)
+            }
+        })
+    }
+
+    _guiPhysic() {
+        const folder = this.panel.addFolder('Physic');
+        folder.add(this._mmd.api, 'physics').onChange((state) => {
+            this._mmd.helper.enable('physics', state)
+        });
+        folder.add(this._mmd.api, 'gravity', -50, 50, 0.1).onChange((val) => {
+            this._mmd.helper.get(this._mmd.character).physics.setGravity(new THREE.Vector3(0, val, 0))
         });
     }
 
     _guiEffect() {
 
-        const folder = this.gui.addFolder('Effect');
+        const folder = this.panel.addFolder('Effect');
 
-        const api = this.mmd.api
-        const postprocessor = this.mmd.postprocessor
+        const api = this._mmd.api
+        const postprocessor = this._mmd.postprocessor
 
         const bokehFolder = folder.addFolder('Bokeh');
         const matChanger = postprocessor.bokeh.buildMatChanger(api)
@@ -143,32 +206,32 @@ class MMDGui {
     }
 
     _guiCamera() {
-        const camera = this.mmd.camera
+        const camera = this._mmd.camera
 
-        if (this.mmd.api.fov && this.mmd.api.zoom) {
-            camera.fov = this.mmd.api.fov
-            camera.zoom = this.mmd.api.zoom
+        if (this._mmd.api.fov && this._mmd.api.zoom) {
+            camera.fov = this._mmd.api.fov
+            camera.zoom = this._mmd.api.zoom
             camera.updateProjectionMatrix();
         } else {
-            this.mmd.api["fov"] = camera.fov
-            this.mmd.api["zoom"] = camera.zoom
+            this._mmd.api["fov"] = camera.fov
+            this._mmd.api["zoom"] = camera.zoom
         }
 
-        const folder = this.gui.addFolder('Camera');
+        const folder = this.panel.addFolder('Camera');
         const guiFn = {
             reset: () => {
-                this.mmd.api.fov = 50;
-                this.mmd.api.zoom = 1;
+                this._mmd.api.fov = 50;
+                this._mmd.api.zoom = 1;
                 camera.fov = 50;
                 camera.zoom = 1;
                 camera.updateProjectionMatrix();
             }
         }
-        folder.add(this.mmd.api, "fov", 0, 100, 1).listen().onChange((value) => {
+        folder.add(this._mmd.api, "fov", 0, 100, 1).listen().onChange((value) => {
             camera.fov = value
             camera.updateProjectionMatrix();
         })
-        folder.add(this.mmd.api, "zoom", 0, 5, 0.1).listen().onChange((value) => {
+        folder.add(this._mmd.api, "zoom", 0, 5, 0.1).listen().onChange((value) => {
             camera.zoom = value
             camera.updateProjectionMatrix();
         })
@@ -176,22 +239,21 @@ class MMDGui {
 
         const cameraWorkFolder = folder.addFolder('Camera work');
 
-        cameraWorkFolder.add(this.mmd.api, 'modeKeys').onChange((value) => {
-            this.mmd.cwHelper.updateKeyBinding()
+        cameraWorkFolder.add(this._mmd.api, 'modeKeys').onChange((value) => {
+            this._mmd.cwHelper.updateKeyBinding()
         });
-        cameraWorkFolder.add(this.mmd.api, 'cutKeys').onChange((value) => {
-            this.mmd.cwHelper.updateKeyBinding()
+        cameraWorkFolder.add(this._mmd.api, 'cutKeys').onChange((value) => {
+            this._mmd.cwHelper.updateKeyBinding()
         });
     }
 
     _guiFile() {
-        const folder = this.gui.addFolder('MMD files');
-        const mmd = this.mmd;
-        let pmxDropdowns = this.pmxDropdowns;
+        const folder = this.panel.addFolder('MMD files');
+        const mmd = this._mmd;
+        let pmxDropdowns = this._pmxDropdowns;
 
         const pmxFiles = mmd.api.pmxFiles;
         const modelTextures = pmxFiles.modelTextures;
-        const updateMorphFolder = this.updateMorphFolder
 
         const loadCharacter = async (url, filename) => {
             mmd.ready = false;
@@ -202,7 +264,7 @@ class MMDGui {
             mmd.scene.remove(mmd.skeletonHelper);
             mmd.helper.remove(mmd.character);
 
-            console.log("character removed")
+            this._logger.info("character removed")
             let params = {
                 enableSdef: mmd.api['enable SDEF']
             };
@@ -217,7 +279,7 @@ class MMDGui {
             overlay.style.display = 'flex';
 
             const obj = await mmd.loader.loadWithAnimation(url, mmd.api.motionFile, onProgress, null, params)
-            console.log("loading character...")
+            this._logger.info("loading character...")
 
             let character = obj.mesh;
             character.castShadow = true;
@@ -249,16 +311,16 @@ class MMDGui {
             mmd.runtimeCharacter.physics.reset();
             mmd.helper.enable('physics', true);
 
-            console.log("loaded reset")
+            this._logger.info("loaded reset")
 
             mmd.ready = true;
             overlay.style.display = 'none';
 
-            updateMorphFolder();
+            this._updateMorphFolder();
             mmd.api.character = filename;
         };
         // TODO: use unzip tools to unzip model files, because it has many texture images
-        this.guiFn.selectChar = () => {
+        this._guiFn.selectChar = () => {
             selectFile.webkitdirectory = true;
             selectFile.onchange = _buildLoadModelFn('character', loadCharacter)
             selectFile.click();
@@ -267,7 +329,7 @@ class MMDGui {
 
         const loadStage = async (url, filename) => {
             mmd.scene.remove(mmd.stage);
-            console.log("remove stage");
+            this._logger.info("remove stage");
             let params = null;
             if (url.startsWith("data:")) {
                 params = {
@@ -278,7 +340,7 @@ class MMDGui {
             // load stage
             overlay.style.display = 'flex';
             const mesh = await mmd.loader.load(url, onProgress, null, params);
-            console.log("load stage");
+            this._logger.info("load stage");
 
             mesh.castShadow = true;
             mesh.receiveShadow = mmd.api['ground shadow'];
@@ -290,20 +352,20 @@ class MMDGui {
             mmd.api.stage = filename;
         }
         // TODO: same above
-        this.guiFn.selectStage = () => {
+        this._guiFn.selectStage = () => {
             selectFile.webkitdirectory = true;
             selectFile.onchange = _buildLoadModelFn('stage', loadStage);
             selectFile.click();
             selectFile.webkitdirectory = false;
         }
 
-        this.guiFn.changeYtMusic = () => {
+        this._guiFn.changeYtMusic = () => {
             loadMusicFromYT(mmd.api);
         }
 
-        this.guiFn.saveMusic = () => { }
+        this._guiFn.saveMusic = () => { }
 
-        this.guiFn.selectMusic = () => {
+        this._guiFn.selectMusic = () => {
             selectFile.onchange = _buildLoadFileFn((url, filename) => {
                 player.src = url;
                 mmd.api.musicURL = url;
@@ -312,7 +374,7 @@ class MMDGui {
             selectFile.click();
         }
 
-        this.guiFn.selectCamera = () => {
+        this._guiFn.selectCamera = () => {
             selectFile.onchange = _buildLoadFileFn(async (url, filename) => {
                 mmd.helper.remove(mmd.camera);
 
@@ -329,7 +391,7 @@ class MMDGui {
             });
             selectFile.click();
         }
-        this.guiFn.selectMotion = () => {
+        this._guiFn.selectMotion = () => {
             selectFile.onchange = _buildLoadFileFn(async (url, filename) => {
                 mmd.runtimeCharacter.mixer.uncacheRoot(mmd.character);
                 mmd.helper.remove(mmd.character);
@@ -351,36 +413,34 @@ class MMDGui {
         // add folder to avoid ordering problem when change character
         var characterFolder = folder.addFolder('character');
         var characterDropdown = characterFolder.add(mmd.api, 'character', Object.keys(pmxFiles.character)).listen().name("model").onChange(value => {
-            console.log(value);
             loadCharacter(pmxFiles.character[value], value);
         });
         characterFolder.open();
-        folder.add(this.guiFn, 'selectChar').name('select character pmx directory...')
+        folder.add(this._guiFn, 'selectChar').name('select character pmx directory...')
 
         var stageFolder = folder.addFolder('stage');
         var stageDropdown = stageFolder.add(mmd.api, 'stage', Object.keys(pmxFiles.stage)).listen().name("model").onChange(value => {
-            console.log(value);
             loadStage(pmxFiles.stage[value], value);
         });
         stageFolder.open();
-        folder.add(this.guiFn, 'selectStage').name('select stage pmx directory...')
+        folder.add(this._guiFn, 'selectStage').name('select stage pmx directory...')
 
         pmxDropdowns = { character: characterDropdown, stage: stageDropdown };
 
         folder.add(mmd.api, 'musicName').name('music').listen()
         folder.add(mmd.api, 'musicYtURL').name('music from YT').listen()
 
-        const saveBt = folder.add(this.guiFn, 'saveMusic').name('save music')
+        const saveBt = folder.add(this._guiFn, 'saveMusic').name('save music')
         const a = createAudioLink();
         saveBt.domElement.replaceWith(a)
 
-        folder.add(this.guiFn, 'changeYtMusic').name('change use above url...')
-        folder.add(this.guiFn, 'selectMusic').name('select audio file...')
+        folder.add(this._guiFn, 'changeYtMusic').name('change use above url...')
+        folder.add(this._guiFn, 'selectMusic').name('select audio file...')
 
         folder.add(mmd.api, 'camera').listen()
-        folder.add(this.guiFn, 'selectCamera').name('select camera vmd file...')
+        folder.add(this._guiFn, 'selectCamera').name('select camera vmd file...')
         folder.add(mmd.api, 'motion').listen()
-        folder.add(this.guiFn, 'selectMotion').name('select motion vmd file...')
+        folder.add(this._guiFn, 'selectMotion').name('select motion vmd file...')
 
         function _buildLoadFileFn(cb) {
             return async function () {
@@ -435,72 +495,70 @@ class MMDGui {
 
     _guiMorph() {
 
-        const buildOnChangeMorph = (key) => {
+        const _buildOnChangeMorph = (key) => {
             return () =>
-                this.mmd.character.morphTargetInfluences[this.mmd.character.morphTargetDictionary[key]] = this.mmd.api[key];
+                this._mmd.character.morphTargetInfluences[this._mmd.character.morphTargetDictionary[key]] = this._mmd.api[key];
         }
 
-        const folder = this.gui.addFolder('Morph');
+        const folder = this.panel.addFolder('Morph');
 
 
-        const updateMorphFolder = () => {
+        this._updateMorphFolder = () => {
             const controllers = [...folder.controllers]
             for (const controller of controllers) {
                 controller.destroy()
             }
-            for (const key in this.mmd.character.morphTargetDictionary) {
-                if (!(key in this.mmd.api)) {
-                    this.mmd.api[key] = 0.0;
+            for (const key in this._mmd.character.morphTargetDictionary) {
+                if (!(key in this._mmd.api)) {
+                    this._mmd.api[key] = 0.0;
                 }
-                const onChangeMorph = buildOnChangeMorph(key)
+                const onChangeMorph = _buildOnChangeMorph(key)
                 onChangeMorph()
-                folder.add(this.mmd.api, key, 0.0, 1.0, 0.01).onChange(onChangeMorph)
+                folder.add(this._mmd.api, key, 0.0, 1.0, 0.01).onChange(onChangeMorph)
             }
         }
-        updateMorphFolder();
-
-        this.updateMorphFolder = updateMorphFolder;
+        this._updateMorphFolder();
     }
 
     _guiSync() {
-        const folder = this.gui.addFolder('Sync');
-        folder.add(this.mmd.api, "motionOffset", -1000, 1000, 10).name("motion offset (ms)")
+        const folder = this.panel.addFolder('Sync');
+        folder.add(this._mmd.api, "motionOffset", -1000, 1000, 10).name("motion offset (ms)")
     }
 
     _guiColor() {
-        const folder = this.gui.addFolder('Color');
-        folder.addColor(this.mmd.api, 'fog color').onChange((value) => {
-            this.mmd.scene.fog.color.setHex(value);
+        const folder = this.panel.addFolder('Color');
+        folder.addColor(this._mmd.api, 'fog color').onChange((value) => {
+            this._mmd.scene.fog.color.setHex(value);
         });
     }
 
     _guiShadow() {
-        const folder = this.gui.addFolder('Shadow');
-        folder.add(this.mmd.api, 'ground shadow').onChange((state) => {
-            this.mmd.stage.receiveShadow = state;
+        const folder = this.panel.addFolder('Shadow');
+        folder.add(this._mmd.api, 'ground shadow').onChange((state) => {
+            this._mmd.stage.receiveShadow = state;
         });
-        folder.add(this.mmd.api, 'self shadow').onChange((state) => {
-            this.mmd.character.receiveShadow = state;
+        folder.add(this._mmd.api, 'self shadow').onChange((state) => {
+            this._mmd.character.receiveShadow = state;
         });
     }
 
     _guiLight() {
-        const folder = this.gui.addFolder('Light');
+        const folder = this.panel.addFolder('Light');
 
         const directLightFolder = folder.addFolder("Directional")
-        directLightFolder.addColor(this.mmd.api, 'Directional').name("Color").onChange(setColor(this.mmd.dirLight.color));
-        directLightFolder.add(this.mmd.api, 'Directional intensity', 0, 10, 0.1).name("Intensity").onChange(
+        directLightFolder.addColor(this._mmd.api, 'Directional').name("Color").onChange(setColor(this._mmd.dirLight.color));
+        directLightFolder.add(this._mmd.api, 'Directional intensity', 0, 10, 0.1).name("Intensity").onChange(
             (value) => {
-                this.mmd.dirLight.intensity = value
+                this._mmd.dirLight.intensity = value
             }
         );
 
         const hemisphereLightFolder = folder.addFolder("Hemisphere")
-        hemisphereLightFolder.addColor(this.mmd.api, 'Hemisphere sky').onChange(setColor(this.mmd.hemiLight.color));
-        hemisphereLightFolder.addColor(this.mmd.api, 'Hemisphere ground').onChange(setColor(this.mmd.hemiLight.groundColor));
-        hemisphereLightFolder.add(this.mmd.api, 'Hemisphere intensity', 0, 30, 0.1).name("Intensity").onChange(
+        hemisphereLightFolder.addColor(this._mmd.api, 'Hemisphere sky').onChange(setColor(this._mmd.hemiLight.color));
+        hemisphereLightFolder.addColor(this._mmd.api, 'Hemisphere ground').onChange(setColor(this._mmd.hemiLight.groundColor));
+        hemisphereLightFolder.add(this._mmd.api, 'Hemisphere intensity', 0, 30, 0.1).name("Intensity").onChange(
             (value) => {
-                this.mmd.hemiLight.intensity = value
+                this._mmd.hemiLight.intensity = value
             }
         );
 
@@ -514,7 +572,7 @@ class MMDGui {
 
     _guiRefresh(parentFolder) {
         const folder = parentFolder.addFolder('Need Refresh');
-        folder.add(this.mmd.api, 'enable SDEF').onChange((state) => {
+        folder.add(this._mmd.api, 'enable SDEF').onChange((state) => {
             location.reload()
         })
         folder.add({
@@ -529,29 +587,29 @@ class MMDGui {
     }
 
     _guiDebug() {
-        const folder = this.gui.addFolder('Debug');
+        const folder = this.panel.addFolder('Debug');
 
-        folder.add(this.mmd.api, 'show FPS').onChange((state) => {
+        folder.add(this._mmd.api, 'show FPS').onChange((state) => {
             document.getElementById("fps").style.display = state ? "block" : "none";
         });
-        folder.add(this.mmd.api, 'show IK bones').onChange((state) => {
-            this.mmd.ikHelper.visible = state;
+        folder.add(this._mmd.api, 'show IK bones').onChange((state) => {
+            this._mmd.ikHelper.visible = state;
         });
-        folder.add(this.mmd.api, 'show rigid bodies').onChange((state) => {
-            if (this.mmd.physicsHelper !== undefined) this.mmd.physicsHelper.visible = state;
+        folder.add(this._mmd.api, 'show rigid bodies').onChange((state) => {
+            if (this._mmd.physicsHelper !== undefined) this._mmd.physicsHelper.visible = state;
         });
-        folder.add(this.mmd.api, 'show skeleton').onChange((state) => {
-            if (this.mmd.skeletonHelper !== undefined) this.mmd.skeletonHelper.visible = state;
+        folder.add(this._mmd.api, 'show skeleton').onChange((state) => {
+            if (this._mmd.skeletonHelper !== undefined) this._mmd.skeletonHelper.visible = state;
         });
-        folder.add(this.mmd.api, 'auto hide GUI').onChange((state) => {
-            if (!this.mmd.player.paused) this.gui.hide();
+        folder.add(this._mmd.api, 'auto hide GUI').onChange((state) => {
+            if (!this._mmd.player.paused) this.panel.hide();
         });
-        folder.add(this.mmd.api, 'set pixelratio 1.0').onChange((state) => {
+        folder.add(this._mmd.api, 'set pixelratio 1.0').onChange((state) => {
             if (state) {
-                this.mmd.renderer.setPixelRatio(1.0);
+                this._mmd.renderer.setPixelRatio(1.0);
                 postprocessor.composer.setPixelRatio(1.0);
             } else {
-                this.mmd.renderer.setPixelRatio(window.devicePixelRatio);
+                this._mmd.renderer.setPixelRatio(window.devicePixelRatio);
                 postprocessor.composer.setPixelRatio(window.devicePixelRatio);
             }
         });
@@ -560,9 +618,9 @@ class MMDGui {
     }
 
     _guiPreset() {
-        const mmd = this.mmd
+        const mmd = this._mmd
 
-        const folder = this.gui.addFolder('Preset');
+        const folder = this.panel.addFolder('Preset');
 
         const _setPreset = async (name) => {
             mmd.preset = name;
@@ -645,7 +703,7 @@ class MMDGui {
             }
         }
 
-        this.gui.onChange(async (event) => {
+        this.panel.onChange(async (event) => {
             if (event.property != "preset" && mmd.preset == "Default") {
                 if (!(event.value instanceof Function)) {
                     await localforage.setItem(`Untitled_${event.property}`, event.value);
