@@ -177,8 +177,6 @@ class MMDAnimationHelper {
 
 		if (this.sharedPhysics) this.updateSharedPhysics(delta);
 
-		if (this.camera !== null) this._animateCamera(this.camera, time);
-
 		return this;
 
 	}

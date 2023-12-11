@@ -22,21 +22,20 @@ class MMDGui {
         this._addEventHandlers();
 
         const scrollingEl = document.querySelector(".scrolling-bar")
-        const toggleScrollingBar = (enabled) => {
+        const toggleScrollingBar = () => {
+            const enabled = !this._mmd.cwHelper.isMotionFile
             scrollingEl.style.display = enabled ? "block" : "none"
+            this._mmd.helper.enable('cameraAnimation', !enabled);
         }
 
-        toggleScrollingBar(this._mmd.api["camera mode"] != CameraMode.MOTION_FILE)
+        toggleScrollingBar()
 
         this.panel.add(this._mmd.api, 'camera mode', {
             "Motion File": CameraMode.MOTION_FILE,
             "Composition": CameraMode.COMPOSITION,
             "Creative": CameraMode.CREATIVE
-        }).listen().onChange((state) => {
-            const motionFileEnabled = state == CameraMode.MOTION_FILE
-            this._mmd.helper.enable('cameraAnimation', motionFileEnabled);
-            
-            toggleScrollingBar(!motionFileEnabled)
+        }).listen().onChange((_) => {
+            toggleScrollingBar()
         });
         this._toggleScrollingBar = toggleScrollingBar
         this._guiPhysic();
@@ -130,10 +129,7 @@ class MMDGui {
                     this._mmd.api["camera mode"] = this._prevCameraMode
                 }
 
-                const isEditModeNow = !isEditMode
-
-                this._toggleScrollingBar(isEditModeNow)
-                this._mmd.helper.enable('cameraAnimation', !isEditModeNow)
+                this._toggleScrollingBar()
             }
         })
     }
@@ -240,7 +236,7 @@ class MMDGui {
 
         const cameraWorkFolder = folder.addFolder('Camera work');
 
-        cameraWorkFolder.add(this._mmd.api, 'modeKeys').onChange((value) => {
+        cameraWorkFolder.add(this._mmd.api, 'collectionKeys').onChange((value) => {
             this._mmd.cwHelper.updateKeyBinding()
         });
         cameraWorkFolder.add(this._mmd.api, 'cutKeys').onChange((value) => {
@@ -308,7 +304,7 @@ class MMDGui {
             mmd.character = character;
 
             mmd.helper.enable('physics', false);
-            mmd.helper.update(0.0, player.currentTime)
+            mmd.helper.update(0.0, mmd.motionTime)
             mmd.runtimeCharacter.physics.reset();
             mmd.helper.enable('physics', true);
 
@@ -382,7 +378,7 @@ class MMDGui {
                 const cameraAnimation = await mmd.loader.loadAnimation(url, mmd.camera, onProgress, null);
                 mmd.helper.add(mmd.camera, {
                     animation: cameraAnimation,
-                    enabled: mmd.api["camera mode"] == CameraMode.MOTION_FILE
+                    enabled: mmd.cwHelper.isMotionFile
                 });
 
                 mmd.api.camera = filename;

@@ -212,7 +212,7 @@ class WebMMD {
                 enabled: api["camera mode"] == CameraMode.MOTION_FILE
             });
 
-            this.cwHelper = new MMDCameraWorkHelper(helper.get(camera), api);
+            this.cwHelper = new MMDCameraWorkHelper(this);
             this.cwHelper.init();
 
             overlay.style.display = "none";
@@ -298,6 +298,10 @@ class WebMMD {
         } = this;
 
         let currTime = player.currentTime + (api.motionOffset * 0.001)
+        if(currTime < 0) {
+            currTime = 0
+        }
+        this.motionTime = currTime
         // player has a bug that sometime jump to end(duration)
         // so we just skip that frame
         if (player.currentTime == player.duration) {

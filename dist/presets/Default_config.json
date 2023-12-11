@@ -117,7 +117,7 @@
     "fov": 45,
     "zoom": 1,
     "cameraWork enabled": false,
-    "modeKeys": "1234567890",
+    "collectionKeys": "1234567890",
     "cutKeys": "abcdefghijklmnopqrstuvwxyz",
     "gravity": -9.8
 }
