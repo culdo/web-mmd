@@ -16,15 +16,26 @@ import logging from 'webpack/lib/logging/runtime'
 
 class WebMMD {
     constructor() {
+        // Global properties
+
+        // main helper
+        this.helper = new MMDAnimationHelper();
+
+        // Private properties
         this._timeoutID;
         this._prevTime = 0.0;
         this._clock = new THREE.Clock();
+        this._gui = new MMDGui();
+
         this._logger = logging.getLogger("WebMMD")
     }
 
     async start() {
         await Promise.all([this._getConfig(), Ammo()]);
         await this._setup();
+        await this._loadFiles();
+        this._loadGui();
+
         this._animate();
     }
 
@@ -84,74 +95,23 @@ class WebMMD {
 
         Object.assign(this, { defaultConfig, api, preset, presetsList })
     }
+
     async _setup() {
         const { api } = this
-        const scope = this
 
-        const gui = new MMDGui();
-
-        const container = document.createElement('div');
-        document.body.appendChild(container);
-
+        // music player
         if (api.musicURL.startsWith("data:")) {
             player.src = api.musicURL
         } else {
-            // old version fallback
-            if (api.musicURL.startsWith("http")) {
-                api.musicYtURL = api.musicURL;
-            }
             loadMusicFromYT(api);
         }
 
         player.currentTime = api["currentTime"];
         player.volume = api['volume'];
 
-        player.onvolumechange = () => {
-            api['volume'] = player.volume;
-            if (player.muted) {
-                api['volume'] = 0.0;
-            }
-        }
-
-        player.onplay = () => {
-            scope.runtimeCharacter.physics.reset();
-            if (api["auto hide GUI"]) gui.gui.hide();
-        }
-        player.onpause = () => {
-            gui.gui.show();
-            api.currentTime = player.currentTime;
-        }
-
-        player.onseeked = () => {
-            api.currentTime = player.currentTime;
-        }
-        button.onclick = () => {
-            let elem = document.querySelector("body");
-
-            if (!document.fullscreenElement) {
-                elem.requestFullscreen()
-            } else {
-                document.exitFullscreen();
-            }
-        }
-        // control bar
-        document.addEventListener('mousemove', (e) => {
-
-            player.style.opacity = 0.5;
-            button.style.opacity = 0.5;
-            document.body.style.cursor = "default"
-            if (this._timeoutID !== undefined) {
-                clearTimeout(this._timeoutID);
-            }
-
-            this._timeoutID = setTimeout(function () {
-                player.style.opacity = 0;
-                button.style.opacity = 0;
-                if (!player.paused) {
-                    document.body.style.cursor = "none"
-                }
-            }, 1000);
-        });
+        // Threejs container
+        const container = document.createElement('div');
+        document.body.appendChild(container);
 
         // scene
         const scene = new THREE.Scene();
@@ -206,34 +166,27 @@ class WebMMD {
         const composer = postprocessor.composer
         composer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
 
-        window.addEventListener('resize', (e) => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-
-            composer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
         // FPS stats
         const stats = new Stats();
         stats.dom.id = "fps";
         stats.dom.style.display = api["show FPS"] ? "block" : "none";
         container.appendChild(stats.dom);
 
-        // Helpers
-        const helper = new MMDAnimationHelper();
-
-        const loader = new MMDLoader();
-        const characterFile = api.pmxFiles.character[api.character]
-        const stageFile = api.pmxFiles.stage[api.stage]
-
         Object.assign(this, {
-            loader, camera, player, helper, scene, stats,
+            camera, player, scene, stats,
             postprocessor, dirLight, hemiLight, renderer, composer
         })
+    }
+
+    async _loadFiles() {
+        const { api, scene, camera, helper, postprocessor } = this
+
+        // loader
+        const loader = new MMDLoader();
 
         // load stage
         const _loadStage = async () => {
+            const stageFile = api.pmxFiles.stage[api.stage]
             let stageParams = null;
             if (stageFile.startsWith("data:")) {
                 stageParams = {
@@ -266,6 +219,7 @@ class WebMMD {
 
         // load character
         const _loadCharacter = async () => {
+            const characterFile = api.pmxFiles.character[api.character]
             let characterParams = {
                 enableSdef: api['enable SDEF']
             };
@@ -306,6 +260,7 @@ class WebMMD {
             runtimeCharacter.physics.reset();
 
             Object.assign(this, {
+                loader,
                 character,
                 runtimeCharacter,
                 ikHelper,
@@ -317,10 +272,11 @@ class WebMMD {
         await Promise.all([_loadStage(), _loadCharacter()]);
         // load camera at last let camera work clips durations be not changed ( because helper._syncDuration() )
         await _loadCamera();
+    }
 
-        // load gui
+    _loadGui() {
         this.ready = true;
-        gui.initGui(this);
+        this._gui.init(this);
     }
 
     _animate() {
