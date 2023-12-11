@@ -54,7 +54,7 @@ class MMDGui {
 
     _addEventHandlers() {
         const { api, camera, composer, renderer } = this._mmd
-        const scope = this
+        const scope = this._mmd
 
         player.onvolumechange = () => {
             api['volume'] = player.volume;
@@ -65,10 +65,10 @@ class MMDGui {
 
         player.onplay = () => {
             scope.runtimeCharacter.physics.reset();
-            if (api["auto hide GUI"]) this._gui.panel.hide();
+            if (api["auto hide GUI"]) this.panel.hide();
         }
         player.onpause = () => {
-            this._gui.panel.show();
+            this.panel.show();
             api.currentTime = player.currentTime;
         }
 
