@@ -149,7 +149,7 @@ export class MMDCameraWorkHelper {
         let targetCutTime = null
         for (const { cutTime, action } of this.cutClips) {
             const diff = time.toFixed(2) - cutTime.toFixed(2)
-            if (diff > 0) {
+            if (diff >= 0) {
                 if (minDiff == null || diff < minDiff) {
                     minDiff = diff
                     targetAction = action

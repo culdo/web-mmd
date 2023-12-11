@@ -213,7 +213,7 @@ class WebMMD {
             });
 
             this.cwHelper = new MMDCameraWorkHelper(this);
-            this.cwHelper.init();
+            await this.cwHelper.init();
 
             overlay.style.display = "none";
         }
