@@ -9,15 +9,13 @@ export const CameraMode = {
     CREATIVE: 2
 }
 export class MMDCameraWorkHelper {
-    constructor({ cameraObj, cutClips, cutActionMap, api }) {
+    constructor(cameraObj, api) {
         this.scrollingDuration = 3.0
 
         this.camera = cameraObj.camera
         this.api = api
-        this.cutActionMap = cutActionMap
         this.origAction = cameraObj.actions[0]
         this.cameraMixer = cameraObj.mixer
-        this.cutClips = cutClips
         this.mode = "1"
         this.currentAction = null
         this.cutOffset = 0
@@ -69,18 +67,10 @@ export class MMDCameraWorkHelper {
         })
     }
 
-    static async init(cameraObj, api) {
-        const { cutClips, cutActionMap } = await MMDCameraWorkHelper.setup(cameraObj.mixer, api)
-        const helper = new MMDCameraWorkHelper({ cameraObj, cutClips, cutActionMap, api })
-
-        helper.updateScrollingBar(api.currentTime)
-        return helper
-    }
-
-    static async setup(cameraMixer, api) {
+    async init() {
         const scrollingBar = document.querySelector(".scrolling-bar")
 
-        const resp = await fetch(api.cameraFile)
+        const resp = await fetch(this.api.cameraFile)
         const { cutTimes, clips } = cameraToClips(await resp.arrayBuffer())
         const cutClips = []
         const cutActionMap = {}
@@ -93,10 +83,10 @@ export class MMDCameraWorkHelper {
             }
 
             // scrolling bar beat key binding
-            const modeKey = api.modeKeys[Math.floor(idx / api.cutKeys.length)]
-            const cutKey = api.cutKeys[idx % api.cutKeys.length]
+            const modeKey = this.api.modeKeys[Math.floor(idx / this.api.cutKeys.length)]
+            const cutKey = this.api.cutKeys[idx % this.api.cutKeys.length]
             const keyBinding = modeKey + cutKey
-            const action = cameraMixer.clipAction(clip)
+            const action = this.cameraMixer.clipAction(clip)
             action.setLoop(LoopOnce)
             action.clampWhenFinished = true
             cutActionMap[keyBinding] = action
@@ -116,7 +106,10 @@ export class MMDCameraWorkHelper {
             })
         }
         
-        return { cutClips, cutActionMap }
+        this.cutActionMap = cutActionMap
+        this.cutClips = cutClips
+
+        this.updateScrollingBar(this.api.currentTime)
     }
 
     async updateClips(cameraObj) {
@@ -124,12 +117,8 @@ export class MMDCameraWorkHelper {
         for(const beat of document.querySelectorAll(".cut")) {
             beat.remove()
         }
-        const { cutClips, cutActionMap } = await MMDCameraWorkHelper.setup(cameraObj.mixer, this.api)
+        await this.init()
 
-        this.cutClips = cutClips
-        this.updateScrollingBar(this.api.currentTime)
-
-        this.cutActionMap = cutActionMap
         this.currentAction = null
         this.origAction = cameraObj.actions[0]
         this.cameraMixer = cameraObj.mixer

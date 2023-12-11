@@ -212,7 +212,8 @@ class WebMMD {
                 enabled: api["camera mode"] == CameraMode.MOTION_FILE
             });
 
-            this.cwHelper = await MMDCameraWorkHelper.init(helper.get(camera), api);
+            this.cwHelper = new MMDCameraWorkHelper(helper.get(camera), api);
+            this.cwHelper.init();
 
             overlay.style.display = "none";
         }

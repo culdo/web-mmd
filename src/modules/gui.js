@@ -38,6 +38,7 @@ class MMDGui {
             
             toggleScrollingBar(!motionFileEnabled)
         });
+        this._toggleScrollingBar = toggleScrollingBar
         this._guiPhysic();
         this._guiEffect();
         this._guiCamera();
@@ -131,7 +132,7 @@ class MMDGui {
 
                 const isEditModeNow = !isEditMode
 
-                toggleScrollingBar(isEditModeNow)
+                this._toggleScrollingBar(isEditModeNow)
                 this._mmd.helper.enable('cameraAnimation', !isEditModeNow)
             }
         })
