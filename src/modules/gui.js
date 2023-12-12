@@ -21,23 +21,16 @@ class MMDGui {
         this._mmd = params;
         this._addEventHandlers();
 
-        const scrollingEl = document.querySelector(".scrolling-bar")
-        const toggleScrollingBar = () => {
-            const enabled = !this._mmd.cwHelper.isMotionFile
-            scrollingEl.style.display = enabled ? "block" : "none"
-            this._mmd.helper.enable('cameraAnimation', !enabled);
-        }
-
-        toggleScrollingBar()
+        this._checkCameraMode = this._mmd.cwHelper.checkCameraMode.bind(this._mmd.cwHelper)
 
         this.panel.add(this._mmd.api, 'camera mode', {
             "Motion File": CameraMode.MOTION_FILE,
             "Composition": CameraMode.COMPOSITION,
             "Creative": CameraMode.CREATIVE
         }).listen().onChange((_) => {
-            toggleScrollingBar()
+            this._checkCameraMode()
         });
-        this._toggleScrollingBar = toggleScrollingBar
+
         this._guiPhysic();
         this._guiEffect();
         this._guiCamera();
@@ -129,7 +122,7 @@ class MMDGui {
                     this._mmd.api["camera mode"] = this._prevCameraMode
                 }
 
-                this._toggleScrollingBar()
+                this._checkCameraMode()
             }
         })
     }
@@ -384,7 +377,7 @@ class MMDGui {
                 mmd.api.camera = filename;
                 mmd.api.cameraFile = url;
 
-                await mmd.cwHelper.updateClips(mmd.helper.get(mmd.camera));
+                await mmd.cwHelper.updateMotionClips(mmd.helper.get(mmd.camera));
             });
             selectFile.click();
         }

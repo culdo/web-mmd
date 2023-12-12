@@ -10,8 +10,31 @@ export const CameraMode = {
 }
 export class MMDCameraWorkHelper {
     constructor(mmd) {
+
+        // Scrolling bar
+        this._scrollingBar = document.querySelector(".scrolling-bar")
         this._scrollingDuration = 3.0
 
+        // Clips is a array of clipInfo for each camera mode
+        this._motionClips = []
+        this._creativeClips = []
+        // target clips reference above clips that currently running
+        // default to motion file clips
+        this._targetClips = this._motionClips
+
+        // add buffer beats
+        this._beatsBuffer = [...Array(30)].map(_ => {
+            const beatEl = document.createElement("div")
+            beatEl.className = "cut"
+            beatEl.style.display = "none"
+            this._scrollingBar.appendChild(beatEl)
+            return beatEl
+        })
+
+        // Keybindings
+        this._cutClipMap = {}
+
+        // Internal properties
         this._mmd = mmd
         const cameraObj = mmd.helper.get(mmd.camera)
         this._camera = cameraObj.camera
@@ -23,9 +46,11 @@ export class MMDCameraWorkHelper {
         this._cutOffset = 0
 
         document.addEventListener("keydown", (e) => {
+            const pressedKeyBinding = this._currentCollection + e.key
             if (this._api.collectionKeys.includes(e.key)) {
                 this._currentCollection = e.key
-            } else if (this._api.cutKeys.includes(e.key)) {
+                // create a new beat and play it
+            } else if (pressedKeyBinding in this._cutClipMap) {
                 if (!this.isCreative) {
                     return
                 }
@@ -35,14 +60,18 @@ export class MMDCameraWorkHelper {
                     this._currentAction.stop()
                 }
                 this._cutOffset = this._mmd.motionTime;
-                if (!this._origAction.isRunning()) {
-                    this._currentAction = this.cutActionMap[this._currentCollection + e.key]
-                    this._currentAction.play()
-                }
+
+                const clipInfoCopy = { ...this._cutClipMap[pressedKeyBinding] }
+                clipInfoCopy.cutTime = this._cutOffset
+                clipInfoCopy.action.play()
+
+                this._creativeClips.push(clipInfoCopy)
+                this._currentAction = clipInfoCopy.action
+
             } else if (e.key == "ArrowLeft") {
                 let minDiff = null
                 let prevCutTime = null
-                for (const { cutTime } of this.cutClips) {
+                for (const { cutTime } of this._targetClips) {
                     const diff = Math.round((this._mmd.motionTime - cutTime) * 100)
                     if (diff > 0) {
                         if (minDiff == null || diff < minDiff) {
@@ -57,7 +86,7 @@ export class MMDCameraWorkHelper {
             } else if (e.key == "ArrowRight") {
                 let minDiff = null
                 let nextCutTime = null
-                for (const { cutTime } of this.cutClips) {
+                for (const { cutTime } of this._targetClips) {
                     const diff = Math.round((cutTime - this._mmd.motionTime) * 100)
                     if (diff > 0) {
                         if (minDiff == null || diff < minDiff) {
@@ -86,55 +115,39 @@ export class MMDCameraWorkHelper {
     }
 
     async init() {
-        const scrollingBar = document.querySelector(".scrolling-bar")
 
         const resp = await fetch(this._api.cameraFile)
         const { cutTimes, clips } = cameraToClips(await resp.arrayBuffer())
-        const cutClips = []
-        const cutActionMap = {}
 
         for (const [idx, cutTime] of cutTimes.entries()) {
-            const clipInfo = clips[idx]
-            const clip = AnimationClip.parse(clipInfo.clip)
+            const rawClip = clips[idx]
+            const clip = AnimationClip.parse(rawClip.clip)
             for (const track of clip.tracks) {
-                createTrackInterpolant(track, clipInfo.interpolations[track.name], true)
+                createTrackInterpolant(track, rawClip.interpolations[track.name], true)
             }
 
-            // scrolling bar beat key binding
+            // add scrolling bar beat key binding
             const collectionKey = this._api.collectionKeys[Math.floor(idx / this._api.cutKeys.length)]
             const cutKey = this._api.cutKeys[idx % this._api.cutKeys.length]
             const keyBinding = collectionKey + cutKey
             const action = this._cameraMixer.clipAction(clip)
             action.setLoop(LoopOnce)
             action.clampWhenFinished = true
-            cutActionMap[keyBinding] = action
 
-            // scrolling bar beat
-            const beatEl = document.createElement("div")
-            beatEl.id = `beat${idx}`
-            beatEl.textContent = keyBinding.toUpperCase()
-            beatEl.className = "cut"
-            scrollingBar.appendChild(beatEl)
-
-            cutClips.push({
+            const clipInfo = {
                 action,
                 cutTime,
-                beatEl,
                 keyBinding
-            })
+            }
+            this._motionClips.push(clipInfo)
+            this._cutClipMap[keyBinding] = clipInfo
+
         }
 
-        this.cutActionMap = cutActionMap
-        this.cutClips = cutClips
-
-        this.updateScrollingBar(this._api.currentTime)
+        this.checkCameraMode()
     }
 
-    async updateClips(cameraObj) {
-        // remove all beats on scrolling bar
-        for (const beat of document.querySelectorAll(".cut")) {
-            beat.remove()
-        }
+    async updateMotionClips(cameraObj) {
         await this.init()
 
         this._currentAction = null
@@ -142,12 +155,31 @@ export class MMDCameraWorkHelper {
         this._cameraMixer = cameraObj.mixer
     }
 
-    playComposite(time) {
+    _resetAllBeats() {
+        for (const beatEl of this._beatsBuffer) {
+            beatEl.style.display = "none";
+        }
+    }
+
+    checkCameraMode() {
+        this._scrollingBar.style.display = this.isMotionFile ? "none" : "block"
+        this._origAction.enabled = this.isMotionFile
+        if(this.isMotionFile) {
+            if (this._currentAction?.isRunning()) {
+                this._currentAction.stop()
+            }
+        }
+
+        this._targetClips = this.isCreative ? this._creativeClips : this._motionClips
+        this._updateScrollingBar(this._mmd.motionTime)
+    }
+
+    _playComposite(time) {
 
         let minDiff = null
         let targetAction = null
         let targetCutTime = null
-        for (const { cutTime, action } of this.cutClips) {
+        for (const { cutTime, action } of this._targetClips) {
             // round to fix cutTime precision problem
             const diff = Math.round(time * 1000) - Math.round(cutTime * 1000)
             if (diff >= 0) {
@@ -172,14 +204,11 @@ export class MMDCameraWorkHelper {
 
     setTime(time) {
         if (this.isComposite) {
-            this.playComposite(time)
+            this._playComposite(time)
         }
         const isCustom = this._currentAction?.isRunning() && !this.isMotionFile
         const isOrig = this._origAction.isRunning()
         if (isOrig) {
-            if (this._currentAction?.isRunning()) {
-                this._currentAction.stop()
-            }
             this._cameraMixer.setTime(time)
         } else if (isCustom) {
             // condition to fix cutTime precision problem that cause action be disabled
@@ -194,42 +223,45 @@ export class MMDCameraWorkHelper {
         }
 
         if (!this.isMotionFile) {
-            this.updateScrollingBar(time)
+            this._updateScrollingBar(time)
         }
     }
 
-    updateScrollingBar(time) {
-        for (const { cutTime, beatEl } of this.cutClips) {
+    _updateScrollingBar(time) {
+        this._resetAllBeats()
+        let beatsBufferIdx = 0;
+        for (const { cutTime, keyBinding } of this._targetClips) {
+            
             if (time <= cutTime && cutTime <= time + this._scrollingDuration) {
+                const beatEl = this._beatsBuffer[beatsBufferIdx]
+                beatsBufferIdx++
                 const timeDiff = cutTime - time
                 beatEl.style.left = `${100 * (timeDiff / this._scrollingDuration)}%`;
                 beatEl.style.display = "block";
+                beatEl.textContent = keyBinding.toUpperCase()
 
                 if (timeDiff < 0.1) {
                     beatEl.style.backgroundColor = "#ffdd00"
                 } else {
                     beatEl.style.backgroundColor = "aqua"
                 }
-            } else {
-                beatEl.style.display = "none";
             }
         }
     }
 
     updateKeyBinding() {
         // clear cutActionMap
-        for (const key in this.cutActionMap) {
-            delete this.cutActionMap[key]
+        for (const key in this._cutClipMap) {
+            delete this._cutClipMap[key]
         }
         // binding AnimationActions with keyboard shortcuts and update scrolling bar
-        for (const [idx, clipInfo] of this.cutClips.entries()) {
+        for (const [idx, clipInfo] of this._targetClips.entries()) {
             // update keybindings
             const modeKey = this._api.collectionKeys[Math.floor(idx / this._api.cutKeys.length)]
             const cutKey = this._api.cutKeys[idx % this._api.cutKeys.length]
             const keyBinding = modeKey + cutKey
-            this.cutActionMap[keyBinding] = clipInfo.action
-            // update scrolling bar
-            clipInfo.beatEl.textContent = keyBinding.toUpperCase()
+            clipInfo.keyBinding = keyBinding
+            this._cutClipMap[keyBinding] = clipInfo
         }
     }
 }
