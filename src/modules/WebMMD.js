@@ -178,6 +178,15 @@ class WebMMD {
         })
     }
 
+    // get current time for motions (character, camera...etc)
+    get motionTime() {
+        const currTime = player.currentTime + (this.api.motionOffset * 0.001)
+        if(currTime < 0) {
+            return 0
+        }
+        return currTime
+    }
+
     async _loadFiles() {
         const { api, scene, camera, helper, postprocessor } = this
 
@@ -297,17 +306,13 @@ class WebMMD {
             composer, scene, camera
         } = this;
 
-        let currTime = player.currentTime + (api.motionOffset * 0.001)
-        if(currTime < 0) {
-            currTime = 0
-        }
-        this.motionTime = currTime
+        const currTime = this.motionTime
         // player has a bug that sometime jump to end(duration)
         // so we just skip that frame
         if (player.currentTime == player.duration) {
             return
         }
-        let delta = currTime - this._prevTime;
+        const delta = currTime - this._prevTime;
 
 
         if (Math.abs(delta) > 0) {
@@ -316,6 +321,7 @@ class WebMMD {
                 helper.enable('physics', false);
             }
 
+            // camera updating
             cwHelper.setTime(currTime);
             // animation updating
             helper.update(delta, currTime);

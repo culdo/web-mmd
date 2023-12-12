@@ -41,7 +41,7 @@ export class MMDCameraWorkHelper {
         this._api = mmd.api
         this._origAction = cameraObj.actions[0]
         this._cameraMixer = cameraObj.mixer
-        this._currentCollection = "1"
+        this._currentCollection = mmd.api.collectionKeys[0]
         this._currentAction = null
         this._cutOffset = 0
 
@@ -49,30 +49,23 @@ export class MMDCameraWorkHelper {
             const pressedKeyBinding = this._currentCollection + e.key
             if (this._api.collectionKeys.includes(e.key)) {
                 this._currentCollection = e.key
-                // create a new beat and play it
+            // creative mode 
             } else if (pressedKeyBinding in this._cutClipMap) {
                 if (!this.isCreative) {
                     return
                 }
 
-                // stop previous action
-                if (this._currentAction) {
-                    this._currentAction.stop()
-                }
-                this._cutOffset = this._mmd.motionTime;
-
                 const clipInfoCopy = { ...this._cutClipMap[pressedKeyBinding] }
-                clipInfoCopy.cutTime = this._cutOffset
-                clipInfoCopy.action.play()
+                clipInfoCopy.cutTime = this._currentTime
 
                 this._creativeClips.push(clipInfoCopy)
-                this._currentAction = clipInfoCopy.action
+                this.setTime(this._currentTime)
 
             } else if (e.key == "ArrowLeft") {
                 let minDiff = null
                 let prevCutTime = null
                 for (const { cutTime } of this._targetClips) {
-                    const diff = Math.round((this._mmd.motionTime - cutTime) * 100)
+                    const diff = Math.round((this._currentTime - cutTime) * 100)
                     if (diff > 0) {
                         if (minDiff == null || diff < minDiff) {
                             minDiff = diff
@@ -87,7 +80,7 @@ export class MMDCameraWorkHelper {
                 let minDiff = null
                 let nextCutTime = null
                 for (const { cutTime } of this._targetClips) {
-                    const diff = Math.round((cutTime - this._mmd.motionTime) * 100)
+                    const diff = Math.round((cutTime - this._currentTime) * 100)
                     if (diff > 0) {
                         if (minDiff == null || diff < minDiff) {
                             minDiff = diff
@@ -100,6 +93,10 @@ export class MMDCameraWorkHelper {
                 }
             }
         })
+    }
+
+    get _currentTime() {
+        return this._mmd.motionTime
     }
 
     get isMotionFile() {
@@ -171,17 +168,17 @@ export class MMDCameraWorkHelper {
         }
 
         this._targetClips = this.isCreative ? this._creativeClips : this._motionClips
-        this._updateScrollingBar(this._mmd.motionTime)
+        this._updateScrollingBar()
     }
 
-    _playComposite(time) {
+    _playComposite() {
 
         let minDiff = null
         let targetAction = null
         let targetCutTime = null
         for (const { cutTime, action } of this._targetClips) {
             // round to fix cutTime precision problem
-            const diff = Math.round(time * 1000) - Math.round(cutTime * 1000)
+            const diff = Math.round(this._currentTime * 1000) - Math.round(cutTime * 1000)
             if (diff >= 0) {
                 if (minDiff == null || diff < minDiff) {
                     minDiff = diff
@@ -203,19 +200,21 @@ export class MMDCameraWorkHelper {
     }
 
     setTime(time) {
-        if (this.isComposite) {
-            this._playComposite(time)
+
+        const isCustom = this.isComposite || this.isCreative
+        if (isCustom) {
+            this._playComposite()
         }
-        const isCustom = this._currentAction?.isRunning() && !this.isMotionFile
+        const onCustom = this._currentAction?.isRunning() && isCustom
         const isOrig = this._origAction.isRunning()
         if (isOrig) {
             this._cameraMixer.setTime(time)
-        } else if (isCustom) {
+        } else if (onCustom) {
             // condition to fix cutTime precision problem that cause action be disabled
             const frameTime = (time - this._cutOffset) < 0 ? 0 : (time - this._cutOffset)
             this._cameraMixer.setTime(frameTime)
         }
-        if (isOrig || isCustom) {
+        if (isOrig || onCustom) {
             this._camera.up.set(0, 1, 0);
             this._camera.up.applyQuaternion(this._camera.quaternion);
             this._camera.lookAt(this._camera.getObjectByName("target").position);
@@ -223,19 +222,19 @@ export class MMDCameraWorkHelper {
         }
 
         if (!this.isMotionFile) {
-            this._updateScrollingBar(time)
+            this._updateScrollingBar()
         }
     }
 
-    _updateScrollingBar(time) {
+    _updateScrollingBar() {
         this._resetAllBeats()
         let beatsBufferIdx = 0;
         for (const { cutTime, keyBinding } of this._targetClips) {
             
-            if (time <= cutTime && cutTime <= time + this._scrollingDuration) {
+            if (this._currentTime <= cutTime && cutTime <= this._currentTime + this._scrollingDuration) {
                 const beatEl = this._beatsBuffer[beatsBufferIdx]
                 beatsBufferIdx++
-                const timeDiff = cutTime - time
+                const timeDiff = cutTime - this._currentTime
                 beatEl.style.left = `${100 * (timeDiff / this._scrollingDuration)}%`;
                 beatEl.style.display = "block";
                 beatEl.textContent = keyBinding.toUpperCase()
