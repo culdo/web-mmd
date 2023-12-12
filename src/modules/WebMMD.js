@@ -41,6 +41,7 @@ class WebMMD {
 
     async _getConfig() {
         const configSep = "."
+        this.configSep = configSep
 
         const scope = this
         const configSaver = {
@@ -86,8 +87,11 @@ class WebMMD {
         })
 
         if (!("pmxFiles" in userConfig)) {
-            await localforage.clear()
-            location.reload()
+            const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
+            const defaultData = await dataResp.json()
+            for (const [key, val] of Object.entries(defaultData)) {
+                userConfig[key] = val
+            }
         }
 
         this._logger.info(userConfig)

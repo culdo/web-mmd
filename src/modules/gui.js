@@ -696,7 +696,7 @@ class MMDGui {
         this.panel.onChange(async (event) => {
             if (event.property != "preset" && mmd.preset == "Default") {
                 if (!(event.value instanceof Function)) {
-                    await localforage.setItem(`Untitled_${event.property}`, event.value);
+                    await localforage.setItem(`Untitled${this._mmd.configSep}${event.property}`, event.value);
                 }
                 await _updatePresetList("Untitled");
                 await _setPreset("Untitled");
