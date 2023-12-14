@@ -3,4 +3,9 @@ node_modules
 *.zip
 *.ini
 
-dist/camera-clips/
+dist/index*
+
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

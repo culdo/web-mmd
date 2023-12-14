@@ -13,7 +13,6 @@ const stylesHandler = isProduction
 const config = {
   entry: {
     index: "./src/index.js",
-    test: "./tests/test.js",
   },
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -31,12 +30,6 @@ const config = {
       chunks: ["index"],
       template: "./src/index.html",
       filename: "index.html"
-    }),
-
-    new HtmlWebpackPlugin({
-      chunks: ["test"],
-      template: "./tests/test.html",
-      filename: "test.html"
     }),
 
     // Add your plugins here

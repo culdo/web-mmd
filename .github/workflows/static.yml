@@ -34,8 +34,14 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - run: npm install
-      - run: npm run build
+      - run: npm ci
+      - run: npm playwright install --with-deps
+      - name: Test
+        run: npm test
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: ${{ github.event.deployment_status.target_url }}
+      - name: Build
+        run: npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Upload artifact
