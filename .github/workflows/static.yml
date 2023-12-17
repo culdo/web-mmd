@@ -35,7 +35,7 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm ci
-      - run: npm playwright install --with-deps
+      - run: npx playwright install --with-deps
       - name: Test
         run: npm test
         env:
