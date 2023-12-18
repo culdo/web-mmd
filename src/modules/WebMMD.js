@@ -46,13 +46,16 @@ class WebMMD {
         const scope = this
         const configSaver = {
             set: function (target, key, value) {
-                const result = Reflect.set(...arguments)
+                const targetPreset = scope.preset == "Default" ? "Untitled" : scope.preset;
 
-                if (scope.preset != "Default") {
-                    localforage.setItem(`${scope.preset}${configSep}${key}`, value);
-                }
-
-                return result;
+                (async () => {
+                    await localforage.setItem(`${targetPreset}${configSep}${key}`, value);
+                    if(scope.preset == "Default" && scope._gui.changeToUntitled) {
+                        await scope._gui.changeToUntitled()
+                    }
+                    const result = Reflect.set(...arguments)
+                })();
+                return true
             }
         };
 
@@ -64,19 +67,12 @@ class WebMMD {
 
         const savedPresetName = await localforage.getItem("currentPreset")
         const preset = savedPresetName ?? "Default"
+        if(!savedPresetName) {
+            await localforage.setItem("currentPreset", "Default")
+        }
 
         const savedPresetsList = await localforage.getItem("presetsList")
         const presetsList = savedPresetsList ?? new Set(["Default"])
-
-        if (!savedPresetName) {
-            await localforage.setItem("currentPreset", "Default")
-
-            const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
-            const defaultData = await dataResp.json()
-            for (const [key, val] of Object.entries(defaultData)) {
-                await localforage.setItem(`Default${configSep}${key}`, val);
-            }
-        }
 
         // always loads config from localforage (include data)
         await localforage.iterate((val, key) => {
@@ -86,10 +82,12 @@ class WebMMD {
             }
         })
 
-        if (!("pmxFiles" in userConfig)) {
+        // if loaded config not includes data, we loads from Default data json.
+        if (!savedPresetName || !("pmxFiles" in userConfig)) {
             const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
             const defaultData = await dataResp.json()
             for (const [key, val] of Object.entries(defaultData)) {
+                await localforage.setItem(`${preset}${configSep}${key}`, val);
                 userConfig[key] = val
             }
         }

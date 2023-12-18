@@ -226,4 +226,10 @@ function createAudioLink() {
     a.text = "right click me to save music"
     return a
 }
-export { onProgress, loadMusicFromYT, saveCurrTime, blobToBase64, withProgress, startFileDownload, createAudioLink }
+
+async function withTimeElapse(func, name) {
+    const start = Date.now()
+    await func()
+    console.log(`${name} time elapsed: ${(Date.now() - start)/1000}s`)
+} 
+export { withTimeElapse, onProgress, loadMusicFromYT, saveCurrTime, blobToBase64, withProgress, startFileDownload, createAudioLink }

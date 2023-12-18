@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import localforage from 'localforage';
 import path from 'path-browserify';
 import { GUI } from 'lil-gui';
-import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, createAudioLink } from './utils';
+import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, createAudioLink, withTimeElapse } from './utils';
 import { CameraMode } from './MMDCameraWorkHelper';
 import logging from 'webpack/lib/logging/runtime'
 
@@ -41,7 +41,7 @@ class MMDGui {
         this._guiLight();
         this._guiShadow();
         this._guiDebug();
-        this._guiPreset();
+        this.changeToUntitled = this._guiPreset();
     }
 
     _addEventHandlers() {
@@ -147,12 +147,6 @@ class MMDGui {
         const bokehFolder = folder.addFolder('Bokeh');
         const matChanger = postprocessor.bokeh.buildMatChanger(api)
         const shaderUpdate = postprocessor.bokeh.buildShaderUpdate(api)
-
-        for (const key in postprocessor.bokeh.effectController) {
-            if (!(`bokeh ${key}` in api)) {
-                api[`bokeh ${key}`] = postprocessor.bokeh.effectController[key]
-            }
-        }
 
         matChanger();
         shaderUpdate();
@@ -693,16 +687,11 @@ class MMDGui {
             }
         }
 
-        this.panel.onChange(async (event) => {
-            if (event.property != "preset" && mmd.preset == "Default") {
-                if (!(event.value instanceof Function)) {
-                    await localforage.setItem(`Untitled${this._mmd.configSep}${event.property}`, event.value);
-                }
-                await _updatePresetList("Untitled");
-                await _setPreset("Untitled");
-                updateDropdown();
-            }
-        })
+        const changeToUntitled = async () => {
+            await _updatePresetList("Untitled")
+            await _setPreset("Untitled")
+            updateDropdown()
+        }
         const presetsFolder = folder.addFolder('presets');
         let presetDropdown = presetsFolder.add(
             mmd,
@@ -719,6 +708,7 @@ class MMDGui {
 
         // init dropdown
         updateDropdown();
+        return changeToUntitled
     }
 
 }
