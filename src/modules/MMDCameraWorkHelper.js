@@ -43,13 +43,19 @@ export class MMDCameraWorkHelper {
         this._cameraMixer = cameraObj.mixer
         this._currentCollection = mmd.api.collectionKeys[0]
         this._currentClip = null
-        this._cutOffset = 0
+
+        this._loadCreativeClips()
 
         document.addEventListener("keydown", (e) => {
+            // not trigger on default keyboard shortcuts
+            // e.preventDefault()
+            if(e.ctrlKey || e.metaKey) {
+                return 
+            }
             const pressedKeyBinding = this._currentCollection + e.key
             if (this._api.collectionKeys.includes(e.key)) {
                 this._currentCollection = e.key
-            // creative mode 
+                // creative mode 
             } else if (pressedKeyBinding in this._cutClipMap) {
                 if (!this.isCreative) {
                     return
@@ -59,6 +65,7 @@ export class MMDCameraWorkHelper {
                 clipInfoCopy.cutTime = this._currentTime
 
                 this._creativeClips.push(clipInfoCopy)
+                this._saveCreativeClips()
                 this.setTime(this._currentTime)
 
             } else if (e.key == "ArrowLeft") {
@@ -112,6 +119,36 @@ export class MMDCameraWorkHelper {
         return this._api["camera mode"] == CameraMode.CREATIVE
     }
 
+    async _saveCreativeClips() {
+        const json = []
+        for (const clip of this._creativeClips) {
+            const saveClip = {...clip}
+            delete saveClip.action
+            saveClip.clipJson = AnimationClip.toJSON(clip.action.getClip())
+            json.push(saveClip)
+        }
+        this._api.creativeClips = json
+    }
+
+    async _loadCreativeClips() {
+        if (this._api.creativeClips) {
+            for (const saveClip of this._api.creativeClips) {
+                const clipInfo = {...saveClip}
+                delete clipInfo.clipJson
+                const clip = AnimationClip.parse(saveClip.clipJson)
+                clipInfo.action = this._createAction(clip)
+                this._creativeClips.push(clipInfo)
+            }
+        }
+    }
+
+    _createAction(clip) {
+        const action = this._cameraMixer.clipAction(clip)
+        action.setLoop(LoopOnce)
+        action.clampWhenFinished = true
+        return action
+    }
+
     async init() {
 
         const resp = await fetch(this._api.cameraFile)
@@ -128,9 +165,7 @@ export class MMDCameraWorkHelper {
             const collectionKey = this._api.collectionKeys[Math.floor(idx / this._api.cutKeys.length)]
             const cutKey = this._api.cutKeys[idx % this._api.cutKeys.length]
             const keyBinding = collectionKey + cutKey
-            const action = this._cameraMixer.clipAction(clip)
-            action.setLoop(LoopOnce)
-            action.clampWhenFinished = true
+            const action = this._createAction(clip)
 
             const clipInfo = {
                 action,
@@ -162,7 +197,7 @@ export class MMDCameraWorkHelper {
     checkCameraMode() {
         this._scrollingBar.style.display = this.isMotionFile ? "none" : "block"
         this._origAction.enabled = this.isMotionFile
-        if(this.isMotionFile) {
+        if (this.isMotionFile) {
             if (this._currentClip?.action.isRunning()) {
                 this._currentClip.action.stop()
             }
@@ -228,7 +263,7 @@ export class MMDCameraWorkHelper {
         this._resetAllBeats()
         let beatsBufferIdx = 0;
         for (const { cutTime, keyBinding } of this._targetClips) {
-            
+
             if (this._currentTime <= cutTime && cutTime <= this._currentTime + this._scrollingDuration) {
                 const beatEl = this._beatsBuffer[beatsBufferIdx]
                 beatsBufferIdx++
