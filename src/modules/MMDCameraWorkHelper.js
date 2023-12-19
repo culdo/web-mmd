@@ -187,7 +187,7 @@ export class MMDCameraWorkHelper {
             }
         }
 
-        if (targetClip != this._currentClip) {
+        if (targetClip && targetClip != this._currentClip) {
             if (this._currentClip) {
                 this._currentClip.action.stop()
             };
@@ -210,7 +210,6 @@ export class MMDCameraWorkHelper {
         } else if (onCustom) {
             // condition to fix cutTime precision problem that cause action be disabled
             const targetTime = (time - this._currentClip.cutTime) < 0 ? 0 : (time - this._currentClip.cutTime)
-            console.log(targetTime)
             this._cameraMixer.setTime(targetTime)
         }
         if (isOrig || onCustom) {
