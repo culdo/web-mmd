@@ -46,16 +46,18 @@ class WebMMD {
         const scope = this
         const configSaver = {
             set: function (target, key, value) {
-                const targetPreset = scope.preset == "Default" ? "Untitled" : scope.preset;
-
+                scope._gui.enableAll(false);
                 (async () => {
-                    await localforage.setItem(`${targetPreset}${configSep}${key}`, value);
+                    const targetPreset = scope.preset == "Default" ? "Untitled" : scope.preset;
+                    await localforage.setItem(`${targetPreset}${configSep}${key}`, value)
                     if(scope.preset == "Default" && scope._gui.changeToUntitled) {
                         await scope._gui.changeToUntitled()
                     }
-                    const result = Reflect.set(...arguments)
+                    scope._gui.enableAll()
                 })();
-                return true
+                // need to put this outside of async func(above) to set back to api for reading
+                const result = Reflect.set(...arguments)
+                return result
             }
         };
 

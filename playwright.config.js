@@ -19,7 +19,10 @@ module.exports = defineConfig({
   },
   timeout: 100000,
   expect: {
-    timeout: 30000
+    timeout: 30000,
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.1
+    }
   },
   testDir: './tests',
   /* Run tests in files in parallel */

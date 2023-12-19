@@ -21,8 +21,7 @@ class MMDGui {
         this._mmd = params;
         this._addEventHandlers();
 
-        this._checkCameraMode = this._mmd.cwHelper.checkCameraMode.bind(this._mmd.cwHelper)
-
+        this._checkCameraMode = this._mmd.cwHelper.checkCameraMode.bind(this._mmd.cwHelper)        
         this.panel.add(this._mmd.api, 'camera mode', {
             "Motion File": CameraMode.MOTION_FILE,
             "Composition": CameraMode.COMPOSITION,
@@ -42,6 +41,12 @@ class MMDGui {
         this._guiShadow();
         this._guiDebug();
         this.changeToUntitled = this._guiPreset();
+    }
+
+    enableAll(state=true) {
+        for(const controller of this.panel.controllersRecursive()) {
+            controller.enable(state)
+        }
     }
 
     _addEventHandlers() {

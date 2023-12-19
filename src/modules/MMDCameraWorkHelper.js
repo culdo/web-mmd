@@ -13,9 +13,9 @@ export class MMDCameraWorkHelper {
 
         // Scrolling bar
         this._scrollingBar = document.querySelector(".scrolling-bar")
-        this._scrollingDuration = 3.0
+        this._scrollingDuration = 3.0  // seconds
 
-        // Clips is a array of clipInfo for each camera mode
+        // Clips is a array of clipInfo for one camera mode
         this._motionClips = []
         this._creativeClips = []
         // target clips reference above clips that currently running
