@@ -11,7 +11,7 @@ async function playToTime(page, time) {
     await page.keyboard.down(" ")
 }
 
-test("creative mode test", async ({ page }) => {
+test("create beat", async ({ page }) => {
     await page.goto("/")
     await page.getByLabel("camera mode").selectOption({ label: "Composition" })
     
@@ -19,6 +19,15 @@ test("creative mode test", async ({ page }) => {
     await page.keyboard.down("a")
     await page.keyboard.down("a")
     await expect(page.getByText("1A", { exact: true })).toHaveCount(1)
+})
+
+test("delete beat", async ({ page }) => {
+    await page.goto("/")
+    await page.getByLabel("camera mode").selectOption({ label: "Composition" })
+
+    await expect(page.getByText("1A", { exact: true })).toBeAttached()
+    await page.keyboard.down("Delete")
+    await expect(page.getByText("1A", { exact: true })).not.toBeAttached()
 })
 
 test("cut jumping using Arrow keys", async ({ page }) => {

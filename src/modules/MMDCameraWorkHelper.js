@@ -59,14 +59,7 @@ export class MMDCameraWorkHelper {
                     return
                 }
                 // if we have another beat(pressed ArrowLeft), clear it
-                if(this._currentClip) {
-                    const diff = player.currentTime - (this._currentClip.cutTime - (this._api.motionOffset * 0.001))
-                    if(Math.round(diff * 1000) == 0){
-                        this._currentClip.action.stop()
-                        const idx = this._compositeClips.indexOf(this._currentClip)
-                        this._compositeClips.splice(idx, 1)
-                    }
-                }
+                this._clearCurrentBeat()
 
                 const clipInfoCopy = { ...this._cutClipMap[pressedKeyBinding] }
                 clipInfoCopy.cutTime = this._currentTime
@@ -106,6 +99,9 @@ export class MMDCameraWorkHelper {
                 if (nextCutTime != null) {
                     player.currentTime = nextCutTime - (this._api.motionOffset * 0.001)
                 }
+            } else if (e.key == "Delete") {
+                this._clearCurrentBeat()
+                this.setTime(this._currentTime)
             }
         })
     }
@@ -122,6 +118,16 @@ export class MMDCameraWorkHelper {
         return this._api["camera mode"] == CameraMode.COMPOSITION
     }
 
+    _clearCurrentBeat() {
+        if(this._currentClip) {
+            const diff = player.currentTime - (this._currentClip.cutTime - (this._api.motionOffset * 0.001))
+            if(Math.round(diff * 1000) == 0){
+                this._currentClip.action.stop()
+                const idx = this._compositeClips.indexOf(this._currentClip)
+                this._compositeClips.splice(idx, 1)
+            }
+        }
+    }
     async _saveCompositeClips() {
         const json = []
         for (const clip of this._compositeClips) {
@@ -205,7 +211,7 @@ export class MMDCameraWorkHelper {
                 this._currentClip.action.stop()
             }
         }
-        this._updateScrollingBar()
+        this.setTime(this._currentTime)
     }
 
     _playComposite() {
