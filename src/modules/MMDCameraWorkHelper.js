@@ -5,8 +5,7 @@ import { cameraToClips } from "./cameraClipsBuilder"
 
 export const CameraMode = {
     MOTION_FILE: 0,
-    COMPOSITION: 1,
-    CREATIVE: 2
+    COMPOSITION: 1
 }
 export class MMDCameraWorkHelper {
     constructor(mmd) {
@@ -15,12 +14,11 @@ export class MMDCameraWorkHelper {
         this._scrollingBar = document.querySelector(".scrolling-bar")
         this._scrollingDuration = 3.0  // seconds
 
-        // Clips is a array of clipInfo for one camera mode
-        this._motionClips = []
-        this._creativeClips = []
+        // Clips is a array of clipInfo for composition camera mode
+        this._compositeClips = []
         // target clips reference above clips that currently running
         // default to motion file clips
-        this._targetClips = this._motionClips
+        this._compositeClips = this._compositeClips
 
         // add buffer beats
         this._beatsBuffer = [...Array(30)].map(_ => {
@@ -44,7 +42,7 @@ export class MMDCameraWorkHelper {
         this._currentCollection = mmd.api.collectionKeys[0]
         this._currentClip = null
 
-        this._loadCreativeClips()
+        this._loadCompositeClips()
 
         document.addEventListener("keydown", (e) => {
             // not trigger on default keyboard shortcuts
@@ -57,22 +55,31 @@ export class MMDCameraWorkHelper {
                 this._currentCollection = e.key
                 // creative mode 
             } else if (pressedKeyBinding in this._cutClipMap) {
-                if (!this.isCreative) {
+                if (!this.isComposite) {
                     return
+                }
+                // if we have another beat(pressed ArrowLeft), clear it
+                if(this._currentClip) {
+                    const diff = player.currentTime - (this._currentClip.cutTime - (this._api.motionOffset * 0.001))
+                    if(Math.round(diff * 1000) == 0){
+                        this._currentClip.action.stop()
+                        const idx = this._compositeClips.indexOf(this._currentClip)
+                        this._compositeClips.splice(idx, 1)
+                    }
                 }
 
                 const clipInfoCopy = { ...this._cutClipMap[pressedKeyBinding] }
                 clipInfoCopy.cutTime = this._currentTime
 
-                this._creativeClips.push(clipInfoCopy)
-                this._saveCreativeClips()
+                this._compositeClips.push(clipInfoCopy)
+                this._saveCompositeClips()
                 this.setTime(this._currentTime)
 
             } else if (e.key == "ArrowLeft") {
                 let minDiff = null
                 let prevClip = null
-                for (const clip of this._targetClips) {
-                    const diff = Math.round((this._currentTime - clip.cutTime) * 100)
+                for (const clip of this._compositeClips) {
+                    const diff = Math.round((this._currentTime - clip.cutTime) * 1000)
                     if (diff > 0) {
                         if (minDiff == null || diff < minDiff) {
                             minDiff = diff
@@ -87,8 +94,8 @@ export class MMDCameraWorkHelper {
             } else if (e.key == "ArrowRight") {
                 let minDiff = null
                 let nextCutTime = null
-                for (const { cutTime } of this._targetClips) {
-                    const diff = Math.round((cutTime - this._currentTime) * 100)
+                for (const { cutTime } of this._compositeClips) {
+                    const diff = Math.round((cutTime - this._currentTime) * 1000)
                     if (diff > 0) {
                         if (minDiff == null || diff < minDiff) {
                             minDiff = diff
@@ -115,29 +122,25 @@ export class MMDCameraWorkHelper {
         return this._api["camera mode"] == CameraMode.COMPOSITION
     }
 
-    get isCreative() {
-        return this._api["camera mode"] == CameraMode.CREATIVE
-    }
-
-    async _saveCreativeClips() {
+    async _saveCompositeClips() {
         const json = []
-        for (const clip of this._creativeClips) {
+        for (const clip of this._compositeClips) {
             const saveClip = {...clip}
             delete saveClip.action
             saveClip.clipJson = AnimationClip.toJSON(clip.action.getClip())
             json.push(saveClip)
         }
-        this._api.creativeClips = json
+        this._api.compositeClips = json
     }
 
-    async _loadCreativeClips() {
-        if (this._api.creativeClips) {
-            for (const saveClip of this._api.creativeClips) {
+    async _loadCompositeClips() {
+        if (this._api.compositeClips) {
+            for (const saveClip of this._api.compositeClips) {
                 const clipInfo = {...saveClip}
                 delete clipInfo.clipJson
                 const clip = AnimationClip.parse(saveClip.clipJson)
                 clipInfo.action = this._createAction(clip)
-                this._creativeClips.push(clipInfo)
+                this._compositeClips.push(clipInfo)
             }
         }
     }
@@ -172,7 +175,7 @@ export class MMDCameraWorkHelper {
                 cutTime,
                 keyBinding
             }
-            this._motionClips.push(clipInfo)
+            this._compositeClips.push(clipInfo)
             this._cutClipMap[keyBinding] = clipInfo
 
         }
@@ -202,8 +205,6 @@ export class MMDCameraWorkHelper {
                 this._currentClip.action.stop()
             }
         }
-
-        this._targetClips = this.isCreative ? this._creativeClips : this._motionClips
         this._updateScrollingBar()
     }
 
@@ -211,9 +212,9 @@ export class MMDCameraWorkHelper {
 
         let minDiff = null
         let targetClip = null
-        for (const clip of this._targetClips) {
+        for (const clip of this._compositeClips) {
             // round to fix cutTime precision problem
-            const diff = Math.round(this._currentTime * 1000) - Math.round(clip.cutTime * 1000)
+            const diff = Math.round((this._currentTime - clip.cutTime) * 1000)
             if (diff >= 0) {
                 if (minDiff == null || diff < minDiff) {
                     minDiff = diff
@@ -234,11 +235,11 @@ export class MMDCameraWorkHelper {
 
     setTime(time) {
 
-        const isCustom = this.isComposite || this.isCreative
-        if (isCustom) {
+        const isComposite = this.isComposite
+        if (isComposite) {
             this._playComposite()
         }
-        const onCustom = this._currentClip?.action.isRunning() && isCustom
+        const onCustom = this._currentClip?.action.isRunning() && isComposite
         const isOrig = this._origAction.isRunning()
         if (isOrig) {
             this._cameraMixer.setTime(time)
@@ -262,7 +263,7 @@ export class MMDCameraWorkHelper {
     _updateScrollingBar() {
         this._resetAllBeats()
         let beatsBufferIdx = 0;
-        for (const { cutTime, keyBinding } of this._targetClips) {
+        for (const { cutTime, keyBinding } of this._compositeClips) {
 
             if (this._currentTime <= cutTime && cutTime <= this._currentTime + this._scrollingDuration) {
                 const beatEl = this._beatsBuffer[beatsBufferIdx]
@@ -273,9 +274,9 @@ export class MMDCameraWorkHelper {
                 beatEl.textContent = keyBinding.toUpperCase()
 
                 if (timeDiff < 0.1) {
-                    beatEl.style.backgroundColor = "#ffdd00"
+                    beatEl.classList.add("goal")
                 } else {
-                    beatEl.style.backgroundColor = "aqua"
+                    beatEl.classList.remove("goal")
                 }
             }
         }
@@ -287,7 +288,7 @@ export class MMDCameraWorkHelper {
             delete this._cutClipMap[key]
         }
         // binding AnimationActions with keyboard shortcuts and update scrolling bar
-        for (const [idx, clipInfo] of this._targetClips.entries()) {
+        for (const [idx, clipInfo] of this._compositeClips.entries()) {
             // update keybindings
             const modeKey = this._api.collectionKeys[Math.floor(idx / this._api.cutKeys.length)]
             const cutKey = this._api.cutKeys[idx % this._api.cutKeys.length]

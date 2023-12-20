@@ -68,12 +68,11 @@ export class CameraClipsBuilder {
 		const euler = new Euler();
 		const position = new Vector3();
 		const center = new Vector3();
-		const jsonResult = {
-			clips: [],
-			cutTimes: []
-		};
 
-		const { cutTimes, clips } = jsonResult
+		const clips = []
+		const cutTimes = []
+		const jsonResult = { clips, cutTimes };
+
 		cutTimes.push(0.0)
 
 		for (let i = 0, il = cameras.length; i < il; i++) {

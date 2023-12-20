@@ -13,7 +13,6 @@ class MMDGui {
         this._mmd = null;
         this._guiFn = {};
         this._pmxDropdowns = {};
-        this._prevCameraMode = CameraMode.CREATIVE
         this._logger = logging.getLogger("MMDGui")
     }
 
@@ -24,8 +23,7 @@ class MMDGui {
         this._checkCameraMode = this._mmd.cwHelper.checkCameraMode.bind(this._mmd.cwHelper)        
         this.panel.add(this._mmd.api, 'camera mode', {
             "Motion File": CameraMode.MOTION_FILE,
-            "Composition": CameraMode.COMPOSITION,
-            "Creative": CameraMode.CREATIVE
+            "Composition": CameraMode.COMPOSITION
         }).listen().onChange((_) => {
             this._checkCameraMode()
         });
@@ -121,10 +119,9 @@ class MMDGui {
             } else if (e.key == "`") {
                 const isEditMode = this._mmd.api["camera mode"] != CameraMode.MOTION_FILE
                 if (isEditMode) {
-                    this._prevCameraMode = this._mmd.api["camera mode"]
                     this._mmd.api["camera mode"] = CameraMode.MOTION_FILE
                 } else {
-                    this._mmd.api["camera mode"] = this._prevCameraMode
+                    this._mmd.api["camera mode"] = CameraMode.COMPOSITION
                 }
 
                 this._checkCameraMode()

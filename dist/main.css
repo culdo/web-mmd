@@ -178,6 +178,10 @@ select {
 	background-color: aqua;
 }
 
+.goal {
+	background-color: #ffdd00;
+}
+
 hr {
 	width: 101%;
 	transform: translateX(-0.5%);
