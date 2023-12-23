@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { MMDLoader } from './MMDLoader.js';
 import { MMDAnimationHelper } from './MMDAnimationHelper.js';
 import { MMDGui } from './gui.js'
@@ -160,11 +160,6 @@ class WebMMD {
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.target.set(0, 10, 0);
 
-        controls.domElement.addEventListener('mousedown', () => {
-            camera.up.set(0, 1, 0);
-            camera.updateProjectionMatrix();
-        });
-
         // effect composer
         const postprocessor = new PostProcessor(scene, camera, renderer, { isSdefEnabled: api["enable SDEF"] })
 
@@ -178,7 +173,7 @@ class WebMMD {
         container.appendChild(stats.dom);
 
         Object.assign(this, {
-            camera, player, scene, stats,
+            camera, player, controls, scene, stats,
             postprocessor, dirLight, hemiLight, renderer, composer
         })
     }
@@ -193,7 +188,7 @@ class WebMMD {
     }
 
     async _loadFiles() {
-        const { api, scene, camera, helper, postprocessor } = this
+        const { api, scene, camera, controls, helper, postprocessor } = this
 
         // loader
         const loader = new MMDLoader();
@@ -228,6 +223,18 @@ class WebMMD {
 
             this.cwHelper = new MMDCameraWorkHelper(this);
             await this.cwHelper.init();
+
+            controls.domElement.addEventListener('mousedown', () => {
+                camera.up.set(0, 1, 0);
+                camera.updateProjectionMatrix();
+            });
+            controls.addEventListener('start', () => {
+                this.cwHelper.isOrbitControl = true;
+            });
+            controls.addEventListener('end', () => {
+                this.cwHelper.orbitCameraPos = camera.position;
+                this.cwHelper.isOrbitControl = false;
+            });
 
             overlay.style.display = "none";
         }

@@ -21,9 +21,11 @@ class MMDGui {
         this._addEventHandlers();
 
         this._checkCameraMode = this._mmd.cwHelper.checkCameraMode.bind(this._mmd.cwHelper)        
+        this._findCenterBone = this._mmd.cwHelper.findCenterBone.bind(this._mmd.cwHelper)        
         this.panel.add(this._mmd.api, 'camera mode', {
             "Motion File": CameraMode.MOTION_FILE,
-            "Composition": CameraMode.COMPOSITION
+            "Composition": CameraMode.COMPOSITION,
+            "Fixed Follow": CameraMode.FIXED_FOLLOW
         }).listen().onChange((_) => {
             this._checkCameraMode()
         });
@@ -289,6 +291,7 @@ class MMDGui {
             mmd.scene.add(mmd.skeletonHelper);
 
             mmd.character = character;
+            this._findCenterBone();
 
             mmd.helper.enable('physics', false);
             mmd.helper.update(0.0, mmd.motionTime)

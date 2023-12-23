@@ -1,11 +1,12 @@
-import { AnimationClip, LoopOnce } from "three"
+import { AnimationClip, LoopOnce, Vector3 } from "three"
 import { createTrackInterpolant } from "./MMDLoader"
 import { cameraToClips } from "./cameraClipsBuilder"
 
 
 export const CameraMode = {
     MOTION_FILE: 0,
-    COMPOSITION: 1
+    COMPOSITION: 1,
+    FIXED_FOLLOW: 2
 }
 export class MMDCameraWorkHelper {
     constructor(mmd) {
@@ -41,6 +42,13 @@ export class MMDCameraWorkHelper {
         this._cameraMixer = cameraObj.mixer
         this._currentCollection = mmd.api.collectionKeys[0]
         this._currentClip = null
+
+        // Fixed Follow
+        this.findCenterBone()
+        this.orbitCameraPos = this._camera.position
+        this._prevCenterBonePos = this._centerBone.position
+        this._mmd.controls.target = this._centerBone.position
+        this.isOrbitControl = false
 
         this._loadCompositeClips()
 
@@ -117,6 +125,19 @@ export class MMDCameraWorkHelper {
 
     get isComposite() {
         return this._api["camera mode"] == CameraMode.COMPOSITION
+    }
+
+    get isFixedFollow() {
+        return this._api["camera mode"] == CameraMode.FIXED_FOLLOW
+    }
+
+    findCenterBone() {
+        for(const [idx, boneName] of this._mmd.character.animationBones.entries()) {
+            if(boneName == "センター") {
+                this._centerBone = this._mmd.character.skeleton.bones[idx]
+                return;
+            }
+        }
     }
 
     _clearCurrentBeat() {
@@ -275,9 +296,22 @@ export class MMDCameraWorkHelper {
             this._camera.up.applyQuaternion(this._camera.quaternion);
             this._camera.lookAt(this._camera.getObjectByName("target").position);
             this._camera.updateProjectionMatrix();
+        } else if(this.isFixedFollow && !this.isOrbitControl) {
+            const position = this._centerBone.position.clone()
+            const delta = new Vector3().subVectors(position, this._prevCenterBonePos)
+            
+            const newLookAt = delta.clone().add(this._mmd.controls.target)
+            this._camera.lookAt(newLookAt);
+            this._mmd.controls.target = newLookAt
+            
+            const newPos = delta.clone().add(this.orbitCameraPos)
+            this._prevCenterBonePos = position
+            this._camera.position.copy(newPos)
+            
+            this._camera.updateProjectionMatrix();
         }
 
-        if (!this.isMotionFile) {
+        if (isComposite) {
             this._updateScrollingBar()
         }
     }
