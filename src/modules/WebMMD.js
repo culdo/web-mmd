@@ -122,7 +122,8 @@ class WebMMD {
         scene.fog = new THREE.Fog(api['fog color'], 10, 500);
 
         // camera
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+        const camera = new THREE.PerspectiveCamera(api.fov, window.innerWidth / window.innerHeight, api.near, 2000);
+        camera.zoom = api.zoom
         camera.position.set(0, 20, 30);
         scene.add(camera);
 

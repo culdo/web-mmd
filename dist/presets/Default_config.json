@@ -133,6 +133,7 @@
     
     "fov": 45,
     "zoom": 1,
+    "near": 0.1,
     "cameraWork enabled": false,
     "collectionKeys": "1234567890",
     "cutKeys": "abcdefghijklmnopqrstuvwxyz",

@@ -193,23 +193,17 @@ class MMDGui {
 
     _guiCamera() {
         const camera = this._mmd.camera
-
-        if (this._mmd.api.fov && this._mmd.api.zoom) {
-            camera.fov = this._mmd.api.fov
-            camera.zoom = this._mmd.api.zoom
-            camera.updateProjectionMatrix();
-        } else {
-            this._mmd.api["fov"] = camera.fov
-            this._mmd.api["zoom"] = camera.zoom
-        }
-
+        
         const folder = this.panel.addFolder('Camera');
         const guiFn = {
             reset: () => {
-                this._mmd.api.fov = 50;
+                this._mmd.api.fov = 45;
                 this._mmd.api.zoom = 1;
-                camera.fov = 50;
+                this._mmd.api.near = 0.1;
+                camera.fov = 45;
                 camera.zoom = 1;
+                camera.near = 0.1;
+                
                 camera.updateProjectionMatrix();
             }
         }
@@ -219,6 +213,10 @@ class MMDGui {
         })
         folder.add(this._mmd.api, "zoom", 0, 5, 0.1).listen().onChange((value) => {
             camera.zoom = value
+            camera.updateProjectionMatrix();
+        })
+        folder.add(this._mmd.api, "near", 0, 100, 0.1).listen().onChange((value) => {
+            camera.near = value
             camera.updateProjectionMatrix();
         })
         folder.add(guiFn, "reset")
