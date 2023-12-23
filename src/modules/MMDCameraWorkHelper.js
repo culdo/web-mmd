@@ -47,13 +47,13 @@ export class MMDCameraWorkHelper {
         document.addEventListener("keydown", (e) => {
             // not trigger on default keyboard shortcuts
             // e.preventDefault()
-            if(e.ctrlKey || e.metaKey) {
-                return 
+            if (e.ctrlKey || e.metaKey) {
+                return
             }
             const pressedKeyBinding = this._currentCollection + e.key
             if (this._api.collectionKeys.includes(e.key)) {
                 this._currentCollection = e.key
-                // creative mode 
+                // composite mode 
             } else if (pressedKeyBinding in this._cutClipMap) {
                 if (!this.isComposite) {
                     return
@@ -99,8 +99,9 @@ export class MMDCameraWorkHelper {
                 if (nextCutTime != null) {
                     player.currentTime = nextCutTime - (this._api.motionOffset * 0.001)
                 }
-            } else if (e.key == "Delete") {
+            } else if (["Delete", "Backspace"].includes(e.key)) {
                 this._clearCurrentBeat()
+                this._saveCompositeClips()
                 this.setTime(this._currentTime)
             }
         })
@@ -119,9 +120,9 @@ export class MMDCameraWorkHelper {
     }
 
     _clearCurrentBeat() {
-        if(this._currentClip) {
+        if (this._currentClip) {
             const diff = player.currentTime - (this._currentClip.cutTime - (this._api.motionOffset * 0.001))
-            if(Math.round(diff * 1000) == 0){
+            if (Math.round(diff * 1000) == 0) {
                 this._currentClip.action.stop()
                 const idx = this._compositeClips.indexOf(this._currentClip)
                 this._compositeClips.splice(idx, 1)
@@ -131,7 +132,7 @@ export class MMDCameraWorkHelper {
     async _saveCompositeClips() {
         const json = []
         for (const clip of this._compositeClips) {
-            const saveClip = {...clip}
+            const saveClip = { ...clip }
             delete saveClip.action
             saveClip.clipJson = AnimationClip.toJSON(clip.action.getClip())
             json.push(saveClip)
@@ -142,11 +143,19 @@ export class MMDCameraWorkHelper {
     async _loadCompositeClips() {
         if (this._api.compositeClips) {
             for (const saveClip of this._api.compositeClips) {
-                const clipInfo = {...saveClip}
+                const clipInfo = { ...saveClip }
                 delete clipInfo.clipJson
+
                 const clip = AnimationClip.parse(saveClip.clipJson)
+                if(!clipInfo.interpolations){
+                    this._api.compositeClips = []
+                    setTimeout(()=>location.reload(), 5000)
+                }
+                this._restoreInterpolant(clip, clipInfo.interpolations)
                 clipInfo.action = this._createAction(clip)
+
                 this._compositeClips.push(clipInfo)
+                this._cutClipMap[clipInfo.keyBinding] = clipInfo
             }
         }
     }
@@ -159,37 +168,38 @@ export class MMDCameraWorkHelper {
     }
 
     async init() {
-
-        const resp = await fetch(this._api.cameraFile)
-        const { cutTimes, clips } = cameraToClips(await resp.arrayBuffer())
-
-        for (const [idx, cutTime] of cutTimes.entries()) {
-            const rawClip = clips[idx]
-            const clip = AnimationClip.parse(rawClip.clip)
-            for (const track of clip.tracks) {
-                createTrackInterpolant(track, rawClip.interpolations[track.name], true)
+        // if dont have clips, create them from motion file
+        if(this._compositeClips.length == 0) {
+            const resp = await fetch(this._api.cameraFile)
+            const { cutTimes, clips: rawClips } = cameraToClips(await resp.arrayBuffer())
+    
+            for (const [idx, cutTime] of cutTimes.entries()) {
+                const rawClip = rawClips[idx]
+                const clip = AnimationClip.parse(rawClip.clip)
+                this._restoreInterpolant(clip, rawClip.interpolations)
+    
+                // add scrolling bar beat key binding
+                const collectionKey = this._api.collectionKeys[Math.floor(idx / this._api.cutKeys.length)]
+                const cutKey = this._api.cutKeys[idx % this._api.cutKeys.length]
+                const keyBinding = collectionKey + cutKey
+                const action = this._createAction(clip)
+    
+                const clipInfo = {
+                    action,
+                    cutTime,
+                    keyBinding,
+                    interpolations: rawClip.interpolations
+                }
+                this._compositeClips.push(clipInfo)
+                this._cutClipMap[keyBinding] = clipInfo
             }
-
-            // add scrolling bar beat key binding
-            const collectionKey = this._api.collectionKeys[Math.floor(idx / this._api.cutKeys.length)]
-            const cutKey = this._api.cutKeys[idx % this._api.cutKeys.length]
-            const keyBinding = collectionKey + cutKey
-            const action = this._createAction(clip)
-
-            const clipInfo = {
-                action,
-                cutTime,
-                keyBinding
-            }
-            this._compositeClips.push(clipInfo)
-            this._cutClipMap[keyBinding] = clipInfo
-
         }
 
         this.checkCameraMode()
     }
 
     async updateMotionClips(cameraObj) {
+        this._compositeClips = []
         await this.init()
 
         this._currentClip = null
@@ -212,6 +222,12 @@ export class MMDCameraWorkHelper {
             }
         }
         this.setTime(this._currentTime)
+    }
+
+    _restoreInterpolant(clip, interpolations) {
+        for (const track of clip.tracks) {
+            createTrackInterpolant(track, interpolations[track.name], true)
+        }
     }
 
     _playComposite() {
