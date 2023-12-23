@@ -296,19 +296,21 @@ export class MMDCameraWorkHelper {
             this._camera.up.applyQuaternion(this._camera.quaternion);
             this._camera.lookAt(this._camera.getObjectByName("target").position);
             this._camera.updateProjectionMatrix();
-        } else if(this.isFixedFollow && !this.isOrbitControl) {
+        } else if(this.isFixedFollow) {
             const position = this._centerBone.position.clone()
             const delta = new Vector3().subVectors(position, this._prevCenterBonePos)
             
             const newLookAt = delta.clone().add(this._mmd.controls.target)
-            this._camera.lookAt(newLookAt);
             this._mmd.controls.target = newLookAt
             
             const newPos = delta.clone().add(this.orbitCameraPos)
             this._prevCenterBonePos = position
-            this._camera.position.copy(newPos)
             
-            this._camera.updateProjectionMatrix();
+            if(!this.isOrbitControl) {
+                this._camera.lookAt(newLookAt);
+                this._camera.position.copy(newPos)
+                this._camera.updateProjectionMatrix();
+            }
         }
 
         if (isComposite) {
