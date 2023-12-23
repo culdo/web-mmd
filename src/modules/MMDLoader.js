@@ -36,11 +36,13 @@ import {
 	RGB_PVRTC_4BPPV1_Format,
 	RGB_PVRTC_2BPPV1_Format,
 	RGB_ETC1_Format,
-	RGB_ETC2_Format
+	RGB_ETC2_Format,
+	CatmullRomCurve3
 } from 'three';
 import { MMDToonShader } from './MMDToonShader.js';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
 import { MMDParser } from './mmdparser.module.js';
+import nj from 'numjs'
 
 /**
  * Dependencies
@@ -205,6 +207,7 @@ class MMDLoader extends Loader {
 		const scope = this;
 
 		const mesh = await this.load(modelUrl, onProgress, onError, params);
+		mesh.followSmooth = params.followSmooth
 
 		const animation = await scope.loadAnimation(vmdUrl, mesh, onProgress, onError);
 
@@ -1717,7 +1720,22 @@ class AnimationBuilder {
 			}
 
 			const targetName = '.bones[' + key + ']';
-
+			if (key == "センター") {
+				let smoothed = positions
+				const smoothWeight = mesh.followSmooth
+				const padding = (smoothWeight - 1) / 2
+				if (array[array.length - 1].frameNum + 1 == positions.length / 3) {
+					console.log("follow smooth: enable")
+					const posArr = nj.array(positions).reshape([-1, 3])
+					smoothed = []
+					posArr.T.iteraxis(0, (row)=>{
+						const newRow = nj.flatten(nj.convolve(row, nj.ones(smoothWeight))).divide(smoothWeight)
+						smoothed.push(nj.concatenate(row.slice([padding]), newRow, row.slice(-padding)))
+					})
+					smoothed = nj.stack(smoothed).T.flatten().tolist()
+				}
+				tracks.push(this._createTrack('smoothCenter' + '.position', VectorKeyframeTrack, times, smoothed, pInterpolations));
+			}
 			tracks.push(this._createTrack(targetName + '.position', VectorKeyframeTrack, times, positions, pInterpolations));
 			tracks.push(this._createTrack(targetName + '.quaternion', QuaternionKeyframeTrack, times, rotations, rInterpolations));
 

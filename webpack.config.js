@@ -35,6 +35,11 @@ const config = {
     // Add your plugins here
     // Learn more about plugins from https://webpack.js.org/configuration/plugins/
   ],
+  resolve: {
+    fallback: { 
+      "path": require.resolve("path-browserify") 
+    }
+  },
   module: {
     rules: [
       {

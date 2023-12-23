@@ -29,6 +29,7 @@
     "@babel/traverse": "^7.20.0",
     "@playwright/test": "^1.40.1",
     "@types/node": "^20.10.4",
+    "@types/numjs": "^0.16.7",
     "@webpack-cli/generators": "^3.0.7",
     "babel-loader": "^9.0.1",
     "css-loader": "^6.7.1",
@@ -48,6 +49,10 @@
     "http-server": "^14.1.1",
     "lil-gui": "^0.18.2",
     "localforage": "^1.10.0",
+    "numjs": "^0.16.1",
     "path-browserify": "^1.0.1"
+  },
+  "overrides": {
+    "sharp": "0.31.1"
   }
 }

@@ -243,7 +243,8 @@ class WebMMD {
         const _loadCharacter = async () => {
             const characterFile = api.pmxFiles.character[api.character]
             let characterParams = {
-                enableSdef: api['enable SDEF']
+                enableSdef: api['enable SDEF'],
+                followSmooth: api["follow smooth"]
             };
             if (characterFile.startsWith("data:")) {
                 characterParams = {

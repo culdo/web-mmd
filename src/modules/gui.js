@@ -20,8 +20,7 @@ class MMDGui {
         this._mmd = params;
         this._addEventHandlers();
 
-        this._checkCameraMode = this._mmd.cwHelper.checkCameraMode.bind(this._mmd.cwHelper)        
-        this._findCenterBone = this._mmd.cwHelper.findCenterBone.bind(this._mmd.cwHelper)        
+        this._checkCameraMode = this._mmd.cwHelper.checkCameraMode.bind(this._mmd.cwHelper)   
         this.panel.add(this._mmd.api, 'camera mode', {
             "Motion File": CameraMode.MOTION_FILE,
             "Composition": CameraMode.COMPOSITION,
@@ -223,7 +222,7 @@ class MMDGui {
         })
         folder.add(guiFn, "reset")
 
-        const cameraWorkFolder = folder.addFolder('Camera work');
+        const cameraWorkFolder = folder.addFolder('Composition Mode');
 
         cameraWorkFolder.add(this._mmd.api, 'collectionKeys').onChange((value) => {
             this._mmd.cwHelper.updateKeyBinding()
@@ -231,6 +230,12 @@ class MMDGui {
         cameraWorkFolder.add(this._mmd.api, 'cutKeys').onChange((value) => {
             this._mmd.cwHelper.updateKeyBinding()
         });
+
+        const fixFollowFolder = folder.addFolder('Fix-Follow Mode');
+        fixFollowFolder.add(this._mmd.api, 'follow smooth', 3, 101, 2).onChange(() => {
+            setTimeout(()=>location.reload(), 2000)
+        });
+
     }
 
     _guiFile() {
@@ -291,7 +296,6 @@ class MMDGui {
             mmd.scene.add(mmd.skeletonHelper);
 
             mmd.character = character;
-            this._findCenterBone();
 
             mmd.helper.enable('physics', false);
             mmd.helper.update(0.0, mmd.motionTime)

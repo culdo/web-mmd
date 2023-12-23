@@ -44,10 +44,9 @@ export class MMDCameraWorkHelper {
         this._currentClip = null
 
         // Fixed Follow
-        this.findCenterBone()
         this.orbitCameraPos = this._camera.position
-        this._prevCenterBonePos = this._centerBone.position
-        this._mmd.controls.target = this._centerBone.position
+        this._prevCenterBonePos = this._smoothCenter
+        this._mmd.controls.target = this._smoothCenter
         this.isOrbitControl = false
 
         this._loadCompositeClips()
@@ -131,13 +130,8 @@ export class MMDCameraWorkHelper {
         return this._api["camera mode"] == CameraMode.FIXED_FOLLOW
     }
 
-    findCenterBone() {
-        for(const [idx, boneName] of this._mmd.character.animationBones.entries()) {
-            if(boneName == "センター") {
-                this._centerBone = this._mmd.character.skeleton.bones[idx]
-                return;
-            }
-        }
+    get _smoothCenter() {
+        return this._mmd.character.getObjectByName("smoothCenter").position
     }
 
     _clearCurrentBeat() {
@@ -235,7 +229,7 @@ export class MMDCameraWorkHelper {
     }
 
     checkCameraMode() {
-        this._scrollingBar.style.display = this.isMotionFile ? "none" : "block"
+        this._scrollingBar.style.display = this.isComposite ? "block" : "none"
         this._origAction.enabled = this.isMotionFile
         if (this.isMotionFile) {
             if (this._currentClip?.action.isRunning()) {
@@ -297,7 +291,7 @@ export class MMDCameraWorkHelper {
             this._camera.lookAt(this._camera.getObjectByName("target").position);
             this._camera.updateProjectionMatrix();
         } else if(this.isFixedFollow) {
-            const position = this._centerBone.position.clone()
+            const position = this._smoothCenter.clone()
             const delta = new Vector3().subVectors(position, this._prevCenterBonePos)
             
             const newLookAt = delta.clone().add(this._mmd.controls.target)

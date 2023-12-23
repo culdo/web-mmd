@@ -32,6 +32,8 @@ class MMDAnimationHelper {
 	constructor(params = {}) {
 
 		this.meshes = [];
+		this.smoothCenter = new Object3D();
+		this.smoothCenter.name = 'smoothCenter';
 
 		this.camera = null;
 		this.cameraTarget = new Object3D();
@@ -313,8 +315,13 @@ class MMDAnimationHelper {
 		}
 
 		this.meshes.push(mesh);
+		
+		if(params.animation) {
+			mesh.add(this.smoothCenter)
+		}
+		
 		this.objects.set(mesh, { looped: false });
-
+		
 		this._setupMeshAnimation(mesh, params.animation);
 
 		if (params.physics !== false) {
