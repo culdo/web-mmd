@@ -50,7 +50,7 @@ class WebMMD {
                 const saveAsync = async () => {
                     const targetPreset = scope.preset == "Default" ? "Untitled" : scope.preset;
                     await localforage.setItem(`${targetPreset}${configSep}${key}`, value)
-                    if(scope.preset == "Default" && scope._gui.changeToUntitled) {
+                    if (scope.preset == "Default" && scope._gui.changeToUntitled) {
                         await scope._gui.changeToUntitled()
                     }
                     scope._gui.panel.title("Controls");
@@ -70,7 +70,7 @@ class WebMMD {
 
         const savedPresetName = await localforage.getItem("currentPreset")
         const preset = savedPresetName ?? "Default"
-        if(!savedPresetName) {
+        if (!savedPresetName) {
             await localforage.setItem("currentPreset", "Default")
         }
 
@@ -184,7 +184,7 @@ class WebMMD {
     // get current time for motions (character, camera...etc)
     get motionTime() {
         const currTime = player.currentTime + (this.api.motionOffset * 0.001)
-        if(currTime < 0) {
+        if (currTime < 0) {
             return 0
         }
         return currTime
@@ -330,7 +330,6 @@ class WebMMD {
         }
         const delta = currTime - this._prevTime;
 
-        controls.update();
         if (Math.abs(delta) > 0) {
             // for time seeking using player control
             if (Math.abs(delta) > 0.1) {
@@ -350,11 +349,14 @@ class WebMMD {
             }
             this._prevTime = currTime
 
-        } else if (api['physics']) {
-
-            let delta = this._clock.getDelta()
-            runtimeCharacter.physics.update(delta);
-
+        } else {
+            if(controls.autoRotate) {
+                controls.update();
+            }
+            if (api['physics']) {
+                let delta = this._clock.getDelta()
+                runtimeCharacter.physics.update(delta);
+            }
         }
 
         // stop when motion is finished then fix physics

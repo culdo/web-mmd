@@ -233,6 +233,9 @@ export class MMDCameraWorkHelper {
             if (this._currentClip?.action.isRunning()) {
                 this._currentClip.action.stop()
             }
+            this._mmd.controls.target = this._camera.getObjectByName("target").position;
+        } else if (this.isFixedFollow) {
+            this._mmd.controls.target = this._smoothCenter.clone();
         }
         this.setTime(this._currentTime)
     }
