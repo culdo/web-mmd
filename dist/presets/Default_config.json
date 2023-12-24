@@ -132,7 +132,7 @@
     "bokeh samples": 4,
     
     "fov": 45,
-    "zoom": 1,
+    "zoom": 0.8,
     "near": 0.1,
     "auto rotate": false,
     "auto rotate speed": 2,
