@@ -44,9 +44,9 @@ export class MMDCameraWorkHelper {
         this._currentClip = null
 
         // Fixed Follow
-        this.orbitCameraPos = this._camera.position
-        this._prevCenterBonePos = this._smoothCenter
-        this._mmd.controls.target = this._smoothCenter
+        this._prevCenterPos = this._smoothCenter.clone()
+        this._mmd.controls.target = this._smoothCenter.clone()
+        this._deltaBuffer = new Vector3()
         this.isOrbitControl = false
 
         this._loadCompositeClips()
@@ -291,18 +291,15 @@ export class MMDCameraWorkHelper {
             this._camera.lookAt(this._camera.getObjectByName("target").position);
             this._camera.updateProjectionMatrix();
         } else if(this.isFixedFollow) {
-            const position = this._smoothCenter.clone()
-            const delta = new Vector3().subVectors(position, this._prevCenterBonePos)
+            const position = this._smoothCenter
+            const delta = this._deltaBuffer.subVectors(position, this._prevCenterPos)
+            this._prevCenterPos.copy(position)
             
-            const newLookAt = delta.clone().add(this._mmd.controls.target)
-            this._mmd.controls.target = newLookAt
-            
-            const newPos = delta.clone().add(this.orbitCameraPos)
-            this._prevCenterBonePos = position
+            this._mmd.controls.target.add(delta)
             
             if(!this.isOrbitControl) {
-                this._camera.lookAt(newLookAt);
-                this._camera.position.copy(newPos)
+                this._camera.lookAt(this._mmd.controls.target);
+                this._camera.position.add(delta)
                 this._camera.updateProjectionMatrix();
             }
         }
