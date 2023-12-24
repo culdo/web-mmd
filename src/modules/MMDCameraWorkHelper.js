@@ -54,7 +54,7 @@ export class MMDCameraWorkHelper {
         document.addEventListener("keydown", (e) => {
             // not trigger on default keyboard shortcuts
             // e.preventDefault()
-            if (e.ctrlKey || e.metaKey) {
+            if (e.ctrlKey || e.metaKey || !this.isComposite) {
                 return
             }
             const pressedKeyBinding = this._currentCollection + e.key
@@ -62,9 +62,7 @@ export class MMDCameraWorkHelper {
                 this._currentCollection = e.key
                 // composite mode 
             } else if (pressedKeyBinding in this._cutClipMap) {
-                if (!this.isComposite) {
-                    return
-                }
+
                 // if we have another beat(pressed ArrowLeft), clear it
                 this._clearCurrentBeat()
 

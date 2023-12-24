@@ -159,6 +159,8 @@ class WebMMD {
         renderer.shadowMap.enabled = true;
         container.appendChild(renderer.domElement);
         const controls = new OrbitControls(camera, renderer.domElement);
+        controls.autoRotate = api["auto rotate"]
+        controls.autoRotateSpeed = api["auto rotate speed"]
         controls.target.set(0, 10, 0);
 
         // effect composer
@@ -317,7 +319,7 @@ class WebMMD {
         const {
             api,
             runtimeCharacter, helper, cwHelper,
-            composer, scene, camera
+            composer, scene, camera, controls
         } = this;
 
         const currTime = this.motionTime
@@ -328,7 +330,7 @@ class WebMMD {
         }
         const delta = currTime - this._prevTime;
 
-
+        controls.update();
         if (Math.abs(delta) > 0) {
             // for time seeking using player control
             if (Math.abs(delta) > 0.1) {

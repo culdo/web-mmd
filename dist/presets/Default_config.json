@@ -134,8 +134,13 @@
     "fov": 45,
     "zoom": 1,
     "near": 0.1,
-    "follow smooth": 31,
+    "auto rotate": false,
+    "auto rotate speed": 2,
+
     "collectionKeys": "1234567890",
     "cutKeys": "abcdefghijklmnopqrstuvwxyz",
+    
+    "follow smooth": 31,
+
     "gravity": -9.8
 }

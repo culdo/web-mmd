@@ -222,6 +222,14 @@ class MMDGui {
         })
         folder.add(guiFn, "reset")
 
+        folder.add(this._mmd.api, 'auto rotate', ).onChange((state) => {
+            this._mmd.controls.autoRotate = state
+            this.rotateSpeedControl.enable(state)
+        });
+        this.rotateSpeedControl = folder.add(this._mmd.api, 'auto rotate speed', 2, 100, 1).onChange((val) => {
+            this._mmd.controls.autoRotateSpeed = val
+        }).enable(this._mmd.api['auto rotate']);
+
         const cameraWorkFolder = folder.addFolder('Composition Mode');
 
         cameraWorkFolder.add(this._mmd.api, 'collectionKeys').onChange((value) => {
@@ -232,7 +240,7 @@ class MMDGui {
         });
 
         const fixFollowFolder = folder.addFolder('Fix-Follow Mode');
-        fixFollowFolder.add(this._mmd.api, 'follow smooth', 3, 101, 2).onChange(() => {
+        fixFollowFolder.add(this._mmd.api, 'follow smooth', 3, 101, 1).onChange(() => {
             setTimeout(()=>location.reload(), 2000)
         });
 
@@ -257,7 +265,8 @@ class MMDGui {
 
             this._logger.info("character removed")
             let params = {
-                enableSdef: mmd.api['enable SDEF']
+                enableSdef: mmd.api['enable SDEF'],
+                followSmooth: mmd.api["follow smooth"]
             };
             if (url.startsWith("data:")) {
                 params = {
