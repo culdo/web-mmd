@@ -10,7 +10,8 @@
     "build:prod": "webpack --mode=production --node-env=production",
     "watch": "webpack --watch",
     "serve": "webpack serve",
-    "debug": "webpack-dev-server --config ./webpack.config.js --no-open"
+    "debug": "webpack-dev-server --config ./webpack.config.js --no-open",
+    "copyAmmoJS": "node ./scripts/copyAmmoJS.js"
   },
   "repository": {
     "type": "git",
@@ -46,6 +47,8 @@
     "webpack-merge": "^5.10.0"
   },
   "dependencies": {
+    "ammo.js": "github:kripken/ammo.js",
+    "fs-extra": "^11.2.0",
     "http-server": "^14.1.1",
     "lil-gui": "^0.18.2",
     "localforage": "^1.10.0",
@@ -53,6 +56,6 @@
     "path-browserify": "^1.0.1"
   },
   "overrides": {
-    "sharp": "0.31.1"
+    "sharp": "0.33.1"
   }
 }
