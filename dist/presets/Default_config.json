@@ -9,7 +9,7 @@
     "camera mode": 0,
     "physics": true,
     "ground shadow": true,
-    "self shadow": true,
+    "self shadow": false,
     "fog color": 5291982,
     "Hemisphere sky": 6710886,
     "Hemisphere ground": 4730414,
