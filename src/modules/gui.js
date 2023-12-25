@@ -33,6 +33,9 @@ class MMDGui {
         this._guiEffect();
         this._guiCamera();
         this._guiMorph();
+        if(this._mmd.api["enable PBR"]) {
+            this._guiMaterial();
+        }
         this._guiFile();
         this._guiSync();
         this._guiColor();
@@ -259,6 +262,96 @@ class MMDGui {
 
     }
 
+    _guiMaterial() {
+        const data = {
+            targetMaterial: 0
+        }
+
+        const materialMap = {}
+        for (const [i, material] of this._mmd.character.material.entries()) {
+            materialMap[material.name] = i
+        }
+        const folder = this.panel.addFolder('Material');
+
+        function needsUpdate(material, geometry) {
+            return function () {
+                material.side = parseInt(material.side); //Ensure number
+                material.needsUpdate = true;
+                geometry.attributes.position.needsUpdate = true;
+                geometry.attributes.normal.needsUpdate = true;
+            };
+        }
+        const constants = {
+            side: {
+                'THREE.FrontSide': THREE.FrontSide,
+                'THREE.BackSide': THREE.BackSide,
+                'THREE.DoubleSide': THREE.DoubleSide
+            }
+        }
+        const updateControls = (idx) => {
+            const material = this._mmd.character.material[idx]
+            const geometry = this._mmd.character.geometry
+            folder.add(material, 'transparent');
+            folder.add(material, 'opacity', 0, 1).step(0.01);
+            folder.add(material, 'depthTest');
+            folder.add(material, 'depthWrite');
+            folder.add(material, 'alphaTest', 0, 1).step(0.01);
+            folder.add(material, 'alphaHash');
+            folder.add(material, 'visible');
+            folder.add(material, 'side', constants.side);
+
+            const data = {
+                color: material.color.getHex(),
+                emissive: material.emissive.getHex(),
+                // envMaps: envMapKeys[ 0 ],
+                // map: diffuseMapKeys[ 0 ],
+                // roughnessMap: roughnessMapKeys[ 0 ],
+                // alphaMap: alphaMapKeys[ 0 ],
+                // metalnessMap: alphaMapKeys[ 0 ],
+                sheenColor: material.sheenColor.getHex(),
+                specularColor: material.specularColor.getHex(),
+                // iridescenceMap: alphaMapKeys[ 0 ]
+            };
+
+            folder.addColor(data, 'color').onChange(hex => material.color.setHex(hex));
+            folder.addColor(data, 'emissive').onChange(hex => material.emissive.setHex(hex));
+
+            folder.add(material, 'roughness', 0, 1);
+            folder.add(material, 'metalness', 0, 1);
+            folder.add(material, 'ior', 1, 2.333);
+            folder.add(material, 'reflectivity', 0, 1);
+            folder.add(material, 'iridescence', 0, 1);
+            folder.add(material, 'iridescenceIOR', 1, 2.333);
+            folder.add(material, 'sheen', 0, 1);
+            folder.add(material, 'sheenRoughness', 0, 1);
+            folder.addColor(data, 'sheenColor').onChange(hex => material.sheenColor.setHex(hex));
+            folder.add(material, 'clearcoat', 0, 1).step(0.01);
+            folder.add(material, 'clearcoatRoughness', 0, 1).step(0.01);
+            folder.add(material, 'specularIntensity', 0, 1);
+            folder.addColor(data, 'specularColor').onChange(hex => material.specularColor.setHex(hex));
+            folder.add(material, 'flatShading').onChange(needsUpdate(material, geometry));
+            folder.add(material, 'wireframe');
+            folder.add(material, 'vertexColors').onChange(needsUpdate(material, geometry));
+            folder.add(material, 'fog').onChange(needsUpdate(material, geometry));
+            // folder.add( data, 'envMaps', envMapKeysPBR ).onChange( updateTexture( material, 'envMap', envMaps ) );
+            // folder.add( data, 'map', diffuseMapKeys ).onChange( updateTexture( material, 'map', diffuseMaps ) );
+            // folder.add( data, 'roughnessMap', roughnessMapKeys ).onChange( updateTexture( material, 'roughnessMap', roughnessMaps ) );
+            // folder.add( data, 'alphaMap', alphaMapKeys ).onChange( updateTexture( material, 'alphaMap', alphaMaps ) );
+            // folder.add( data, 'metalnessMap', alphaMapKeys ).onChange( updateTexture( material, 'metalnessMap', alphaMaps ) );
+            // folder.add( data, 'iridescenceMap', alphaMapKeys ).onChange( updateTexture( material, 'iridescenceMap', alphaMaps ) );
+
+        }
+        folder.add(data, "targetMaterial", materialMap).onChange((idx) => {
+            for (const [i, controls] of [...folder.controllers].entries()) {
+                if (i > 0) {
+                    controls.destroy()
+                }
+            }
+            updateControls(idx)
+        })
+        updateControls(data.targetMaterial)
+    }
+
     _guiFile() {
         const folder = this.panel.addFolder('MMD files');
         const mmd = this._mmd;
@@ -387,9 +480,9 @@ class MMDGui {
                 // start loading
                 mmd.ready = false;
                 overlay.style.display = 'flex';
-                
+
                 cb(...args)
-                
+
                 // done
                 mmd.ready = true;
                 overlay.style.display = 'none';
