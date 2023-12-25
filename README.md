@@ -1,4 +1,10 @@
 # Web-MMD
+<p align="center">
+  <a href="https://culdo.github.io/web-mmd/">
+    <img alt="Web-MMD" src="tests/index.spec.js-snapshots/has-loaded-1-Google-Chrome-linux.png" width="80%"/>
+  </a>
+</p>
+
 Try it now -> https://culdo.github.io/web-mmd/
 
 For who wants to play MMD in the browser, you can now play it anywhere.
