@@ -240,6 +240,7 @@ class WebMMD {
         const _loadCharacter = async (url = api.pmxFiles.character[api.character], filename = api.character) => {
             let characterParams = {
                 enableSdef: api['enable SDEF'],
+                enablePBR: api['enable PBR'],
                 followSmooth: api["follow smooth"]
             };
             if (url.startsWith("data:")) {
@@ -295,7 +296,7 @@ class WebMMD {
         await Promise.all([_loadStage(), _loadCharacter()]);
         // load camera at last let camera work clips durations be not changed ( because helper._syncDuration() )
         await _loadCamera();
-        
+
         overlay.style.display = "none";
 
         // export util methods for gui

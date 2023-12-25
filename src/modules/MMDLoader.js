@@ -39,10 +39,12 @@ import {
 	RGB_ETC2_Format,
 	CatmullRomCurve3
 } from 'three';
-import { MMDToonShader } from './MMDToonShader.js';
+import { MMDToonShader } from './shaders/MMDToonShader.js';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
 import { MMDParser } from './mmdparser.module.js';
 import nj from 'numjs'
+import { MMDPhysicalMaterial } from './MMDPhysicalMaterial.js';
+import { initSdef } from './shaders/SdefVertexShader.js';
 
 /**
  * Dependencies
@@ -163,9 +165,12 @@ class MMDLoader extends Loader {
 				data.textures[index] = params.modelTextures[texturePath];
 			});
 		}
-		data["enableSdef"] = params?.enableSdef ? params.enableSdef : false;
+		const shaderParams = {
+			enableSdef: params?.enableSdef ?? false,
+			enablePBR: params?.enablePBR ?? false
+		};
 
-		return builder.build(data, resourcePath, onProgress, onError);
+		return builder.build(data, resourcePath, onProgress, onError, shaderParams);
 
 	}
 
@@ -417,13 +422,13 @@ class MeshBuilder {
 	 * @param {function} onError
 	 * @return {SkinnedMesh}
 	 */
-	build(data, resourcePath, onProgress, onError) {
+	build(data, resourcePath, onProgress, onError, params = {}) {
 
 		const geometry = this.geometryBuilder.build(data);
 		const material = this.materialBuilder
 			.setCrossOrigin(this.crossOrigin)
 			.setResourcePath(resourcePath)
-			.build(data, geometry, onProgress, onError);
+			.build(data, geometry, onProgress, onError, params);
 
 		const mesh = new SkinnedMesh(geometry, material);
 
@@ -1116,8 +1121,9 @@ class MaterialBuilder {
 	 * @param {function} onError
 	 * @return {Array<MMDToonMaterial>}
 	 */
-	build(data, geometry /*, onProgress, onError */) {
-		console.log(`sdef: ${data.enableSdef}`)
+	build(data, geometry, onProgress, onError, shaderParams = {}) {
+		console.log(`sdef: ${shaderParams.enableSdef}`)
+		console.log(`PBR: ${shaderParams.enablePBR}`)
 
 		const materials = [];
 
@@ -1131,7 +1137,12 @@ class MaterialBuilder {
 
 			const material = data.materials[i];
 
-			const params = { userData: { MMD: {} } };
+			const params = {
+				userData: {
+					MMD: {},
+					enableSdef: shaderParams.enableSdef
+				}
+			};
 
 			if (material.name !== undefined) params.name = material.name;
 
@@ -1145,10 +1156,13 @@ class MaterialBuilder {
 				 * MMDToonMaterial doesn't have ambient. Set it to emissive instead.
 				 * It'll be too bright if material has map texture so using coef 0.2.
 				 */
-			params.diffuse = new Color().fromArray(material.diffuse);
+			if (!shaderParams.enablePBR) {
+				params.diffuse = new Color().fromArray(material.diffuse);
+				params.specular = new Color().fromArray(material.specular);
+				params.shininess = material.shininess;
+			}
+
 			params.opacity = material.diffuse[3];
-			params.specular = new Color().fromArray(material.specular);
-			params.shininess = material.shininess;
 			params.emissive = new Color().fromArray(material.ambient);
 			params.transparent = params.opacity !== 1.0;
 
@@ -1190,7 +1204,7 @@ class MaterialBuilder {
 
 					params.map = this._loadTexture(fileNames[0], textures);
 
-					if (fileNames.length > 1) {
+					if (!shaderParams.enablePBR && fileNames.length > 1) {
 
 						const extension = fileNames[1].slice(- 4).toLowerCase();
 
@@ -1208,19 +1222,20 @@ class MaterialBuilder {
 				}
 
 				// gradientMap
+				if (!shaderParams.enablePBR) {
+					const toonFileName = (material.toonIndex === - 1)
+						? 'toon00.bmp'
+						: data.toonTextures[material.toonIndex].fileName;
 
-				const toonFileName = (material.toonIndex === - 1)
-					? 'toon00.bmp'
-					: data.toonTextures[material.toonIndex].fileName;
-
-				params.gradientMap = this._loadTexture(
-					toonFileName,
-					textures,
-					{
-						isToonTexture: true,
-						isDefaultToonTexture: this._isDefaultToonTexture(toonFileName)
-					}
-				);
+					params.gradientMap = this._loadTexture(
+						toonFileName,
+						textures,
+						{
+							isToonTexture: true,
+							isDefaultToonTexture: this._isDefaultToonTexture(toonFileName)
+						}
+					);
+				}
 
 				// parameters for OutlineEffect
 
@@ -1246,48 +1261,50 @@ class MaterialBuilder {
 
 				}
 
-				// envMap TODO: support m.envFlag === 3
-
-				if (material.envTextureIndex !== - 1 && (material.envFlag === 1 || material.envFlag == 2)) {
-
-					params.matcap = this._loadTexture(
-						data.textures[material.envTextureIndex],
-						textures
-					);
-
-					// Same as color map above, keep file name in userData for further usage.
-					params.userData.MMD.matcapFileName = data.textures[material.envTextureIndex];
-
-					params.matcapCombine = material.envFlag === 1
-						? MultiplyOperation
-						: AddOperation;
-
-				}
-
-				// gradientMap
-
-				let toonFileName, isDefaultToon;
-
-				if (material.toonIndex === - 1 || material.toonFlag !== 0) {
-
-					toonFileName = 'toon' + ('0' + (material.toonIndex + 1)).slice(- 2) + '.bmp';
-					isDefaultToon = true;
-
-				} else {
-
-					toonFileName = data.textures[material.toonIndex];
-					isDefaultToon = false;
-
-				}
-
-				params.gradientMap = this._loadTexture(
-					toonFileName,
-					textures,
-					{
-						isToonTexture: true,
-						isDefaultToonTexture: isDefaultToon
+				if(!shaderParams.enablePBR) {
+					// envMap TODO: support m.envFlag === 3
+	
+					if (material.envTextureIndex !== - 1 && (material.envFlag === 1 || material.envFlag == 2)) {
+	
+						params.matcap = this._loadTexture(
+							data.textures[material.envTextureIndex],
+							textures
+						);
+	
+						// Same as color map above, keep file name in userData for further usage.
+						params.userData.MMD.matcapFileName = data.textures[material.envTextureIndex];
+	
+						params.matcapCombine = material.envFlag === 1
+							? MultiplyOperation
+							: AddOperation;
+	
 					}
-				);
+	
+					// gradientMap
+	
+					let toonFileName, isDefaultToon;
+	
+					if (material.toonIndex === - 1 || material.toonFlag !== 0) {
+	
+						toonFileName = 'toon' + ('0' + (material.toonIndex + 1)).slice(- 2) + '.bmp';
+						isDefaultToon = true;
+	
+					} else {
+	
+						toonFileName = data.textures[material.toonIndex];
+						isDefaultToon = false;
+	
+					}
+	
+					params.gradientMap = this._loadTexture(
+						toonFileName,
+						textures,
+						{
+							isToonTexture: true,
+							isDefaultToonTexture: isDefaultToon
+						}
+					);
+				}
 
 				// parameters for OutlineEffect
 				params.userData.outlineParameters = {
@@ -1311,7 +1328,8 @@ class MaterialBuilder {
 
 			}
 
-			materials.push(new MMDToonMaterial(params, data.enableSdef));
+			const newMaterial = shaderParams.enablePBR ? new MMDPhysicalMaterial(params) : new MMDToonMaterial(params)
+			materials.push(newMaterial);
 
 		}
 
@@ -1728,7 +1746,7 @@ class AnimationBuilder {
 					console.log("follow smooth: enable")
 					const posArr = nj.array(positions).reshape([-1, 3])
 					smoothed = []
-					posArr.T.iteraxis(0, (row)=>{
+					posArr.T.iteraxis(0, (row) => {
 						const newRow = nj.flatten(nj.convolve(row, nj.ones(smoothWeight))).divide(smoothWeight)
 						smoothed.push(nj.concatenate(row.slice([padding]), newRow, row.slice(-padding)))
 					})
@@ -2134,7 +2152,7 @@ class CubicBezierInterpolation extends Interpolant {
 
 class MMDToonMaterial extends ShaderMaterial {
 
-	constructor(parameters, enableSdef) {
+	constructor(parameters) {
 
 		super();
 
@@ -2153,7 +2171,7 @@ class MMDToonMaterial extends ShaderMaterial {
 
 		this.lights = true;
 
-		this.vertexShader = enableSdef ? MMDToonShader.sdefVertexShader : MMDToonShader.vertexShader;
+		this.vertexShader = initSdef(MMDToonShader.vertexShader, parameters.userData.enableSdef);
 		this.fragmentShader = MMDToonShader.fragmentShader;
 		this.defaultAttributeValues = Object.assign(this.defaultAttributeValues, MMDToonShader.defaultAttributeValues);
 

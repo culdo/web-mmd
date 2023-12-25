@@ -9,7 +9,7 @@ import {
 import { FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass';
 import { Pass } from 'three/examples/jsm/postprocessing/Pass';
 import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
-import { sdefSkinningNormVertex, sdefSkinningParsVertex, sdefSkinningVertex } from '../MMDToonShader';
+import { sdefSkinningNormVertex, sdefSkinningParsVertex, sdefSkinningVertex } from '../shaders/SdefVertexShader';
 
 /**
  * Reference: https://en.wikipedia.org/wiki/Cel_shading

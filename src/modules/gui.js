@@ -520,6 +520,9 @@ class MMDGui {
         folder.add(this._mmd.api, 'enable SDEF').onChange((state) => {
             location.reload()
         })
+        folder.add(this._mmd.api, 'enable PBR').onChange((state) => {
+            location.reload()
+        })
         folder.add({
             'clear localforage': () => {
                 if (confirm("Be careful!! You will lost all your Models files、Presets...etc.")) {
