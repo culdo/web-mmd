@@ -145,8 +145,8 @@ class WebMMD {
         dirLight.shadow.camera.right = 20;
         dirLight.shadow.camera.near = 0.1;
         dirLight.shadow.camera.far = 80;
-        dirLight.shadow.mapSize.width = 1024;
-        dirLight.shadow.mapSize.height = 1024;
+        dirLight.shadow.mapSize.width = window.innerWidth * 4;
+        dirLight.shadow.mapSize.height = window.innerHeight * 4;
         dirLight.shadow.bias = -0.015;
         scene.add(dirLight);
 
@@ -158,7 +158,7 @@ class WebMMD {
 
         renderer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.type = THREE.VSMShadowMap;
+        // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.shadowMap.enabled = true;
         container.appendChild(renderer.domElement);
         const controls = new OrbitControls(camera, renderer.domElement);
@@ -167,7 +167,10 @@ class WebMMD {
         controls.target.set(0, 10, 0);
 
         // effect composer
-        const postprocessor = new PostProcessor(scene, camera, renderer, { isSdefEnabled: api["enable SDEF"] })
+        const postprocessor = new PostProcessor(scene, camera, renderer, { 
+            enableSdef: api["enable SDEF"],
+            enablePBR: api['enable PBR'],
+        })
 
         const composer = postprocessor.composer
         composer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
@@ -201,12 +204,14 @@ class WebMMD {
 
         // load stage
         const _loadStage = async (url = api.pmxFiles.stage[api.stage], filename = api.stage) => {
-            let stageParams = null;
+            const stageParams = {
+                enablePBR: api['enable PBR'],
+            };
             if (url.startsWith("data:")) {
-                stageParams = {
+                Object.assign(stageParams, {
                     modelExtension: path.extname(filename).slice(1),
                     modelTextures: api.pmxFiles.modelTextures.stage[filename],
-                };
+                })
             }
 
             const mesh = await loader.load(url, onProgress, null, stageParams)
@@ -238,17 +243,16 @@ class WebMMD {
 
         // load character
         const _loadCharacter = async (url = api.pmxFiles.character[api.character], filename = api.character) => {
-            let characterParams = {
+            const characterParams = {
                 enableSdef: api['enable SDEF'],
                 enablePBR: api['enable PBR'],
                 followSmooth: api["follow smooth"]
             };
             if (url.startsWith("data:")) {
-                characterParams = {
+                Object.assign(characterParams,{
                     modelExtension: path.extname(filename).slice(1),
-                    modelTextures: api.pmxFiles.modelTextures.character[filename],
-                    ...characterParams
-                };
+                    modelTextures: api.pmxFiles.modelTextures.character[filename]
+                });
             }
 
             const mmd = await loader.loadWithAnimation(url, api.motionFile, onProgress, null, characterParams);
