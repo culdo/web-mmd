@@ -9,7 +9,7 @@ import {
 import { FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass';
 import { Pass } from 'three/examples/jsm/postprocessing/Pass';
 import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
-import { sdefSkinningNormVertex, sdefSkinningParsVertex, sdefSkinningVertex } from '../shaders/SdefVertexShader';
+import { initSdef } from '../shaders/SdefVertexShader';
 
 /**
  * Reference: https://en.wikipedia.org/wiki/Cel_shading
@@ -210,18 +210,7 @@ class OutlinePass extends Pass {
 					UniformsLib[ 'displacementmap' ],
 					uniformsOutline
 				] ),
-				vertexShader: parameters.isSdefEnabled ? vertexShader.replace(
-					'#include <skinning_pars_vertex>',
-					sdefSkinningParsVertex
-				)
-				.replace(
-					'#include <skinning_vertex>',
-					sdefSkinningVertex
-				)
-				.replace(
-					'#include <skinnormal_vertex>',
-					sdefSkinningNormVertex
-				): vertexShader,
+				vertexShader: initSdef(vertexShader, parameters.enableSdef && !parameters.enablePBR),
 				fragmentShader: fragmentShader,
 				side: BackSide
 			} );
