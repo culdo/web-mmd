@@ -18,8 +18,9 @@ class WebMMD {
     constructor() {
         // Global properties
 
-        // main helper
+        // main helpers
         this.helper = new MMDAnimationHelper();
+        this.cwHelper = new MMDCameraWorkHelper();
 
         // Private properties
         this._timeoutID;
@@ -55,7 +56,9 @@ class WebMMD {
                     }
                     scope._gui.panel.title("Controls");
                 };
-                saveAsync();
+                if(value !== undefined) {
+                    saveAsync();
+                }
                 // need to put this outside of async func(above) to set back to api for reading
                 const result = Reflect.set(...arguments)
                 return result
@@ -197,67 +200,57 @@ class WebMMD {
         const loader = new MMDLoader();
 
         // load stage
-        const _loadStage = async () => {
-            const stageFile = api.pmxFiles.stage[api.stage]
+        const _loadStage = async (url = api.pmxFiles.stage[api.stage], filename = api.stage) => {
             let stageParams = null;
-            if (stageFile.startsWith("data:")) {
+            if (url.startsWith("data:")) {
                 stageParams = {
-                    modelExtension: path.extname(api.stage).slice(1),
-                    modelTextures: api.pmxFiles.modelTextures.stage[api.stage],
+                    modelExtension: path.extname(filename).slice(1),
+                    modelTextures: api.pmxFiles.modelTextures.stage[filename],
                 };
             }
 
-            const mesh = await loader.load(stageFile, onProgress, null, stageParams)
+            const mesh = await loader.load(url, onProgress, null, stageParams)
             const stage = mesh;
             stage.castShadow = true;
             stage.receiveShadow = api['ground shadow'];
 
             scene.add(stage);
             this.stage = stage
+            if (api.stage != filename) {
+                api.stage = filename
+            }
         }
 
         // load camera
-        const _loadCamera = async () => {
-            const cameraAnimation = await loader.loadAnimation(api.cameraFile, camera, onProgress, null);
+        const _loadCamera = async (url = api.cameraFile, filename = api.camera) => {
+            const cameraAnimation = await loader.loadAnimation(url, camera, onProgress, null);
             helper.add(camera, {
                 animation: cameraAnimation,
                 enabled: api["camera mode"] == CameraMode.MOTION_FILE
             });
 
-            this.cwHelper = new MMDCameraWorkHelper(this);
-            await this.cwHelper.init();
-
-            controls.domElement.addEventListener('mousedown', () => {
-                camera.up.set(0, 1, 0);
-                camera.updateProjectionMatrix();
-            });
-            controls.addEventListener('start', () => {
-                this.cwHelper.isOrbitControl = true;
-            });
-            controls.addEventListener('end', () => {
-                this.cwHelper.orbitCameraPos = camera.position;
-                this.cwHelper.isOrbitControl = false;
-            });
-
-            overlay.style.display = "none";
+            await this.cwHelper.init(this);
+            if (api.cameraFile != url) {
+                api.camera = filename;
+                api.cameraFile = url;
+            }
         }
 
         // load character
-        const _loadCharacter = async () => {
-            const characterFile = api.pmxFiles.character[api.character]
+        const _loadCharacter = async (url = api.pmxFiles.character[api.character], filename = api.character) => {
             let characterParams = {
                 enableSdef: api['enable SDEF'],
                 followSmooth: api["follow smooth"]
             };
-            if (characterFile.startsWith("data:")) {
+            if (url.startsWith("data:")) {
                 characterParams = {
-                    modelExtension: path.extname(api.character).slice(1),
-                    modelTextures: api.pmxFiles.modelTextures.character[api.character],
+                    modelExtension: path.extname(filename).slice(1),
+                    modelTextures: api.pmxFiles.modelTextures.character[filename],
                     ...characterParams
                 };
             }
 
-            const mmd = await loader.loadWithAnimation(characterFile, api.motionFile, onProgress, null, characterParams);
+            const mmd = await loader.loadWithAnimation(url, api.motionFile, onProgress, null, characterParams);
             const character = mmd.mesh;
             character.castShadow = true;
             character.receiveShadow = api["self shadow"];
@@ -293,11 +286,22 @@ class WebMMD {
                 physicsHelper,
                 skeletonHelper
             })
+            if (api.character != filename) {
+                api.character = filename
+                this._gui.updateMorphFolder()
+            }
         }
 
         await Promise.all([_loadStage(), _loadCharacter()]);
         // load camera at last let camera work clips durations be not changed ( because helper._syncDuration() )
         await _loadCamera();
+        
+        overlay.style.display = "none";
+
+        // export util methods for gui
+        this.loadCharacter = _loadCharacter
+        this.loadStage = _loadStage
+        this.loadCamera = _loadCamera
     }
 
     _loadGui() {
@@ -350,7 +354,7 @@ class WebMMD {
             this._prevTime = currTime
 
         } else {
-            if(controls.autoRotate) {
+            if (controls.autoRotate) {
                 controls.update();
             }
             if (api['physics']) {

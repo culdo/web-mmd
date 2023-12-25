@@ -20,7 +20,7 @@ class MMDGui {
         this._mmd = params;
         this._addEventHandlers();
 
-        this._checkCameraMode = this._mmd.cwHelper.checkCameraMode.bind(this._mmd.cwHelper)   
+        this._checkCameraMode = this._mmd.cwHelper.checkCameraMode.bind(this._mmd.cwHelper)
         this.panel.add(this._mmd.api, 'camera mode', {
             "Motion File": CameraMode.MOTION_FILE,
             "Composition": CameraMode.COMPOSITION,
@@ -42,14 +42,14 @@ class MMDGui {
         this.changeToUntitled = this._guiPreset();
     }
 
-    enableAll(state=true) {
-        for(const controller of this.panel.controllersRecursive()) {
+    enableAll(state = true) {
+        for (const controller of this.panel.controllersRecursive()) {
             controller.enable(state)
         }
     }
 
     _addEventHandlers() {
-        const { api, camera, composer, renderer } = this._mmd
+        const { api, camera, composer, renderer, controls, cwHelper } = this._mmd
         const scope = this._mmd
 
         player.onvolumechange = () => {
@@ -80,6 +80,19 @@ class MMDGui {
                 document.exitFullscreen();
             }
         }
+
+        // orbit control
+        controls.domElement.addEventListener('mousedown', () => {
+            camera.up.set(0, 1, 0);
+            camera.updateProjectionMatrix();
+        });
+        controls.addEventListener('start', () => {
+            cwHelper.isOrbitControl = true;
+        });
+        controls.addEventListener('end', () => {
+            cwHelper.orbitCameraPos = camera.position;
+            cwHelper.isOrbitControl = false;
+        });
 
         // control bar
         document.addEventListener('mousemove', (e) => {
@@ -194,7 +207,7 @@ class MMDGui {
 
     _guiCamera() {
         const camera = this._mmd.camera
-        
+
         const folder = this.panel.addFolder('Camera');
         const guiFn = {
             reset: () => {
@@ -204,7 +217,7 @@ class MMDGui {
                 camera.fov = 45;
                 camera.zoom = 1;
                 camera.near = 0.1;
-                
+
                 camera.updateProjectionMatrix();
             }
         }
@@ -222,7 +235,7 @@ class MMDGui {
         })
         folder.add(guiFn, "reset")
 
-        folder.add(this._mmd.api, 'auto rotate', ).onChange((state) => {
+        folder.add(this._mmd.api, 'auto rotate',).onChange((state) => {
             this._mmd.controls.autoRotate = state
             this.rotateSpeedControl.enable(state)
         });
@@ -241,7 +254,7 @@ class MMDGui {
 
         const fixFollowFolder = folder.addFolder('Fix-Follow Mode');
         fixFollowFolder.add(this._mmd.api, 'follow smooth', 3, 101, 1).onChange(() => {
-            setTimeout(()=>location.reload(), 2000)
+            setTimeout(() => location.reload(), 2000)
         });
 
     }
@@ -255,69 +268,15 @@ class MMDGui {
         const modelTextures = pmxFiles.modelTextures;
 
         const loadCharacter = async (url, filename) => {
-            mmd.ready = false;
             mmd.runtimeCharacter.mixer.uncacheRoot(mmd.character);
             mmd.scene.remove(mmd.character);
             mmd.scene.remove(mmd.ikHelper);
             mmd.scene.remove(mmd.physicsHelper);
             mmd.scene.remove(mmd.skeletonHelper);
             mmd.helper.remove(mmd.character);
-
             this._logger.info("character removed")
-            let params = {
-                enableSdef: mmd.api['enable SDEF'],
-                followSmooth: mmd.api["follow smooth"]
-            };
-            if (url.startsWith("data:")) {
-                params = {
-                    modelExtension: path.extname(filename).slice(1),
-                    modelTextures: modelTextures.character[filename],
-                    ...params
-                };
-            }
-            // load character
-            overlay.style.display = 'flex';
 
-            const obj = await mmd.loader.loadWithAnimation(url, mmd.api.motionFile, onProgress, null, params)
-            this._logger.info("loading character...")
-
-            let character = obj.mesh;
-            character.castShadow = true;
-            character.receiveShadow = mmd.api["self shadow"];
-            mmd.scene.add(character);
-
-            mmd.helper.add(character, {
-                animation: obj.animation,
-                physics: true
-            });
-            mmd.runtimeCharacter = mmd.helper.objects.get(character)
-
-            mmd.ikHelper = mmd.runtimeCharacter.ikSolver.createHelper();
-            mmd.ikHelper.visible = mmd.api["show IK bones"];
-            mmd.scene.add(mmd.ikHelper);
-
-            mmd.physicsHelper = mmd.runtimeCharacter.physics.createHelper();
-            mmd.physicsHelper.visible = mmd.api["show rigid bodies"];
-            mmd.scene.add(mmd.physicsHelper);
-
-            mmd.skeletonHelper = new THREE.SkeletonHelper(character);
-            mmd.skeletonHelper.visible = mmd.api['show skeleton'];
-            mmd.scene.add(mmd.skeletonHelper);
-
-            mmd.character = character;
-
-            mmd.helper.enable('physics', false);
-            mmd.helper.update(0.0, mmd.motionTime)
-            mmd.runtimeCharacter.physics.reset();
-            mmd.helper.enable('physics', true);
-
-            this._logger.info("loaded reset")
-
-            mmd.ready = true;
-            overlay.style.display = 'none';
-
-            this._updateMorphFolder();
-            mmd.api.character = filename;
+            await mmd.loadCharacter(url, filename);
         };
         // TODO: use unzip tools to unzip model files, because it has many texture images
         this._guiFn.selectChar = () => {
@@ -330,26 +289,8 @@ class MMDGui {
         const loadStage = async (url, filename) => {
             mmd.scene.remove(mmd.stage);
             this._logger.info("remove stage");
-            let params = null;
-            if (url.startsWith("data:")) {
-                params = {
-                    modelExtension: path.extname(filename).slice(1),
-                    modelTextures: modelTextures.stage[filename],
-                };
-            }
-            // load stage
-            overlay.style.display = 'flex';
-            const mesh = await mmd.loader.load(url, onProgress, null, params);
-            this._logger.info("load stage");
 
-            mesh.castShadow = true;
-            mesh.receiveShadow = mmd.api['ground shadow'];
-
-            mmd.scene.add(mesh);
-            mmd.stage = mesh;
-            overlay.style.display = 'none';
-
-            mmd.api.stage = filename;
+            await mmd.loadStage(url, filename)
         }
         // TODO: same above
         this._guiFn.selectStage = () => {
@@ -378,16 +319,8 @@ class MMDGui {
             selectFile.onchange = _buildLoadFileFn(async (url, filename) => {
                 mmd.helper.remove(mmd.camera);
 
-                const cameraAnimation = await mmd.loader.loadAnimation(url, mmd.camera, onProgress, null);
-                mmd.helper.add(mmd.camera, {
-                    animation: cameraAnimation,
-                    enabled: mmd.cwHelper.isMotionFile
-                });
-
-                mmd.api.camera = filename;
-                mmd.api.cameraFile = url;
-
-                await mmd.cwHelper.updateMotionClips(mmd.helper.get(mmd.camera));
+                mmd.cwHelper._compositeClips = []
+                await mmd.loadCamera(url, filename)
             });
             selectFile.click();
         }
@@ -450,6 +383,18 @@ class MMDGui {
         }
 
         function _buildLoadModelFn(itemType, cb) {
+            const cbWrapper = (...args) => {
+                // start loading
+                mmd.ready = false;
+                overlay.style.display = 'flex';
+                
+                cb(...args)
+                
+                // done
+                mmd.ready = true;
+                overlay.style.display = 'none';
+
+            }
             return async function () {
                 if (this.files.length < 1) return;
                 let pmxFilesByType = pmxFiles[itemType] = {};
@@ -481,11 +426,11 @@ class MMDGui {
                     .options(Object.keys(pmxFilesByType))
                     .listen()
                     .onChange(value => {
-                        cb(pmxFilesByType[value], value);
+                        cbWrapper(pmxFilesByType[value], value);
                     });
 
                 // select first pmx as default
-                cb(pmxFilesByType[firstKey], firstKey);
+                cbWrapper(pmxFilesByType[firstKey], firstKey);
 
                 // trigger Proxy
                 mmd.api.pmxFiles = pmxFiles;
@@ -503,7 +448,7 @@ class MMDGui {
         const folder = this.panel.addFolder('Morph');
 
 
-        this._updateMorphFolder = () => {
+        this.updateMorphFolder = () => {
             const controllers = [...folder.controllers]
             for (const controller of controllers) {
                 controller.destroy()
@@ -517,7 +462,7 @@ class MMDGui {
                 folder.add(this._mmd.api, key, 0.0, 1.0, 0.01).onChange(onChangeMorph)
             }
         }
-        this._updateMorphFolder();
+        this.updateMorphFolder();
     }
 
     _guiSync() {

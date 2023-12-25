@@ -1,3 +1,4 @@
+import localforage from "localforage";
 import WebMMD from "./modules/WebMMD"
 
 // for debug

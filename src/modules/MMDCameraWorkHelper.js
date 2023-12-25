@@ -9,8 +9,7 @@ export const CameraMode = {
     FIXED_FOLLOW: 2
 }
 export class MMDCameraWorkHelper {
-    constructor(mmd) {
-
+    constructor() {
         // Scrolling bar
         this._scrollingBar = document.querySelector(".scrolling-bar")
         this._scrollingDuration = 3.0  // seconds
@@ -32,14 +31,16 @@ export class MMDCameraWorkHelper {
 
         // Keybindings
         this._cutClipMap = {}
+    }
 
+    async init(mmd) {
         // Internal properties
         this._mmd = mmd
+        this._camera = mmd.camera
         const cameraObj = mmd.helper.get(mmd.camera)
-        this._camera = cameraObj.camera
-        this._api = mmd.api
         this._origAction = cameraObj.actions[0]
         this._cameraMixer = cameraObj.mixer
+        this._api = mmd.api
         this._currentCollection = mmd.api.collectionKeys[0]
         this._currentClip = null
 
@@ -110,6 +111,35 @@ export class MMDCameraWorkHelper {
                 this.setTime(this._currentTime)
             }
         })
+
+        // if dont have clips, create them from motion file
+        if(this._compositeClips.length == 0) {
+            const resp = await fetch(this._api.cameraFile)
+            const { cutTimes, clips: rawClips } = cameraToClips(await resp.arrayBuffer())
+    
+            for (const [idx, cutTime] of cutTimes.entries()) {
+                const rawClip = rawClips[idx]
+                const clip = AnimationClip.parse(rawClip.clip)
+                this._restoreInterpolant(clip, rawClip.interpolations)
+    
+                // add scrolling bar beat key binding
+                const collectionKey = this._api.collectionKeys[Math.floor(idx / this._api.cutKeys.length)]
+                const cutKey = this._api.cutKeys[idx % this._api.cutKeys.length]
+                const keyBinding = collectionKey + cutKey
+                const action = this._createAction(clip)
+    
+                const clipInfo = {
+                    action,
+                    cutTime,
+                    keyBinding,
+                    interpolations: rawClip.interpolations
+                }
+                this._compositeClips.push(clipInfo)
+                this._cutClipMap[keyBinding] = clipInfo
+            }
+        }
+
+        this.checkCameraMode()
     }
 
     get _currentTime() {
@@ -178,46 +208,6 @@ export class MMDCameraWorkHelper {
         action.setLoop(LoopOnce)
         action.clampWhenFinished = true
         return action
-    }
-
-    async init() {
-        // if dont have clips, create them from motion file
-        if(this._compositeClips.length == 0) {
-            const resp = await fetch(this._api.cameraFile)
-            const { cutTimes, clips: rawClips } = cameraToClips(await resp.arrayBuffer())
-    
-            for (const [idx, cutTime] of cutTimes.entries()) {
-                const rawClip = rawClips[idx]
-                const clip = AnimationClip.parse(rawClip.clip)
-                this._restoreInterpolant(clip, rawClip.interpolations)
-    
-                // add scrolling bar beat key binding
-                const collectionKey = this._api.collectionKeys[Math.floor(idx / this._api.cutKeys.length)]
-                const cutKey = this._api.cutKeys[idx % this._api.cutKeys.length]
-                const keyBinding = collectionKey + cutKey
-                const action = this._createAction(clip)
-    
-                const clipInfo = {
-                    action,
-                    cutTime,
-                    keyBinding,
-                    interpolations: rawClip.interpolations
-                }
-                this._compositeClips.push(clipInfo)
-                this._cutClipMap[keyBinding] = clipInfo
-            }
-        }
-
-        this.checkCameraMode()
-    }
-
-    async updateMotionClips(cameraObj) {
-        this._compositeClips = []
-        await this.init()
-
-        this._currentClip = null
-        this._origAction = cameraObj.actions[0]
-        this._cameraMixer = cameraObj.mixer
     }
 
     _resetAllBeats() {
