@@ -14,6 +14,11 @@
     "Hemisphere sky": 6710886,
     "Hemisphere ground": 4730414,
     "Directional": 16777215,
+    "lightX": 3,
+    "lightY": 10,
+    "lightZ": 10,
+    "Ambient color": 16777215,
+    "Ambient intensity": 1,
 
     "enable SDEF": true,
     "enable PBR": false,
@@ -139,6 +144,10 @@
     "fov": 45,
     "zoom": 0.8,
     "near": 0.1,
+
+    "tone mapping": 4,
+    "exposure": 1.0,
+
     "auto rotate": false,
     "auto rotate speed": 2,
 

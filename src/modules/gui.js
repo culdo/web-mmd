@@ -29,6 +29,7 @@ class MMDGui {
             this._checkCameraMode()
         });
 
+        this._guiRenderer();
         this._guiPhysic();
         this._guiEffect();
         this._guiCamera();
@@ -208,6 +209,23 @@ class MMDGui {
         });
     }
 
+    _guiRenderer() {
+        const toneMappingOptions = {
+            None: THREE.NoToneMapping,
+            Linear: THREE.LinearToneMapping,
+            Reinhard: THREE.ReinhardToneMapping,
+            Cineon: THREE.CineonToneMapping,
+            ACESFilmic: THREE.ACESFilmicToneMapping,
+            Custom: THREE.CustomToneMapping
+        };
+        const folder = this.panel.addFolder('Renderer');
+        folder.add(this._mmd.api, "tone mapping", toneMappingOptions).onChange((value) => {
+            this._mmd.renderer.toneMapping = value
+        })
+        folder.add(this._mmd.api, "exposure", 0, 5, 0.1).onChange((value) => {
+            this._mmd.renderer.toneMappingExposure = value
+        })
+    }
     _guiCamera() {
         const camera = this._mmd.camera
 
@@ -290,6 +308,7 @@ class MMDGui {
         }
         const updateControls = (idx) => {
             const material = this._mmd.character.material[idx]
+            console.log(material.normalMap)
             const geometry = this._mmd.character.geometry
             folder.add(material, 'transparent');
             folder.add(material, 'opacity', 0, 1).step(0.01);
@@ -316,6 +335,9 @@ class MMDGui {
             folder.addColor(data, 'color').onChange(hex => material.color.setHex(hex));
             folder.addColor(data, 'emissive').onChange(hex => material.emissive.setHex(hex));
 
+            folder.add(material, 'emissiveIntensity', 0, 5);
+            folder.add(material, 'envMapIntensity', 0, 5);
+            folder.add(material, 'aoMapIntensity', 0, 5);
             folder.add(material, 'roughness', 0, 1);
             folder.add(material, 'metalness', 0, 1);
             folder.add(material, 'ior', 1, 2.333);
@@ -329,10 +351,11 @@ class MMDGui {
             folder.add(material, 'clearcoatRoughness', 0, 1).step(0.01);
             folder.add(material, 'specularIntensity', 0, 1);
             folder.addColor(data, 'specularColor').onChange(hex => material.specularColor.setHex(hex));
-            folder.add(material, 'flatShading').onChange(needsUpdate(material, geometry));
-            folder.add(material, 'wireframe');
-            folder.add(material, 'vertexColors').onChange(needsUpdate(material, geometry));
             folder.add(material, 'fog').onChange(needsUpdate(material, geometry));
+            const debugs = folder.addFolder("debug")
+            debugs.add(material, 'flatShading').onChange(needsUpdate(material, geometry));
+            debugs.add(material, 'wireframe');
+            debugs.add(material, 'vertexColors').onChange(needsUpdate(material, geometry));
             // folder.add( data, 'envMaps', envMapKeysPBR ).onChange( updateTexture( material, 'envMap', envMaps ) );
             // folder.add( data, 'map', diffuseMapKeys ).onChange( updateTexture( material, 'map', diffuseMaps ) );
             // folder.add( data, 'roughnessMap', roughnessMapKeys ).onChange( updateTexture( material, 'roughnessMap', roughnessMaps ) );
@@ -582,10 +605,34 @@ class MMDGui {
 
     _guiLight() {
         const folder = this.panel.addFolder('Light');
+        const api = this._mmd.api
+
+        const AmbientLightFolder = folder.addFolder("Ambient")
+        AmbientLightFolder.addColor(api, 'Ambient color').name("Color").onChange(setColor(this._mmd.ambientLight.color));
+        AmbientLightFolder.add(api, 'Ambient intensity', 0, 10, 0.1).name("Intensity").onChange(
+            (value) => {
+                this._mmd.ambientLight.intensity = value
+            }
+        );
 
         const directLightFolder = folder.addFolder("Directional")
-        directLightFolder.addColor(this._mmd.api, 'Directional').name("Color").onChange(setColor(this._mmd.dirLight.color));
-        directLightFolder.add(this._mmd.api, 'Directional intensity', 0, 10, 0.1).name("Intensity").onChange(
+        directLightFolder.add(api, 'lightX', -1, 1).onChange(
+            (value) => {
+                this._mmd.dirLight.position.set(api.lightX, api.lightY, api.lightZ).normalize().multiplyScalar(-10);
+            }
+        );
+        directLightFolder.add(api, 'lightY', -1, 1).onChange(
+            (value) => {
+                this._mmd.dirLight.position.set(api.lightX, api.lightY, api.lightZ).normalize().multiplyScalar(-10);
+            }
+        );
+        directLightFolder.add(api, 'lightZ', -1, 1).onChange(
+            (value) => {
+                this._mmd.dirLight.position.set(api.lightX, api.lightY, api.lightZ).normalize().multiplyScalar(-10);
+            }
+        );
+        directLightFolder.addColor(api, 'Directional').name("Color").onChange(setColor(this._mmd.dirLight.color));
+        directLightFolder.add(api, 'Directional intensity', 0, 10, 0.1).name("Intensity").onChange(
             (value) => {
                 this._mmd.dirLight.intensity = value
             }
@@ -603,6 +650,7 @@ class MMDGui {
         // handle gui color change
         function setColor(color) {
             return (value) => {
+                console.log(color)
                 color.setHex(value);
             }
         }

@@ -53,7 +53,8 @@
     "lil-gui": "^0.18.2",
     "localforage": "^1.10.0",
     "numjs": "^0.16.1",
-    "path-browserify": "^1.0.1"
+    "path-browserify": "^1.0.1",
+    "postprocessing": "^6.34.0"
   },
   "overrides": {
     "sharp": "0.33.1"

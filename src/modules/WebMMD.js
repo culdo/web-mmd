@@ -2,6 +2,9 @@ import * as THREE from 'three';
 
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { DebugEnvironment } from 'three/examples/jsm/environments/DebugEnvironment.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { MMDLoader } from './MMDLoader.js';
 import { MMDAnimationHelper } from './MMDAnimationHelper.js';
@@ -132,12 +135,17 @@ class WebMMD {
         scene.add(camera);
 
         // light
+        const ambientLight = new THREE.AmbientLight(api["Ambient color"], api["Ambient intensity"]); // soft white light
+        scene.add( ambientLight );
+        
         const hemiLight = new THREE.HemisphereLight(api["Hemisphere sky"], api["Hemisphere ground"], api["Hemisphere intensity"]);
         hemiLight.position.set(0, 40, 0);
         scene.add(hemiLight);
 
         const dirLight = new THREE.DirectionalLight(api["Directional"], api["Directional intensity"]);
-        dirLight.position.set(3, 10, 10);
+        dirLight.position.set(api.lightX, api.lightY, api.lightZ).normalize().multiplyScalar(-10);
+        // dirLight.position.set(3, 10, 10);
+
         dirLight.castShadow = true;
         dirLight.shadow.camera.top = 25;
         dirLight.shadow.camera.bottom = -20;
@@ -145,8 +153,8 @@ class WebMMD {
         dirLight.shadow.camera.right = 20;
         dirLight.shadow.camera.near = 0.1;
         dirLight.shadow.camera.far = 80;
-        dirLight.shadow.mapSize.width = api["self shadow"] ? window.innerWidth * 4 : window.innerWidth;
-        dirLight.shadow.mapSize.height = api["self shadow"] ? window.innerHeight * 4 : window.innerWidth;
+        dirLight.shadow.mapSize.width = api["self shadow"] ? window.innerWidth * 2 : window.innerWidth;
+        dirLight.shadow.mapSize.height = api["self shadow"] ? window.innerHeight * 2 : window.innerWidth;
         dirLight.shadow.bias = -0.015;
         scene.add(dirLight);
 
@@ -160,11 +168,34 @@ class WebMMD {
         renderer.setSize(window.innerWidth, window.innerHeight);
         // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.shadowMap.enabled = true;
+        renderer.toneMapping = api["tone mapping"]
+        renderer.toneMappingExposure = api.exposure
+
         container.appendChild(renderer.domElement);
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.autoRotate = api["auto rotate"]
         controls.autoRotateSpeed = api["auto rotate speed"]
         controls.target.set(0, 10, 0);
+
+        // envMaps
+        // const environment = new DebugEnvironment( renderer );
+        // const pmremGenerator = new THREE.PMREMGenerator( renderer );
+        // scene.environment = pmremGenerator.fromScene( environment ).texture;
+        // const rgbeLoader = new RGBELoader().setPath( 'https://threejs.org/examples/textures/equirectangular/' );
+        // const texture = await rgbeLoader.loadAsync("spot1Lux.hdr");
+        // texture.mapping = THREE.EquirectangularReflectionMapping;
+        // scene.environment = texture
+
+        // const cubeTextureLoader = new THREE.CubeTextureLoader();
+        // const path = 'https://threejs.org/examples/textures/cube/Park2/';
+        // const format = '.jpg';
+        // const urls = [
+        //     path + 'posx' + format, path + 'negx' + format,
+        //     path + 'posy' + format, path + 'negy' + format,
+        //     path + 'posz' + format, path + 'negz' + format
+        // ];
+        // const reflectionCube = cubeTextureLoader.load( urls );
+        // scene.environment = reflectionCube
 
         // effect composer
         const postprocessor = new PostProcessor(scene, camera, renderer, { 
@@ -183,7 +214,8 @@ class WebMMD {
 
         Object.assign(this, {
             camera, player, controls, scene, stats,
-            postprocessor, dirLight, hemiLight, renderer, composer
+            postprocessor, dirLight, hemiLight, ambientLight, 
+            renderer, composer
         })
     }
 
