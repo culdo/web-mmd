@@ -310,14 +310,9 @@ class MMDGui {
             const material = this._mmd.character.material[idx]
             console.log(material.normalMap)
             const geometry = this._mmd.character.geometry
+            folder.add(material, 'visible');
             folder.add(material, 'transparent');
             folder.add(material, 'opacity', 0, 1).step(0.01);
-            folder.add(material, 'depthTest');
-            folder.add(material, 'depthWrite');
-            folder.add(material, 'alphaTest', 0, 1).step(0.01);
-            folder.add(material, 'alphaHash');
-            folder.add(material, 'visible');
-            folder.add(material, 'side', constants.side);
 
             const data = {
                 color: material.color.getHex(),
@@ -336,8 +331,6 @@ class MMDGui {
             folder.addColor(data, 'emissive').onChange(hex => material.emissive.setHex(hex));
 
             folder.add(material, 'emissiveIntensity', 0, 5);
-            folder.add(material, 'envMapIntensity', 0, 5);
-            folder.add(material, 'aoMapIntensity', 0, 5);
             folder.add(material, 'roughness', 0, 1);
             folder.add(material, 'metalness', 0, 1);
             folder.add(material, 'ior', 1, 2.333);
@@ -352,16 +345,27 @@ class MMDGui {
             folder.add(material, 'specularIntensity', 0, 1);
             folder.addColor(data, 'specularColor').onChange(hex => material.specularColor.setHex(hex));
             folder.add(material, 'fog').onChange(needsUpdate(material, geometry));
-            const debugs = folder.addFolder("debug")
-            debugs.add(material, 'flatShading').onChange(needsUpdate(material, geometry));
-            debugs.add(material, 'wireframe');
-            debugs.add(material, 'vertexColors').onChange(needsUpdate(material, geometry));
+            
+            // folder.add(material, 'envMapIntensity', 0, 5);
+            // folder.add(material, 'aoMapIntensity', 0, 5);
+            // folder.add(material, 'lightMapIntensity', 0, 5);
+
             // folder.add( data, 'envMaps', envMapKeysPBR ).onChange( updateTexture( material, 'envMap', envMaps ) );
             // folder.add( data, 'map', diffuseMapKeys ).onChange( updateTexture( material, 'map', diffuseMaps ) );
             // folder.add( data, 'roughnessMap', roughnessMapKeys ).onChange( updateTexture( material, 'roughnessMap', roughnessMaps ) );
             // folder.add( data, 'alphaMap', alphaMapKeys ).onChange( updateTexture( material, 'alphaMap', alphaMaps ) );
             // folder.add( data, 'metalnessMap', alphaMapKeys ).onChange( updateTexture( material, 'metalnessMap', alphaMaps ) );
             // folder.add( data, 'iridescenceMap', alphaMapKeys ).onChange( updateTexture( material, 'iridescenceMap', alphaMaps ) );
+            
+            const debugs = folder.addFolder("debug")
+            debugs.add(material, 'depthTest');
+            debugs.add(material, 'depthWrite');
+            debugs.add(material, 'alphaTest', 0, 1).step(0.01);
+            debugs.add(material, 'alphaHash');
+            debugs.add(material, 'side', constants.side);
+            debugs.add(material, 'flatShading').onChange(needsUpdate(material, geometry));
+            debugs.add(material, 'wireframe');
+            debugs.add(material, 'vertexColors').onChange(needsUpdate(material, geometry));
 
         }
         folder.add(data, "targetMaterial", materialMap).onChange((idx) => {
@@ -369,6 +373,9 @@ class MMDGui {
                 if (i > 0) {
                     controls.destroy()
                 }
+            }
+            for (const subFolder of [...folder.folders]) {
+                subFolder.destroy()
             }
             updateControls(idx)
         })
@@ -618,17 +625,22 @@ class MMDGui {
         const directLightFolder = folder.addFolder("Directional")
         directLightFolder.add(api, 'lightX', -1, 1).onChange(
             (value) => {
-                this._mmd.dirLight.position.set(api.lightX, api.lightY, api.lightZ).normalize().multiplyScalar(-10);
+                this._mmd.updateDirLight();
             }
         );
         directLightFolder.add(api, 'lightY', -1, 1).onChange(
             (value) => {
-                this._mmd.dirLight.position.set(api.lightX, api.lightY, api.lightZ).normalize().multiplyScalar(-10);
+                this._mmd.updateDirLight();
             }
         );
         directLightFolder.add(api, 'lightZ', -1, 1).onChange(
             (value) => {
-                this._mmd.dirLight.position.set(api.lightX, api.lightY, api.lightZ).normalize().multiplyScalar(-10);
+                this._mmd.updateDirLight();
+            }
+        );
+        directLightFolder.add(api, 'distanceScalar', 0, 100).onChange(
+            (value) => {
+                this._mmd.updateDirLight();
             }
         );
         directLightFolder.addColor(api, 'Directional').name("Color").onChange(setColor(this._mmd.dirLight.color));

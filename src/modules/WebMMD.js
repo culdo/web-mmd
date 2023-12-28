@@ -143,8 +143,10 @@ class WebMMD {
         scene.add(hemiLight);
 
         const dirLight = new THREE.DirectionalLight(api["Directional"], api["Directional intensity"]);
-        dirLight.position.set(api.lightX, api.lightY, api.lightZ).normalize().multiplyScalar(-10);
-        // dirLight.position.set(3, 10, 10);
+        this.updateDirLight = () => {
+            dirLight.position.set(api.lightX, api.lightY, api.lightZ).normalize().multiplyScalar(api.distanceScalar);
+        }
+        this.updateDirLight();
 
         dirLight.castShadow = true;
         dirLight.shadow.camera.top = 25;

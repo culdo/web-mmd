@@ -14,9 +14,10 @@
     "Hemisphere sky": 6710886,
     "Hemisphere ground": 4730414,
     "Directional": 16777215,
-    "lightX": 3,
-    "lightY": 10,
-    "lightZ": 10,
+    "lightX": 0.3,
+    "lightY": 1,
+    "lightZ": 1,
+    "distanceScalar": 10,
     "Ambient color": 16777215,
     "Ambient intensity": 1,
 
