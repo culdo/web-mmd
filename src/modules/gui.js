@@ -282,13 +282,9 @@ class MMDGui {
 
     _guiMaterial() {
         const data = {
-            targetMaterial: 0
+            targetMaterial: 0,
         }
 
-        const materialMap = {}
-        for (const [i, material] of this._mmd.character.material.entries()) {
-            materialMap[material.name] = i
-        }
         const folder = this.panel.addFolder('Material');
 
         function needsUpdate(material, geometry) {
@@ -306,26 +302,40 @@ class MMDGui {
                 'THREE.DoubleSide': THREE.DoubleSide
             }
         }
-        const updateControls = (idx) => {
+        this._updateNormalForward = async (idx, ratio) => {
+            const group = this.geometry.groups[idx]
+            for(let i = 0; i < group.count; i++) {
+                const idx = this.geometry.index.array[group.start + i]
+                const start = idx * this._normals.itemSize
+                const idxRange = [start, start + this._normals.itemSize]
+
+                const normalOrig = new THREE.Vector3(...this._normalsOrig.array.slice(...idxRange))
+                const targetAxis = new THREE.Vector3(0, 0.3, 1)
+                normalOrig.lerp(targetAxis, ratio)
+                this._normals.set(normalOrig.toArray(), start)
+            }
+            this._normals.needsUpdate = true;
+
+        }
+        this._updateControls = (idx) => {
             const material = this._mmd.character.material[idx]
-            console.log(material.normalMap)
+            const data = {
+                color: material.color.getHex(),
+                emissive: material.emissive.getHex(),
+                sheenColor: material.sheenColor.getHex(),
+                specularColor: material.specularColor.getHex(),
+                normalForward: 0
+            };
+            
             const geometry = this._mmd.character.geometry
+            this._updateNormalForward(idx, 0);
+            folder.add(data, "normalForward", 0, 1).onChange((val) => {
+                this._updateNormalForward(idx, val);
+            })
             folder.add(material, 'visible');
             folder.add(material, 'transparent');
             folder.add(material, 'opacity', 0, 1).step(0.01);
 
-            const data = {
-                color: material.color.getHex(),
-                emissive: material.emissive.getHex(),
-                // envMaps: envMapKeys[ 0 ],
-                // map: diffuseMapKeys[ 0 ],
-                // roughnessMap: roughnessMapKeys[ 0 ],
-                // alphaMap: alphaMapKeys[ 0 ],
-                // metalnessMap: alphaMapKeys[ 0 ],
-                sheenColor: material.sheenColor.getHex(),
-                specularColor: material.specularColor.getHex(),
-                // iridescenceMap: alphaMapKeys[ 0 ]
-            };
 
             folder.addColor(data, 'color').onChange(hex => material.color.setHex(hex));
             folder.addColor(data, 'emissive').onChange(hex => material.emissive.setHex(hex));
@@ -368,7 +378,7 @@ class MMDGui {
             debugs.add(material, 'vertexColors').onChange(needsUpdate(material, geometry));
 
         }
-        folder.add(data, "targetMaterial", materialMap).onChange((idx) => {
+        this._clearMaterialFolder = () => {
             for (const [i, controls] of [...folder.controllers].entries()) {
                 if (i > 0) {
                     controls.destroy()
@@ -377,9 +387,24 @@ class MMDGui {
             for (const subFolder of [...folder.folders]) {
                 subFolder.destroy()
             }
-            updateControls(idx)
-        })
-        updateControls(data.targetMaterial)
+        }
+        this._updateTargetMaterial = () => {
+            const materialMap = {}
+            for (const [i, material] of this._mmd.character.material.entries()) {
+                materialMap[material.name] = i
+            }
+            this._targetMaterialContoller = folder.add(data, "targetMaterial", materialMap).onChange((idx) => {
+                this._clearMaterialFolder();
+                this._updateControls(idx)
+            })
+            this.geometry = this._mmd.character.geometry
+            this._normalsOrig = this.geometry.attributes.normal.clone()
+            this._normals = this.geometry.attributes.normal
+
+            this._updateControls(data.targetMaterial)
+        }
+        
+        this._updateTargetMaterial();
     }
 
     _guiFile() {
@@ -400,6 +425,10 @@ class MMDGui {
             this._logger.info("character removed")
 
             await mmd.loadCharacter(url, filename);
+            // update materials
+            this._clearMaterialFolder();
+            this._targetMaterialContoller.destroy();
+            this._updateTargetMaterial();
         };
         // TODO: use unzip tools to unzip model files, because it has many texture images
         this._guiFn.selectChar = () => {
