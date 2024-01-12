@@ -22,7 +22,7 @@
     "Ambient intensity": 1,
 
     "enable SDEF": true,
-    "enable PBR": false,
+    "enable PBR": true,
     
     "show FPS": false,
     "show outline": true,
@@ -119,6 +119,9 @@
     "髪飾り消し": 0,
     "ヘッドセット消し": 0,
 
+    "material": [],
+    "targetMaterial": 0,
+
     "Directional intensity": 2,
     "Hemisphere intensity": 8,
 
@@ -146,7 +149,7 @@
     "zoom": 0.8,
     "near": 0.1,
 
-    "tone mapping": 4,
+    "tone mapping": 0,
     "exposure": 1.0,
 
     "auto rotate": false,

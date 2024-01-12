@@ -34,7 +34,7 @@ class MMDGui {
         this._guiEffect();
         this._guiCamera();
         this._guiMorph();
-        if(this._mmd.api["enable PBR"]) {
+        if (this._mmd.api["enable PBR"]) {
             this._guiMaterial();
         }
         this._guiFile();
@@ -281,18 +281,43 @@ class MMDGui {
     }
 
     _guiMaterial() {
-        const data = {
-            targetMaterial: 0,
+        const folder = this.panel.addFolder('Material');
+        const loader = new THREE.MaterialLoader()
+        const { api, character } = this._mmd
+        this.geometry = character.geometry
+
+        const _saveMaterial = () => {
+            const idx = api.targetMaterial
+            api.material[idx] = character.material[idx].toJSON()
+            api.material = api.material
+        }
+        if (api.material.length == 0) {
+            for (const item of character.material) {
+                Object.assign(item.userData, {
+                    color: item.color.getHex(),
+                    emissive: item.emissive.getHex(),
+                    sheenColor: item.sheenColor.getHex(),
+                    specularColor: item.specularColor.getHex(),
+                    faceForward: 0
+                })
+            }
+            api.material = character.material.map(item => item.toJSON())
+        } else {
+            character.material = api.material.map((item, i) => {
+                item.map = character.material[i].map.uuid
+                // This seems non-intuitive, maybe can be better
+                loader.textures[item.map] = character.material[i].map
+                return loader.parse(item)
+            })
         }
 
-        const folder = this.panel.addFolder('Material');
 
-        function needsUpdate(material, geometry) {
+        function needsUpdate(material) {
             return function () {
                 material.side = parseInt(material.side); //Ensure number
                 material.needsUpdate = true;
-                geometry.attributes.position.needsUpdate = true;
-                geometry.attributes.normal.needsUpdate = true;
+                this.geometry.attributes.position.needsUpdate = true;
+                this.geometry.attributes.normal.needsUpdate = true;
             };
         }
         const constants = {
@@ -302,9 +327,9 @@ class MMDGui {
                 'THREE.DoubleSide': THREE.DoubleSide
             }
         }
-        this._updateNormalForward = async (idx, ratio) => {
+        this._updateFaceForward = async (idx, ratio) => {
             const group = this.geometry.groups[idx]
-            for(let i = 0; i < group.count; i++) {
+            for (let i = 0; i < group.count; i++) {
                 const idx = this.geometry.index.array[group.start + i]
                 const start = idx * this._normals.itemSize
                 const idxRange = [start, start + this._normals.itemSize]
@@ -318,44 +343,37 @@ class MMDGui {
 
         }
         this._updateControls = (idx) => {
-            const material = this._mmd.character.material[idx]
-            const data = {
-                color: material.color.getHex(),
-                emissive: material.emissive.getHex(),
-                sheenColor: material.sheenColor.getHex(),
-                specularColor: material.specularColor.getHex(),
-                normalForward: 0
-            };
-            
-            const geometry = this._mmd.character.geometry
-            this._updateNormalForward(idx, 0);
-            folder.add(data, "normalForward", 0, 1).onChange((val) => {
-                this._updateNormalForward(idx, val);
+            const material = character.material[idx]
+
+            this._updateFaceForward(idx, material.userData.faceForward);
+            folder.add(material.userData, "faceForward", 0, 1).onChange((val) => {
+                this._updateFaceForward(idx, val);
+                _saveMaterial();
             })
-            folder.add(material, 'visible');
-            folder.add(material, 'transparent');
-            folder.add(material, 'opacity', 0, 1).step(0.01);
+            folder.add(material, 'visible').onChange(_saveMaterial);
+            folder.add(material, 'transparent').onChange(_saveMaterial);
+            folder.add(material, 'opacity', 0, 1).step(0.01).onChange(_saveMaterial);
 
 
-            folder.addColor(data, 'color').onChange(hex => material.color.setHex(hex));
-            folder.addColor(data, 'emissive').onChange(hex => material.emissive.setHex(hex));
+            folder.addColor(material.userData, 'color').onChange(hex => material.color.setHex(hex)).onChange(_saveMaterial);
+            folder.addColor(material.userData, 'emissive').onChange(hex => material.emissive.setHex(hex)).onChange(_saveMaterial);
 
-            folder.add(material, 'emissiveIntensity', 0, 5);
-            folder.add(material, 'roughness', 0, 1);
-            folder.add(material, 'metalness', 0, 1);
-            folder.add(material, 'ior', 1, 2.333);
-            folder.add(material, 'reflectivity', 0, 1);
-            folder.add(material, 'iridescence', 0, 1);
-            folder.add(material, 'iridescenceIOR', 1, 2.333);
-            folder.add(material, 'sheen', 0, 1);
-            folder.add(material, 'sheenRoughness', 0, 1);
-            folder.addColor(data, 'sheenColor').onChange(hex => material.sheenColor.setHex(hex));
-            folder.add(material, 'clearcoat', 0, 1).step(0.01);
-            folder.add(material, 'clearcoatRoughness', 0, 1).step(0.01);
-            folder.add(material, 'specularIntensity', 0, 1);
-            folder.addColor(data, 'specularColor').onChange(hex => material.specularColor.setHex(hex));
-            folder.add(material, 'fog').onChange(needsUpdate(material, geometry));
-            
+            folder.add(material, 'emissiveIntensity', 0, 5).onChange(_saveMaterial);
+            folder.add(material, 'roughness', 0, 1).onChange(_saveMaterial);
+            folder.add(material, 'metalness', 0, 1).onChange(_saveMaterial);
+            folder.add(material, 'ior', 1, 2.333).onChange(_saveMaterial);
+            folder.add(material, 'reflectivity', 0, 1).onChange(_saveMaterial);
+            folder.add(material, 'iridescence', 0, 1).onChange(_saveMaterial);
+            folder.add(material, 'iridescenceIOR', 1, 2.333).onChange(_saveMaterial);
+            folder.add(material, 'sheen', 0, 1).onChange(_saveMaterial);
+            folder.add(material, 'sheenRoughness', 0, 1).onChange(_saveMaterial);
+            folder.addColor(material.userData, 'sheenColor').onChange(hex => material.sheenColor.setHex(hex)).onChange(_saveMaterial);
+            folder.add(material, 'clearcoat', 0, 1).step(0.01).onChange(_saveMaterial);
+            folder.add(material, 'clearcoatRoughness', 0, 1).step(0.01).onChange(_saveMaterial);
+            folder.add(material, 'specularIntensity', 0, 1).onChange(_saveMaterial);
+            folder.addColor(material.userData, 'specularColor').onChange(hex => material.specularColor.setHex(hex)).onChange(_saveMaterial);
+            folder.add(material, 'fog').onChange(needsUpdate(material, this.geometry)).onChange(_saveMaterial);
+
             // folder.add(material, 'envMapIntensity', 0, 5);
             // folder.add(material, 'aoMapIntensity', 0, 5);
             // folder.add(material, 'lightMapIntensity', 0, 5);
@@ -366,16 +384,16 @@ class MMDGui {
             // folder.add( data, 'alphaMap', alphaMapKeys ).onChange( updateTexture( material, 'alphaMap', alphaMaps ) );
             // folder.add( data, 'metalnessMap', alphaMapKeys ).onChange( updateTexture( material, 'metalnessMap', alphaMaps ) );
             // folder.add( data, 'iridescenceMap', alphaMapKeys ).onChange( updateTexture( material, 'iridescenceMap', alphaMaps ) );
-            
+
             const debugs = folder.addFolder("debug")
-            debugs.add(material, 'depthTest');
-            debugs.add(material, 'depthWrite');
-            debugs.add(material, 'alphaTest', 0, 1).step(0.01);
-            debugs.add(material, 'alphaHash');
-            debugs.add(material, 'side', constants.side);
-            debugs.add(material, 'flatShading').onChange(needsUpdate(material, geometry));
-            debugs.add(material, 'wireframe');
-            debugs.add(material, 'vertexColors').onChange(needsUpdate(material, geometry));
+            debugs.add(material, 'depthTest').onChange(_saveMaterial);
+            debugs.add(material, 'depthWrite').onChange(_saveMaterial);
+            debugs.add(material, 'alphaTest', 0, 1).step(0.01).onChange(_saveMaterial);
+            debugs.add(material, 'alphaHash').onChange(_saveMaterial);
+            debugs.add(material, 'side', constants.side).onChange(_saveMaterial);
+            debugs.add(material, 'flatShading').onChange(needsUpdate(material, this.geometry)).onChange(_saveMaterial);
+            debugs.add(material, 'wireframe').onChange(_saveMaterial);
+            debugs.add(material, 'vertexColors').onChange(needsUpdate(material, this.geometry)).onChange(_saveMaterial);
 
         }
         this._clearMaterialFolder = () => {
@@ -390,20 +408,19 @@ class MMDGui {
         }
         this._updateTargetMaterial = () => {
             const materialMap = {}
-            for (const [i, material] of this._mmd.character.material.entries()) {
+            for (const [i, material] of character.material.entries()) {
                 materialMap[material.name] = i
             }
-            this._targetMaterialContoller = folder.add(data, "targetMaterial", materialMap).onChange((idx) => {
+            this._targetMaterialContoller = folder.add(api, "targetMaterial", materialMap).onChange((idx) => {
                 this._clearMaterialFolder();
                 this._updateControls(idx)
             })
-            this.geometry = this._mmd.character.geometry
             this._normalsOrig = this.geometry.attributes.normal.clone()
             this._normals = this.geometry.attributes.normal
 
-            this._updateControls(data.targetMaterial)
+            this._updateControls(api.targetMaterial)
         }
-        
+
         this._updateTargetMaterial();
     }
 
