@@ -283,34 +283,56 @@ class MMDGui {
     _guiMaterial() {
         const folder = this.panel.addFolder('Material');
         const loader = new THREE.MaterialLoader()
-        const { api, character } = this._mmd
+        const textureLoader = new THREE.TextureLoader()
+        const { api, character, defaultConfig } = this._mmd
         this.geometry = character.geometry
 
-        const _saveMaterial = () => {
-            const idx = api.targetMaterial
-            api.material[idx] = character.material[idx].toJSON()
-            api.material = api.material
-        }
-        if (api.material.length == 0) {
-            for (const item of character.material) {
-                Object.assign(item.userData, {
-                    color: item.color.getHex(),
-                    emissive: item.emissive.getHex(),
-                    sheenColor: item.sheenColor.getHex(),
-                    specularColor: item.specularColor.getHex(),
-                    faceForward: 0
-                })
-            }
-            api.material = character.material.map(item => item.toJSON())
-        } else {
-            character.material = api.material.map((item, i) => {
-                item.map = character.material[i].map.uuid
-                // This seems non-intuitive, maybe can be better
-                loader.textures[item.map] = character.material[i].map
-                return loader.parse(item)
-            })
+        function updateTexture(material, materialKey, textures) {
+            return function (key) {
+                material[materialKey] = textures[key];
+                material.needsUpdate = true;
+            };
         }
 
+        const skin = textureLoader.load("https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Materials/_MaterialMap/skin.png");
+        skin.wrapS = THREE.RepeatWrapping;
+        skin.wrapT = THREE.RepeatWrapping;
+        skin.repeat.set(80, 80);
+
+        const normalMaps = {
+            none: null,
+            skin
+        };
+        const normalMapsKeys = Object.keys(normalMaps)
+
+        const _saveMaterial = () => {
+            const target = character.material[api.targetMaterial]
+            const targetJson = target.toJSON()
+            delete targetJson.map
+            api.material[target.name] = targetJson
+            api.material = api.material
+        }
+
+        for (const item of character.material) {
+            const userData = {
+                color: item.color.getHex(),
+                emissive: item.emissive.getHex(),
+                sheenColor: item.sheenColor.getHex(),
+                specularColor: item.specularColor.getHex(),
+                faceForward: 0,
+                normalMap: "none"
+            }
+            Object.assign(item.userData, userData)
+            const savedMaterial = api.material[item.name]
+            if (!savedMaterial) {
+                continue
+            }
+            const loadedMaterial = "type" in savedMaterial ? loader.parse(savedMaterial) : savedMaterial
+            Object.assign(item.userData, loadedMaterial.userData ?? {})
+            delete loadedMaterial.userData
+            delete loadedMaterial.map
+            Object.assign(item, loadedMaterial)
+        }
 
         function needsUpdate(material) {
             return function () {
@@ -318,6 +340,7 @@ class MMDGui {
                 material.needsUpdate = true;
                 this.geometry.attributes.position.needsUpdate = true;
                 this.geometry.attributes.normal.needsUpdate = true;
+                _saveMaterial();
             };
         }
         const constants = {
@@ -351,14 +374,17 @@ class MMDGui {
                 _saveMaterial();
             })
             folder.add(material, 'visible').onChange(_saveMaterial);
-            folder.add(material, 'transparent').onChange(_saveMaterial);
-            folder.add(material, 'opacity', 0, 1).step(0.01).onChange(_saveMaterial);
 
+            folder.addColor(material.userData, 'color').onChange(hex => {
+                material.color.setHex(hex)
+                _saveMaterial()
+            });
+            folder.addColor(material.userData, 'emissive').onChange(hex => {
+                material.emissive.setHex(hex)
+                _saveMaterial()
+            });
 
-            folder.addColor(material.userData, 'color').onChange(hex => material.color.setHex(hex)).onChange(_saveMaterial);
-            folder.addColor(material.userData, 'emissive').onChange(hex => material.emissive.setHex(hex)).onChange(_saveMaterial);
-
-            folder.add(material, 'emissiveIntensity', 0, 5).onChange(_saveMaterial);
+            folder.add(material, 'emissiveIntensity', 0, 1).onChange(_saveMaterial);
             folder.add(material, 'roughness', 0, 1).onChange(_saveMaterial);
             folder.add(material, 'metalness', 0, 1).onChange(_saveMaterial);
             folder.add(material, 'ior', 1, 2.333).onChange(_saveMaterial);
@@ -367,18 +393,30 @@ class MMDGui {
             folder.add(material, 'iridescenceIOR', 1, 2.333).onChange(_saveMaterial);
             folder.add(material, 'sheen', 0, 1).onChange(_saveMaterial);
             folder.add(material, 'sheenRoughness', 0, 1).onChange(_saveMaterial);
-            folder.addColor(material.userData, 'sheenColor').onChange(hex => material.sheenColor.setHex(hex)).onChange(_saveMaterial);
+            folder.addColor(material.userData, 'sheenColor').onChange(hex => {
+                material.sheenColor.setHex(hex)
+                _saveMaterial()
+            });
             folder.add(material, 'clearcoat', 0, 1).step(0.01).onChange(_saveMaterial);
             folder.add(material, 'clearcoatRoughness', 0, 1).step(0.01).onChange(_saveMaterial);
             folder.add(material, 'specularIntensity', 0, 1).onChange(_saveMaterial);
-            folder.addColor(material.userData, 'specularColor').onChange(hex => material.specularColor.setHex(hex)).onChange(_saveMaterial);
-            folder.add(material, 'fog').onChange(needsUpdate(material, this.geometry)).onChange(_saveMaterial);
+            folder.addColor(material.userData, 'specularColor').onChange(hex => {
+                material.specularColor.setHex(hex)
+                _saveMaterial()
+            });
+            folder.add(material, 'fog').onChange(needsUpdate(material));
 
-            // folder.add(material, 'envMapIntensity', 0, 5);
+            folder.add(material.userData, 'normalMap', normalMapsKeys).onChange(updateTexture(material, 'normalMap', normalMaps));
+            folder.add({
+                resetAll: () => {
+                    api.material = this._mmd.defaultConfig.material
+                    setTimeout(() => location.reload(), 1000)
+                }
+            }, 'resetAll');
+
             // folder.add(material, 'aoMapIntensity', 0, 5);
             // folder.add(material, 'lightMapIntensity', 0, 5);
 
-            // folder.add( data, 'envMaps', envMapKeysPBR ).onChange( updateTexture( material, 'envMap', envMaps ) );
             // folder.add( data, 'map', diffuseMapKeys ).onChange( updateTexture( material, 'map', diffuseMaps ) );
             // folder.add( data, 'roughnessMap', roughnessMapKeys ).onChange( updateTexture( material, 'roughnessMap', roughnessMaps ) );
             // folder.add( data, 'alphaMap', alphaMapKeys ).onChange( updateTexture( material, 'alphaMap', alphaMaps ) );
@@ -386,14 +424,16 @@ class MMDGui {
             // folder.add( data, 'iridescenceMap', alphaMapKeys ).onChange( updateTexture( material, 'iridescenceMap', alphaMaps ) );
 
             const debugs = folder.addFolder("debug")
+            debugs.add(material, 'transparent').onChange(_saveMaterial);
+            debugs.add(material, 'opacity', 0, 1).step(0.01).onChange(_saveMaterial);
             debugs.add(material, 'depthTest').onChange(_saveMaterial);
             debugs.add(material, 'depthWrite').onChange(_saveMaterial);
             debugs.add(material, 'alphaTest', 0, 1).step(0.01).onChange(_saveMaterial);
             debugs.add(material, 'alphaHash').onChange(_saveMaterial);
             debugs.add(material, 'side', constants.side).onChange(_saveMaterial);
-            debugs.add(material, 'flatShading').onChange(needsUpdate(material, this.geometry)).onChange(_saveMaterial);
+            debugs.add(material, 'flatShading').onChange(needsUpdate(material));
             debugs.add(material, 'wireframe').onChange(_saveMaterial);
-            debugs.add(material, 'vertexColors').onChange(needsUpdate(material, this.geometry)).onChange(_saveMaterial);
+            debugs.add(material, 'vertexColors').onChange(needsUpdate(material));
 
         }
         this._clearMaterialFolder = () => {
@@ -832,6 +872,16 @@ class MMDGui {
                 const dlUrl = URL.createObjectURL(presetBlob)
                 startFileDownload(dlUrl, `${mmd.preset}.json`)
             },
+            saveConfigOnly: () => {
+                const apiCopy = JSON.parse(JSON.stringify(mmd.api))
+                delete apiCopy.pmxFiles
+                delete apiCopy.cameraFile
+                delete apiCopy.motionFile
+                apiCopy.material = []
+                const presetBlob = new Blob([JSON.stringify(apiCopy)], { type: 'application/json' })
+                const dlUrl = URL.createObjectURL(presetBlob)
+                startFileDownload(dlUrl, `${mmd.preset}_config.json`)
+            },
             loadPreset: () => {
                 selectFile.onchange = async function (e) {
                     const presetFile = this.files[0]
@@ -867,6 +917,7 @@ class MMDGui {
         folder.add(presetFn, 'copyPreset').name('Copy preset...');
         const deleteBt = folder.add(presetFn, 'deletePreset').name('Delete current preset...');
         folder.add(presetFn, 'savePreset').name('Save preset...');
+        folder.add(presetFn, 'saveConfigOnly').name('Save config only...');
         folder.add(presetFn, 'loadPreset').name('Load preset...');
 
         // init dropdown

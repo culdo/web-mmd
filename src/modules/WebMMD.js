@@ -72,7 +72,7 @@ class WebMMD {
 
         const defaultConfig = await configResp.json()
 
-        let userConfig = defaultConfig;
+        let userConfig = JSON.parse(JSON.stringify(defaultConfig));
 
         const savedPresetName = await localforage.getItem("currentPreset")
         const preset = savedPresetName ?? "Default"

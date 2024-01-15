@@ -1156,7 +1156,10 @@ class MaterialBuilder {
 				 * MMDToonMaterial doesn't have ambient. Set it to emissive instead.
 				 * It'll be too bright if material has map texture so using coef 0.2.
 				 */
-			if (!shaderParams.enablePBR) {
+			if (shaderParams.enablePBR) {
+				params.color = new Color().fromArray(material.diffuse);
+				params.specularColor = new Color().fromArray(material.specular);
+			} else {
 				params.diffuse = new Color().fromArray(material.diffuse);
 				params.specular = new Color().fromArray(material.specular);
 				params.shininess = material.shininess;

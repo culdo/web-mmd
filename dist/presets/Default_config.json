@@ -9,7 +9,7 @@
     "camera mode": 0,
     "physics": true,
     "ground shadow": true,
-    "self shadow": false,
+    "self shadow": true,
     "fog color": 5291982,
     "Hemisphere sky": 6710886,
     "Hemisphere ground": 4730414,
@@ -17,13 +17,11 @@
     "lightX": 0.3,
     "lightY": 1,
     "lightZ": 1,
-    "distanceScalar": 10,
+    "distanceScalar": 15,
     "Ambient color": 16777215,
     "Ambient intensity": 1,
-
     "enable SDEF": true,
     "enable PBR": true,
-    
     "show FPS": false,
     "show outline": true,
     "show IK bones": false,
@@ -34,7 +32,6 @@
     "motionOffset": 0,
     "musicYtURL": "https://www.youtube.com/watch?v=ERo-sPa1a5g",
     "musicName": "八王子P × Giga「Gimme×Gimme feat. 初音ミク・鏡音リン」",
-
     "あ": 0,
     "い": 0,
     "う": 0,
@@ -118,13 +115,16 @@
     "歯消し": 0,
     "髪飾り消し": 0,
     "ヘッドセット消し": 0,
-
-    "material": [],
+    "material": {
+        "頭": {
+            "userData": {
+                "faceForward": 0.5
+            }
+        }
+    },
     "targetMaterial": 0,
-
     "Directional intensity": 2,
     "Hemisphere intensity": 8,
-
     "bokeh enabled": false,
     "bokeh shaderFocus": false,
     "bokeh fstop": 2.2,
@@ -144,21 +144,15 @@
     "bokeh dithering": 0.0001,
     "bokeh rings": 3,
     "bokeh samples": 4,
-    
     "fov": 45,
     "zoom": 0.8,
     "near": 0.1,
-
     "tone mapping": 0,
     "exposure": 1.0,
-
     "auto rotate": false,
     "auto rotate speed": 2,
-
     "collectionKeys": "1234567890",
     "cutKeys": "abcdefghijklmnopqrstuvwxyz",
-    
     "follow smooth": 31,
-
     "gravity": -9.8
 }

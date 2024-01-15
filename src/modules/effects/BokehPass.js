@@ -135,7 +135,7 @@ class BokehPass extends Pass {
 			renderer.setRenderTarget(null);
 			this.fsQuad.render(renderer);
 		} else {
-			renderer.setRenderTarget(writeBuffer);
+			renderer.setRenderTarget(readBuffer);
 			renderer.clear();
 			this.fsQuad.render(renderer);
 		}
