@@ -6,10 +6,8 @@ import {
 	UniformsLib,
 	UniformsUtils
 } from 'three';
-import { FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass';
-import { Pass } from 'three/examples/jsm/postprocessing/Pass';
-import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
 import { initSdef } from '../shaders/SdefVertexShader';
+import { Pass, CopyMaterial } from 'postprocessing';
 
 /**
  * Reference: https://en.wikipedia.org/wiki/Cel_shading
@@ -69,17 +67,17 @@ import { initSdef } from '../shaders/SdefVertexShader';
 
 class OutlinePass extends Pass {
 
-	constructor( scene, camera, parameters = {} ) {
+	constructor(scene, camera, parameters = {}) {
 
 		super();
-		
+
 		this.enabled = true;
 
 		this.renderScene = scene;
 		this.renderCamera = camera;
 
 		const defaultThickness = parameters.defaultThickness !== undefined ? parameters.defaultThickness : 0.003;
-		const defaultColor = new Color().fromArray( parameters.defaultColor !== undefined ? parameters.defaultColor : [ 0, 0, 0 ] );
+		const defaultColor = new Color().fromArray(parameters.defaultColor !== undefined ? parameters.defaultColor : [0, 0, 0]);
 		const defaultAlpha = parameters.defaultAlpha !== undefined ? parameters.defaultAlpha : 1.0;
 		const defaultKeepAlive = parameters.defaultKeepAlive !== undefined ? parameters.defaultKeepAlive : false;
 
@@ -106,20 +104,7 @@ class OutlinePass extends Pass {
 		// keep using readBuffer for following effect passes to read
 		this.needsSwap = false;
 
-		// copy shader data from readBuffer to render to screen
-		this.fsQuad = new FullScreenQuad(null);
-
-		this.copyShader = {...CopyShader};
-
-		this.materialCopy = new ShaderMaterial( {
-			uniforms: this.copyShader.uniforms,
-			vertexShader: this.copyShader.vertexShader,
-			fragmentShader: this.copyShader.fragmentShader,
-			blending: NoBlending,
-			depthTest: false,
-			depthWrite: false,
-			transparent: true
-		} );
+		this.copyMaterial = new CopyMaterial();
 
 		const uniformsOutline = {
 			outlineThickness: { value: defaultThickness },
@@ -173,7 +158,7 @@ class OutlinePass extends Pass {
 
 			'}',
 
-		].join( '\n' );
+		].join('\n');
 
 		const fragmentShader = [
 
@@ -199,29 +184,29 @@ class OutlinePass extends Pass {
 
 			'}'
 
-		].join( '\n' );
+		].join('\n');
 
 		function createMaterial() {
 
-			return new ShaderMaterial( {
+			return new ShaderMaterial({
 				type: 'OutlineEffect',
-				uniforms: UniformsUtils.merge( [
-					UniformsLib[ 'fog' ],
-					UniformsLib[ 'displacementmap' ],
+				uniforms: UniformsUtils.merge([
+					UniformsLib['fog'],
+					UniformsLib['displacementmap'],
 					uniformsOutline
-				] ),
+				]),
 				vertexShader: initSdef(vertexShader, parameters.enableSdef && !parameters.enablePBR),
 				fragmentShader: fragmentShader,
 				side: BackSide
-			} );
+			});
 
 		}
 
-		function getOutlineMaterialFromCache( originalMaterial ) {
+		function getOutlineMaterialFromCache(originalMaterial) {
 
-			let data = cache[ originalMaterial.uuid ];
+			let data = cache[originalMaterial.uuid];
 
-			if ( data === undefined ) {
+			if (data === undefined) {
 
 				data = {
 					material: createMaterial(),
@@ -230,7 +215,7 @@ class OutlinePass extends Pass {
 					count: 0
 				};
 
-				cache[ originalMaterial.uuid ] = data;
+				cache[originalMaterial.uuid] = data;
 
 			}
 
@@ -240,98 +225,98 @@ class OutlinePass extends Pass {
 
 		}
 
-		function getOutlineMaterial( originalMaterial ) {
+		function getOutlineMaterial(originalMaterial) {
 
-			const outlineMaterial = getOutlineMaterialFromCache( originalMaterial );
+			const outlineMaterial = getOutlineMaterialFromCache(originalMaterial);
 
-			originalMaterials[ outlineMaterial.uuid ] = originalMaterial;
+			originalMaterials[outlineMaterial.uuid] = originalMaterial;
 
-			updateOutlineMaterial( outlineMaterial, originalMaterial );
+			updateOutlineMaterial(outlineMaterial, originalMaterial);
 
 			return outlineMaterial;
 
 		}
 
-		function isCompatible( object ) {
+		function isCompatible(object) {
 
 			const geometry = object.geometry;
-			const hasNormals = ( geometry !== undefined ) && ( geometry.attributes.normal !== undefined );
+			const hasNormals = (geometry !== undefined) && (geometry.attributes.normal !== undefined);
 
-			return ( object.isMesh === true && object.material !== undefined && hasNormals === true );
+			return (object.isMesh === true && object.material !== undefined && hasNormals === true);
 
 		}
 
-		function setOutlineMaterial( object ) {
+		function setOutlineMaterial(object) {
 
-			if ( isCompatible( object ) === false ) return;
+			if (isCompatible(object) === false) return;
 
-			if ( Array.isArray( object.material ) ) {
+			if (Array.isArray(object.material)) {
 
-				for ( let i = 0, il = object.material.length; i < il; i ++ ) {
+				for (let i = 0, il = object.material.length; i < il; i++) {
 
-					object.material[ i ] = getOutlineMaterial( object.material[ i ] );
+					object.material[i] = getOutlineMaterial(object.material[i]);
 
 				}
 
 			} else {
 
-				object.material = getOutlineMaterial( object.material );
+				object.material = getOutlineMaterial(object.material);
 
 			}
 
-			originalOnBeforeRenders[ object.uuid ] = object.onBeforeRender;
+			originalOnBeforeRenders[object.uuid] = object.onBeforeRender;
 			object.onBeforeRender = onBeforeRender;
 
 		}
 
-		function restoreOriginalMaterial( object ) {
+		function restoreOriginalMaterial(object) {
 
-			if ( isCompatible( object ) === false ) return;
+			if (isCompatible(object) === false) return;
 
-			if ( Array.isArray( object.material ) ) {
+			if (Array.isArray(object.material)) {
 
-				for ( let i = 0, il = object.material.length; i < il; i ++ ) {
+				for (let i = 0, il = object.material.length; i < il; i++) {
 
-					object.material[ i ] = originalMaterials[ object.material[ i ].uuid ];
+					object.material[i] = originalMaterials[object.material[i].uuid];
 
 				}
 
 			} else {
 
-				object.material = originalMaterials[ object.material.uuid ];
+				object.material = originalMaterials[object.material.uuid];
 
 			}
 
-			object.onBeforeRender = originalOnBeforeRenders[ object.uuid ];
+			object.onBeforeRender = originalOnBeforeRenders[object.uuid];
 
 		}
 
-		function onBeforeRender( renderer, scene, camera, geometry, material ) {
+		function onBeforeRender(renderer, scene, camera, geometry, material) {
 
-			const originalMaterial = originalMaterials[ material.uuid ];
+			const originalMaterial = originalMaterials[material.uuid];
 
 			// just in case
-			if ( originalMaterial === undefined ) return;
+			if (originalMaterial === undefined) return;
 
-			updateUniforms( material, originalMaterial );
+			updateUniforms(material, originalMaterial);
 
 		}
 
-		function updateUniforms( material, originalMaterial ) {
+		function updateUniforms(material, originalMaterial) {
 
 			const outlineParameters = originalMaterial.userData.outlineParameters;
-			
+
 			material.uniforms.outlineAlpha.value = originalMaterial.opacity;
 
-			if ( outlineParameters !== undefined ) {
+			if (outlineParameters !== undefined) {
 
-				if ( outlineParameters.thickness !== undefined ) material.uniforms.outlineThickness.value = outlineParameters.thickness;
-				if ( outlineParameters.color !== undefined ) material.uniforms.outlineColor.value.fromArray( outlineParameters.color );
-				if ( outlineParameters.alpha !== undefined ) material.uniforms.outlineAlpha.value = outlineParameters.alpha;
+				if (outlineParameters.thickness !== undefined) material.uniforms.outlineThickness.value = outlineParameters.thickness;
+				if (outlineParameters.color !== undefined) material.uniforms.outlineColor.value.fromArray(outlineParameters.color);
+				if (outlineParameters.alpha !== undefined) material.uniforms.outlineAlpha.value = outlineParameters.alpha;
 
 			}
 
-			if ( originalMaterial.displacementMap ) {
+			if (originalMaterial.displacementMap) {
 
 				material.uniforms.displacementMap.value = originalMaterial.displacementMap;
 				material.uniforms.displacementScale.value = originalMaterial.displacementScale;
@@ -341,9 +326,9 @@ class OutlinePass extends Pass {
 
 		}
 
-		function updateOutlineMaterial( material, originalMaterial ) {
+		function updateOutlineMaterial(material, originalMaterial) {
 
-			if ( material.name === 'invisible' ) return;
+			if (material.name === 'invisible') return;
 
 			const outlineParameters = originalMaterial.userData.outlineParameters;
 
@@ -352,21 +337,21 @@ class OutlinePass extends Pass {
 			material.premultipliedAlpha = originalMaterial.premultipliedAlpha;
 			material.displacementMap = originalMaterial.displacementMap;
 
-			if ( outlineParameters !== undefined ) {
+			if (outlineParameters !== undefined) {
 
-				if ( originalMaterial.visible === false ) {
+				if (originalMaterial.visible === false) {
 
 					material.visible = false;
 
 				} else {
 
-					material.visible = ( outlineParameters.visible !== undefined ) ? outlineParameters.visible : true;
+					material.visible = (outlineParameters.visible !== undefined) ? outlineParameters.visible : true;
 
 				}
 
-				material.transparent = ( outlineParameters.alpha !== undefined && outlineParameters.alpha < 1.0 ) ? true : originalMaterial.transparent;
+				material.transparent = (outlineParameters.alpha !== undefined && outlineParameters.alpha < 1.0) ? true : originalMaterial.transparent;
 
-				if ( outlineParameters.keepAlive !== undefined ) cache[ originalMaterial.uuid ].keepAlive = outlineParameters.keepAlive;
+				if (outlineParameters.keepAlive !== undefined) cache[originalMaterial.uuid].keepAlive = outlineParameters.keepAlive;
 
 			} else {
 
@@ -375,9 +360,9 @@ class OutlinePass extends Pass {
 
 			}
 
-			if ( originalMaterial.wireframe === true || originalMaterial.depthTest === false ) material.visible = false;
+			if (originalMaterial.wireframe === true || originalMaterial.depthTest === false) material.visible = false;
 
-			if ( originalMaterial.clippingPlanes ) {
+			if (originalMaterial.clippingPlanes) {
 
 				material.clipping = true;
 
@@ -396,44 +381,44 @@ class OutlinePass extends Pass {
 			let keys;
 
 			// clear originialMaterials
-			keys = Object.keys( originalMaterials );
+			keys = Object.keys(originalMaterials);
 
-			for ( let i = 0, il = keys.length; i < il; i ++ ) {
+			for (let i = 0, il = keys.length; i < il; i++) {
 
-				originalMaterials[ keys[ i ] ] = undefined;
+				originalMaterials[keys[i]] = undefined;
 
 			}
 
 			// clear originalOnBeforeRenders
-			keys = Object.keys( originalOnBeforeRenders );
+			keys = Object.keys(originalOnBeforeRenders);
 
-			for ( let i = 0, il = keys.length; i < il; i ++ ) {
+			for (let i = 0, il = keys.length; i < il; i++) {
 
-				originalOnBeforeRenders[ keys[ i ] ] = undefined;
+				originalOnBeforeRenders[keys[i]] = undefined;
 
 			}
 
 			// remove unused outlineMaterial from cache
-			keys = Object.keys( cache );
+			keys = Object.keys(cache);
 
-			for ( let i = 0, il = keys.length; i < il; i ++ ) {
+			for (let i = 0, il = keys.length; i < il; i++) {
 
-				const key = keys[ i ];
+				const key = keys[i];
 
-				if ( cache[ key ].used === false ) {
+				if (cache[key].used === false) {
 
-					cache[ key ].count ++;
+					cache[key].count++;
 
-					if ( cache[ key ].keepAlive === false && cache[ key ].count > removeThresholdCount ) {
+					if (cache[key].keepAlive === false && cache[key].count > removeThresholdCount) {
 
-						delete cache[ key ];
+						delete cache[key];
 
 					}
 
 				} else {
 
-					cache[ key ].used = false;
-					cache[ key ].count = 0;
+					cache[key].used = false;
+					cache[key].count = 0;
 
 				}
 
@@ -441,7 +426,7 @@ class OutlinePass extends Pass {
 
 		}
 
-		this.renderOutline = function ( renderer, writeBuffer, readBuffer ) {
+		this.renderOutline = function (renderer, inputBuffer, outputBuffer) {
 			const scene = this.renderScene
 
 			const currentAutoClear = renderer.autoClear;
@@ -454,12 +439,12 @@ class OutlinePass extends Pass {
 			renderer.autoClear = false;
 			renderer.shadowMap.enabled = false;
 
-			scene.traverse( setOutlineMaterial );
+			scene.traverse(setOutlineMaterial);
 
-			renderer.setRenderTarget(readBuffer);
-			renderer.render( scene, this.renderCamera );
+			renderer.setRenderTarget(inputBuffer);
+			renderer.render(scene, this.renderCamera);
 
-			scene.traverse( restoreOriginalMaterial );
+			scene.traverse(restoreOriginalMaterial);
 
 			cleanupCache();
 
@@ -468,20 +453,18 @@ class OutlinePass extends Pass {
 			renderer.autoClear = currentAutoClear;
 			renderer.shadowMap.enabled = currentShadowMapEnabled;
 
-			if( this.renderToScreen ) {
-				this.fsQuad.material = this.materialCopy
-				this.copyShader.uniforms[ 'tDiffuse' ].value = readBuffer.texture[0];
-				renderer.setRenderTarget( null );
-				this.fsQuad.render( renderer );
-			}
+			this.fullscreenMaterial = this.copyMaterial;
+			this.copyMaterial.inputBuffer = inputBuffer.texture;
+			renderer.setRenderTarget(this.renderToScreen ? null : outputBuffer);
+			renderer.render(this.scene, this.camera);
 
 		};
 
 	}
 
 	render(renderer, writeBuffer, readBuffer) {
-		
-		this.renderOutline( renderer, writeBuffer, readBuffer );
+
+		this.renderOutline(renderer, writeBuffer, readBuffer);
 
 	};
 

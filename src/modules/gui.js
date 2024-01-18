@@ -164,43 +164,6 @@ class MMDGui {
         const api = this._mmd.api
         const postprocessor = this._mmd.postprocessor
 
-        const bokehFolder = folder.addFolder('Bokeh');
-        const matChanger = postprocessor.bokeh.buildMatChanger(api)
-        const shaderUpdate = postprocessor.bokeh.buildShaderUpdate(api)
-
-        matChanger();
-        shaderUpdate();
-
-        bokehFolder.add(api, 'bokeh enabled').onChange(matChanger);
-        bokehFolder.add(api, 'bokeh shaderFocus').onChange(matChanger);
-        bokehFolder.add(api, 'bokeh focalDepth', 0.0, 200.0).listen().onChange(matChanger);
-
-        bokehFolder.add(api, 'bokeh fstop', 0.1, 22, 0.001).onChange(matChanger);
-        bokehFolder.add(api, 'bokeh maxblur', 0.0, 5.0, 0.025).onChange(matChanger);
-
-        bokehFolder.add(api, 'bokeh showFocus').onChange(matChanger);
-        bokehFolder.add(api, 'bokeh manualdof').onChange(matChanger);
-        bokehFolder.add(api, 'bokeh vignetting').onChange(matChanger);
-
-        bokehFolder.add(api, 'bokeh depthblur').onChange(matChanger);
-
-        bokehFolder.add(api, 'bokeh threshold', 0, 1, 0.001).onChange(matChanger);
-        bokehFolder.add(api, 'bokeh gain', 0, 100, 0.001).onChange(matChanger);
-        bokehFolder.add(api, 'bokeh bias', 0, 3, 0.001).onChange(matChanger);
-        bokehFolder.add(api, 'bokeh fringe', 0, 5, 0.001).onChange(matChanger);
-
-        bokehFolder.add(api, 'bokeh focalLength', 16, 80, 0.001).onChange(matChanger);
-
-        bokehFolder.add(api, 'bokeh noise').onChange(matChanger);
-
-        bokehFolder.add(api, 'bokeh dithering', 0, 0.001, 0.0001).onChange(matChanger);
-
-        bokehFolder.add(api, 'bokeh pentagon').onChange(matChanger);
-
-        bokehFolder.add(api, 'bokeh rings', 1, 8).step(1).onChange(shaderUpdate);
-        bokehFolder.add(api, 'bokeh samples', 1, 13).step(1).onChange(shaderUpdate);
-
-
         const outlineFolder = folder.addFolder('Outline');
         postprocessor.outline.enabled = api['show outline']
 

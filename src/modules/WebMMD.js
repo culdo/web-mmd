@@ -206,7 +206,7 @@ class WebMMD {
         })
 
         const composer = postprocessor.composer
-        composer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
+        // composer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
 
         // FPS stats
         const stats = new Stats();
