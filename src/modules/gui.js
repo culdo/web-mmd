@@ -6,6 +6,7 @@ import { GUI } from 'lil-gui';
 import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, createAudioLink, withTimeElapse } from './utils';
 import { CameraMode } from './MMDCameraWorkHelper';
 import logging from 'webpack/lib/logging/runtime'
+import { BlendFunction, KernelSize } from 'postprocessing';
 
 class MMDGui {
     constructor() {
@@ -161,15 +162,54 @@ class MMDGui {
 
         const folder = this.panel.addFolder('Effect');
 
-        const api = this._mmd.api
-        const postprocessor = this._mmd.postprocessor
+        const { api } = this._mmd
+        const {
+            outline,
+            bloomEffect,
+            depthOfFieldEffect } = this._mmd.postprocessor
 
         const outlineFolder = folder.addFolder('Outline');
-        postprocessor.outline.enabled = api['show outline']
+        outline.enabled = api['show outline']
 
         outlineFolder.add(api, 'show outline').onChange((state) => {
-            postprocessor.outline.enabled = state;
+            outline.enabled = state;
         });
+
+        const cocMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
+        
+        const bokehFolder = folder.addFolder('Bokeh');
+        bokehFolder.add(api, 'bokeh enabled').onChange((state) => {
+            depthOfFieldEffect.blendMode.setBlendFunction(state ? BlendFunction.NORMAL : BlendFunction.SKIP);
+        });
+        bokehFolder.add(api, "bokeh resolution", [240, 360, 480, 720, 1080]).onChange((value) => {
+            depthOfFieldEffect.resolution.height = Number(value);
+        });
+        bokehFolder.add(api, "bokeh scale", 1.0, 50.0, 0.1).onChange((value) => {
+            depthOfFieldEffect.bokehScale = value;
+        });
+        bokehFolder.add(api, "edge blur kernel", KernelSize).onChange((value) => {
+            depthOfFieldEffect.blurPass.kernelSize = Number(value);
+        });
+        
+        const toggleFocus = (state) => {
+            if(state) {
+                depthOfFieldEffect.target = this._mmd.character.skeleton.bones[1].position
+                focusController.disable()
+            } else {
+                depthOfFieldEffect.target = null
+                focusController.enable()
+            }
+        }
+        bokehFolder.add(api, "bokeh autofocus").onChange(toggleFocus);
+        const focusController = bokehFolder.add(api, "bokeh focus", 0.0, 50.0, 0.1).onChange((value) => {
+            cocMaterial.worldFocusDistance = value;
+        });
+        toggleFocus(api["bokeh autofocus"])
+
+        bokehFolder.add(api, "bokeh focal length", 0.0, 50.0, 0.1).onChange((value) => {
+            cocMaterial.worldFocusRange = value;
+        });
+
     }
 
     _guiRenderer() {

@@ -200,12 +200,9 @@ class WebMMD {
         // scene.environment = reflectionCube
 
         // effect composer
-        const postprocessor = new PostProcessor(scene, camera, renderer, { 
-            enableSdef: api["enable SDEF"],
-            enablePBR: api['enable PBR'],
-        })
+        const postprocessor = new PostProcessor(scene, camera, renderer, api)
 
-        const composer = postprocessor.composer
+        const { composer } = postprocessor
         // composer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
 
         // FPS stats
@@ -295,7 +292,6 @@ class WebMMD {
             character.receiveShadow = api["self shadow"];
             scene.add(character);
 
-            postprocessor.outline.selectedObjects = [character]
 
             helper.add(character, {
                 animation: mmd.animation
@@ -378,7 +374,7 @@ class WebMMD {
             if (Math.abs(delta) > 0.1) {
                 helper.enable('physics', false);
             }
-
+            
             // camera updating
             cwHelper.setTime(currTime);
             // animation updating
