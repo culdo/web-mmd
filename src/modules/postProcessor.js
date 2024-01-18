@@ -6,7 +6,9 @@ import { RenderPass, EffectComposer, BloomEffect, EffectPass, DepthOfFieldEffect
 class PostProcessor {
     constructor(scene, camera, renderer, parameters={}) {
 
-        const composer = new EffectComposer(renderer);
+        const composer = new EffectComposer(renderer, {
+            multisampling: Math.min(4, renderer.capabilities.maxSamples)
+        });
 
         const renderPass = new RenderPass(scene, camera);
         const outlinePass = new OutlinePass(scene, camera, parameters);
