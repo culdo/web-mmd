@@ -36,8 +36,8 @@ const config = {
     // Learn more about plugins from https://webpack.js.org/configuration/plugins/
   ],
   resolve: {
-    fallback: { 
-      "path": require.resolve("path-browserify") 
+    fallback: {
+      "path": require.resolve("path-browserify")
     }
   },
   module: {
@@ -45,6 +45,10 @@ const config = {
       {
         test: /\.(js|jsx)$/i,
         loader: "babel-loader",
+      },
+      {
+        test: /\.glsl$/,
+        loader: 'raw-loader'
       },
       {
         test: /\.css$/i,

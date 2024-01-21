@@ -7,7 +7,7 @@ export class MMDPhysicalMaterial extends MeshPhysicalMaterial {
         
         this.vertexShader = initSdef(ShaderLib.physical.vertexShader, parameters.userData.enableSdef)
         this.fragmentShader = ShaderLib.physical.fragmentShader
-        
+
         this.setValues(parameters)
     }
 }

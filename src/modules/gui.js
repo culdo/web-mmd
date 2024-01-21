@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import localforage from 'localforage';
 import path from 'path-browserify';
 import { GUI } from 'lil-gui';
-import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, createAudioLink, withTimeElapse } from './utils';
+import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, createAudioLink, withTimeElapse } from '../utils/base';
 import { CameraMode } from './MMDCameraWorkHelper';
 import logging from 'webpack/lib/logging/runtime'
 import { BlendFunction, KernelSize } from 'postprocessing';
@@ -190,7 +190,7 @@ class MMDGui {
         bokehFolder.add(api, "edge blur kernel", KernelSize).onChange((value) => {
             depthOfFieldEffect.blurPass.kernelSize = Number(value);
         });
-        
+
         const toggleFocus = (state) => {
             if(state) {
                 depthOfFieldEffect.target = this._mmd.character.skeleton.bones[1].position

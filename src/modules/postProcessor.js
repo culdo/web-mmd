@@ -1,5 +1,6 @@
-import { BlendFunction, BloomEffect, DepthOfFieldEffect, EffectComposer, EffectPass, RenderPass } from 'postprocessing';
+import { BlendFunction, BloomEffect, EffectComposer, EffectPass, RenderPass } from 'postprocessing';
 import { OutlinePass } from './effects/OutlinePass';
+import { DepthOfFieldEffect } from './effects/DOFeffect';
 
 class PostProcessor {
     constructor(scene, camera, renderer, api) {
@@ -16,7 +17,7 @@ class PostProcessor {
 
         const depthOfFieldEffect = new DepthOfFieldEffect(camera, {
             height: api["boken resolution"],
-            worldFocusDistance: api["bokeh focal"],
+            worldFocusDistance: api["bokeh focus"],
             worldFocusRange: api["bokeh focal length"],
             bokehScale: api["bokeh scale"],
             blendFunction: api["bokeh enabled"] ? BlendFunction.NORMAL : BlendFunction.SKIP
@@ -24,7 +25,7 @@ class PostProcessor {
 
         const bloomEffect = new BloomEffect()
 
-        const effectPass = new EffectPass(camera, bloomEffect, depthOfFieldEffect);
+        const effectPass = new EffectPass(camera, depthOfFieldEffect);
 
         for (const pass of [renderPass, outlinePass, effectPass]) {
             composer.addPass(pass)
