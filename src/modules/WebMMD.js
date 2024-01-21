@@ -293,7 +293,7 @@ class WebMMD {
             character.castShadow = true;
             character.receiveShadow = api["self shadow"];
             scene.add(character);
-
+            postprocessor.bloomEffect.selection.toggle(character)
 
             helper.add(character, {
                 animation: mmd.animation

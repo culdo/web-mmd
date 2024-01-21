@@ -165,38 +165,49 @@ class MMDGui {
         const { api } = this._mmd
         const {
             outline,
+            dofPass,
+            dofEffect,
             bloomEffect,
-            depthOfFieldEffect } = this._mmd.postprocessor
+            bloomPass,
+            composer,
+        } = this._mmd.postprocessor
 
         const outlineFolder = folder.addFolder('Outline');
-        outline.enabled = api['show outline']
 
         outlineFolder.add(api, 'show outline').onChange((state) => {
-            outline.enabled = state;
+            if(state) {
+                composer.addPass(outline)
+            } else {
+                composer.removePass(outline)
+            }
         });
 
-        const cocMaterial = depthOfFieldEffect.circleOfConfusionMaterial;
-        
+        const cocMaterial = dofEffect.circleOfConfusionMaterial;
+
         const bokehFolder = folder.addFolder('Bokeh');
         bokehFolder.add(api, 'bokeh enabled').onChange((state) => {
-            depthOfFieldEffect.blendMode.setBlendFunction(state ? BlendFunction.NORMAL : BlendFunction.SKIP);
+            if(state) {
+                composer.addPass(dofPass)
+            } else {
+                composer.removePass(dofPass)
+            }
         });
         bokehFolder.add(api, "bokeh resolution", [240, 360, 480, 720, 1080]).onChange((value) => {
-            depthOfFieldEffect.resolution.height = Number(value);
+            dofEffect.resolution.height = Number(value);
         });
         bokehFolder.add(api, "bokeh scale", 1.0, 50.0, 0.1).onChange((value) => {
-            depthOfFieldEffect.bokehScale = value;
+            dofEffect.bokehScale = value;
         });
         bokehFolder.add(api, "edge blur kernel", KernelSize).onChange((value) => {
-            depthOfFieldEffect.blurPass.kernelSize = Number(value);
+            dofEffect.blurPass.kernelSize = Number(value);
         });
 
         const toggleFocus = (state) => {
-            if(state) {
-                depthOfFieldEffect.target = this._mmd.character.skeleton.bones[1].position
+            if (state) {
+                dofEffect.target = this._mmd.character.skeleton.bones[1].position
                 focusController.disable()
             } else {
-                depthOfFieldEffect.target = null
+                dofEffect.target = null
                 focusController.enable()
             }
         }
@@ -209,7 +220,33 @@ class MMDGui {
         bokehFolder.add(api, "bokeh focal length", 0.0, 50.0, 0.1).onChange((value) => {
             cocMaterial.worldFocusRange = value;
         });
+        const bloomFolder = folder.addFolder('Bloom');
+        bloomFolder.add(api, 'bloom enabled').onChange((state) => {
+            if(state) {
+                composer.addPass(bloomPass)
+            } else {
+                composer.removePass(bloomPass)
+            }
+        });
+        bloomFolder.add(bloomEffect, "intensity", 0, 10, 0.01 ).onChange(val => {
+            api["bloom intensity"] = val 
+        });
+        bloomFolder.add(bloomEffect.mipmapBlurPass, "radius", 0, 1, 1e-3 ).onChange(val => {
+            api["bloom radius"] = val 
+        });
+        bloomFolder.add(bloomEffect.mipmapBlurPass, "levels", 1, 9, 1 ).onChange(val => {
+            api["bloom levels"] = val 
+        });
 
+        bloomFolder.add(bloomEffect.luminancePass, "enabled").onChange(val => {
+            api["luminance enabled"] = val 
+        });
+        bloomFolder.add(bloomEffect.luminanceMaterial, "threshold", 0, 1, 0.01 ).onChange(val => {
+            api["bloom threshold"] = val 
+        });
+        bloomFolder.add(bloomEffect.luminanceMaterial, "smoothing", 0, 1, 0.01 ).onChange(val => {
+            api["bloom smoothing"] = val 
+        });
     }
 
     _guiRenderer() {

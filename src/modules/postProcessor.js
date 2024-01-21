@@ -1,4 +1,4 @@
-import { BlendFunction, BloomEffect, EffectComposer, EffectPass, RenderPass } from 'postprocessing';
+import { BlendFunction, BloomEffect, EffectComposer, EffectPass, RenderPass, SelectiveBloomEffect } from 'postprocessing';
 import { OutlinePass } from './effects/OutlinePass';
 import { DepthOfFieldEffect } from './effects/DOFeffect';
 
@@ -15,26 +15,43 @@ class PostProcessor {
             enablePBR: api['enable PBR'],
         });
 
-        const depthOfFieldEffect = new DepthOfFieldEffect(camera, {
+        const bloomEffect = new SelectiveBloomEffect(scene, camera, {
+            luminanceThreshold: api["bloom threshold"],
+            luminanceSmoothing: api["bloom smoothing"],
+            mipmapBlur: true,
+            intensity: api["bloom intensity"]
+        })
+        const bloomPass = new EffectPass(camera, bloomEffect);
+
+        const dofEffect = new DepthOfFieldEffect(camera, {
             height: api["boken resolution"],
             worldFocusDistance: api["bokeh focus"],
             worldFocusRange: api["bokeh focal length"],
             bokehScale: api["bokeh scale"],
             blendFunction: api["bokeh enabled"] ? BlendFunction.NORMAL : BlendFunction.SKIP
         })
+        const dofPass = new EffectPass(camera, dofEffect);
+        
+        composer.addPass(renderPass)
 
-        const bloomEffect = new BloomEffect()
-
-        const effectPass = new EffectPass(camera, depthOfFieldEffect);
-
-        for (const pass of [renderPass, outlinePass, effectPass]) {
-            composer.addPass(pass)
+        for (const [pass, key] of [
+            [outlinePass, "show outline"], 
+            [bloomPass, "bloom enabled"], 
+            [dofPass, "bokeh enabled"]
+        ]) {
+            if(api[key]) {
+                composer.addPass(pass)
+            }
         }
 
         this.composer = composer;
         this.outline = outlinePass;
+
+        this.bloomPass = bloomPass;
         this.bloomEffect = bloomEffect;
-        this.depthOfFieldEffect = depthOfFieldEffect;
+
+        this.dofPass = dofPass
+        this.dofEffect = dofEffect;
     }
 }
 
