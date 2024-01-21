@@ -5,11 +5,12 @@
   </a>
 </p>
 
-Try it now -> https://culdo.github.io/web-mmd/
+Try it now! -> https://culdo.github.io/web-mmd/
 
 For who wants to play MMD in the browser, you can now play it anywhere.
 
-It is improved version of [three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio).
+It is improved version of [the three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio).\
+It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) for effects.
 
 # Features
 * Play MMD with time control bar(time seeking, jump to time...etc)
@@ -31,7 +32,8 @@ It is improved version of [three.js example](https://threejs.org/examples/#webgl
 * stage: RedialC_EpRoomDS by RedialC
 
 # Development
-Modules is refactored to Classes and Async/Await styles.
+* Run `npm run serve`
+> Modules is refactored to Classes and Async/Await styles.
 
 ## Upgrade Ammo.js
 1. `npm install github:kripken/ammo.js`: Install the latest version of Ammo.js  
