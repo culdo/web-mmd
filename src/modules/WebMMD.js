@@ -330,7 +330,7 @@ class WebMMD {
         }
 
         await Promise.all([_loadStage(), _loadCharacter()]);
-        // load camera at last let camera work clips durations be not changed ( because helper._syncDuration() )
+        // load camera at last so camera-work clips duration will not changed ( because of helper._syncDuration() )
         await _loadCamera();
 
         overlay.style.display = "none";
@@ -364,7 +364,7 @@ class WebMMD {
         } = this;
 
         const currTime = this.motionTime
-        // player has a bug that sometime jump to end(duration)
+        // player has a bug that sometimes jump to end(duration)
         // so we just skip that frame
         if (player.currentTime == player.duration) {
             return
@@ -372,7 +372,7 @@ class WebMMD {
         const delta = currTime - this._prevTime;
 
         if (Math.abs(delta) > 0) {
-            // for time seeking using player control
+            // check if time seeking using player control
             if (Math.abs(delta) > 0.1) {
                 helper.enable('physics', false);
             }
@@ -382,7 +382,7 @@ class WebMMD {
             // animation updating
             helper.update(delta, currTime);
 
-            // for time seeking using player control
+            // check if time seeking using player control
             if (Math.abs(delta) > 0.1) {
                 runtimeCharacter.physics.reset();
                 helper.enable('physics', api['physics']);
@@ -400,7 +400,7 @@ class WebMMD {
             }
         }
 
-        // stop when motion is finished then fix physics
+        // stop when motion is finished and then fix physics
         if (runtimeCharacter.looped) {
             player.pause();
             player.currentTime = 0.0;
