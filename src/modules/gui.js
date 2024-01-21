@@ -683,9 +683,12 @@ class MMDGui {
     }
 
     _guiColor() {
-        const folder = this.panel.addFolder('Color');
+        const folder = this.panel.addFolder('Fog');
         folder.addColor(this._mmd.api, 'fog color').onChange((value) => {
             this._mmd.scene.fog.color.setHex(value);
+        });
+        folder.add(this._mmd.api, 'fog density', 0, 0.02, 0.0001).onChange((value) => {
+            this._mmd.scene.fog.density = value;
         });
     }
 
