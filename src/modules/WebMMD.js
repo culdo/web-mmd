@@ -9,7 +9,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { MMDLoader } from './MMDLoader.js';
 import { MMDAnimationHelper } from './MMDAnimationHelper.js';
 import { MMDGui } from './gui.js'
-import { onProgress, loadMusicFromYT, withProgress } from './utils.js'
+import { onProgress, loadMusicFromYT, withProgress } from '../utils/base.js'
 import { PostProcessor } from './postProcessor.js'
 
 import path from 'path-browserify';
@@ -59,7 +59,7 @@ class WebMMD {
                     }
                     scope._gui.panel.title("Controls");
                 };
-                if(value !== undefined) {
+                if (value !== undefined) {
                     saveAsync();
                 }
                 // need to put this outside of async func(above) to set back to api for reading
@@ -136,8 +136,8 @@ class WebMMD {
 
         // light
         const ambientLight = new THREE.AmbientLight(api["Ambient color"], api["Ambient intensity"]); // soft white light
-        scene.add( ambientLight );
-        
+        scene.add(ambientLight);
+
         const hemiLight = new THREE.HemisphereLight(api["Hemisphere sky"], api["Hemisphere ground"], api["Hemisphere intensity"]);
         hemiLight.position.set(0, 40, 0);
         scene.add(hemiLight);
@@ -161,10 +161,12 @@ class WebMMD {
         scene.add(dirLight);
 
         // render
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-
-        // recover to legacy colorspaces
-        renderer.outputColorSpace = THREE.LinearSRGBColorSpace
+        const renderer = new THREE.WebGLRenderer({
+            powerPreference: "high-performance",
+            antialias: false,
+            stencil: false,
+            depth: false
+        });
 
         renderer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -213,7 +215,7 @@ class WebMMD {
 
         Object.assign(this, {
             camera, player, controls, scene, stats,
-            postprocessor, dirLight, hemiLight, ambientLight, 
+            postprocessor, dirLight, hemiLight, ambientLight,
             renderer, composer
         })
     }
@@ -280,7 +282,7 @@ class WebMMD {
                 followSmooth: api["follow smooth"]
             };
             if (url.startsWith("data:")) {
-                Object.assign(characterParams,{
+                Object.assign(characterParams, {
                     modelExtension: path.extname(filename).slice(1),
                     modelTextures: api.pmxFiles.modelTextures.character[filename]
                 });
@@ -374,7 +376,7 @@ class WebMMD {
             if (Math.abs(delta) > 0.1) {
                 helper.enable('physics', false);
             }
-            
+
             // camera updating
             cwHelper.setTime(currTime);
             // animation updating

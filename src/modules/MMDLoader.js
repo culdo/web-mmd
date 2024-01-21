@@ -37,7 +37,8 @@ import {
 	RGB_PVRTC_2BPPV1_Format,
 	RGB_ETC1_Format,
 	RGB_ETC2_Format,
-	CatmullRomCurve3
+	CatmullRomCurve3,
+	SRGBColorSpace
 } from 'three';
 import { MMDToonShader } from './shaders/MMDToonShader.js';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
@@ -1166,7 +1167,6 @@ class MaterialBuilder {
 			}
 
 			params.opacity = material.diffuse[3];
-			params.emissive = new Color().fromArray(material.ambient);
 			params.transparent = params.opacity !== 1.0;
 
 			//
@@ -1206,6 +1206,7 @@ class MaterialBuilder {
 					// fileNames[ 1 ]: envMapFileName( optional )
 
 					params.map = this._loadTexture(fileNames[0], textures);
+					params.map.colorSpace = SRGBColorSpace
 
 					if (!shaderParams.enablePBR && fileNames.length > 1) {
 
@@ -1256,6 +1257,7 @@ class MaterialBuilder {
 				if (material.textureIndex !== - 1) {
 
 					params.map = this._loadTexture(data.textures[material.textureIndex], textures);
+					params.map.colorSpace = SRGBColorSpace
 
 					// Since PMX spec don't have standard to list map files except color map and env map,
 					// we need to save file name for further mapping, like matching normal map file names after model loaded.
@@ -1326,8 +1328,6 @@ class MaterialBuilder {
 					this._checkImageTransparency(params.map, geometry, i);
 
 				}
-
-				params.emissive.multiplyScalar(0.2);
 
 			}
 
