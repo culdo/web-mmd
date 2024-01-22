@@ -158,7 +158,7 @@ class WebMMD {
         dirLight.shadow.camera.far = 80;
         dirLight.shadow.mapSize.width = api["self shadow"] ? window.innerWidth * 2 : window.innerWidth;
         dirLight.shadow.mapSize.height = api["self shadow"] ? window.innerHeight * 2 : window.innerWidth;
-        dirLight.shadow.bias = -0.015;
+        dirLight.shadow.bias = api["shadow bias"];
         scene.add(dirLight);
 
         // render

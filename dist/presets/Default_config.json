@@ -10,6 +10,7 @@
     "physics": true,
     "ground shadow": true,
     "self shadow": true,
+    "shadow bias": -0.015,
     "fog color": 5291982,
     "fog density": 0.003,
     "Hemisphere sky": 6710886,

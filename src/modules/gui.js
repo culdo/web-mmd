@@ -732,6 +732,9 @@ class MMDGui {
         folder.add(this._mmd.api, 'self shadow').onChange((state) => {
             this._mmd.character.receiveShadow = state;
         });
+        folder.add(this._mmd.api, 'shadow bias', -0.02, 0.02, 0.0001).onChange((value) => {
+            this._mmd.dirLight.shadow.bias = value;
+        });
     }
 
     _guiLight() {
