@@ -38,6 +38,7 @@ class WebMMD {
         await Promise.all([this._getConfig(), Ammo()]);
         await this._setup();
         await this._loadFiles();
+        this._loadEffects();
         this._loadGui();
 
         this._animate();
@@ -201,10 +202,6 @@ class WebMMD {
         // const reflectionCube = cubeTextureLoader.load( urls );
         // scene.environment = reflectionCube
 
-        // effect composer
-        const postprocessor = new PostProcessor(scene, camera, renderer, api)
-
-        const { composer } = postprocessor
         // composer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
 
         // FPS stats
@@ -215,8 +212,8 @@ class WebMMD {
 
         Object.assign(this, {
             camera, player, controls, scene, stats,
-            postprocessor, dirLight, hemiLight, ambientLight,
-            renderer, composer
+            dirLight, hemiLight, ambientLight,
+            renderer
         })
     }
 
@@ -230,7 +227,7 @@ class WebMMD {
     }
 
     async _loadFiles() {
-        const { api, scene, camera, controls, helper, postprocessor } = this
+        const { api, scene, camera, dirLight, helper } = this
 
         // loader
         const loader = new MMDLoader();
@@ -293,7 +290,7 @@ class WebMMD {
             character.castShadow = true;
             character.receiveShadow = api["self shadow"];
             scene.add(character);
-            postprocessor.bloomEffect.selection.toggle(character)
+            dirLight.target = character
 
             helper.add(character, {
                 animation: mmd.animation
@@ -341,6 +338,19 @@ class WebMMD {
         this.loadCamera = _loadCamera
     }
 
+    _loadEffects() {
+        const { api, scene, camera, renderer } = this
+
+        // effect composer
+        const postprocessor = new PostProcessor(scene, camera, renderer, api)
+        postprocessor.bloomEffect.selection.toggle(this.character)
+
+        const { composer } = postprocessor
+        Object.assign(this, {
+            postprocessor, composer
+        })
+    }
+
     _loadGui() {
         this.ready = true;
         this._gui.init(this);
@@ -360,7 +370,7 @@ class WebMMD {
         const {
             api,
             runtimeCharacter, helper, cwHelper,
-            composer, scene, camera, controls
+            composer, controls,
         } = this;
 
         const currTime = this.motionTime
@@ -411,7 +421,7 @@ class WebMMD {
             runtimeCharacter.looped = false;
         }
 
-        composer.render(scene, camera);
+        composer.render();
 
     }
 }

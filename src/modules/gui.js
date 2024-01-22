@@ -175,22 +175,14 @@ class MMDGui {
         const outlineFolder = folder.addFolder('Outline');
 
         outlineFolder.add(api, 'show outline').onChange((state) => {
-            if(state) {
-                composer.addPass(outline)
-            } else {
-                composer.removePass(outline)
-            }
+            outline.enabled = state
         });
 
         const cocMaterial = dofEffect.circleOfConfusionMaterial;
 
         const bokehFolder = folder.addFolder('Bokeh');
         bokehFolder.add(api, 'bokeh enabled').onChange((state) => {
-            if(state) {
-                composer.addPass(dofPass)
-            } else {
-                composer.removePass(dofPass)
-            }
+            dofPass.enabled = state
         });
         bokehFolder.add(api, "bokeh resolution", [240, 360, 480, 720, 1080]).onChange((value) => {
             dofEffect.resolution.height = Number(value);
@@ -222,11 +214,7 @@ class MMDGui {
         });
         const bloomFolder = folder.addFolder('Bloom');
         bloomFolder.add(api, 'bloom enabled').onChange((state) => {
-            if(state) {
-                composer.addPass(bloomPass)
-            } else {
-                composer.removePass(bloomPass)
-            }
+            bloomPass.enabled = state
         });
         bloomFolder.add(bloomEffect, "intensity", 0, 10, 0.01 ).onChange(val => {
             api["bloom intensity"] = val 
@@ -320,12 +308,19 @@ class MMDGui {
 
     }
 
+    get geometry() {
+        return this._mmd.character.geometry
+    }
+
+    get materials() {
+        return this._mmd.character.material
+    }
+
     _guiMaterial() {
         const folder = this.panel.addFolder('Material');
         const loader = new THREE.MaterialLoader()
         const textureLoader = new THREE.TextureLoader()
-        const { api, character, defaultConfig } = this._mmd
-        this.geometry = character.geometry
+        const { api } = this._mmd
 
         function updateTexture(material, materialKey, textures) {
             return function (key) {
@@ -346,14 +341,14 @@ class MMDGui {
         const normalMapsKeys = Object.keys(normalMaps)
 
         const _saveMaterial = () => {
-            const target = character.material[api.targetMaterial]
+            const target = this.materials[api.targetMaterial]
             const targetJson = target.toJSON()
             delete targetJson.map
             api.material[target.name] = targetJson
             api.material = api.material
         }
 
-        for (const item of character.material) {
+        for (const item of this.materials) {
             const userData = {
                 color: item.color.getHex(),
                 emissive: item.emissive.getHex(),
@@ -406,7 +401,7 @@ class MMDGui {
 
         }
         this._updateControls = (idx) => {
-            const material = character.material[idx]
+            const material = this.materials[idx]
 
             this._updateFaceForward(idx, material.userData.faceForward);
             folder.add(material.userData, "faceForward", 0, 1).onChange((val) => {
@@ -488,7 +483,7 @@ class MMDGui {
         }
         this._updateTargetMaterial = () => {
             const materialMap = {}
-            for (const [i, material] of character.material.entries()) {
+            for (const [i, material] of this.materials.entries()) {
                 materialMap[material.name] = i
             }
             this._targetMaterialContoller = folder.add(api, "targetMaterial", materialMap).onChange((idx) => {

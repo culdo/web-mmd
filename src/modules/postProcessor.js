@@ -1,4 +1,4 @@
-import { BlendFunction, BloomEffect, EffectComposer, EffectPass, RenderPass, SelectiveBloomEffect } from 'postprocessing';
+import { BlendFunction, BloomEffect, CopyMaterial, EffectComposer, EffectPass, RenderPass, SelectiveBloomEffect, ShaderPass } from 'postprocessing';
 import { OutlinePass } from './effects/OutlinePass';
 import { DepthOfFieldEffect } from './effects/DOFeffect';
 
@@ -27,22 +27,23 @@ class PostProcessor {
             height: api["boken resolution"],
             worldFocusDistance: api["bokeh focus"],
             worldFocusRange: api["bokeh focal length"],
-            bokehScale: api["bokeh scale"],
-            blendFunction: api["bokeh enabled"] ? BlendFunction.NORMAL : BlendFunction.SKIP
+            bokehScale: api["bokeh scale"]
         })
         const dofPass = new EffectPass(camera, dofEffect);
         
         composer.addPass(renderPass)
 
         for (const [pass, key] of [
-            [outlinePass, "show outline"], 
+            [outlinePass, "show outline"],
             [bloomPass, "bloom enabled"], 
             [dofPass, "bokeh enabled"]
         ]) {
-            if(api[key]) {
-                composer.addPass(pass)
-            }
+            pass.enabled = api[key]
+            composer.addPass(pass)
         }
+        
+		const outputPass = new ShaderPass(new CopyMaterial());
+        composer.addPass(outputPass)
 
         this.composer = composer;
         this.outline = outlinePass;
