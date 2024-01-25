@@ -518,9 +518,11 @@ class MMDGui {
 
             await mmd.loadCharacter(url, filename);
             // update materials
-            this._clearMaterialFolder();
-            this._targetMaterialContoller.destroy();
-            this._updateTargetMaterial();
+            if(this._clearMaterialFolder) {ß
+                this._clearMaterialFolder();
+                this._targetMaterialContoller.destroy();
+                this._updateTargetMaterial();
+            }
         };
         // TODO: use unzip tools to unzip model files, because it has many texture images
         this._guiFn.selectChar = () => {
