@@ -882,6 +882,9 @@ class GeometryBuilder {
 		for (let i = 0; i < data.metadata.morphCount; i++) {
 
 			const morph = data.morphs[i];
+			if(morph.elements.length == 0) {
+				continue
+			}
 			const params = { name: morph.name };
 
 			const attribute = new Float32BufferAttribute(data.metadata.vertexCount * 3, 3);
@@ -902,7 +905,6 @@ class GeometryBuilder {
 				}
 
 			} else {
-
 				if (morph.type === 0) { // group
 
 					for (let j = 0; j < morph.elementCount; j++) {
