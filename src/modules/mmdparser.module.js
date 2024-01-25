@@ -10720,7 +10720,7 @@ Parser.prototype.parsePmx = function (buffer, leftToRight) {
 
 		for (var i = 0; i < metadata.textureCount; i++) {
 
-			pmx.textures.push(parseTexture());
+			pmx.textures.push(parseTexture().normalize());
 
 		}
 

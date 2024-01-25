@@ -1254,7 +1254,7 @@ class MaterialBuilder {
 
 				// map
 
-				if (material.textureIndex !== - 1) {
+				if (material.textureIndex !== - 1 && data.textures[material.textureIndex]) {
 
 					params.map = this._loadTexture(data.textures[material.textureIndex], textures);
 					params.map.colorSpace = SRGBColorSpace

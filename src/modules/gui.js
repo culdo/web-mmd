@@ -348,27 +348,6 @@ class MMDGui {
             api.material = api.material
         }
 
-        for (const item of this.materials) {
-            const userData = {
-                color: item.color.getHex(),
-                emissive: item.emissive.getHex(),
-                sheenColor: item.sheenColor.getHex(),
-                specularColor: item.specularColor.getHex(),
-                faceForward: 0,
-                normalMap: "none"
-            }
-            Object.assign(item.userData, userData)
-            const savedMaterial = api.material[item.name]
-            if (!savedMaterial) {
-                continue
-            }
-            const loadedMaterial = "type" in savedMaterial ? loader.parse(savedMaterial) : savedMaterial
-            Object.assign(item.userData, loadedMaterial.userData ?? {})
-            delete loadedMaterial.userData
-            delete loadedMaterial.map
-            Object.assign(item, loadedMaterial)
-        }
-
         function needsUpdate(material) {
             return function () {
                 material.side = parseInt(material.side); //Ensure number
@@ -482,6 +461,27 @@ class MMDGui {
             }
         }
         this._updateTargetMaterial = () => {
+            for (const item of this.materials) {
+                const userData = {
+                    color: item.color.getHex(),
+                    emissive: item.emissive.getHex(),
+                    sheenColor: item.sheenColor.getHex(),
+                    specularColor: item.specularColor.getHex(),
+                    faceForward: 0,
+                    normalMap: "none"
+                }
+                Object.assign(item.userData, userData)
+                const savedMaterial = api.material[item.name]
+                if (!savedMaterial) {
+                    continue
+                }
+                const loadedMaterial = "type" in savedMaterial ? loader.parse(savedMaterial) : savedMaterial
+                Object.assign(item.userData, loadedMaterial.userData ?? {})
+                delete loadedMaterial.userData
+                delete loadedMaterial.map
+                Object.assign(item, loadedMaterial)
+            }
+
             const materialMap = {}
             for (const [i, material] of this.materials.entries()) {
                 materialMap[material.name] = i
@@ -649,7 +649,7 @@ class MMDGui {
                 const resourceMap = {};
                 for (const f of this.files) {
                     let relativePath = f.webkitRelativePath;
-                    const resourcePath = relativePath.split("/").slice(1).join("/")
+                    const resourcePath = relativePath.split("/").slice(1).join("/").normalize()
 
                     let url = await blobToBase64(f);
 
