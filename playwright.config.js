@@ -17,12 +17,9 @@ module.exports = defineConfig({
     reuseExistingServer: !process.env.CI,
     stderr: 'pipe',
   },
-  timeout: 100000,
+  timeout: 30000,
   expect: {
-    timeout: 30000,
-    toHaveScreenshot: {
-      maxDiffPixelRatio: 0.1
-    }
+    timeout: 10000,
   },
   testDir: './tests',
   /* Run tests in files in parallel */
