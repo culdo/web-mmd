@@ -21,7 +21,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Single deploy job since we're just deploying
   deploy:
     environment:
       name: github-pages
@@ -38,7 +37,7 @@ jobs:
       - run: npx playwright install --with-deps
       - name: Test
         run: npm test
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
@@ -55,3 +54,23 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
+
+  update-snapshot: 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - name: Update Snapshots
+        run: npx playwright test --update-snapshots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: updated-snapshots
+          path: tests/*-snapshots
+          retention-days: 30
