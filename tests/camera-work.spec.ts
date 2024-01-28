@@ -1,10 +1,10 @@
-const { expect } = require('@playwright/test');
-const { test } = require('./fixtures/common');
+import { Page, TestInfo, expect } from '@playwright/test';
+import { test } from './fixtures/common'
 
-async function playToTime(page, testInfo, time) {
+async function playToTime(page: Page, testInfo: TestInfo, time: number | bigint) {
     await page.keyboard.down(" ")
     await expect(async () => {
-        const currentTime = await page.locator('#player').evaluate((el) => el.currentTime)
+        const currentTime = await page.locator('#player').evaluate((el: HTMLAudioElement) => el.currentTime)
         console.log(`[${testInfo.titlePath}] currentTime: ${currentTime}`)
         expect(currentTime).toBeGreaterThan(time)
     }).toPass()

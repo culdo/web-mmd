@@ -1,8 +1,11 @@
 // Generated using webpack-cli https://github.com/webpack/webpack-cli
 
-const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+import path from 'path';
+import webpack from 'webpack';
+import 'webpack-dev-server';
+
+import HtmlWebpackPlugin from "html-webpack-plugin"
+import MiniCssExtractPlugin from "mini-css-extract-plugin"
 
 const isProduction = process.env.NODE_ENV == "production";
 
@@ -10,7 +13,7 @@ const stylesHandler = isProduction
   ? MiniCssExtractPlugin.loader
   : "style-loader";
 
-const config = {
+const config: webpack.Configuration = {
   entry: {
     index: "./src/index.js",
   },
@@ -73,14 +76,13 @@ const config = {
   }
 };
 
-module.exports = () => {
-  if (isProduction) {
-    config.mode = "production";
+if (isProduction) {
+  config.mode = "production";
 
-    config.plugins.push(new MiniCssExtractPlugin());
-  } else {
-    config.mode = "development";
-    config.devtool = "inline-source-map";
-  }
-  return config;
-};
+  config.plugins.push(new MiniCssExtractPlugin());
+} else {
+  config.mode = "development";
+  config.devtool = "inline-source-map";
+}
+
+export default config;
