@@ -1,4 +1,4 @@
-import { test as base } from "@playwright/test";
+import { test as base, expect } from "@playwright/test";
 
 export const test = base.extend({
 
@@ -10,6 +10,10 @@ export const test = base.extend({
         page.on('pageerror', err => {
             console.log(`[${testInfo.titlePath}] ${err.stack}`);
         });
+
+        await page.goto('/');
+        await expect(page.locator("#loading")).not.toBeVisible()
+
         await use(page)
         await page.close();
     },

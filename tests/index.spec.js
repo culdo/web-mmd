@@ -3,13 +3,10 @@ const { expect } = require('@playwright/test');
 const { test } = require('./fixtures/common');
 
 test('has loaded', async ({ page }) => {
-  await page.goto('/');
-  await expect(page.locator("#loading")).not.toBeVisible()
   await expect(page).toHaveScreenshot();
 });
 
 test('changing camera mode with saving config', async ({ page }) => {
-  await page.goto('/');
   // Default to Untitled preset transition
   await page.getByLabel("camera mode").selectOption({ label: "Composition" })
   await expect(page.locator(".root > div.title")).toHaveText("Controls")
