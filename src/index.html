@@ -7,6 +7,7 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
         <link type="text/css" rel="stylesheet" href="main.css">
 		<link rel="icon" type="image/png" href="icon.png">
+		<link href="https://vjs.zencdn.net/7.21.2/video-js.css" rel="stylesheet" />
 	</head>
 
 	<body>
@@ -19,7 +20,13 @@
 			<hr/>
 			<div class="hit-point"></div>
 		</div>
-		<audio id="player" controls></audio>
+		<audio 
+			id="player" 
+			class="video-js vjs-default-skin"
+			controls
+			width="640" height="50"
+			>
+		</audio>
 		<input id="selectFile" type="file" style="display: none;" />
 		<div id="button">
 			<img src="fullscreen.svg">

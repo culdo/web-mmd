@@ -95,14 +95,14 @@ select {
 }
 
 #player {
-	position: absolute;
-	width: 50%;
-	left: 0;
-	right: 0;
-	margin-left: auto;
-	margin-right: auto;
-	bottom: 25px;
-	transition: opacity 1s ease 0s;
+	position: absolute; 
+	width: 50%; 
+	left: 0; 
+	right: 0; 
+	margin-left: auto; 
+	margin-right: auto; 
+	bottom: 25px; 
+	transition: opacity 1s ease 0s; 
 	opacity: 0;
 }
 
