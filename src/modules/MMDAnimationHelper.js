@@ -38,6 +38,7 @@ class MMDAnimationHelper {
 		this.camera = null;
 		this.cameraTarget = new Object3D();
 		this.cameraTarget.name = 'target';
+		this.cameraTarget.frameNum = 0;
 
 		this.audio = null;
 		this.audioManager = null;

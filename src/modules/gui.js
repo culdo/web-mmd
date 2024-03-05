@@ -260,12 +260,12 @@ class MMDGui {
         const folder = this.panel.addFolder('Camera');
         const guiFn = {
             reset: () => {
-                this._mmd.api.fov = 45;
-                this._mmd.api.zoom = 1;
-                this._mmd.api.near = 0.1;
-                camera.fov = 45;
-                camera.zoom = 1;
-                camera.near = 0.1;
+                this._mmd.api.fov = this._mmd.defaultConfig.fov;
+                this._mmd.api.zoom = this._mmd.defaultConfig.zoom;
+                this._mmd.api.near = this._mmd.defaultConfig.near;
+                camera.fov = this._mmd.defaultConfig.fov;
+                camera.zoom = this._mmd.defaultConfig.zoom;
+                camera.near = this._mmd.defaultConfig.near;
 
                 camera.updateProjectionMatrix();
             }

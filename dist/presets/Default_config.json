@@ -141,7 +141,7 @@
     "luminance enabled": true,
     "bloom threshold": 0.9,
     "bloom smoothing": 0.025,
-    "fov": 45,
+    "fov": 30,
     "zoom": 0.8,
     "near": 0.1,
     "tone mapping": 0,

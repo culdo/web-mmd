@@ -37,8 +37,8 @@ import {
 	RGB_PVRTC_2BPPV1_Format,
 	RGB_ETC1_Format,
 	RGB_ETC2_Format,
-	CatmullRomCurve3,
-	SRGBColorSpace
+	SRGBColorSpace,
+	InterpolateDiscrete
 } from 'three';
 import { MMDToonShader } from './shaders/MMDToonShader.js';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
@@ -1863,6 +1863,7 @@ class AnimationBuilder {
 		});
 
 		const times = [];
+		const frameNums = [];
 		const centers = [];
 		const quaternions = [];
 		const positions = [];
@@ -1890,6 +1891,7 @@ class AnimationBuilder {
 			const interpolation = motion.interpolation;
 
 			times.push(time);
+			frameNums.push(motion.frameNum);
 
 			position.set(0, 0, - distance);
 
@@ -1930,6 +1932,7 @@ class AnimationBuilder {
 
 		// I expect an object whose name 'target' exists under THREE.Camera
 		tracks.push(this._createTrack('target.position', VectorKeyframeTrack, times, centers, cInterpolations, true));
+		tracks.push(new NumberKeyframeTrack('target.frameNum', times, frameNums, InterpolateDiscrete));
 
 		tracks.push(this._createTrack('.quaternion', QuaternionKeyframeTrack, times, quaternions, qInterpolations, true));
 		tracks.push(this._createTrack('.position', VectorKeyframeTrack, times, positions, pInterpolations, true));

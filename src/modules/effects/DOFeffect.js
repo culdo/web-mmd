@@ -245,6 +245,7 @@ export class DepthOfFieldEffect extends Effect {
 		resolution.addEventListener("change", (e) => this.setSize(resolution.baseWidth, resolution.baseHeight));
 
 		this.bokehScale = bokehScale;
+		this.scaleFov = 30
 
 	}
 
@@ -479,7 +480,12 @@ export class DepthOfFieldEffect extends Effect {
 
 			const distance = this.calculateFocusDistance(this.target);
 			this.cocMaterial.focusDistance = distance;
-
+			console.log(this.camera.getObjectByName("target").frameNum)
+			if(this.camera.fov < this.scaleFov) {
+				this.bokehScale = 30 * ((this.scaleFov - this.camera.fov) / this.scaleFov)
+			} else {
+				this.bokehScale = 0.0
+			}
 		}
 
 		// Render the CoC and create a blurred version for soft near field blending.
