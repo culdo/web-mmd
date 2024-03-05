@@ -54,28 +54,28 @@ class MMDGui {
     }
 
     _addEventHandlers() {
-        const { api, camera, composer, renderer, controls, cwHelper } = this._mmd
+        const { api, camera, composer, renderer, controls, cwHelper, player } = this._mmd
         const scope = this._mmd
 
-        player.onvolumechange = () => {
-            api['volume'] = player.volume;
-            if (player.muted) {
+        player.on('volumechange', () => {
+            api['volume'] = player.volume();
+            if (player.muted()) {
                 api['volume'] = 0.0;
             }
-        }
+        })
 
-        player.onplay = () => {
+        player.on('play', () => {
             scope.runtimeCharacter.physics.reset();
             if (api["auto hide GUI"]) this.panel.hide();
-        }
-        player.onpause = () => {
+        })
+        player.on('pause', () => {
             this.panel.show();
-            api.currentTime = player.currentTime;
-        }
+            api.currentTime = player.currentTime();
+        })
 
-        player.onseeked = () => {
-            api.currentTime = player.currentTime;
-        }
+        player.on('seeked', () => {
+            api.currentTime = player.currentTime();
+        })
         button.onclick = () => {
             let elem = document.querySelector("body");
 
@@ -102,7 +102,7 @@ class MMDGui {
         // control bar
         document.addEventListener('mousemove', (e) => {
 
-            player.style.opacity = 0.5;
+            rawPlayer.style.opacity = 0.5;
             button.style.opacity = 0.5;
             document.body.style.cursor = "default"
             if (this._timeoutID !== undefined) {
@@ -110,9 +110,9 @@ class MMDGui {
             }
 
             this._timeoutID = setTimeout(function () {
-                player.style.opacity = 0;
+                rawPlayer.style.opacity = 0;
                 button.style.opacity = 0;
-                if (!player.paused) {
+                if (!player.paused()) {
                     document.body.style.cursor = "none"
                 }
             }, 1000);
@@ -130,7 +130,7 @@ class MMDGui {
         // keyboard shortcuts
         document.addEventListener("keydown", (e) => {
             if (e.key == " ") {
-                if (player.paused) {
+                if (player.paused()) {
                     player.play()
                 } else {
                     player.pause()
@@ -554,7 +554,7 @@ class MMDGui {
 
         this._guiFn.selectMusic = () => {
             selectFile.onchange = _buildLoadFileFn((url, filename) => {
-                player.src = url;
+                mmd.player.src(url);
                 mmd.api.musicURL = url;
                 mmd.api.musicName = filename;
             });

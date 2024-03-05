@@ -94,7 +94,7 @@ select {
 	padding: 10px;
 }
 
-#player {
+#rawPlayer {
 	position: absolute; 
 	width: 50%; 
 	left: 0; 

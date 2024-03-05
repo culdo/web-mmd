@@ -1,4 +1,5 @@
 import videojs from 'video.js'
+import 'videojs-youtube'
 
 // log assets downloading progress
 let loading = document.getElementById("loading");
@@ -53,24 +54,14 @@ function withProgress(resp, totalSize = null) {
 }
 
 async function loadMusicFromYT(api) {
-    const player = videojs('player', {
-        "audioOnlyMode": true,
-        "techOrder": ["youtube"], 
-        "sources": [{ 
-            "type": "video/youtube", 
-            "src": api.musicYtURL
-        }] 
-    })
-    player.src([{ 
+    const player = videojs.getPlayer("rawPlayer")
+    player.src({ 
         "type": "video/youtube", 
         "src": api.musicYtURL
-    }])
-    
+    })
     
     api.musicName = "testing";
     api.musicURL = "";
-
-    return player
 }
 
 let _currTimePrevUpdate = 0;

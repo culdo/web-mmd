@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import videojs from 'video.js'
 
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
@@ -9,7 +10,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { MMDLoader } from './MMDLoader.js';
 import { MMDAnimationHelper } from './MMDAnimationHelper.js';
 import { MMDGui } from './gui.js'
-import { onProgress, loadMusicFromYT, withProgress } from '../utils/base.js'
+import { onProgress, loadMusicFromYT, withProgress, loadMusicFromData } from '../utils/base.js'
 import { PostProcessor } from './postProcessor.js'
 
 import path from 'path-browserify';
@@ -110,16 +111,24 @@ class WebMMD {
 
     async _setup() {
         const { api } = this
-
+        const player = videojs('rawPlayer', {
+            "audioOnlyMode": true,
+            "techOrder": ["youtube"], 
+            "sources": [{ 
+                "type": "video/youtube", 
+                "src": api.musicYtURL
+            }]
+        })
         // music player
         if (api.musicURL.startsWith("data:")) {
-            player.src = api.musicURL
+            player.src(api.musicURL)
         } else {
             loadMusicFromYT(api);
         }
+        player.audioOnlyMode(true)
 
-        player.currentTime = api["currentTime"];
-        player.volume = api['volume'];
+        player.currentTime(api["currentTime"]);
+        player.volume(api['volume']);
 
         // Threejs container
         const container = document.createElement('div');
@@ -219,7 +228,7 @@ class WebMMD {
 
     // get current time for motions (character, camera...etc)
     get motionTime() {
-        const currTime = player.currentTime + (this.api.motionOffset * 0.001)
+        const currTime = this.player.currentTime() + (this.api.motionOffset * 0.001)
         if (currTime < 0) {
             return 0
         }
@@ -370,13 +379,13 @@ class WebMMD {
         const {
             api,
             runtimeCharacter, helper, cwHelper,
-            composer, controls,
+            composer, controls, player
         } = this;
 
         const currTime = this.motionTime
         // player has a bug that sometimes jump to end(duration)
         // so we just skip that frame
-        if (player.currentTime == player.duration) {
+        if (player.currentTime() == player.duration()) {
             return
         }
         const delta = currTime - this._prevTime;
@@ -413,7 +422,7 @@ class WebMMD {
         // stop when motion is finished and then fix physics
         if (runtimeCharacter.looped) {
             player.pause();
-            player.currentTime = 0.0;
+            player.currentTime(0.0);
 
             runtimeCharacter.physics.reset();
             runtimeCharacter.physics.update(0.1)
