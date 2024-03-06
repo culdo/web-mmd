@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import localforage from 'localforage';
 import path from 'path-browserify';
 import { GUI } from 'lil-gui';
-import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, createAudioLink, withTimeElapse } from '../utils/base';
+import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, createAudioLink, withTimeElapse, dataURItoBlobUrl } from '../utils/base';
 import { CameraMode } from './MMDCameraWorkHelper';
 import logging from 'webpack/lib/logging/runtime'
 import { BlendFunction, KernelSize } from 'postprocessing';
@@ -554,7 +554,7 @@ class MMDGui {
 
         this._guiFn.selectMusic = () => {
             selectFile.onchange = _buildLoadFileFn((url, filename) => {
-                mmd.player.src(url);
+                mmd.player.src(dataURItoBlobUrl(url));
                 mmd.api.musicURL = url;
                 mmd.api.musicName = filename;
             });

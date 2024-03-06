@@ -10,7 +10,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { MMDLoader } from './MMDLoader.js';
 import { MMDAnimationHelper } from './MMDAnimationHelper.js';
 import { MMDGui } from './gui.js'
-import { onProgress, loadMusicFromYT, withProgress, loadMusicFromData } from '../utils/base.js'
+import { onProgress, loadMusicFromYT, withProgress, dataURItoBlobUrl } from '../utils/base.js'
 import { PostProcessor } from './postProcessor.js'
 
 import path from 'path-browserify';
@@ -112,20 +112,14 @@ class WebMMD {
     async _setup() {
         const { api } = this
         const player = videojs('rawPlayer', {
-            "audioOnlyMode": true,
-            "techOrder": ["youtube"], 
-            "sources": [{ 
-                "type": "video/youtube", 
-                "src": api.musicYtURL
-            }]
+            "audioOnlyMode": true
         })
         // music player
         if (api.musicURL.startsWith("data:")) {
-            player.src(api.musicURL)
+            player.src(dataURItoBlobUrl(api.musicURL))
         } else {
             loadMusicFromYT(api);
         }
-        player.audioOnlyMode(true)
 
         player.currentTime(api["currentTime"]);
         player.volume(api['volume']);

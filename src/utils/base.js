@@ -55,13 +55,36 @@ function withProgress(resp, totalSize = null) {
 
 async function loadMusicFromYT(api) {
     const player = videojs.getPlayer("rawPlayer")
-    player.src({ 
-        "type": "video/youtube", 
+    player.src({
+        "type": "video/youtube",
         "src": api.musicYtURL
     })
-    
+
     api.musicName = "testing";
     api.musicURL = "";
+}
+
+function dataURItoBlobUrl(dataURI) {
+    // convert base64 to raw binary data held in a string
+    // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
+    var byteString = atob(dataURI.split(',')[1]);
+
+    // separate out the mime component
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+
+    // write the bytes of the string to an ArrayBuffer
+    var ab = new ArrayBuffer(byteString.length);
+    var ia = new Uint8Array(ab);
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    // write the ArrayBuffer to a blob, and you're done
+    var bb = new Blob([ab], { type: mimeString });
+    return {
+        type: mimeString,
+        src: URL.createObjectURL(bb)
+    };
 }
 
 let _currTimePrevUpdate = 0;
@@ -104,6 +127,6 @@ function createAudioLink() {
 async function withTimeElapse(func, name) {
     const start = Date.now()
     await func()
-    console.log(`${name} time elapsed: ${(Date.now() - start)/1000}s`)
-} 
-export { withTimeElapse, onProgress, loadMusicFromYT, saveCurrTime, blobToBase64, withProgress, startFileDownload, createAudioLink }
+    console.log(`${name} time elapsed: ${(Date.now() - start) / 1000}s`)
+}
+export { withTimeElapse, onProgress, dataURItoBlobUrl, loadMusicFromYT, saveCurrTime, blobToBase64, withProgress, startFileDownload, createAudioLink }

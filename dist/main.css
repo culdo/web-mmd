@@ -110,6 +110,11 @@ select {
 	/* font-size: 16px; */
 }
 
+div.vjs-poster,
+.vjs-audio.vjs-has-started div.vjs-poster {
+	display: none;
+}
+
 #button {
 	position: fixed;
 	bottom: 25px;

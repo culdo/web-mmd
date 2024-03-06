@@ -5,7 +5,7 @@
     "camera": "GimmexGimme.vmd",
     "stage": "EPDS.pmx",
     "currentTime": 0,
-    "volume": 0.2,
+    "volume": 1.0,
     "camera mode": 0,
     "physics": true,
     "ground shadow": true,
