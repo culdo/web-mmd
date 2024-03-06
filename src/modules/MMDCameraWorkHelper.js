@@ -88,7 +88,7 @@ export class MMDCameraWorkHelper {
                 }
                 if (prevClip != null) {
                     prevClip.action.reset()
-                    player.currentTime = prevClip.cutTime - (this._api.motionOffset * 0.001)
+                    this._mmd.player.currentTime(prevClip.cutTime - (this._api.motionOffset * 0.001))
                 }
             } else if (e.key == "ArrowRight") {
                 let minDiff = null
@@ -103,7 +103,7 @@ export class MMDCameraWorkHelper {
                     }
                 }
                 if (nextCutTime != null) {
-                    player.currentTime = nextCutTime - (this._api.motionOffset * 0.001)
+                    this._mmd.player.currentTime(nextCutTime - (this._api.motionOffset * 0.001))
                 }
             } else if (["Delete", "Backspace"].includes(e.key)) {
                 this._clearCurrentBeat()
@@ -164,7 +164,7 @@ export class MMDCameraWorkHelper {
 
     _clearCurrentBeat() {
         if (this._currentClip) {
-            const diff = player.currentTime - (this._currentClip.cutTime - (this._api.motionOffset * 0.001))
+            const diff = this._mmd.player.currentTime() - (this._currentClip.cutTime - (this._api.motionOffset * 0.001))
             if (Math.round(diff * 1000) == 0) {
                 this._currentClip.action.stop()
                 const idx = this._compositeClips.indexOf(this._currentClip)

@@ -832,7 +832,7 @@ class MMDGui {
             if (this._mmd.skeletonHelper !== undefined) this._mmd.skeletonHelper.visible = state;
         });
         folder.add(this._mmd.api, 'auto hide GUI').onChange((state) => {
-            if (!this._mmd.player.paused) this.panel.hide();
+            if (!this._mmd.player.paused()) this.panel.hide();
         });
         folder.add(this._mmd.api, 'set pixelratio 1.0').onChange((state) => {
             if (state) {

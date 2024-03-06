@@ -111,10 +111,13 @@ class WebMMD {
 
     async _setup() {
         const { api } = this
+        
+        // music player
         const player = videojs('rawPlayer', {
             "audioOnlyMode": true
         })
-        // music player
+        // for testing
+        window.vjplayer = player
         if (api.musicURL.startsWith("data:")) {
             player.src(dataURItoBlobUrl(api.musicURL))
         } else {

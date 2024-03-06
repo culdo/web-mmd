@@ -59,8 +59,9 @@ async function loadMusicFromYT(api) {
         "type": "video/youtube",
         "src": api.musicYtURL
     })
-
-    api.musicName = "testing";
+    await player.play()
+    player.pause()
+    api.musicName = player.tech(true).ytPlayer.videoTitle
     api.musicURL = "";
 }
 
