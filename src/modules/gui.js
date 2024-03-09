@@ -609,10 +609,6 @@ class MMDGui {
         folder.add(mmd.api, 'musicName').name('music').listen()
         folder.add(mmd.api, 'musicYtURL').name('music from YT').listen()
 
-        const saveBt = folder.add(this._guiFn, 'saveMusic').name('save music')
-        const a = createAudioLink();
-        saveBt.domElement.replaceWith(a)
-
         folder.add(this._guiFn, 'changeYtMusic').name('change use above url...')
         folder.add(this._guiFn, 'selectMusic').name('select audio file...')
 
