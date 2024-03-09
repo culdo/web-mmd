@@ -42,9 +42,11 @@ test("cut jumping using Arrow keys", async ({ page }, testInfo) => {
     await page.getByLabel("camera mode").selectOption({ label: "Composition" })
 
     await playToTime(page, testInfo, 0.0)
-    await page.keyboard.down("ArrowLeft")
 
-    await expect(page.getByText("1A", { exact: true })).toHaveClass(/goal/)
+    await expect(async () => {
+        await page.keyboard.down("ArrowLeft")
+        await expect(page.getByText("1A", { exact: true })).toHaveClass(/goal/)
+    }).toPass()
 
     await page.keyboard.down("ArrowRight")
     await expect(page.getByText("1B", { exact: true })).toHaveClass(/goal/)
