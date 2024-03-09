@@ -22,11 +22,16 @@ async function playToTime(page, testInfo, time) {
 test("create beat", async ({ page }, testInfo) => {
     await page.getByLabel("camera mode").selectOption({ label: "Composition" })
     
+    // fix video.ts-youtube bouncing
     await playToTime(page, testInfo, 0.0)
+
     await playToTime(page, testInfo, 3)
     await page.keyboard.down("a")
     await page.keyboard.down("a")
     await expect(page.getByText("1A", { exact: true })).toHaveCount(1)
+
+    // ensure video.ts-youtube not bouncing
+    expect(await page.evaluate('vjplayer.currentTime()')).toBeGreaterThan(3)
 })
 
 test("delete beat", async ({ page }) => {
@@ -41,6 +46,7 @@ test("cut jumping using Arrow keys", async ({ page }, testInfo) => {
 
     await page.getByLabel("camera mode").selectOption({ label: "Composition" })
 
+    // fix video.ts-youtube bouncing
     await playToTime(page, testInfo, 0.0)
 
     await expect(async () => {

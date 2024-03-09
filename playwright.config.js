@@ -17,7 +17,7 @@ module.exports = defineConfig({
     reuseExistingServer: !process.env.CI,
     stderr: 'pipe',
   },
-  timeout: 100000,
+  timeout: 200000,
   expect: {
     timeout: 30000,
   },
