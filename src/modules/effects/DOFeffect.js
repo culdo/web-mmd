@@ -245,6 +245,7 @@ export class DepthOfFieldEffect extends Effect {
 		resolution.addEventListener("change", (e) => this.setSize(resolution.baseWidth, resolution.baseHeight));
 
 		this.bokehScale = bokehScale;
+		this.defaultBokehScale = bokehScale;
 		this.scaleFov = 30
 
 	}
@@ -480,9 +481,9 @@ export class DepthOfFieldEffect extends Effect {
 
 			const distance = this.calculateFocusDistance(this.target);
 			this.cocMaterial.focusDistance = distance;
-			console.log(this.camera.getObjectByName("target").frameNum)
+			// console.log(this.camera.getObjectByName("target").frameNum)
 			if(this.camera.fov < this.scaleFov) {
-				this.bokehScale = 30 * ((this.scaleFov - this.camera.fov) / this.scaleFov)
+				this.bokehScale = this.defaultBokehScale * ((this.scaleFov - this.camera.fov) / this.scaleFov)
 			} else {
 				this.bokehScale = 0.0
 			}
