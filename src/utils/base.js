@@ -53,14 +53,36 @@ function withProgress(resp, totalSize = null) {
     }));
 }
 
+let init = false
 async function loadMusicFromYT(api) {
     const player = videojs.getPlayer("rawPlayer")
     player.src({
         "type": "video/youtube",
         "src": api.musicYtURL
     })
-    await player.play()
-    player.pause()
+
+    // workaroud for yt policy
+    if(!init) {
+        const savedTime = api["currentTime"]
+        const savedVolume = api["volume"]
+        await player.play()
+        player.volume(0.0);
+        player.on('play', async () => {
+            if(!init) {
+                player.pause()
+                await player.play()
+                player.pause()
+                player.volume(savedVolume);
+            }
+        })
+        player.on('pause', () => {
+            if(!init) {
+                player.currentTime(savedTime);
+                init = true
+            }
+        })
+    }
+    
     api.musicName = player.tech(true).ytPlayer.videoTitle
     api.musicURL = "";
 }
