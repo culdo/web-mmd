@@ -187,8 +187,8 @@ class MMDGui {
         bokehFolder.add(api, "bokeh resolution", [240, 360, 480, 720, 1080]).onChange((value) => {
             dofEffect.resolution.height = Number(value);
         });
-        bokehFolder.add(api, "bokeh scale", 1.0, 50.0, 0.1).onChange((value) => {
-            dofEffect.bokehScale = value;
+        const bokehScaleController = bokehFolder.add(dofEffect, "bokehScale", 1.0, 50.0, 0.1).listen().onChange((value) => {
+            api["bokeh scale"] = value;
         });
         bokehFolder.add(api, "edge blur kernel", KernelSize).onChange((value) => {
             dofEffect.blurPass.kernelSize = Number(value);
@@ -198,14 +198,18 @@ class MMDGui {
             if (state) {
                 dofEffect.target = this._mmd.character.skeleton.bones[1].position
                 focusController.disable()
+                bokehScaleController.disable()
             } else {
                 dofEffect.target = null
+                dofEffect.bokehScale = this._mmd.defaultConfig["bokeh scale"]
                 focusController.enable()
+                bokehScaleController.enable()
             }
         }
         bokehFolder.add(api, "bokeh autofocus").onChange(toggleFocus);
-        const focusController = bokehFolder.add(api, "bokeh focus", 0.0, 50.0, 0.1).onChange((value) => {
-            cocMaterial.worldFocusDistance = value;
+        const focusController = bokehFolder.add(cocMaterial, "worldFocusDistance", 0.0, 100.0, 0.1).listen().onChange((value) => {
+            console.log(value)
+            api["bokeh focus"] = value;
         });
         toggleFocus(api["bokeh autofocus"])
 
