@@ -1,7 +1,7 @@
 # Web-MMD
 <p align="center">
   <a href="https://culdo.github.io/web-mmd/">
-    <img alt="Web-MMD" src="tests/index.spec.js-snapshots/has-loaded-1-Google-Chrome-linux.png" width="80%"/>
+    <img alt="Web-MMD" src="tests/index.spec.ts-snapshots/has-loaded-1-Google-Chrome-linux.png" width="80%"/>
   </a>
 </p>
 
@@ -32,12 +32,12 @@ It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) f
 * stage: RedialC_EpRoomDS by RedialC
 
 # Development
-* Run `npm run serve`
+* Run `npm run dev`
 > Modules is refactored to Classes and Async/Await styles.
 
 ## Upgrade Ammo.js
 1. `npm install github:kripken/ammo.js`: Install the latest version of Ammo.js  
-2. `npm run copyAmmoJS`: Copy the latest `ammo.wasm.js` and `ammo.wasm.wasm` to `dist/`
+2. `npm run copyAmmoJS`: Copy the latest `ammo.wasm.js` and `ammo.wasm.wasm` to `public/`
 
 ## E2E Testing using Playwright
 Run `npm test`
@@ -54,12 +54,15 @@ Run `npm test`
 - [x] Open/Save-As/Copy/Export MMD presets
 - [x] SDEF rendering
 - [x] camera Fixed-Follow mode
+- [x] PBR rendering
 
 ## WIP
-- [ ] PBR rendering
 - [ ] timeline editor
     - [x] camera composition mode
+- [ ] refactor to Typescript
+    - [x] project refactor to Next.js
+    - [x] CI refactoring
+    - [ ] WebMMD modules refactoring
 
 ## Planning
-- [ ] refactor to Typescript
 - [ ] In-APP Credits list
