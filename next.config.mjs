@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    assetPrefix: './',
     reactStrictMode: false,
     output: 'export',
     webpack: (
