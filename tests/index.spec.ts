@@ -1,6 +1,5 @@
-// @ts-check
-const { expect } = require('@playwright/test');
-const { test } = require('./fixtures/common');
+import { expect } from '@playwright/test';
+import { test } from './fixtures/common';
 
 test('has loaded', async ({ page }) => {
   await expect(page).toHaveScreenshot();

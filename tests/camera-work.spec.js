@@ -1,5 +1,5 @@
-const { expect } = require('@playwright/test');
-const { test } = require('./fixtures/common');
+import { expect } from '@playwright/test';
+import { test } from './fixtures/common';
 
 async function playToTime(page, testInfo, time) {
     let prevTime = 0.0

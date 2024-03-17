@@ -139,10 +139,10 @@ div.vjs-poster,
 
 #button img {
 	display: block;
-	width: 24px;
 }
 
 .scrolling-bar {
+	display: none;
 	position: absolute;
 	width: 75%;
 	height: 50px;
@@ -194,4 +194,8 @@ hr {
 	height: 3px;
 	background-color: #00000040;
 	margin-top: 23.5px;
+}
+
+#selectFile {
+	display: none;
 }

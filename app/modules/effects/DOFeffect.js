@@ -1,13 +1,13 @@
-import { BasicDepthPacking, Uniform, UnsignedByteType, WebGLRenderTarget } from "three";
+import { BasicDepthPacking, Uniform, UnsignedByteType, WebGLRenderTarget, SRGBColorSpace } from "three";
 import { 
 	Resolution, Effect,
-	ColorChannel, EffectAttribute, KernelSize, MaskFunction, SRGBColorSpace,
+	ColorChannel, EffectAttribute, KernelSize, MaskFunction,
 	BokehMaterial, CircleOfConfusionMaterial, MaskMaterial,
 	KawaseBlurPass, ShaderPass
 } from "postprocessing";
 
 import fragmentShader from "./shaders/dof.glsl";
-import { getOutputColorSpace, setTextureColorSpace, viewZToOrthographicDepth } from "../../utils";
+import { getOutputColorSpace, setTextureColorSpace, viewZToOrthographicDepth } from "./utils/all";
 
 /**
  * A depth of field effect.

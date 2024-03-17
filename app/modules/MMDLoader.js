@@ -43,7 +43,7 @@ import {
 import { MMDToonShader } from './shaders/MMDToonShader.js';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
 import { MMDParser } from './mmdparser.module.js';
-import nj from 'numjs'
+// import nj from 'numjs'
 import { MMDPhysicalMaterial } from './MMDPhysicalMaterial.js';
 import { initSdef } from './shaders/SdefVertexShader.js';
 
@@ -1743,22 +1743,22 @@ class AnimationBuilder {
 			}
 
 			const targetName = '.bones[' + key + ']';
-			if (key == "センター") {
-				let smoothed = positions
-				const smoothWeight = mesh.followSmooth
-				const padding = (smoothWeight - 1) / 2
-				if (array[array.length - 1].frameNum + 1 == positions.length / 3) {
-					console.log("follow smooth: enable")
-					const posArr = nj.array(positions).reshape([-1, 3])
-					smoothed = []
-					posArr.T.iteraxis(0, (row) => {
-						const newRow = nj.flatten(nj.convolve(row, nj.ones(smoothWeight))).divide(smoothWeight)
-						smoothed.push(nj.concatenate(row.slice([padding]), newRow, row.slice(-padding)))
-					})
-					smoothed = nj.stack(smoothed).T.flatten().tolist()
-				}
-				tracks.push(this._createTrack('smoothCenter' + '.position', VectorKeyframeTrack, times, smoothed, pInterpolations));
-			}
+			// if (key == "センター") {
+			// 	let smoothed = positions
+			// 	const smoothWeight = mesh.followSmooth
+			// 	const padding = (smoothWeight - 1) / 2
+			// 	if (array[array.length - 1].frameNum + 1 == positions.length / 3) {
+			// 		console.log("follow smooth: enable")
+			// 		const posArr = nj.array(positions).reshape([-1, 3])
+			// 		smoothed = []
+			// 		posArr.T.iteraxis(0, (row) => {
+			// 			const newRow = nj.flatten(nj.convolve(row, nj.ones(smoothWeight))).divide(smoothWeight)
+			// 			smoothed.push(nj.concatenate(row.slice([padding]), newRow, row.slice(-padding)))
+			// 		})
+			// 		smoothed = nj.stack(smoothed).T.flatten().tolist()
+			// 	}
+			// 	tracks.push(this._createTrack('smoothCenter' + '.position', VectorKeyframeTrack, times, smoothed, pInterpolations));
+			// }
 			tracks.push(this._createTrack(targetName + '.position', VectorKeyframeTrack, times, positions, pInterpolations));
 			tracks.push(this._createTrack(targetName + '.quaternion', QuaternionKeyframeTrack, times, rotations, rInterpolations));
 

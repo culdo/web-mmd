@@ -1,21 +1,12 @@
-// @ts-check
-const { defineConfig, devices } = require('@playwright/test');
+import { defineConfig, devices } from '@playwright/test';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
-
-/**
- * @see https://playwright.dev/docs/test-configuration
- */
-module.exports = defineConfig({
+export default defineConfig({
   webServer: {
-    command: 'npm run build && npx http-server dist/',
-    url: 'http://localhost:8080',
+    command: 'npm run build && npx http-server -p 8081 out/',
+    url: 'http://localhost:8081',
     reuseExistingServer: !process.env.CI,
     stderr: 'pipe',
+    stdout: 'pipe'
   },
   timeout: 200000,
   expect: {
@@ -39,7 +30,7 @@ module.exports = defineConfig({
   use: {
     screenshot: "only-on-failure",
     video: 'retain-on-failure',
-    baseURL: 'http://localhost:8080',
+    baseURL: 'http://localhost:8081',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -82,12 +73,5 @@ module.exports = defineConfig({
     //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     // },
   ],
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://127.0.0.1:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
 });
 

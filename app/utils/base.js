@@ -1,15 +1,13 @@
 import videojs from 'video.js'
 import 'videojs-youtube'
-
-// log assets downloading progress
-let loading = document.getElementById("loading");
-
-let progressMap = {};
-window.onload = () => {
-    progressMap = {};
-}
+import "video.js/dist/video-js.css";
 
 function onProgress(xhr) {
+
+    let progressMap = {};
+    window.onload = () => {
+        progressMap = {};
+    }
 
     if (xhr.lengthComputable) {
         // load 3 files
