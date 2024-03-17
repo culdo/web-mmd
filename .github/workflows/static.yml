@@ -35,7 +35,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npx playwright install --with-deps
-      - name: Test
+      - name: Build and Test
         run: npm test
       - uses: actions/upload-artifact@v4
         if: always()
@@ -43,8 +43,6 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
-      - name: Build
-        run: npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Upload artifact
