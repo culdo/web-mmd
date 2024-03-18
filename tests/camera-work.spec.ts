@@ -1,10 +1,10 @@
-import { expect } from '@playwright/test';
+import { Page, TestInfo, expect } from '@playwright/test';
 import { test } from './fixtures/common';
 
-async function playToTime(page, testInfo, time) {
+async function playToTime(page: Page, testInfo: TestInfo, time: number) {
     let prevTime = 0.0
     await expect(async () => {
-        const currentTime = await page.evaluate('vjplayer.currentTime()')
+        const currentTime = await page.evaluate('vjplayer.currentTime()') as number
         if(currentTime - prevTime == 0.0) {
             await page.keyboard.down(" ")
         }
