@@ -42,6 +42,9 @@ It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) f
 ## E2E Testing using Playwright
 Run `npm test`
 
+## CI/CD
+It use `Github Action` to auto deploy the demo site. Relative files located at `./.github/workflows`
+
 # To-do list
 ## Done
 - [x] play/pause
