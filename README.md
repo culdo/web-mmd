@@ -1,7 +1,7 @@
 # Web-MMD
 <p align="center">
   <a href="https://culdo.github.io/web-mmd/">
-    <img alt="Web-MMD" src="tests/index.spec.ts-snapshots/has-loaded-1-Google-Chrome-linux.png" width="80%"/>
+    <img alt="Web-MMD" src="tests/index.spec.ts-snapshots/changing-camera-mode-with-saving-config-3-Google-Chrome-darwin.png" width="80%"/>
   </a>
 </p>
 
@@ -20,7 +20,7 @@ It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) f
 * Layout settings (Auto-hide gui/Show FPS/Fullscreen...etc)
 * Presets (open/save-as/copy/export as `JSON` format)
 * Camera Composition mode (create/del/next/prev camera cut)
-* Camera Fix-Follow mode (can adjust using orbit controls)
+* Camera Fixed-Follow mode (can adjust using orbit controls)
 * Keyboard Shortcuts(play/pause, toggle camera mode, manipulate camera cut...)
 
 # Demo credits
@@ -33,7 +33,15 @@ It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) f
 
 # Development
 * Run `npm run dev`
-> Modules is refactored to Classes and Async/Await styles.
+Modules which mainly come from [the three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio) is refactored to Classes and Async/Await styles.
+This projects is refactored to using `Next.js`(TypeScript).
+
+## Tech stacks
+* `three.js` (For MMD)
+* `postprocessing.js` (For effects)
+* `Next.js` (For static site generating)
+* `video.js` (For audio from YT)
+* `playwright` (For testing)
 
 ## Upgrade Ammo.js
 1. `npm install github:kripken/ammo.js`: Install the latest version of Ammo.js  
