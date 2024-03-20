@@ -1,6 +1,7 @@
-import { AnimationClip, LoopOnce, Vector3 } from "three"
+import { AnimationAction, AnimationActionLoopStyles, AnimationClip, LoopOnce, Vector3 } from "three"
 import { createTrackInterpolant } from "./MMDLoader"
 import { cameraToClips } from "./cameraClipsBuilder"
+import WebMMD from "./WebMMD"
 
 
 export const CameraMode = {
@@ -8,7 +9,36 @@ export const CameraMode = {
     COMPOSITION: 1,
     FIXED_FOLLOW: 2
 }
+type CameraClip = {
+    action: AnimationAction;
+    cutTime: number;
+    keyBinding: string;
+    clipJson?: any;
+    interpolations: {
+        'target.position': any;
+        '.quaternion': any;
+        '.position': any;
+        '.fov': any;
+    };
+}
 export class MMDCameraWorkHelper {
+    _scrollingBar: any
+    _scrollingDuration: number
+    _compositeClips: CameraClip[]
+    _beatsBuffer: HTMLDivElement[]
+    _cutClipMap: Record<string, CameraClip>
+    _mmd: any
+    _camera: any
+    _origAction: any
+    _cameraMixer: any
+    _api: any
+    _currentCollection: any
+    _currentClip!: CameraClip
+    _prevCenterPos: any
+    _deltaBuffer: Vector3 = new Vector3
+    isOrbitControl: boolean = false
+    orbitCameraPos: Vector3
+    
     constructor() {
         // Scrolling bar
         this._scrollingBar = document.querySelector(".scrolling-bar")
@@ -33,7 +63,7 @@ export class MMDCameraWorkHelper {
         this._cutClipMap = {}
     }
 
-    async init(mmd) {
+    async init(mmd: WebMMD) {
         // Internal properties
         this._mmd = mmd
         this._camera = mmd.camera
@@ -42,7 +72,6 @@ export class MMDCameraWorkHelper {
         this._cameraMixer = cameraObj.mixer
         this._api = mmd.api
         this._currentCollection = mmd.api.collectionKeys[0]
-        this._currentClip = null
 
         // Fixed Follow
         this._prevCenterPos = this._smoothCenter.clone()
@@ -113,21 +142,21 @@ export class MMDCameraWorkHelper {
         })
 
         // if dont have clips, create them from motion file
-        if(this._compositeClips.length == 0) {
+        if (this._compositeClips.length == 0) {
             const resp = await fetch(this._api.cameraFile)
             const { cutTimes, clips: rawClips } = cameraToClips(await resp.arrayBuffer())
-    
+
             for (const [idx, cutTime] of cutTimes.entries()) {
                 const rawClip = rawClips[idx]
                 const clip = AnimationClip.parse(rawClip.clip)
                 this._restoreInterpolant(clip, rawClip.interpolations)
-    
+
                 // add scrolling bar beat key binding
                 const collectionKey = this._api.collectionKeys[Math.floor(idx / this._api.cutKeys.length)]
                 const cutKey = this._api.cutKeys[idx % this._api.cutKeys.length]
                 const keyBinding = collectionKey + cutKey
                 const action = this._createAction(clip)
-    
+
                 const clipInfo = {
                     action,
                     cutTime,
@@ -175,8 +204,7 @@ export class MMDCameraWorkHelper {
     async _saveCompositeClips() {
         const json = []
         for (const clip of this._compositeClips) {
-            const saveClip = { ...clip }
-            delete saveClip.action
+            const {action: _, ...saveClip} = clip;
             saveClip.clipJson = AnimationClip.toJSON(clip.action.getClip())
             json.push(saveClip)
         }
@@ -190,9 +218,9 @@ export class MMDCameraWorkHelper {
                 delete clipInfo.clipJson
 
                 const clip = AnimationClip.parse(saveClip.clipJson)
-                if(!clipInfo.interpolations){
+                if (!clipInfo.interpolations) {
                     this._api.compositeClips = []
-                    setTimeout(()=>location.reload(), 5000)
+                    setTimeout(() => location.reload(), 5000)
                 }
                 this._restoreInterpolant(clip, clipInfo.interpolations)
                 clipInfo.action = this._createAction(clip)
@@ -203,7 +231,7 @@ export class MMDCameraWorkHelper {
         }
     }
 
-    _createAction(clip) {
+    _createAction(clip: AnimationClip) {
         const action = this._cameraMixer.clipAction(clip)
         action.setLoop(LoopOnce)
         action.clampWhenFinished = true
@@ -230,7 +258,7 @@ export class MMDCameraWorkHelper {
         this.setTime(this._currentTime)
     }
 
-    _restoreInterpolant(clip, interpolations) {
+    _restoreInterpolant(clip: AnimationClip, interpolations: { [x: string]: any; "target.position"?: any; ".quaternion"?: any; ".position"?: any; ".fov"?: any }) {
         for (const track of clip.tracks) {
             createTrackInterpolant(track, interpolations[track.name], true)
         }
@@ -261,7 +289,7 @@ export class MMDCameraWorkHelper {
 
     }
 
-    setTime(time) {
+    setTime(time: number) {
 
         const isComposite = this.isComposite
         if (isComposite) {
@@ -281,14 +309,14 @@ export class MMDCameraWorkHelper {
             this._camera.up.applyQuaternion(this._camera.quaternion);
             this._camera.lookAt(this._camera.getObjectByName("target").position);
             this._camera.updateProjectionMatrix();
-        } else if(this.isFixedFollow) {
+        } else if (this.isFixedFollow) {
             const position = this._smoothCenter
             const delta = this._deltaBuffer.subVectors(position, this._prevCenterPos)
             this._prevCenterPos.copy(position)
-            
+
             this._mmd.controls.target.add(delta)
-            
-            if(!this.isOrbitControl) {
+
+            if (!this.isOrbitControl) {
                 this._camera.lookAt(this._mmd.controls.target);
                 this._camera.position.add(delta)
                 this._camera.updateProjectionMatrix();

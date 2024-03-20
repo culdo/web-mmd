@@ -125,7 +125,7 @@ export const sdefSkinningNormVertex = `
 #endif
 `
 
-export const initSdef = (shader, enabled) => {
+export const initSdef = (shader: string, enabled: boolean) => {
 	if(!enabled) {
 		return shader
 	}

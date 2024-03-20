@@ -20,8 +20,8 @@ const BokehShader = {
 		'focalLength': { value: 24.0 },
 		'fstop': { value: 0.9 },
 
-		'tColor': { value: null },
-		'tDepth': { value: null },
+		'tColor': { value: null as any },
+		'tDepth': { value: null as any },
 
 		'maxblur': { value: 1.0 },
 

@@ -3,12 +3,31 @@ import * as THREE from 'three';
 import localforage from 'localforage';
 import path from 'path-browserify';
 import { GUI } from 'lil-gui';
-import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, dataURItoBlobUrl } from '../utils/base';
+import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, dataURItoBlobUrl, disposeMesh } from '../utils/base';
 import { CameraMode } from './MMDCameraWorkHelper';
 import logging from 'webpack/lib/logging/runtime'
 import { BlendFunction, KernelSize } from 'postprocessing';
+import WebMMD from './WebMMD';
 
 class MMDGui {
+    panel: GUI;
+    _mmd: any;
+    _guiFn: any;
+    _pmxDropdowns: any;
+    _logger: any;
+    _checkCameraMode: any;
+    changeToUntitled!: () => Promise<void>;
+    _timeoutID: any;
+    rotateSpeedControl: any;
+    _updateFaceForward!: (idx: any, ratio: any) => Promise<void>;
+    _normals: any;
+    _normalsOrig: any;
+    _updateControls!: (idx: any) => void;
+    _clearMaterialFolder!: () => void;
+    _updateTargetMaterial!: () => void;
+    _targetMaterialContoller: any;
+    updateMorphFolder!: () => void;
+
     constructor() {
         this.panel = new GUI({ closeFolders: true });
         this._mmd = null;
@@ -17,7 +36,7 @@ class MMDGui {
         this._logger = logging.getLogger("MMDGui")
     }
 
-    init(params) {
+    init(params: WebMMD) {
         this._mmd = params;
         this._addEventHandlers();
 
@@ -26,7 +45,7 @@ class MMDGui {
             "Motion File": CameraMode.MOTION_FILE,
             "Composition": CameraMode.COMPOSITION,
             "Fixed Follow": CameraMode.FIXED_FOLLOW
-        }).listen().onChange((_) => {
+        }).listen().onChange((_: any) => {
             this._checkCameraMode()
         });
 
@@ -56,6 +75,8 @@ class MMDGui {
     _addEventHandlers() {
         const { api, camera, composer, renderer, controls, cwHelper, player } = this._mmd
         const scope = this._mmd
+        const button = document.getElementById("button")
+        const rawPlayer = document.getElementById("button")
 
         player.on('volumechange', () => {
             api['volume'] = player.volume();
@@ -102,16 +123,16 @@ class MMDGui {
         // control bar
         document.addEventListener('mousemove', (e) => {
 
-            rawPlayer.style.opacity = 0.5;
-            button.style.opacity = 0.5;
+            rawPlayer.style.opacity = "0.5";
+            button.style.opacity = "0.5";
             document.body.style.cursor = "default"
             if (this._timeoutID !== undefined) {
                 clearTimeout(this._timeoutID);
             }
 
             this._timeoutID = setTimeout(function () {
-                rawPlayer.style.opacity = 0;
-                button.style.opacity = 0;
+                rawPlayer.style.opacity = "0";
+                button.style.opacity = "0";
                 if (!player.paused()) {
                     document.body.style.cursor = "none"
                 }
@@ -150,10 +171,10 @@ class MMDGui {
 
     _guiPhysic() {
         const folder = this.panel.addFolder('Physic');
-        folder.add(this._mmd.api, 'physics').onChange((state) => {
+        folder.add(this._mmd.api, 'physics').onChange((state: any) => {
             this._mmd.helper.enable('physics', state)
         });
-        folder.add(this._mmd.api, 'gravity', -50, 50, 0.1).onChange((val) => {
+        folder.add(this._mmd.api, 'gravity', -50, 50, 0.1).onChange((val: number | undefined) => {
             this._mmd.helper.get(this._mmd.character).physics.setGravity(new THREE.Vector3(0, val, 0))
         });
     }
@@ -174,27 +195,27 @@ class MMDGui {
 
         const outlineFolder = folder.addFolder('Outline');
 
-        outlineFolder.add(api, 'show outline').onChange((state) => {
+        outlineFolder.add(api, 'show outline').onChange((state: any) => {
             outline.enabled = state
         });
 
         const cocMaterial = dofEffect.circleOfConfusionMaterial;
 
         const bokehFolder = folder.addFolder('Bokeh');
-        bokehFolder.add(api, 'bokeh enabled').onChange((state) => {
+        bokehFolder.add(api, 'bokeh enabled').onChange((state: any) => {
             dofPass.enabled = state
         });
-        bokehFolder.add(api, "bokeh resolution", [240, 360, 480, 720, 1080]).onChange((value) => {
+        bokehFolder.add(api, "bokeh resolution", [240, 360, 480, 720, 1080]).onChange((value: any) => {
             dofEffect.resolution.height = Number(value);
         });
-        const bokehScaleController = bokehFolder.add(dofEffect, "bokehScale", 1.0, 50.0, 0.1).listen().onChange((value) => {
+        const bokehScaleController = bokehFolder.add(dofEffect, "bokehScale", 1.0, 50.0, 0.1).listen().onChange((value: any) => {
             api["bokeh scale"] = value;
         });
-        bokehFolder.add(api, "edge blur kernel", KernelSize).onChange((value) => {
+        bokehFolder.add(api, "edge blur kernel", KernelSize).onChange((value: any) => {
             dofEffect.blurPass.kernelSize = Number(value);
         });
 
-        const toggleFocus = (state) => {
+        const toggleFocus = (state: any) => {
             if (state) {
                 dofEffect.target = this._mmd.character.skeleton.bones[1].position
                 focusController.disable()
@@ -207,37 +228,37 @@ class MMDGui {
             }
         }
         bokehFolder.add(api, "bokeh autofocus").onChange(toggleFocus);
-        const focusController = bokehFolder.add(cocMaterial, "worldFocusDistance", 0.0, 100.0, 0.1).listen().onChange((value) => {
+        const focusController = bokehFolder.add(cocMaterial, "worldFocusDistance", 0.0, 100.0, 0.1).listen().onChange((value: any) => {
             console.log(value)
             api["bokeh focus"] = value;
         });
         toggleFocus(api["bokeh autofocus"])
 
-        bokehFolder.add(api, "bokeh focal length", 0.0, 50.0, 0.1).onChange((value) => {
+        bokehFolder.add(api, "bokeh focal length", 0.0, 50.0, 0.1).onChange((value: any) => {
             cocMaterial.worldFocusRange = value;
         });
         const bloomFolder = folder.addFolder('Bloom');
-        bloomFolder.add(api, 'bloom enabled').onChange((state) => {
+        bloomFolder.add(api, 'bloom enabled').onChange((state: any) => {
             bloomPass.enabled = state
         });
-        bloomFolder.add(bloomEffect, "intensity", 0, 10, 0.01 ).onChange(val => {
-            api["bloom intensity"] = val 
+        bloomFolder.add(bloomEffect, "intensity", 0, 10, 0.01).onChange((val: any) => {
+            api["bloom intensity"] = val
         });
-        bloomFolder.add(bloomEffect.mipmapBlurPass, "radius", 0, 1, 1e-3 ).onChange(val => {
-            api["bloom radius"] = val 
+        bloomFolder.add(bloomEffect.mipmapBlurPass, "radius", 0, 1, 1e-3).onChange((val: any) => {
+            api["bloom radius"] = val
         });
-        bloomFolder.add(bloomEffect.mipmapBlurPass, "levels", 1, 9, 1 ).onChange(val => {
-            api["bloom levels"] = val 
+        bloomFolder.add(bloomEffect.mipmapBlurPass, "levels", 1, 9, 1).onChange((val: any) => {
+            api["bloom levels"] = val
         });
 
-        bloomFolder.add(bloomEffect.luminancePass, "enabled").onChange(val => {
-            api["luminance enabled"] = val 
+        bloomFolder.add(api, "luminance enabled").onChange((val: any) => {
+            bloomEffect.luminancePass.enabled = val
         });
-        bloomFolder.add(bloomEffect.luminanceMaterial, "threshold", 0, 1, 0.01 ).onChange(val => {
-            api["bloom threshold"] = val 
+        bloomFolder.add(api, "bloom threshold", 0, 1, 0.01).onChange((val: any) => {
+            bloomEffect.luminanceMaterial.threshold = val
         });
-        bloomFolder.add(bloomEffect.luminanceMaterial, "smoothing", 0, 1, 0.01 ).onChange(val => {
-            api["bloom smoothing"] = val 
+        bloomFolder.add(api, "bloom smoothing", 0, 1, 0.01).onChange((val: any) => {
+            bloomEffect.luminanceMaterial.smoothing = val
         });
     }
 
@@ -251,10 +272,10 @@ class MMDGui {
             Custom: THREE.CustomToneMapping
         };
         const folder = this.panel.addFolder('Renderer');
-        folder.add(this._mmd.api, "tone mapping", toneMappingOptions).onChange((value) => {
+        folder.add(this._mmd.api, "tone mapping", toneMappingOptions).onChange((value: any) => {
             this._mmd.renderer.toneMapping = value
         })
-        folder.add(this._mmd.api, "exposure", 0, 5, 0.1).onChange((value) => {
+        folder.add(this._mmd.api, "exposure", 0, 5, 0.1).onChange((value: any) => {
             this._mmd.renderer.toneMappingExposure = value
         })
     }
@@ -274,34 +295,34 @@ class MMDGui {
                 camera.updateProjectionMatrix();
             }
         }
-        folder.add(this._mmd.api, "fov", 0, 100, 1).listen().onChange((value) => {
+        folder.add(this._mmd.api, "fov", 0, 100, 1).listen().onChange((value: any) => {
             camera.fov = value
             camera.updateProjectionMatrix();
         })
-        folder.add(this._mmd.api, "zoom", 0, 5, 0.1).listen().onChange((value) => {
+        folder.add(this._mmd.api, "zoom", 0, 5, 0.1).listen().onChange((value: any) => {
             camera.zoom = value
             camera.updateProjectionMatrix();
         })
-        folder.add(this._mmd.api, "near", 0, 100, 0.1).listen().onChange((value) => {
+        folder.add(this._mmd.api, "near", 0, 100, 0.1).listen().onChange((value: any) => {
             camera.near = value
             camera.updateProjectionMatrix();
         })
         folder.add(guiFn, "reset")
 
-        folder.add(this._mmd.api, 'auto rotate',).onChange((state) => {
+        folder.add(this._mmd.api, 'auto rotate',).onChange((state: any) => {
             this._mmd.controls.autoRotate = state
             this.rotateSpeedControl.enable(state)
         });
-        this.rotateSpeedControl = folder.add(this._mmd.api, 'auto rotate speed', 2, 100, 1).onChange((val) => {
+        this.rotateSpeedControl = folder.add(this._mmd.api, 'auto rotate speed', 2, 100, 1).onChange((val: any) => {
             this._mmd.controls.autoRotateSpeed = val
         }).enable(this._mmd.api['auto rotate']);
 
         const cameraWorkFolder = folder.addFolder('Composition Mode');
 
-        cameraWorkFolder.add(this._mmd.api, 'collectionKeys').onChange((value) => {
+        cameraWorkFolder.add(this._mmd.api, 'collectionKeys').onChange((value: any) => {
             this._mmd.cwHelper.updateKeyBinding()
         });
-        cameraWorkFolder.add(this._mmd.api, 'cutKeys').onChange((value) => {
+        cameraWorkFolder.add(this._mmd.api, 'cutKeys').onChange((value: any) => {
             this._mmd.cwHelper.updateKeyBinding()
         });
 
@@ -326,8 +347,8 @@ class MMDGui {
         const textureLoader = new THREE.TextureLoader()
         const { api } = this._mmd
 
-        function updateTexture(material, materialKey, textures) {
-            return function (key) {
+        function updateTexture(material: { [x: string]: any; needsUpdate: boolean; }, materialKey: string, textures: { [x: string]: any; none?: null; skin?: THREE.Texture; }) {
+            return function (key: string | number) {
                 material[materialKey] = textures[key];
                 material.needsUpdate = true;
             };
@@ -338,7 +359,7 @@ class MMDGui {
         skin.wrapT = THREE.RepeatWrapping;
         skin.repeat.set(80, 80);
 
-        const normalMaps = {
+        const normalMaps: any = {
             none: null,
             skin
         };
@@ -352,9 +373,8 @@ class MMDGui {
             api.material = api.material
         }
 
-        function needsUpdate(material) {
-            return function () {
-                material.side = parseInt(material.side); //Ensure number
+        const needsUpdate = (material: THREE.Material) => {
+            return () => {
                 material.needsUpdate = true;
                 this.geometry.attributes.position.needsUpdate = true;
                 this.geometry.attributes.normal.needsUpdate = true;
@@ -387,17 +407,17 @@ class MMDGui {
             const material = this.materials[idx]
 
             this._updateFaceForward(idx, material.userData.faceForward);
-            folder.add(material.userData, "faceForward", 0, 1).onChange((val) => {
+            folder.add(material.userData, "faceForward", 0, 1).onChange((val: any) => {
                 this._updateFaceForward(idx, val);
                 _saveMaterial();
             })
             folder.add(material, 'visible').onChange(_saveMaterial);
 
-            folder.addColor(material.userData, 'color').onChange(hex => {
+            folder.addColor(material.userData, 'color').onChange((hex: any) => {
                 material.color.setHex(hex)
                 _saveMaterial()
             });
-            folder.addColor(material.userData, 'emissive').onChange(hex => {
+            folder.addColor(material.userData, 'emissive').onChange((hex: any) => {
                 material.emissive.setHex(hex)
                 _saveMaterial()
             });
@@ -411,14 +431,14 @@ class MMDGui {
             folder.add(material, 'iridescenceIOR', 1, 2.333).onChange(_saveMaterial);
             folder.add(material, 'sheen', 0, 1).onChange(_saveMaterial);
             folder.add(material, 'sheenRoughness', 0, 1).onChange(_saveMaterial);
-            folder.addColor(material.userData, 'sheenColor').onChange(hex => {
+            folder.addColor(material.userData, 'sheenColor').onChange((hex: any) => {
                 material.sheenColor.setHex(hex)
                 _saveMaterial()
             });
             folder.add(material, 'clearcoat', 0, 1).step(0.01).onChange(_saveMaterial);
             folder.add(material, 'clearcoatRoughness', 0, 1).step(0.01).onChange(_saveMaterial);
             folder.add(material, 'specularIntensity', 0, 1).onChange(_saveMaterial);
-            folder.addColor(material.userData, 'specularColor').onChange(hex => {
+            folder.addColor(material.userData, 'specularColor').onChange((hex: any) => {
                 material.specularColor.setHex(hex)
                 _saveMaterial()
             });
@@ -486,11 +506,11 @@ class MMDGui {
                 Object.assign(item, loadedMaterial)
             }
 
-            const materialMap = {}
+            const materialMap:Record<string, number> = {}
             for (const [i, material] of this.materials.entries()) {
                 materialMap[material.name] = i
             }
-            this._targetMaterialContoller = folder.add(api, "targetMaterial", materialMap).onChange((idx) => {
+            this._targetMaterialContoller = folder.add(api, "targetMaterial", materialMap).onChange((idx: any) => {
                 this._clearMaterialFolder();
                 this._updateControls(idx)
             })
@@ -508,21 +528,25 @@ class MMDGui {
         const mmd = this._mmd;
         let pmxDropdowns = this._pmxDropdowns;
 
+        const overlay = document.getElementById("overlay")
+        const selectFile = document.getElementById("selectFile") as HTMLInputElement
+
         const pmxFiles = mmd.api.pmxFiles;
         const modelTextures = pmxFiles.modelTextures;
 
-        const loadCharacter = async (url, filename) => {
+        const loadCharacter = async (url: string, filename: string) => {
             mmd.runtimeCharacter.mixer.uncacheRoot(mmd.character);
             mmd.scene.remove(mmd.character);
             mmd.scene.remove(mmd.ikHelper);
             mmd.scene.remove(mmd.physicsHelper);
             mmd.scene.remove(mmd.skeletonHelper);
             mmd.helper.remove(mmd.character);
+            disposeMesh(mmd.character);
             this._logger.info("character removed")
 
             await mmd.loadCharacter(url, filename);
             // update materials
-            if(this._clearMaterialFolder) {ß
+            if (this._clearMaterialFolder) {
                 this._clearMaterialFolder();
                 this._targetMaterialContoller.destroy();
                 this._updateTargetMaterial();
@@ -536,8 +560,9 @@ class MMDGui {
             selectFile.webkitdirectory = false;
         }
 
-        const loadStage = async (url, filename) => {
+        const loadStage = async (url: any, filename: any) => {
             mmd.scene.remove(mmd.stage);
+            disposeMesh(mmd.stage);
             this._logger.info("remove stage");
 
             await mmd.loadStage(url, filename)
@@ -557,7 +582,7 @@ class MMDGui {
         this._guiFn.saveMusic = () => { }
 
         this._guiFn.selectMusic = () => {
-            selectFile.onchange = _buildLoadFileFn((url, filename) => {
+            selectFile.onchange = _buildLoadFileFn((url: string, filename: any) => {
                 mmd.player.src(dataURItoBlobUrl(url));
                 mmd.api.musicURL = url;
                 mmd.api.musicName = filename;
@@ -566,7 +591,7 @@ class MMDGui {
         }
 
         this._guiFn.selectCamera = () => {
-            selectFile.onchange = _buildLoadFileFn(async (url, filename) => {
+            selectFile.onchange = _buildLoadFileFn(async (url: any, filename: any) => {
                 mmd.helper.remove(mmd.camera);
 
                 mmd.cwHelper._compositeClips = []
@@ -575,7 +600,7 @@ class MMDGui {
             selectFile.click();
         }
         this._guiFn.selectMotion = () => {
-            selectFile.onchange = _buildLoadFileFn(async (url, filename) => {
+            selectFile.onchange = _buildLoadFileFn(async (url: any, filename: any) => {
                 mmd.runtimeCharacter.mixer.uncacheRoot(mmd.character);
                 mmd.helper.remove(mmd.character);
                 mmd.api.motionFile = url;
@@ -595,14 +620,14 @@ class MMDGui {
 
         // add folder to avoid ordering problem when change character
         var characterFolder = folder.addFolder('character');
-        var characterDropdown = characterFolder.add(mmd.api, 'character', Object.keys(pmxFiles.character)).listen().name("model").onChange(value => {
+        var characterDropdown = characterFolder.add(mmd.api, 'character', Object.keys(pmxFiles.character)).listen().name("model").onChange((value: string ) => {
             loadCharacter(pmxFiles.character[value], value);
         });
         characterFolder.open();
         folder.add(this._guiFn, 'selectChar').name('select character pmx directory...')
 
         var stageFolder = folder.addFolder('stage');
-        var stageDropdown = stageFolder.add(mmd.api, 'stage', Object.keys(pmxFiles.stage)).listen().name("model").onChange(value => {
+        var stageDropdown = stageFolder.add(mmd.api, 'stage', Object.keys(pmxFiles.stage)).listen().name("model").onChange((value: string | number) => {
             loadStage(pmxFiles.stage[value], value);
         });
         stageFolder.open();
@@ -621,15 +646,16 @@ class MMDGui {
         folder.add(mmd.api, 'motion').listen()
         folder.add(this._guiFn, 'selectMotion').name('select motion vmd file...')
 
-        function _buildLoadFileFn(cb) {
-            return async function () {
-                if (this.files.length < 1) return;
-                cb(await blobToBase64(this.files[0]), this.files[0].name);
+        function _buildLoadFileFn(cb: Function) {
+            return async function (event: Event) {
+                const input = event.target as HTMLInputElement
+                if (input.files.length < 1) return;
+                cb(await blobToBase64(input.files[0]), input.files[0].name);
             }
         }
 
-        function _buildLoadModelFn(itemType, cb) {
-            const cbWrapper = (...args) => {
+        function _buildLoadModelFn(itemType: string, cb: Function) {
+            const cbWrapper = (...args: any[]) => {
                 // start loading
                 mmd.ready = false;
                 overlay.style.display = 'flex';
@@ -641,15 +667,16 @@ class MMDGui {
                 overlay.style.display = 'none';
 
             }
-            return async function () {
-                if (this.files.length < 1) return;
-                let pmxFilesByType = pmxFiles[itemType] = {};
-                let texFilesByType = modelTextures[itemType] = {};
+            return async function (event: Event) {
+                const input = event.target as HTMLInputElement
+                if (input.files.length < 1) return;
+                let pmxFilesByType: any = pmxFiles[itemType] = {};
+                let texFilesByType: any = modelTextures[itemType] = {};
 
                 // load model and textures from unzipped folder
                 let firstKey;
-                const resourceMap = {};
-                for (const f of this.files) {
+                const resourceMap: any = {};
+                for (const f of input.files) {
                     let relativePath = f.webkitRelativePath;
                     const resourcePath = relativePath.split("/").slice(1).join("/").normalize()
 
@@ -671,7 +698,7 @@ class MMDGui {
                 pmxDropdowns[itemType] = pmxDropdowns[itemType]
                     .options(Object.keys(pmxFilesByType))
                     .listen()
-                    .onChange(value => {
+                    .onChange((value: string | number) => {
                         cbWrapper(pmxFilesByType[value], value);
                     });
 
@@ -686,7 +713,7 @@ class MMDGui {
 
     _guiMorph() {
 
-        const _buildOnChangeMorph = (key) => {
+        const _buildOnChangeMorph = (key: string) => {
             return () =>
                 this._mmd.character.morphTargetInfluences[this._mmd.character.morphTargetDictionary[key]] = this._mmd.api[key];
         }
@@ -718,23 +745,23 @@ class MMDGui {
 
     _guiColor() {
         const folder = this.panel.addFolder('Fog');
-        folder.addColor(this._mmd.api, 'fog color').onChange((value) => {
+        folder.addColor(this._mmd.api, 'fog color').onChange((value: any) => {
             this._mmd.scene.fog.color.setHex(value);
         });
-        folder.add(this._mmd.api, 'fog density', 0, 0.02, 0.0001).onChange((value) => {
+        folder.add(this._mmd.api, 'fog density', 0, 0.02, 0.0001).onChange((value: any) => {
             this._mmd.scene.fog.density = value;
         });
     }
 
     _guiShadow() {
         const folder = this.panel.addFolder('Shadow');
-        folder.add(this._mmd.api, 'ground shadow').onChange((state) => {
+        folder.add(this._mmd.api, 'ground shadow').onChange((state: any) => {
             this._mmd.stage.receiveShadow = state;
         });
-        folder.add(this._mmd.api, 'self shadow').onChange((state) => {
+        folder.add(this._mmd.api, 'self shadow').onChange((state: any) => {
             this._mmd.character.receiveShadow = state;
         });
-        folder.add(this._mmd.api, 'shadow bias', -0.02, 0.02, 0.0001).onChange((value) => {
+        folder.add(this._mmd.api, 'shadow bias', -0.02, 0.02, 0.0001).onChange((value: any) => {
             this._mmd.dirLight.shadow.bias = value;
         });
     }
@@ -746,35 +773,35 @@ class MMDGui {
         const AmbientLightFolder = folder.addFolder("Ambient")
         AmbientLightFolder.addColor(api, 'Ambient color').name("Color").onChange(setColor(this._mmd.ambientLight.color));
         AmbientLightFolder.add(api, 'Ambient intensity', 0, 10, 0.1).name("Intensity").onChange(
-            (value) => {
+            (value: any) => {
                 this._mmd.ambientLight.intensity = value
             }
         );
 
         const directLightFolder = folder.addFolder("Directional")
         directLightFolder.add(api, 'lightX', -1, 1).onChange(
-            (value) => {
+            (value: any) => {
                 this._mmd.updateDirLight();
             }
         );
         directLightFolder.add(api, 'lightY', -1, 1).onChange(
-            (value) => {
+            (value: any) => {
                 this._mmd.updateDirLight();
             }
         );
         directLightFolder.add(api, 'lightZ', -1, 1).onChange(
-            (value) => {
+            (value: any) => {
                 this._mmd.updateDirLight();
             }
         );
         directLightFolder.add(api, 'distanceScalar', 0, 100).onChange(
-            (value) => {
+            (value: any) => {
                 this._mmd.updateDirLight();
             }
         );
         directLightFolder.addColor(api, 'Directional').name("Color").onChange(setColor(this._mmd.dirLight.color));
         directLightFolder.add(api, 'Directional intensity', 0, 10, 0.1).name("Intensity").onChange(
-            (value) => {
+            (value: any) => {
                 this._mmd.dirLight.intensity = value
             }
         );
@@ -783,26 +810,26 @@ class MMDGui {
         hemisphereLightFolder.addColor(this._mmd.api, 'Hemisphere sky').onChange(setColor(this._mmd.hemiLight.color));
         hemisphereLightFolder.addColor(this._mmd.api, 'Hemisphere ground').onChange(setColor(this._mmd.hemiLight.groundColor));
         hemisphereLightFolder.add(this._mmd.api, 'Hemisphere intensity', 0, 30, 0.1).name("Intensity").onChange(
-            (value) => {
+            (value: any) => {
                 this._mmd.hemiLight.intensity = value
             }
         );
 
         // handle gui color change
-        function setColor(color) {
-            return (value) => {
+        function setColor(color: { setHex: (arg0: any) => void; }) {
+            return (value: any) => {
                 console.log(color)
                 color.setHex(value);
             }
         }
     }
 
-    _guiRefresh(parentFolder) {
+    _guiRefresh(parentFolder: GUI) {
         const folder = parentFolder.addFolder('Need Refresh');
-        folder.add(this._mmd.api, 'enable SDEF').onChange((state) => {
+        folder.add(this._mmd.api, 'enable SDEF').onChange((state: any) => {
             location.reload()
         })
-        folder.add(this._mmd.api, 'enable PBR').onChange((state) => {
+        folder.add(this._mmd.api, 'enable PBR').onChange((state: any) => {
             location.reload()
         })
         folder.add({
@@ -819,28 +846,28 @@ class MMDGui {
     _guiDebug() {
         const folder = this.panel.addFolder('Debug');
 
-        folder.add(this._mmd.api, 'show FPS').onChange((state) => {
+        folder.add(this._mmd.api, 'show FPS').onChange((state: any) => {
             document.getElementById("fps").style.display = state ? "block" : "none";
         });
-        folder.add(this._mmd.api, 'show IK bones').onChange((state) => {
+        folder.add(this._mmd.api, 'show IK bones').onChange((state: any) => {
             this._mmd.ikHelper.visible = state;
         });
-        folder.add(this._mmd.api, 'show rigid bodies').onChange((state) => {
+        folder.add(this._mmd.api, 'show rigid bodies').onChange((state: any) => {
             if (this._mmd.physicsHelper !== undefined) this._mmd.physicsHelper.visible = state;
         });
-        folder.add(this._mmd.api, 'show skeleton').onChange((state) => {
+        folder.add(this._mmd.api, 'show skeleton').onChange((state: any) => {
             if (this._mmd.skeletonHelper !== undefined) this._mmd.skeletonHelper.visible = state;
         });
-        folder.add(this._mmd.api, 'auto hide GUI').onChange((state) => {
+        folder.add(this._mmd.api, 'auto hide GUI').onChange((state: any) => {
             if (!this._mmd.player.paused()) this.panel.hide();
         });
-        folder.add(this._mmd.api, 'set pixelratio 1.0').onChange((state) => {
+        folder.add(this._mmd.api, 'set pixelratio 1.0').onChange((state: any) => {
             if (state) {
                 this._mmd.renderer.setPixelRatio(1.0);
-                postprocessor.composer.setPixelRatio(1.0);
+                this._mmd.postprocessor.composer.setPixelRatio(1.0);
             } else {
                 this._mmd.renderer.setPixelRatio(window.devicePixelRatio);
-                postprocessor.composer.setPixelRatio(window.devicePixelRatio);
+                this._mmd.postprocessor.composer.setPixelRatio(window.devicePixelRatio);
             }
         });
         this._guiRefresh(folder);
@@ -850,13 +877,15 @@ class MMDGui {
     _guiPreset() {
         const mmd = this._mmd
 
+        const selectFile = document.getElementById("selectFile")
+
         const folder = this.panel.addFolder('Preset');
 
-        const _setPreset = async (name) => {
+        const _setPreset = async (name: string) => {
             mmd.preset = name;
             await localforage.setItem("currentPreset", name);
         }
-        const _loadPreset = async (name) => {
+        const _loadPreset = async (name: string) => {
             await _setPreset(name);
             location.reload();
         }
@@ -873,7 +902,7 @@ class MMDGui {
                 .onChange(_loadPreset);
         }
 
-        const _updatePresetList = async (newName) => {
+        const _updatePresetList = async (newName: string) => {
             mmd.presetsList.add(newName)
             await localforage.setItem("presetsList", mmd.presetsList)
         }
@@ -906,7 +935,7 @@ class MMDGui {
                     mmd.presetsList.delete(mmd.preset)
                     await localforage.setItem("presetsList", mmd.presetsList)
 
-                    const presetsArr = Array.from(mmd.presetsList)
+                    const presetsArr: any[] = Array.from(mmd.presetsList)
                     await _loadPreset(presetsArr[presetsArr.length - 1]);
                 }
             },
@@ -926,8 +955,8 @@ class MMDGui {
                 startFileDownload(dlUrl, `${mmd.preset}_config.json`)
             },
             loadPreset: () => {
-                selectFile.onchange = async function (e) {
-                    const presetFile = this.files[0]
+                selectFile.onchange = async function (e: any) {
+                    const presetFile = e.target.files
                     const newName = path.parse(presetFile.name).name
                     await _updatePresetList(newName)
 
@@ -935,7 +964,7 @@ class MMDGui {
                     reader.readAsText(presetFile);
                     reader.onloadend = async () => {
                         mmd.preset = newName;
-                        Object.assign(mmd.api, JSON.parse(reader.result));
+                        Object.assign(mmd.api, JSON.parse(reader.result as string));
                         await _loadPreset(newName);
                     }
                 };

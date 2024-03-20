@@ -9,7 +9,7 @@
  * @ignore
  */
 
-export function viewZToOrthographicDepth(viewZ, near, far) {
+export function viewZToOrthographicDepth(viewZ: number, near: number, far: number) {
 
 	return Math.min(Math.max((viewZ + near) / (near - far), 0.0), 1.0);
 

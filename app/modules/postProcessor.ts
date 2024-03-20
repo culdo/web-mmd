@@ -1,9 +1,16 @@
 import { BlendFunction, BloomEffect, CopyMaterial, EffectComposer, EffectPass, RenderPass, SelectiveBloomEffect, ShaderPass } from 'postprocessing';
 import { OutlinePass } from './effects/OutlinePass';
 import { DepthOfFieldEffect } from './effects/DOFeffect';
+import { Scene, Camera, WebGLRenderer, PerspectiveCamera } from 'three';
 
 class PostProcessor {
-    constructor(scene, camera, renderer, api) {
+    composer: EffectComposer;
+    outline: OutlinePass;
+    bloomPass: EffectPass;
+    bloomEffect: SelectiveBloomEffect;
+    dofPass: EffectPass;
+    dofEffect: DepthOfFieldEffect;
+    constructor(scene: Scene, camera: PerspectiveCamera, renderer: WebGLRenderer, api: { [x: string]: any; }) {
 
         const composer = new EffectComposer(renderer, {
             multisampling: Math.min(4, renderer.capabilities.maxSamples)
@@ -30,19 +37,20 @@ class PostProcessor {
             bokehScale: api["bokeh scale"]
         })
         const dofPass = new EffectPass(camera, dofEffect);
-        
+
         composer.addPass(renderPass)
 
-        for (const [pass, key] of [
-            [outlinePass, "show outline"],
-            [bloomPass, "bloom enabled"], 
-            [dofPass, "bokeh enabled"]
-        ]) {
+        for (const [key, pass] of Object.entries({
+            "show outline": outlinePass,
+            "bloom enabled": bloomPass,
+            "bokeh enabled": dofPass
+        })
+        ) {
             pass.enabled = api[key]
             composer.addPass(pass)
         }
-        
-		const outputPass = new ShaderPass(new CopyMaterial());
+
+        const outputPass = new ShaderPass(new CopyMaterial());
         composer.addPass(outputPass)
 
         this.composer = composer;

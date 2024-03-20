@@ -38,14 +38,22 @@ import {
 	RGB_ETC1_Format,
 	RGB_ETC2_Format,
 	SRGBColorSpace,
-	InterpolateDiscrete
+	InterpolateDiscrete,
+	Camera,
+	LoadingManager,
+	KeyframeTrack,
+	ShaderMaterialParameters,
+	Material,
+	Texture,
+	CompressedTexture,
+	MeshPhongMaterial
 } from 'three';
-import { MMDToonShader } from './shaders/MMDToonShader.js';
+import { MMDToonShader } from './shaders/MMDToonShader';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
-import { MMDParser } from './mmdparser.module.js';
+import { MMDParser, Parser } from './mmdparser.module';
 // import nj from 'numjs'
-import { MMDPhysicalMaterial } from './MMDPhysicalMaterial.js';
-import { initSdef } from './shaders/SdefVertexShader.js';
+import { MMDPhysicalMaterial } from './MMDPhysicalMaterial';
+import { initSdef } from './shaders/SdefVertexShader';
 
 /**
  * Dependencies
@@ -76,12 +84,21 @@ import { initSdef } from './shaders/SdefVertexShader.js';
  *  - shadow support.
  */
 
+interface MMDGeometry extends BufferGeometry {
+	bones: any[]
+	morphTargets: any[]
+}
 /**
  * @param {THREE.LoadingManager} manager
  */
 class MMDLoader extends Loader {
+	loader: FileLoader;
+	parser: Parser;
+	meshBuilder: MeshBuilder;
+	animationBuilder: AnimationBuilder;
+	animationPath: any;
 
-	constructor(manager) {
+	constructor(manager?: LoadingManager) {
 
 		if (manager) {
 			super(manager);
@@ -100,7 +117,7 @@ class MMDLoader extends Loader {
 	 * @param {string} animationPath
 	 * @return {MMDLoader}
 	 */
-	setAnimationPath(animationPath) {
+	setAnimationPath(animationPath: string): MMDLoader {
 
 		this.animationPath = animationPath;
 		return this;
@@ -117,7 +134,7 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	async load(url, onProgress, onError, params = null) {
+	async load(url: string, onProgress: Function, onError: Function, params: any = null) {
 
 		const builder = this.meshBuilder.setCrossOrigin(this.crossOrigin);
 
@@ -161,7 +178,7 @@ class MMDLoader extends Loader {
 		const data = await this[modelExtension === 'pmd' ? 'loadPMD' : 'loadPMX'](url, onProgress, onError);
 
 		if (params && params.modelTextures) {
-			data.textures.forEach((texturePath, index) => {
+			data.textures.forEach((texturePath: string, index: number) => {
 				texturePath = texturePath.replace('\\', '/');
 				data.textures[index] = params.modelTextures[texturePath];
 			});
@@ -185,7 +202,7 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	async loadAnimation(url, object, onProgress, onError) {
+	async loadAnimation(url: any, object: any, onProgress: Function, onError = () => { }) {
 
 		const builder = this.animationBuilder;
 
@@ -208,12 +225,12 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	async loadWithAnimation(modelUrl, vmdUrl, onProgress, onError, params = null) {
+	async loadWithAnimation(modelUrl: any, vmdUrl: any, onProgress: Function, onError = () => { }, params: any = null) {
 
 		const scope = this;
 
 		const mesh = await this.load(modelUrl, onProgress, onError, params);
-		mesh.followSmooth = params.followSmooth
+		mesh.userData.followSmooth = params.followSmooth
 
 		const animation = await scope.loadAnimation(vmdUrl, mesh, onProgress, onError);
 
@@ -234,7 +251,7 @@ class MMDLoader extends Loader {
 	 * @param {function} onError
 	 * @returns {Promise}
 	 */
-	async loadPMD(url, onProgress, onError) {
+	async loadPMD(url: any, onProgress: any, onError: any) {
 
 		const parser = this._getParser();
 
@@ -244,7 +261,7 @@ class MMDLoader extends Loader {
 			.setResponseType('arraybuffer')
 			.setRequestHeader(this.requestHeader)
 			.setWithCredentials(this.withCredentials)
-			.loadAsync(url, onProgress, onError);
+			.loadAsync(url, onProgress);
 
 		return parser.parsePmd(buffer, true)
 	}
@@ -256,7 +273,7 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	async loadPMX(url, onProgress, onError) {
+	async loadPMX(url: any, onProgress: any, onError: any) {
 
 		const parser = this._getParser();
 
@@ -266,7 +283,7 @@ class MMDLoader extends Loader {
 			.setResponseType('arraybuffer')
 			.setRequestHeader(this.requestHeader)
 			.setWithCredentials(this.withCredentials)
-			.loadAsync(url, onProgress, onError);
+			.loadAsync(url, onProgress);
 
 		return { ...parser.parsePmx(buffer, true) }
 
@@ -281,7 +298,7 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	async loadVMD(url, onProgress, onError) {
+	async loadVMD(url: any, onProgress: any, onError: any) {
 
 		const urls = Array.isArray(url) ? url : [url];
 
@@ -298,7 +315,7 @@ class MMDLoader extends Loader {
 			.setWithCredentials(this.withCredentials);
 
 		for (let i = 0, il = urls.length; i < il; i++) {
-			const buffer = await this.loader.loadAsync(urls[i], onProgress, onError);
+			const buffer = await this.loader.loadAsync(urls[i], onProgress);
 			vmds.push(parser.parseVmd(buffer, true));
 		}
 
@@ -315,17 +332,17 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	loadVPD(url, isUnicode, onLoad, onProgress, onError) {
+	loadVPD(url: any, isUnicode: boolean, onLoad: (arg0: any) => void, onProgress: any, onError: any) {
 
 		const parser = this._getParser();
 
 		this.loader
-			.setMimeType(isUnicode ? undefined : 'text/plain; charset=shift_jis')
+			.setMimeType(undefined)
 			.setPath(this.animationPath)
 			.setResponseType('text')
 			.setRequestHeader(this.requestHeader)
 			.setWithCredentials(this.withCredentials)
-			.load(url, function (text) {
+			.load(url, function (text: any) {
 
 				onLoad(parser.parseVpd(text, true));
 
@@ -335,7 +352,7 @@ class MMDLoader extends Loader {
 
 	// private methods
 
-	_extractExtension(url) {
+	_extractExtension(url: string) {
 
 		const index = url.lastIndexOf('.');
 		return index < 0 ? '' : url.slice(index + 1);
@@ -396,8 +413,11 @@ const NON_ALPHA_CHANNEL_FORMATS = [
  * @param {THREE.LoadingManager} manager
  */
 class MeshBuilder {
+	crossOrigin: string;
+	geometryBuilder: GeometryBuilder;
+	materialBuilder: MaterialBuilder;
 
-	constructor(manager) {
+	constructor(manager: LoadingManager) {
 
 		this.crossOrigin = 'anonymous';
 		this.geometryBuilder = new GeometryBuilder();
@@ -409,7 +429,7 @@ class MeshBuilder {
 	 * @param {string} crossOrigin
 	 * @return {MeshBuilder}
 	 */
-	setCrossOrigin(crossOrigin) {
+	setCrossOrigin(crossOrigin: any) {
 
 		this.crossOrigin = crossOrigin;
 		return this;
@@ -423,7 +443,7 @@ class MeshBuilder {
 	 * @param {function} onError
 	 * @return {SkinnedMesh}
 	 */
-	build(data, resourcePath, onProgress, onError, params = {}) {
+	build(data: any, resourcePath: any, onProgress: any, onError: any, params = {}) {
 
 		const geometry = this.geometryBuilder.build(data);
 		const material = this.materialBuilder
@@ -446,7 +466,7 @@ class MeshBuilder {
 
 // TODO: Try to remove this function
 
-function initBones(mesh) {
+function initBones(mesh: SkinnedMesh<any, any>) {
 
 	const geometry = mesh.geometry;
 
@@ -515,7 +535,7 @@ class GeometryBuilder {
 	 * @param {Object} data - parsed PMD/PMX data
 	 * @return {BufferGeometry}
 	 */
-	build(data) {
+	build(data: { metadata: { vertexCount: number; faceCount: number; materialCount: number; rigidBodyCount: number; boneCount: number; format: string; ikCount: number; morphCount: number; constraintCount: number; }; vertices: any[]; faces: any[]; materials: any[]; rigidBodies: any[]; bones: any[]; iks: any[]; morphs: any[]; constraints: any[]; }) {
 
 		// for geometry
 		const positions = [];
@@ -526,7 +546,7 @@ class GeometryBuilder {
 
 		const groups = [];
 
-		const bones = [];
+		const bones: any[] = [];
 		const skinIndices = [];
 		const skinWeights = [];
 		const skinTypes = [];
@@ -538,14 +558,14 @@ class GeometryBuilder {
 		const morphPositions = [];
 
 		const iks = [];
-		const grants = [];
+		const grants: any[] = [];
 
 		const rigidBodies = [];
 		const constraints = [];
 
 		// for work
 		let offset = 0;
-		const boneTypeTable = {};
+		const boneTypeTable: Record<number, number> = {};
 
 		// positions, normals, uvs, skinIndices, skinWeights
 
@@ -694,12 +714,12 @@ class GeometryBuilder {
 					effector: ik.effector,
 					iteration: ik.iteration,
 					maxAngle: ik.maxAngle * 4,
-					links: []
+					links: [] as any[]
 				};
 
 				for (let j = 0, jl = ik.links.length; j < jl; j++) {
 
-					const link = {};
+					const link: any = {};
 					link.index = ik.links[j].index;
 					link.enabled = true;
 
@@ -730,12 +750,12 @@ class GeometryBuilder {
 					effector: ik.effector,
 					iteration: ik.iteration,
 					maxAngle: ik.maxAngle,
-					links: []
+					links: [] as any[]
 				};
 
 				for (let j = 0, jl = ik.links.length; j < jl; j++) {
 
-					const link = {};
+					const link: any = {};
 					link.index = ik.links[j].index;
 					link.enabled = true;
 
@@ -781,7 +801,7 @@ class GeometryBuilder {
 		if (data.metadata.format === 'pmx') {
 
 			// bone index -> grant entry map
-			const grantEntryMap = {};
+			const grantEntryMap: any = {};
 
 			for (let i = 0; i < data.metadata.boneCount; i++) {
 
@@ -804,7 +824,7 @@ class GeometryBuilder {
 
 			}
 
-			const rootEntry = { parent: null, children: [], param: null, visited: false };
+			const rootEntry: any = { parent: null, children: [], param: null, visited: false };
 
 			// Build a tree representing grant hierarchy
 
@@ -822,7 +842,7 @@ class GeometryBuilder {
 			// grant uses parent's transform that parent's grant is already applied
 			// so grant should be applied in order from parents to children
 
-			function traverse(entry) {
+			function traverse(entry: { parent?: any; children: any; param: any; visited: any; }) {
 
 				if (entry.param) {
 
@@ -853,7 +873,7 @@ class GeometryBuilder {
 
 		// morph
 
-		function updateAttributes(attribute, morph, ratio) {
+		function updateAttributes(attribute: Float32BufferAttribute, morph: { elementCount: number; elements: any[]; }, ratio: number) {
 
 			for (let i = 0; i < morph.elementCount; i++) {
 
@@ -882,7 +902,7 @@ class GeometryBuilder {
 		for (let i = 0; i < data.metadata.morphCount; i++) {
 
 			const morph = data.morphs[i];
-			if(morph.elements.length == 0) {
+			if (morph.elements.length == 0) {
 				continue
 			}
 			const params = { name: morph.name };
@@ -970,7 +990,7 @@ class GeometryBuilder {
 		for (let i = 0; i < data.metadata.rigidBodyCount; i++) {
 
 			const rigidBody = data.rigidBodies[i];
-			const params = {};
+			const params: any = {};
 
 			for (const key in rigidBody) {
 
@@ -1005,7 +1025,7 @@ class GeometryBuilder {
 		for (let i = 0; i < data.metadata.constraintCount; i++) {
 
 			const constraint = data.constraints[i];
-			const params = {};
+			const params: any = {};
 
 			for (const key in constraint) {
 
@@ -1034,7 +1054,7 @@ class GeometryBuilder {
 
 		// build BufferGeometry.
 
-		const geometry = new BufferGeometry();
+		const geometry = new BufferGeometry() as MMDGeometry;
 
 		geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
 		geometry.setAttribute('normal', new Float32BufferAttribute(normals, 3));
@@ -1082,8 +1102,13 @@ class GeometryBuilder {
  * @param {THREE.LoadingManager} manager
  */
 class MaterialBuilder {
+	manager: any;
+	textureLoader: TextureLoader;
+	tgaLoader: TGALoader;
+	crossOrigin: string;
+	resourcePath: any;
 
-	constructor(manager) {
+	constructor(manager: any) {
 
 		this.manager = manager;
 
@@ -1099,7 +1124,7 @@ class MaterialBuilder {
 	 * @param {string} crossOrigin
 	 * @return {MaterialBuilder}
 	 */
-	setCrossOrigin(crossOrigin) {
+	setCrossOrigin(crossOrigin: any) {
 
 		this.crossOrigin = crossOrigin;
 		return this;
@@ -1110,7 +1135,7 @@ class MaterialBuilder {
 	 * @param {string} resourcePath
 	 * @return {MaterialBuilder}
 	 */
-	setResourcePath(resourcePath) {
+	setResourcePath(resourcePath: any) {
 
 		this.resourcePath = resourcePath;
 		return this;
@@ -1124,7 +1149,7 @@ class MaterialBuilder {
 	 * @param {function} onError
 	 * @return {Array<MMDToonMaterial>}
 	 */
-	build(data, geometry, onProgress, onError, shaderParams = {}) {
+	build(data: any, geometry: any, onProgress: any, onError: any, shaderParams: any = {}) {
 		console.log(`sdef: ${shaderParams.enableSdef}`)
 		console.log(`PBR: ${shaderParams.enablePBR}`)
 
@@ -1140,7 +1165,7 @@ class MaterialBuilder {
 
 			const material = data.materials[i];
 
-			const params = {
+			const params: any = {
 				userData: {
 					MMD: {},
 					enableSdef: shaderParams.enableSdef
@@ -1268,41 +1293,41 @@ class MaterialBuilder {
 
 				}
 
-				if(!shaderParams.enablePBR) {
+				if (!shaderParams.enablePBR) {
 					// envMap TODO: support m.envFlag === 3
-	
+
 					if (material.envTextureIndex !== - 1 && (material.envFlag === 1 || material.envFlag == 2)) {
-	
+
 						params.matcap = this._loadTexture(
 							data.textures[material.envTextureIndex],
 							textures
 						);
-	
+
 						// Same as color map above, keep file name in userData for further usage.
 						params.userData.MMD.matcapFileName = data.textures[material.envTextureIndex];
-	
+
 						params.matcapCombine = material.envFlag === 1
 							? MultiplyOperation
 							: AddOperation;
-	
+
 					}
-	
+
 					// gradientMap
-	
+
 					let toonFileName, isDefaultToon;
-	
+
 					if (material.toonIndex === - 1 || material.toonFlag !== 0) {
-	
+
 						toonFileName = 'toon' + ('0' + (material.toonIndex + 1)).slice(- 2) + '.bmp';
 						isDefaultToon = true;
-	
+
 					} else {
-	
+
 						toonFileName = data.textures[material.toonIndex];
 						isDefaultToon = false;
-	
+
 					}
-	
+
 					params.gradientMap = this._loadTexture(
 						toonFileName,
 						textures,
@@ -1342,7 +1367,7 @@ class MaterialBuilder {
 
 			// set transparent true if alpha morph is defined.
 
-			function checkAlphaMorph(elements, materials) {
+			function checkAlphaMorph(elements: any[], materials: (MMDPhysicalMaterial | MMDToonMaterial)[]) {
 
 				for (let i = 0, il = elements.length; i < il; i++) {
 
@@ -1413,7 +1438,7 @@ class MaterialBuilder {
 
 	}
 
-	_isDefaultToonTexture(name) {
+	_isDefaultToonTexture(name: string) {
 
 		if (name.length !== 10) return false;
 
@@ -1421,7 +1446,7 @@ class MaterialBuilder {
 
 	}
 
-	_loadTexture(filePath, textures, params, onProgress, onError) {
+	_loadTexture(filePath: string, textures: { [x: string]: any; }, params?: { isToonTexture?: any; isDefaultToonTexture?: any; }, onProgress?: undefined, onError?: undefined) {
 
 		params = params || {};
 
@@ -1466,7 +1491,7 @@ class MaterialBuilder {
 
 		}
 
-		const texture = loader.load(fullPath, function (t) {
+		const texture = loader.load(fullPath, function (t: { image: ImageData; magFilter: number; minFilter: number; flipY: boolean; wrapS: number; wrapT: number; }) {
 
 			// MMD toon texture is Axis-Y oriented
 			// but Three.js gradient map is Axis-X oriented.
@@ -1502,7 +1527,7 @@ class MaterialBuilder {
 
 	}
 
-	_getRotatedImage(image) {
+	_getRotatedImage(image: ImageData) {
 
 		const canvas = document.createElement('canvas');
 		const context = canvas.getContext('2d');
@@ -1517,19 +1542,19 @@ class MaterialBuilder {
 		context.translate(width / 2.0, height / 2.0);
 		context.rotate(0.5 * Math.PI); // 90.0 * Math.PI / 180.0
 		context.translate(- width / 2.0, - height / 2.0);
-		context.drawImage(image, 0, 0);
+		context.drawImage(image as any, 0, 0);
 
 		return context.getImageData(0, 0, width, height);
 
 	}
 
 	// Check if the partial image area used by the texture is transparent.
-	_checkImageTransparency(map, geometry, groupIndex) {
+	_checkImageTransparency(map: { readyCallbacks: ((texture: any) => void)[]; transparent: boolean; }, geometry: { groups: { [x: string]: any; }; attributes: { uv: { array: any; }; }; index: { array: any[]; }; }, groupIndex: number) {
 
-		map.readyCallbacks.push(function (texture) {
+		map.readyCallbacks.push(function (texture: Texture) {
 
 			// Is there any efficient ways?
-			function createImageData(image) {
+			function createImageData(image: any) {
 
 				const canvas = document.createElement('canvas');
 				canvas.width = image.width;
@@ -1542,7 +1567,7 @@ class MaterialBuilder {
 
 			}
 
-			function detectImageTransparency(image, uvs, indices) {
+			function detectImageTransparency(image: { width: any; height: any; data: any; }, uvs: any[], indices: any[]) {
 
 				const width = image.width;
 				const height = image.height;
@@ -1585,7 +1610,7 @@ class MaterialBuilder {
 				 *   texture.wrapT = RepeatWrapping
 				 * TODO: more precise
 				 */
-			function getAlphaByUv(image, uv) {
+			function getAlphaByUv(image: { width: any; height: any; data: any[]; }, uv: { x: any; y: any; }) {
 
 				const width = image.width;
 				const height = image.height;
@@ -1602,9 +1627,9 @@ class MaterialBuilder {
 
 			}
 
-			if (texture.isCompressedTexture === true) {
+			if ((texture as CompressedTexture).isCompressedTexture === true) {
 
-				if (NON_ALPHA_CHANNEL_FORMATS.includes(texture.format)) {
+				if ((texture as CompressedTexture).format in NON_ALPHA_CHANNEL_FORMATS) {
 
 					map.transparent = false;
 
@@ -1649,7 +1674,7 @@ class AnimationBuilder {
 	 * @param {SkinnedMesh} mesh - tracks will be fitting to mesh
 	 * @return {AnimationClip}
 	 */
-	build(vmd, mesh) {
+	build(vmd: any, mesh: any) {
 
 		// combine skeletal and morph animations
 
@@ -1671,9 +1696,9 @@ class AnimationBuilder {
 	 * @param {SkinnedMesh} mesh - tracks will be fitting to mesh
 	 * @return {AnimationClip}
 	 */
-	buildSkeletalAnimation(vmd, mesh) {
+	buildSkeletalAnimation(vmd: { metadata: { motionCount: number; }; motions: any[]; }, mesh: { skeleton: { bones: any; getBoneByName: (arg0: string) => { (): any; new(): any; position: { (): any; new(): any; toArray: { (): any; new(): any; }; }; }; }; animationBones: string[]; }) {
 
-		function pushInterpolation(array, interpolation, index) {
+		function pushInterpolation(array: any[], interpolation: { [x: string]: number; }, index: number) {
 
 			array.push(interpolation[index + 0] / 127); // x1
 			array.push(interpolation[index + 8] / 127); // x2
@@ -1684,9 +1709,9 @@ class AnimationBuilder {
 
 		const tracks = [];
 
-		const motions = {};
+		const motions: any = {};
 		const bones = mesh.skeleton.bones;
-		const boneNameDictionary = {};
+		const boneNameDictionary: any = {};
 
 		for (let i = 0, il = bones.length; i < il; i++) {
 
@@ -1711,7 +1736,7 @@ class AnimationBuilder {
 
 			const array = motions[key];
 
-			array.sort(function (a, b) {
+			array.sort(function (a: { frameNum: number; }, b: { frameNum: number; }) {
 
 				return a.frameNum - b.frameNum;
 
@@ -1720,8 +1745,8 @@ class AnimationBuilder {
 			const times = [];
 			const positions = [];
 			const rotations = [];
-			const pInterpolations = [];
-			const rInterpolations = [];
+			const pInterpolations: any[] = [];
+			const rInterpolations: any[] = [];
 
 			const basePosition = mesh.skeleton.getBoneByName(key).position.toArray();
 
@@ -1743,22 +1768,10 @@ class AnimationBuilder {
 			}
 
 			const targetName = '.bones[' + key + ']';
-			// if (key == "センター") {
-			// 	let smoothed = positions
-			// 	const smoothWeight = mesh.followSmooth
-			// 	const padding = (smoothWeight - 1) / 2
-			// 	if (array[array.length - 1].frameNum + 1 == positions.length / 3) {
-			// 		console.log("follow smooth: enable")
-			// 		const posArr = nj.array(positions).reshape([-1, 3])
-			// 		smoothed = []
-			// 		posArr.T.iteraxis(0, (row) => {
-			// 			const newRow = nj.flatten(nj.convolve(row, nj.ones(smoothWeight))).divide(smoothWeight)
-			// 			smoothed.push(nj.concatenate(row.slice([padding]), newRow, row.slice(-padding)))
-			// 		})
-			// 		smoothed = nj.stack(smoothed).T.flatten().tolist()
-			// 	}
-			// 	tracks.push(this._createTrack('smoothCenter' + '.position', VectorKeyframeTrack, times, smoothed, pInterpolations));
-			// }
+			if (key == "センター") {
+				let smoothed = positions
+				tracks.push(this._createTrack('smoothCenter' + '.position', VectorKeyframeTrack, times, smoothed, pInterpolations));
+			}
 			tracks.push(this._createTrack(targetName + '.position', VectorKeyframeTrack, times, positions, pInterpolations));
 			tracks.push(this._createTrack(targetName + '.quaternion', QuaternionKeyframeTrack, times, rotations, rInterpolations));
 
@@ -1775,11 +1788,11 @@ class AnimationBuilder {
 	 * @param {SkinnedMesh} mesh - tracks will be fitting to mesh
 	 * @return {AnimationClip}
 	 */
-	buildMorphAnimation(vmd, mesh) {
+	buildMorphAnimation(vmd: { metadata: { morphCount: number; }; morphs: any[]; }, mesh: { morphTargetDictionary: any; }) {
 
 		const tracks = [];
 
-		const morphs = {};
+		const morphs: any = {};
 		const morphTargetDictionary = mesh.morphTargetDictionary;
 
 		for (let i = 0; i < vmd.metadata.morphCount; i++) {
@@ -1798,7 +1811,7 @@ class AnimationBuilder {
 
 			const array = morphs[key];
 
-			array.sort(function (a, b) {
+			array.sort(function (a: { frameNum: number; }, b: { frameNum: number; }) {
 
 				return a.frameNum - b.frameNum;
 
@@ -1826,9 +1839,9 @@ class AnimationBuilder {
 	 * @param {Object} vmd - parsed VMD data
 	 * @return {AnimationClip}
 	 */
-	buildCameraAnimation(vmd) {
+	buildCameraAnimation(vmd: { cameras: any[]; }) {
 
-		function pushVector3(array, vec) {
+		function pushVector3(array: any[], vec: Vector3) {
 
 			array.push(vec.x);
 			array.push(vec.y);
@@ -1836,7 +1849,7 @@ class AnimationBuilder {
 
 		}
 
-		function pushQuaternion(array, q) {
+		function pushQuaternion(array: any[], q: Quaternion) {
 
 			array.push(q.x);
 			array.push(q.y);
@@ -1845,7 +1858,7 @@ class AnimationBuilder {
 
 		}
 
-		function pushInterpolation(array, interpolation, index) {
+		function pushInterpolation(array: any[], interpolation: number[], index: number) {
 
 			array.push(interpolation[index * 4 + 0] / 127); // x1
 			array.push(interpolation[index * 4 + 1] / 127); // x2
@@ -1854,9 +1867,9 @@ class AnimationBuilder {
 
 		}
 
-		const cameras = vmd.cameras === undefined ? [] : vmd.cameras.slice();
+		const cameras = vmd.cameras === undefined ? [] : vmd.cameras.slice() as any[];
 
-		cameras.sort(function (a, b) {
+		cameras.sort(function (a: { frameNum: number; }, b: { frameNum: number; }) {
 
 			return a.frameNum - b.frameNum;
 
@@ -1864,15 +1877,15 @@ class AnimationBuilder {
 
 		const times = [];
 		const frameNums = [];
-		const centers = [];
-		const quaternions = [];
-		const positions = [];
+		const centers: any[] = [];
+		const quaternions: any[] = [];
+		const positions: any[] = [];
 		const fovs = [];
 
-		const cInterpolations = [];
-		const qInterpolations = [];
-		const pInterpolations = [];
-		const fInterpolations = [];
+		const cInterpolations: any[] = [];
+		const qInterpolations: any[] = [];
+		const pInterpolations: any[] = [];
+		const fInterpolations: any[] = [];
 
 		const quaternion = new Quaternion();
 		const euler = new Euler();
@@ -1932,7 +1945,7 @@ class AnimationBuilder {
 
 		// I expect an object whose name 'target' exists under THREE.Camera
 		tracks.push(this._createTrack('target.position', VectorKeyframeTrack, times, centers, cInterpolations, true));
-		tracks.push(new NumberKeyframeTrack('target.frameNum', times, frameNums, InterpolateDiscrete));
+		tracks.push(new NumberKeyframeTrack('target.userData.frameNum', times, frameNums, InterpolateDiscrete));
 
 		tracks.push(this._createTrack('.quaternion', QuaternionKeyframeTrack, times, quaternions, qInterpolations, true));
 		tracks.push(this._createTrack('.position', VectorKeyframeTrack, times, positions, pInterpolations, true));
@@ -1944,7 +1957,7 @@ class AnimationBuilder {
 
 	// private method
 
-	_createTrack(node, typedKeyframeTrack, times, values, interpolations, isCamera = false) {
+	_createTrack(node: string, typedKeyframeTrack: typeof VectorKeyframeTrack, times: any[], values: any[], interpolations: any[], isCamera = false) {
 
 		/*
 			 * optimizes here not to let KeyframeTrackPrototype optimize
@@ -2008,10 +2021,10 @@ class AnimationBuilder {
 
 }
 
-export function createTrackInterpolant(track, interpolations, isCamera) {
-	track.createInterpolant = function (result) {
+export function createTrackInterpolant(track: KeyframeTrack, interpolations: Iterable<number>, isCamera: boolean) {
+	track.createInterpolant = function () {
 
-		return new CubicBezierInterpolation(track.times, track.values, this.getValueSize(), result, new Float32Array(interpolations), isCamera);
+		return new CubicBezierInterpolation(track.times, track.values, this.getValueSize(), new Float32Array(interpolations), isCamera);
 
 	};
 }
@@ -2019,17 +2032,19 @@ export function createTrackInterpolant(track, interpolations, isCamera) {
 // interpolation
 
 class CubicBezierInterpolation extends Interpolant {
+	interpolationParams: Float32Array;
+	isCamera: boolean;
 
-	constructor(parameterPositions, sampleValues, sampleSize, resultBuffer, params, isCamera = false) {
+	constructor(parameterPositions: any, sampleValues: any, sampleSize: number, params: Float32Array, isCamera = false) {
 
-		super(parameterPositions, sampleValues, sampleSize, resultBuffer);
+		super(parameterPositions, sampleValues, sampleSize);
 
 		this.interpolationParams = params;
 		this.isCamera = isCamera;
 
 	}
 
-	interpolate_(i1, t0, t, t1) {
+	interpolate_(i1: number, t0: number, t: number, t1: number) {
 
 		const result = this.resultBuffer;
 		const values = this.sampleValues;
@@ -2087,7 +2102,7 @@ class CubicBezierInterpolation extends Interpolant {
 
 	}
 
-	_calculate(x1, x2, y1, y2, x) {
+	_calculate(x1: number, x2: number, y1: number, y2: number, x: number) {
 
 		/*
 			 * Cubic Bezier curves
@@ -2159,8 +2174,18 @@ class CubicBezierInterpolation extends Interpolant {
 }
 
 class MMDToonMaterial extends ShaderMaterial {
+	isMMDToonMaterial: boolean;
+	_matcapCombine: number;
+	emissiveIntensity: number;
+	normalMapType: number;
+	combine: number;
+	wireframeLinecap: string;
+	wireframeLinejoin: string;
+	flatShading: boolean;
+	_shininess: number;
+	matcapCombine: any;
 
-	constructor(parameters) {
+	constructor(parameters: ShaderMaterialParameters) {
 
 		super();
 
@@ -2181,7 +2206,6 @@ class MMDToonMaterial extends ShaderMaterial {
 
 		this.vertexShader = initSdef(MMDToonShader.vertexShader, parameters.userData.enableSdef);
 		this.fragmentShader = MMDToonShader.fragmentShader;
-		this.defaultAttributeValues = Object.assign(this.defaultAttributeValues, MMDToonShader.defaultAttributeValues);
 
 		this.defines = Object.assign({}, MMDToonShader.defines);
 		Object.defineProperty(this, 'matcapCombine', {
@@ -2302,7 +2326,7 @@ class MMDToonMaterial extends ShaderMaterial {
 
 	}
 
-	copy(source) {
+	copy(source: MeshPhongMaterial & { matcapCombine: any }) {
 
 		super.copy(source);
 

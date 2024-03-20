@@ -1,8 +1,15 @@
 import {
 	BackSide,
+	Camera,
 	Color,
+	Material,
+	MeshPhongMaterial,
+	MeshStandardMaterial,
 	NoBlending,
+	Scene,
+	Shader,
 	ShaderMaterial,
+	Texture,
 	UniformsLib,
 	UniformsUtils
 } from 'three';
@@ -64,10 +71,27 @@ import { Pass, CopyMaterial } from 'postprocessing';
  * 	keepAlive: true
  * };
  */
+type OutlineMaterial = ShaderMaterial & { displacementMap: Texture }
 
+type CachedMaterial = {
+	material: OutlineMaterial,
+	used: boolean,
+	keepAlive: boolean,
+	count: number
+}
 class OutlinePass extends Pass {
+	renderScene: Scene;
+	renderCamera: Camera;
+	copyMaterial: CopyMaterial;
+	renderOutline: (renderer: {
+		autoClear: boolean; shadowMap: {
+			enabled: boolean;
+		}; setRenderTarget: (arg0: any) => void; render: (arg0: Scene, arg1: Camera) => void;
+	}, inputBuffer: {
+		texture: any;
+	}, outputBuffer: any) => void;
 
-	constructor(scene, camera, parameters = {}) {
+	constructor(scene: Scene, camera: Camera, parameters: any = {}) {
 
 		super();
 
@@ -86,18 +110,18 @@ class OutlinePass extends Pass {
 		// save at the outline material creation and release
 		// if it's unused removeThresholdCount frames
 		// unless keepAlive is true.
-		const cache = {};
+		const cache: Record<string, CachedMaterial> = {};
 
 		const removeThresholdCount = 60;
 
 		// outlineMaterial.uuid -> object.material or
 		// outlineMaterial.uuid -> object.material[ n ]
 		// save before render and release after render.
-		const originalMaterials = {};
+		const originalMaterials: Record<string, MeshPhongMaterial> = {};
 
 		// object.uuid -> originalOnBeforeRender
 		// save before render and release after render.
-		const originalOnBeforeRenders = {};
+		const originalOnBeforeRenders: Record<string, Function> = {};
 
 		//this.cache = cache;  // for debug
 
@@ -187,9 +211,7 @@ class OutlinePass extends Pass {
 		].join('\n');
 
 		function createMaterial() {
-
-			return new ShaderMaterial({
-				type: 'OutlineEffect',
+			const material = new ShaderMaterial({
 				uniforms: UniformsUtils.merge([
 					UniformsLib['fog'],
 					UniformsLib['displacementmap'],
@@ -198,11 +220,12 @@ class OutlinePass extends Pass {
 				vertexShader: initSdef(vertexShader, parameters.enableSdef && !parameters.enablePBR),
 				fragmentShader: fragmentShader,
 				side: BackSide
-			});
+			}) as OutlineMaterial
+			return material;
 
 		}
 
-		function getOutlineMaterialFromCache(originalMaterial) {
+		function getOutlineMaterialFromCache(originalMaterial: MeshPhongMaterial) {
 
 			let data = cache[originalMaterial.uuid];
 
@@ -225,7 +248,7 @@ class OutlinePass extends Pass {
 
 		}
 
-		function getOutlineMaterial(originalMaterial) {
+		function getOutlineMaterial(originalMaterial: MeshPhongMaterial) {
 
 			const outlineMaterial = getOutlineMaterialFromCache(originalMaterial);
 
@@ -237,7 +260,7 @@ class OutlinePass extends Pass {
 
 		}
 
-		function isCompatible(object) {
+		function isCompatible(object: { geometry: any; isMesh: boolean; material: any; }) {
 
 			const geometry = object.geometry;
 			const hasNormals = (geometry !== undefined) && (geometry.attributes.normal !== undefined);
@@ -246,7 +269,7 @@ class OutlinePass extends Pass {
 
 		}
 
-		function setOutlineMaterial(object) {
+		function setOutlineMaterial(object: any) {
 
 			if (isCompatible(object) === false) return;
 
@@ -269,7 +292,7 @@ class OutlinePass extends Pass {
 
 		}
 
-		function restoreOriginalMaterial(object) {
+		function restoreOriginalMaterial(object: any) {
 
 			if (isCompatible(object) === false) return;
 
@@ -291,7 +314,7 @@ class OutlinePass extends Pass {
 
 		}
 
-		function onBeforeRender(renderer, scene, camera, geometry, material) {
+		function onBeforeRender(renderer: any, scene: any, camera: any, geometry: any, material: ShaderMaterial) {
 
 			const originalMaterial = originalMaterials[material.uuid];
 
@@ -302,7 +325,7 @@ class OutlinePass extends Pass {
 
 		}
 
-		function updateUniforms(material, originalMaterial) {
+		function updateUniforms(material: ShaderMaterial, originalMaterial: MeshPhongMaterial) {
 
 			const outlineParameters = originalMaterial.userData.outlineParameters;
 
@@ -316,7 +339,7 @@ class OutlinePass extends Pass {
 
 			}
 
-			if (originalMaterial.displacementMap) {
+			if (originalMaterial instanceof MeshPhongMaterial) {
 
 				material.uniforms.displacementMap.value = originalMaterial.displacementMap;
 				material.uniforms.displacementScale.value = originalMaterial.displacementScale;
@@ -326,7 +349,7 @@ class OutlinePass extends Pass {
 
 		}
 
-		function updateOutlineMaterial(material, originalMaterial) {
+		function updateOutlineMaterial(material: OutlineMaterial, originalMaterial: MeshPhongMaterial) {
 
 			if (material.name === 'invisible') return;
 
@@ -426,7 +449,7 @@ class OutlinePass extends Pass {
 
 		}
 
-		this.renderOutline = function (renderer, inputBuffer, outputBuffer) {
+		this.renderOutline = function (renderer: { autoClear: boolean; shadowMap: { enabled: boolean; }; setRenderTarget: (arg0: any) => void; render: (arg0: Scene, arg1: Camera) => void; }, inputBuffer: { texture: any; }, outputBuffer: any) {
 			const scene = this.renderScene
 
 			const currentAutoClear = renderer.autoClear;
@@ -462,7 +485,7 @@ class OutlinePass extends Pass {
 
 	}
 
-	render(renderer, writeBuffer, readBuffer) {
+	render(renderer: any, writeBuffer: null, readBuffer: any) {
 
 		this.renderOutline(renderer, writeBuffer, readBuffer);
 

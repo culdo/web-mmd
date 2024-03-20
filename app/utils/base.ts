@@ -1,10 +1,13 @@
 import videojs from 'video.js'
 import 'videojs-youtube'
 import "video.js/dist/video-js.css";
+import { Material, SkinnedMesh } from 'three';
 
-function onProgress(xhr) {
 
-    let progressMap = {};
+function onProgress(xhr: { lengthComputable: any; loaded: number; total: number; }) {
+    
+    const loading = document.getElementById("loading")!
+    let progressMap: Record<number, number> = {};
     window.onload = () => {
         progressMap = {};
     }
@@ -27,14 +30,16 @@ function onProgress(xhr) {
 
 }
 
-function withProgress(resp, totalSize = null) {
+function withProgress(resp: Response, totalSize: number) {
+    
+    const loading = document.getElementById("loading")!
     if (!totalSize) {
-        totalSize = parseInt(resp.headers.get('content-length'), 10);
+        totalSize = parseInt(resp.headers.get('content-length') as string, 10);
     }
 
     return new Response(new ReadableStream({
         async start(controller) {
-            const reader = resp.body.getReader();
+            const reader = resp.body!.getReader();
             let loaded = 0
             for (; ;) {
                 const { done, value } = await reader.read();
@@ -52,7 +57,7 @@ function withProgress(resp, totalSize = null) {
 }
 
 let init = false
-async function loadMusicFromYT(api) {
+async function loadMusicFromYT(api: { [x: string]: any; musicYtURL: any; musicName: any; musicURL: string; }) {
     const player = videojs.getPlayer("rawPlayer")
     player.src({
         "type": "video/youtube",
@@ -60,13 +65,13 @@ async function loadMusicFromYT(api) {
     })
 
     // workaroud for yt policy
-    if(!init) {
+    if (!init) {
         const savedTime = api["currentTime"]
         const savedVolume = api["volume"]
         await player.play()
         player.volume(0.0);
         player.on('play', async () => {
-            if(!init) {
+            if (!init) {
                 player.pause()
                 await player.play()
                 player.pause()
@@ -74,18 +79,18 @@ async function loadMusicFromYT(api) {
             }
         })
         player.on('pause', () => {
-            if(!init) {
+            if (!init) {
                 player.currentTime(savedTime);
                 init = true
             }
         })
     }
-    
-    api.musicName = player.tech(true).ytPlayer.videoTitle
+
+    api.musicName = (player.tech(true) as any).ytPlayer.videoTitle
     api.musicURL = "";
 }
 
-function dataURItoBlobUrl(dataURI) {
+function dataURItoBlobUrl(dataURI: string) {
     // convert base64 to raw binary data held in a string
     // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
     var byteString = atob(dataURI.split(',')[1]);
@@ -109,7 +114,7 @@ function dataURItoBlobUrl(dataURI) {
 }
 
 let _currTimePrevUpdate = 0;
-function saveCurrTime(api, currTime) {
+function saveCurrTime(api: { currentTime: any; }, currTime: any) {
     let now = Date.now();
     // update current time every one secs
     if (now - _currTimePrevUpdate > 1000) {
@@ -119,7 +124,7 @@ function saveCurrTime(api, currTime) {
     }
 }
 
-function blobToBase64(blob) {
+function blobToBase64(blob: Blob) {
     return new Promise((resolve, _) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result);
@@ -127,7 +132,7 @@ function blobToBase64(blob) {
     });
 }
 
-function startFileDownload(url, fileName) {
+function startFileDownload(url: string, fileName: string) {
     const a = document.createElement('a')
     a.href = url
     a.download = fileName
@@ -136,18 +141,26 @@ function startFileDownload(url, fileName) {
     document.body.removeChild(a)
 }
 
-function createAudioLink() {
-    const a = document.createElement("a")
-    a.id = "audioSaver"
-    a.target = "_blank"
-    a.style = "display: table; margin: auto;"
-    a.text = "right click me to save music"
-    return a
-}
 
-async function withTimeElapse(func, name) {
+async function withTimeElapse(func: () => any, name: any) {
     const start = Date.now()
     await func()
     console.log(`${name} time elapsed: ${(Date.now() - start) / 1000}s`)
 }
-export { withTimeElapse, onProgress, dataURItoBlobUrl, loadMusicFromYT, saveCurrTime, blobToBase64, withProgress, startFileDownload, createAudioLink }
+
+
+function disposeMesh(obj: SkinnedMesh) {
+    obj.geometry.dispose()
+    for (const material of obj.material as Material[]) {
+        material.dispose()
+        // dispose textures
+        for (const key of Object.keys(material)) {
+            const value = material[key as keyof Material]
+            if (value && typeof value === 'object' && 'minFilter' in value) {
+                value.dispose()
+            }
+        }
+    }
+}
+
+export { withTimeElapse, onProgress, dataURItoBlobUrl, loadMusicFromYT, saveCurrTime, blobToBase64, withProgress, startFileDownload, disposeMesh }

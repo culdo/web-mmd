@@ -7,18 +7,67 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { DebugEnvironment } from 'three/examples/jsm/environments/DebugEnvironment.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { MMDLoader } from './MMDLoader.js';
-import { MMDAnimationHelper } from './MMDAnimationHelper.js';
-import { MMDGui } from './gui.js'
-import { onProgress, loadMusicFromYT, withProgress, dataURItoBlobUrl } from '../utils/base.js'
-import { PostProcessor } from './postProcessor.js'
+import { MMDLoader } from './MMDLoader';
+import { MMDAnimationHelper } from './MMDAnimationHelper';
+import { MMDGui } from './gui'
+import { onProgress, loadMusicFromYT, withProgress, dataURItoBlobUrl } from '../utils/base'
+import { PostProcessor } from './postProcessor'
 
 import path from 'path-browserify';
 import localforage from 'localforage';
-import { CameraMode, MMDCameraWorkHelper } from './MMDCameraWorkHelper.js';
+import { CameraMode, MMDCameraWorkHelper } from './MMDCameraWorkHelper';
 import logging from 'webpack/lib/logging/runtime'
+import Player from 'video.js/dist/types/player.js';
+import { EffectComposer } from 'postprocessing';
+
+declare const window: any;
 
 class WebMMD {
+    ikHelper(ikHelper: any) {
+        throw new Error('Method not implemented.');
+    }
+    physicsHelper(physicsHelper: any) {
+        throw new Error('Method not implemented.');
+    }
+    skeletonHelper(skeletonHelper: any) {
+        throw new Error('Method not implemented.');
+    }
+    presetsList(presetsList: any): object | any[] {
+        throw new Error('Method not implemented.');
+    }
+    helper: MMDAnimationHelper;
+    cwHelper: MMDCameraWorkHelper;
+    _timeoutID: any;
+    _prevTime: number;
+    _clock: THREE.Clock;
+    _gui: MMDGui;
+    _logger: any;
+    camera: THREE.PerspectiveCamera;
+    api: any;
+    configSep!: string;
+    preset: string;
+    updateDirLight!: () => void;
+    player: Player;
+    stage: THREE.SkinnedMesh<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.Material | THREE.Material[]>;
+    loadCharacter!: (url?: any, filename?: any) => Promise<void>;
+    loadStage!: (url?: any, filename?: any) => Promise<void>;
+    loadCamera!: (url?: any, filename?: any) => Promise<void>;
+    ready: boolean;
+
+    stats: Stats;
+    scene: THREE.Scene;
+    dirLight: THREE.DirectionalLight;
+    renderer: THREE.WebGLRenderer;
+    character: THREE.SkinnedMesh;
+    controls: OrbitControls;
+    composer: EffectComposer;
+    runtimeCharacter: any;
+    postprocessor: { outline: any; dofPass: any; dofEffect: any; bloomEffect: any; bloomPass: any; composer: any; };
+    defaultConfig: any;
+    loader: any;
+    ambientLight: any;
+    hemiLight: any;
+
     constructor() {
         // Global properties
 
@@ -32,11 +81,11 @@ class WebMMD {
         this._clock = new THREE.Clock();
         this._gui = new MMDGui();
 
-        this._logger = logging.getLogger("WebMMD")
+        this._logger = logging.getLogger("WebMMD");;
     }
 
     async start() {
-        await Promise.all([this._getConfig(), Ammo()]);
+        await Promise.all([this._getConfig(), window.Ammo()]);
         await this._setup();
         await this._loadFiles();
         this._loadEffects();
@@ -51,7 +100,7 @@ class WebMMD {
 
         const scope = this
         const configSaver = {
-            set: function (target, key, value) {
+            set: function (target: any, key: any, value: undefined) {
                 scope._gui.panel.title("Controls (Saving...)");
                 const saveAsync = async () => {
                     const targetPreset = scope.preset == "Default" ? "Untitled" : scope.preset;
@@ -65,7 +114,7 @@ class WebMMD {
                     saveAsync();
                 }
                 // need to put this outside of async func(above) to set back to api for reading
-                const result = Reflect.set(...arguments)
+                const result = Reflect.set(target, key, value)
                 return result
             }
         };
@@ -111,7 +160,7 @@ class WebMMD {
 
     async _setup() {
         const { api } = this
-        
+
         // music player
         const player = videojs('rawPlayer', {
             "audioOnlyMode": true
@@ -225,7 +274,7 @@ class WebMMD {
 
     // get current time for motions (character, camera...etc)
     get motionTime() {
-        const currTime = this.player.currentTime() + (this.api.motionOffset * 0.001)
+        const currTime = this.player.currentTime()! + (this.api.motionOffset * 0.001)
         if (currTime < 0) {
             return 0
         }
@@ -250,7 +299,7 @@ class WebMMD {
                 })
             }
 
-            const mesh = await loader.load(url, onProgress, null, stageParams)
+            const mesh = await loader.load(url, onProgress, () => { }, stageParams)
             const stage = mesh;
             stage.castShadow = true;
             stage.receiveShadow = api['ground shadow'];
@@ -264,7 +313,7 @@ class WebMMD {
 
         // load camera
         const _loadCamera = async (url = api.cameraFile, filename = api.camera) => {
-            const cameraAnimation = await loader.loadAnimation(url, camera, onProgress, null);
+            const cameraAnimation = await loader.loadAnimation(url, camera, onProgress);
             helper.add(camera, {
                 animation: cameraAnimation,
                 enabled: api["camera mode"] == CameraMode.MOTION_FILE
@@ -291,7 +340,7 @@ class WebMMD {
                 });
             }
 
-            const mmd = await loader.loadWithAnimation(url, api.motionFile, onProgress, null, characterParams);
+            const mmd = await loader.loadWithAnimation(url, api.motionFile, onProgress, () => { }, characterParams as any);
             const character = mmd.mesh;
             character.castShadow = true;
             character.receiveShadow = api["self shadow"];
@@ -336,6 +385,7 @@ class WebMMD {
         // load camera at last so camera-work clips duration will not changed ( because of helper._syncDuration() )
         await _loadCamera();
 
+        const overlay = document.getElementById("overlay")!
         overlay.style.display = "none";
 
         // export util methods for gui
@@ -393,9 +443,9 @@ class WebMMD {
                 helper.enable('physics', false);
             }
 
-            // camera updating
+            // camera motion updating
             cwHelper.setTime(currTime);
-            // animation updating
+            // character motion updating
             helper.update(delta, currTime);
 
             // check if time seeking using player control
@@ -434,3 +484,4 @@ class WebMMD {
 
 
 export default WebMMD
+

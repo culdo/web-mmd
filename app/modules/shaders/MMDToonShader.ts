@@ -14,7 +14,6 @@
  */
 
 import { UniformsUtils, ShaderLib } from 'three';
-import { sdefVertexShader } from './SdefVertexShader';
 
 const lights_mmd_toon_pars_fragment = /* glsl */`
 varying vec3 vViewPosition;

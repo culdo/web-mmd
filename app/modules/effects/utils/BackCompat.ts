@@ -1,28 +1,7 @@
 import { ToneMappingMode } from "postprocessing";
-import { LinearEncoding, LinearSRGBColorSpace, REVISION, SRGBColorSpace, sRGBEncoding } from "three";
+import { ColorSpace, REVISION, Texture } from "three";
 
 const revision = Number(REVISION.replace(/\D+/g, ""));
-const useColorSpace = revision >= 152;
-
-/**
- * @ignore
- */
-
-const encodingToColorSpace = new Map([
-	[LinearEncoding, LinearSRGBColorSpace],
-	[sRGBEncoding, SRGBColorSpace]
-]);
-
-/**
- * @ignore
- */
-
-const colorSpaceToEncoding = new Map([
-	[LinearSRGBColorSpace, LinearEncoding],
-	[SRGBColorSpace, sRGBEncoding]
-]);
-
-export { encodingToColorSpace, colorSpaceToEncoding };
 
 /**
  * Returns the output color space of the given renderer.
@@ -32,10 +11,9 @@ export { encodingToColorSpace, colorSpaceToEncoding };
  * @ignore
  */
 
-export function getOutputColorSpace(renderer) {
+export function getOutputColorSpace(renderer: { outputColorSpace: any; outputEncoding: number; } | null) {
 
-	return renderer === null ? null : useColorSpace ?
-		renderer.outputColorSpace : encodingToColorSpace.get(renderer.outputEncoding);
+	return renderer === null ? null : renderer.outputColorSpace
 
 }
 
@@ -47,23 +25,14 @@ export function getOutputColorSpace(renderer) {
  * @ignore
  */
 
-export function setTextureColorSpace(texture, colorSpace) {
+export function setTextureColorSpace(texture: Texture | null, colorSpace: ColorSpace) {
 
-	if(texture === null) {
+	if (texture === null) {
 
 		return;
 
 	}
-
-	if(useColorSpace) {
-
-		texture.colorSpace = colorSpace;
-
-	} else {
-
-		texture.encoding = colorSpaceToEncoding.get(colorSpace);
-
-	}
+	texture.colorSpace = colorSpace;
 
 }
 
@@ -75,23 +44,15 @@ export function setTextureColorSpace(texture, colorSpace) {
  * @ignore
  */
 
-export function copyTextureColorSpace(src, dest) {
+export function copyTextureColorSpace(src: { colorSpace: any; encoding: any; } | null, dest: { colorSpace: any; encoding: any; } | null) {
 
-	if(src === null || dest === null) {
+	if (src === null || dest === null) {
 
 		return;
 
 	}
 
-	if(useColorSpace) {
-
-		dest.colorSpace = src.colorSpace;
-
-	} else {
-
-		dest.encoding = src.encoding;
-
-	}
+	dest.colorSpace = src.colorSpace;
 
 }
 
@@ -103,9 +64,9 @@ export function copyTextureColorSpace(src, dest) {
  * @ignore
  */
 
-export function updateFragmentShader(fragmentShader) {
+export function updateFragmentShader(fragmentShader: string) {
 
-	if(revision < 154) {
+	if (revision < 154) {
 
 		return fragmentShader.replace("colorspace_fragment", "encodings_fragment");
 
@@ -123,7 +84,7 @@ export function updateFragmentShader(fragmentShader) {
  * @ignore
  */
 
-export function updateVertexShader(vertexShader) {
+export function updateVertexShader(vertexShader: any) {
 
 	return vertexShader;
 
@@ -137,9 +98,9 @@ export function updateVertexShader(vertexShader) {
  * @ignore
  */
 
-export function validateToneMappingMode(mode) {
+export function validateToneMappingMode(mode: ToneMappingMode) {
 
-	if(revision < 160 && mode === ToneMappingMode.AGX) {
+	if (revision < 160 && mode === ToneMappingMode.AGX) {
 
 		console.warn("AgX requires three r160 or higher, falling back to ACES filmic");
 		mode = ToneMappingMode.ACES_FILMIC;

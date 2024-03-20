@@ -55,14 +55,10 @@ Run `npm test`
 - [x] SDEF rendering
 - [x] camera Fixed-Follow mode
 - [x] PBR rendering
+- [x] refactor to Typescript
 
 ## WIP
 - [ ] timeline editor
     - [x] camera composition mode
-- [ ] refactor to Typescript
-    - [x] project refactor to Next.js
-    - [x] CI refactoring
-    - [ ] WebMMD modules refactoring
-
 ## Planning
 - [ ] In-APP Credits list

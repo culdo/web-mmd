@@ -1,4 +1,5 @@
-function SceneTimeline({ children = null }) {
+function SceneTimeline({ children = null }: 
+  { children?: React.ReactNode }) {
   return (
     <div className="scrolling-bar">
       <hr />

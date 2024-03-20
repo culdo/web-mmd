@@ -7,7 +7,7 @@ import {
 	Vector3,
 	VectorKeyframeTrack
 } from 'three';
-import { MMDParser } from './mmdparser.module.js';
+import { MMDParser } from './mmdparser.module';
 
 //
 
@@ -17,9 +17,9 @@ export class CameraClipsBuilder {
 	 * @param {Object} vmd - parsed VMD data
 	 * @return {AnimationClip}
 	 */
-	buildCameraAnimation(vmd) {
+	buildCameraAnimation(vmd: { metadata?: { coordinateSystem: string; }; cameras?: any; }) {
 
-		function pushVector3(array, vec) {
+		function pushVector3(array: any[], vec: Vector3) {
 
 			array.push(vec.x);
 			array.push(vec.y);
@@ -27,7 +27,7 @@ export class CameraClipsBuilder {
 
 		}
 
-		function pushQuaternion(array, q) {
+		function pushQuaternion(array: any[], q: Quaternion) {
 
 			array.push(q.x);
 			array.push(q.y);
@@ -36,7 +36,7 @@ export class CameraClipsBuilder {
 
 		}
 
-		function pushInterpolation(array, interpolation, index) {
+		function pushInterpolation(array: any[], interpolation: number[], index: number) {
 
 			array.push(interpolation[index * 4 + 0] / 127); // x1
 			array.push(interpolation[index * 4 + 1] / 127); // x2
@@ -47,30 +47,30 @@ export class CameraClipsBuilder {
 
 		const cameras = vmd.cameras === undefined ? [] : vmd.cameras.slice();
 
-		cameras.sort(function (a, b) {
+		cameras.sort(function (a: { frameNum: number; }, b: { frameNum: number; }) {
 
 			return a.frameNum - b.frameNum;
 
 		});
 
 		const times = [];
-		const centers = [];
-		const quaternions = [];
-		const positions = [];
+		const centers: any[] = [];
+		const quaternions: any[] = [];
+		const positions: any[] = [];
 		const fovs = [];
 
-		const cInterpolations = [];
-		const qInterpolations = [];
-		const pInterpolations = [];
-		const fInterpolations = [];
+		const cInterpolations: any[] = [];
+		const qInterpolations: any[] = [];
+		const pInterpolations: any[] = [];
+		const fInterpolations: any[] = [];
 
 		const quaternion = new Quaternion();
 		const euler = new Euler();
 		const position = new Vector3();
 		const center = new Vector3();
 
-		const clips = []
-		const cutTimes = []
+		const clips: { clip: any; interpolations: { 'target.position': any; '.quaternion': any; '.position': any; '.fov': any; }; }[] = []
+		const cutTimes: number[] = []
 		const jsonResult = { clips, cutTimes };
 
 		cutTimes.push(0.0)
@@ -171,7 +171,7 @@ export class CameraClipsBuilder {
 
 	// private method
 
-	_createTrack(node, typedKeyframeTrack, times, values, interpolations) {
+	_createTrack(node: string, typedKeyframeTrack: typeof VectorKeyframeTrack, times: any[], values: any[], interpolations: any[]) {
 
 		/*
 			 * optimizes here not to let KeyframeTrackPrototype optimize
@@ -230,7 +230,7 @@ export class CameraClipsBuilder {
 
 }
 
-export function cameraToClips(vmdBuffer) {
+export function cameraToClips(vmdBuffer: ArrayBufferLike) {
 	const parser = new MMDParser.Parser()
 
 	const vmd = parser.parseVmd(vmdBuffer, true)

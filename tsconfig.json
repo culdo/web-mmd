@@ -12,6 +12,8 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "target": "es2015",
+    "strictNullChecks": false,
     "plugins": [
       {
         "name": "next"
@@ -21,7 +23,7 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/modules/WebMMD.js", "scripts/copyAmmoJS.mjs"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/modules/WebMMD.ts", "scripts/copyAmmoJS.ts", "app/modules/effects/DOFeffect.ts", "index.d.ts"],
   "exclude": ["node_modules"],
   "ts-node": {
     "transpileOnly": true,

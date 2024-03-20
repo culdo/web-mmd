@@ -9,7 +9,7 @@
  * @ignore
  */
 
-export function orthographicDepthToViewZ(depth, near, far) {
+export function orthographicDepthToViewZ(depth: number, near: number, far: number) {
 
 	return depth * (near - far) - near;
 
