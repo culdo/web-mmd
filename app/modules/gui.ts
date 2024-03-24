@@ -75,8 +75,8 @@ class MMDGui {
     _addEventHandlers() {
         const { api, camera, composer, renderer, controls, cwHelper, player } = this._mmd
         const scope = this._mmd
-        const button = document.getElementById("button")
-        const rawPlayer = document.getElementById("button")
+        const fullScreenBt = document.getElementById("button")
+        const rawPlayer = document.getElementById("rawPlayer")
 
         player.on('volumechange', () => {
             api['volume'] = player.volume();
@@ -97,7 +97,7 @@ class MMDGui {
         player.on('seeked', () => {
             api.currentTime = player.currentTime();
         })
-        button.onclick = () => {
+        fullScreenBt.onclick = () => {
             let elem = document.querySelector("body");
 
             if (!document.fullscreenElement) {
@@ -124,7 +124,7 @@ class MMDGui {
         document.addEventListener('mousemove', (e) => {
 
             rawPlayer.style.opacity = "0.5";
-            button.style.opacity = "0.5";
+            fullScreenBt.style.opacity = "0.5";
             document.body.style.cursor = "default"
             if (this._timeoutID !== undefined) {
                 clearTimeout(this._timeoutID);
@@ -132,7 +132,7 @@ class MMDGui {
 
             this._timeoutID = setTimeout(function () {
                 rawPlayer.style.opacity = "0";
-                button.style.opacity = "0";
+                fullScreenBt.style.opacity = "0";
                 if (!player.paused()) {
                     document.body.style.cursor = "none"
                 }
