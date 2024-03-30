@@ -97,6 +97,8 @@ class MMDLoader extends Loader {
 	meshBuilder: MeshBuilder;
 	animationBuilder: AnimationBuilder;
 	animationPath: any;
+	params: any;
+	loadAsync: (url: string, onProgress?: (event: ProgressEvent<EventTarget>) => void) => Promise<SkinnedMesh>;
 
 	constructor(manager?: LoadingManager) {
 
@@ -111,6 +113,12 @@ class MMDLoader extends Loader {
 		this.parser = null; // lazy generation
 		this.meshBuilder = new MeshBuilder(this.manager);
 		this.animationBuilder = new AnimationBuilder();
+		this.params = null;
+	}
+
+	setModelParams(params: any): MMDLoader {
+		this.params = params;
+		return this;
 	}
 
 	/**
@@ -134,11 +142,12 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	async load(url: string, onProgress: Function, onError: Function, params: any = null) {
+	async load(url: string, onLoad: Function, onProgress: Function, onError: Function) {
 
 		const builder = this.meshBuilder.setCrossOrigin(this.crossOrigin);
 
 		// resource path
+		const params = this.params
 
 		let resourcePath;
 
@@ -188,7 +197,8 @@ class MMDLoader extends Loader {
 			enablePBR: params?.enablePBR ?? false
 		};
 
-		return builder.build(data, resourcePath, onProgress, onError, shaderParams);
+		this.params = null
+		onLoad(builder.build(data, resourcePath, onProgress, onError, shaderParams));
 
 	}
 
@@ -225,14 +235,14 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	async loadWithAnimation(modelUrl: any, vmdUrl: any, onProgress: Function, onError = () => { }, params: any = null) {
+	async loadWithAnimation(modelUrl: string, vmdUrl: string | string[], onProgress: any, onError = () => { }, params: any = null) {
 
-		const scope = this;
-
-		const mesh = await this.load(modelUrl, onProgress, onError, params);
+		const mesh = await this
+			.setModelParams(params)
+			.loadAsync(modelUrl, onProgress);
 		mesh.userData.followSmooth = params.followSmooth
 
-		const animation = await scope.loadAnimation(vmdUrl, mesh, onProgress, onError);
+		const animation = await this.loadAnimation(vmdUrl, mesh, onProgress, onError);
 
 		return {
 			mesh: mesh,

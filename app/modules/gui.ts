@@ -75,7 +75,7 @@ class MMDGui {
     _addEventHandlers() {
         const { api, camera, composer, renderer, controls, cwHelper, player } = this._mmd
         const scope = this._mmd
-        const fullScreenBt = document.getElementById("button")
+        const fullScreenBt = document.getElementById("fsBtn")
         const rawPlayer = document.getElementById("rawPlayer")
 
         player.on('volumechange', () => {
@@ -97,16 +97,7 @@ class MMDGui {
         player.on('seeked', () => {
             api.currentTime = player.currentTime();
         })
-        fullScreenBt.onclick = () => {
-            let elem = document.querySelector("body");
-
-            if (!document.fullscreenElement) {
-                elem.requestFullscreen()
-            } else {
-                document.exitFullscreen();
-            }
-        }
-
+        
         // orbit control
         controls.domElement.addEventListener('mousedown', () => {
             camera.up.set(0, 1, 0);
