@@ -23,18 +23,6 @@ import { EffectComposer } from 'postprocessing';
 declare const window: any;
 
 class WebMMD {
-    ikHelper(ikHelper: any) {
-        throw new Error('Method not implemented.');
-    }
-    physicsHelper(physicsHelper: any) {
-        throw new Error('Method not implemented.');
-    }
-    skeletonHelper(skeletonHelper: any) {
-        throw new Error('Method not implemented.');
-    }
-    presetsList(presetsList: any): object | any[] {
-        throw new Error('Method not implemented.');
-    }
     helper: MMDAnimationHelper;
     cwHelper: MMDCameraWorkHelper;
     _timeoutID: any;
@@ -62,7 +50,14 @@ class WebMMD {
     controls: OrbitControls;
     composer: EffectComposer;
     runtimeCharacter: any;
-    postprocessor: { outline: any; dofPass: any; dofEffect: any; bloomEffect: any; bloomPass: any; composer: any; };
+    postprocessor: {
+        outline: any;
+        dofPass: any;
+        dofEffect: any;
+        bloomEffect: any;
+        bloomPass: any;
+        composer: any;
+    };
     defaultConfig: any;
     loader: any;
     ambientLight: any;
@@ -299,7 +294,9 @@ class WebMMD {
                 })
             }
 
-            const mesh = await loader.load(url, onProgress, () => { }, stageParams)
+            const mesh = await loader
+                .setModelParams(stageParams)
+                .loadAsync(url, onProgress)
             const stage = mesh;
             stage.castShadow = true;
             stage.receiveShadow = api['ground shadow'];

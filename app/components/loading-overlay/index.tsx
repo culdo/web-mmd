@@ -1,6 +1,8 @@
+import styles from "./styles.module.css"
+
 function LoadingOverlay({ content = "" }) {
     return (
-        <div id="overlay">
+        <div id="overlay" className={styles.overlay}>
             <h1 id="loading">
                 {content}
             </h1>
