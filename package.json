@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "playwright test",
-    "copyAmmoJS": "ts-node ./scripts/copyAmmoJS.ts"
+    "postinstall": "ts-node ./scripts/copyAmmoJS.ts"
   },
   "dependencies": {
     "next": "14.2.0-canary.24",

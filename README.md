@@ -33,6 +33,7 @@ It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) f
 
 # Development
 * Run `npm run dev`
+
 Modules which mainly come from [the three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio) is refactored to Classes and Async/Await styles.
 This projects is refactored to using `Next.js`(TypeScript).
 
@@ -42,10 +43,6 @@ This projects is refactored to using `Next.js`(TypeScript).
 * `Next.js` (For static site generating)
 * `video.js` (For audio from YT)
 * `playwright` (For testing)
-
-## Upgrade Ammo.js
-1. `npm install github:kripken/ammo.js`: Install the latest version of Ammo.js  
-2. `npm run copyAmmoJS`: Copy the latest `ammo.wasm.js` and `ammo.wasm.wasm` to `public/`
 
 ## E2E Testing using Playwright
 Run `npm test`
