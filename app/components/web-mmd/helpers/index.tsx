@@ -1,11 +1,15 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame } from '@react-three/fiber';
+import { useRef } from "react";
 
 function Helpers(): null {
 
     const { helper, cwHelper, api, player, runtimeCharacter, controls, loadCamera } = useGlobalStore()
 
-    useFrame((state, delta) => {
+    const prevTime = 0.0
+    const prevTimeRef = useRef(prevTime)
+
+    useFrame(() => {
         if (!runtimeCharacter || !loadCamera) {
             return
         }
@@ -16,6 +20,8 @@ function Helpers(): null {
         if (player.currentTime() == player.duration()) {
             return
         }
+
+        const delta = currTime - prevTimeRef.current;
 
         if (Math.abs(delta) > 0) {
             // check if time seeking using player control
@@ -33,6 +39,7 @@ function Helpers(): null {
                 runtimeCharacter.physics.reset();
                 helper.enable('physics', api['physics']);
             }
+            prevTimeRef.current = currTime
 
         } else {
             if (controls.autoRotate) {
