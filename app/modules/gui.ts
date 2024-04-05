@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 
+import { GUI } from 'lil-gui';
 import localforage from 'localforage';
 import path from 'path-browserify';
-import { GUI } from 'lil-gui';
-import { onProgress, loadMusicFromYT, blobToBase64, startFileDownload, dataURItoBlobUrl, disposeMesh } from '../utils/base';
+import { KernelSize } from 'postprocessing';
+import logging from 'webpack/lib/logging/runtime';
+import { GlobalState } from '../stores/useGlobalStore';
+import { blobToBase64, dataURItoBlobUrl, disposeMesh, loadMusicFromYT, onProgress, startFileDownload } from '../utils/base';
 import { CameraMode } from './MMDCameraWorkHelper';
-import logging from 'webpack/lib/logging/runtime'
-import { BlendFunction, KernelSize } from 'postprocessing';
 import WebMMD from './WebMMD';
 
 class MMDGui {
@@ -36,7 +37,7 @@ class MMDGui {
         this._logger = logging.getLogger("MMDGui")
     }
 
-    init(params: WebMMD) {
+    init(params: WebMMD | Partial<GlobalState>) {
         this._mmd = params;
         this._addEventHandlers();
 
