@@ -32,10 +32,10 @@ It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) f
 * stage: RedialC_EpRoomDS by RedialC
 
 # Development
-* Run `npm run dev`
-
-Modules which mainly come from [the three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio) is refactored to Classes and Async/Await styles.
-This projects is refactored to using `Next.js`(TypeScript).
+1. Install deps via `npm install`
+2. Run `npm run dev`
+* Modules which mainly come from [the three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio) is refactored to Classes and Async/Await styles.
+* This projects is refactored to using `Next.js`(TypeScript).
 
 ## Tech stacks
 * `three.js` (For MMD)
@@ -48,7 +48,7 @@ This projects is refactored to using `Next.js`(TypeScript).
 Run `npm test`
 
 ## CI/CD
-It use `Github Action` to auto deploy the demo site. Relative files located at `./.github/workflows`
+It uses `Github Action` to auto test and deploy the demo site. Relative files located at `./.github/workflows`
 
 # To-do list
 ## Done
@@ -66,6 +66,7 @@ It use `Github Action` to auto deploy the demo site. Relative files located at `
 - [x] refactor to Typescript
 
 ## WIP
+- [ ] refactor to @react-three eco system
 - [ ] timeline editor
     - [x] camera composition mode
 ## Planning

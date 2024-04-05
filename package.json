@@ -11,11 +11,16 @@
     "postinstall": "ts-node ./scripts/copyAmmoJS.ts"
   },
   "dependencies": {
+    "@react-three/drei": "^9.102.6",
+    "@react-three/fiber": "^8.16.1",
+    "leva": "^0.9.35",
     "next": "14.2.0-canary.24",
     "react": "^18",
     "react-dom": "^18",
     "three": "^0.157.0",
-    "ts-node": "^10.9.2"
+    "three-stdlib": "^2.29.6",
+    "ts-node": "^10.9.2",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.42.1",
@@ -24,7 +29,7 @@
     "@types/path-browserify": "^1.0.2",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@types/three": "^0.157.0",
+    "@types/three": "^0.157.2",
     "@types/webpack": "^5.28.5",
     "ammo.js": "github:kripken/ammo.js",
     "autoprefixer": "^10.0.1",

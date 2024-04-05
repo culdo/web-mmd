@@ -2,6 +2,7 @@ import { AnimationAction, AnimationActionLoopStyles, AnimationClip, LoopOnce, Ve
 import { createTrackInterpolant } from "./MMDLoader"
 import { cameraToClips } from "./cameraClipsBuilder"
 import WebMMD from "./WebMMD"
+import { GlobalState } from "../stores/useGlobalStore"
 
 
 export const CameraMode = {
@@ -63,7 +64,7 @@ export class MMDCameraWorkHelper {
         this._cutClipMap = {}
     }
 
-    async init(mmd: WebMMD) {
+    async init(mmd: Partial<GlobalState> | WebMMD) {
         // Internal properties
         this._mmd = mmd
         this._camera = mmd.camera

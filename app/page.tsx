@@ -2,8 +2,8 @@
 
 import LoadingOverlay from "./components/loading-overlay";
 import SceneTimeline from "./components/scene-timeline";
-import FullScreenButton from "./components/fullscreen-button";
-import AudioPlayer from "./components/audio-player";
+import FullScreenButton from "./components/control-bar/fullscreen-button";
+import AudioPlayer from "./components/control-bar/audio-player";
 import FileSelector from "./components/file-selector";
 import WebMMD from "./components/web-mmd-legacy";
 
