@@ -43,10 +43,10 @@ function AudioPlayer() {
 
         player.on('play', () => {
             runtimeCharacter.physics.reset();
-            if (api["auto hide GUI"]) gui.panel.hide();
+            if (api["auto hide GUI"]) gui.hidden = true;
         })
         player.on('pause', () => {
-            gui.panel.show();
+            gui.hidden = false;
             api.currentTime = player.currentTime();
         })
 

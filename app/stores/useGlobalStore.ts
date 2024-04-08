@@ -6,6 +6,7 @@ import { MMDAnimationHelper } from '../modules/MMDAnimationHelper';
 import { MMDCameraWorkHelper } from '../modules/MMDCameraWorkHelper';
 import { MMDGui } from '../modules/gui';
 import { MMDLoader } from '../modules/MMDLoader';
+import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
 
 export type GlobalState = {
     loader: MMDLoader
@@ -15,14 +16,17 @@ export type GlobalState = {
     defaultConfig: any,
     api: any,
     preset: string,
-    presetsList: any,
-    gui: MMDGui,
+    presetsList: Set<string>,
+    gui: LevaRootProps,
     camera: Camera,
     runtimeCharacter: any,
     controls: OrbitControls
     character: SkinnedMesh,
     stage: SkinnedMesh,
-    loadCamera: Function
+    loadCamera: Function,
+    loadCharacter: Function,
+    updateMorphFolder: Function,
+    changeToUntitled: Function
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -33,15 +37,18 @@ const useGlobalStore = create<GlobalState>(
         player: null,
         defaultConfig: null,
         api: null,
-        preset: null,
-        presetsList: null,
-        gui: null,
+        preset: "Default",
+        presetsList: new Set(["Default"]),
+        gui: {},
         character: null,
         stage: null,
         runtimeCharacter: null,
         camera: null,
         controls: null,
-        loadCamera: null
+        loadCamera: null,
+        loadCharacter: null,
+        updateMorphFolder: null,
+        changeToUntitled: null
     })
 )
 

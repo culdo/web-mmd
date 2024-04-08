@@ -1,14 +1,15 @@
-import { Canvas } from '@react-three/fiber';
 import useConfig from '../default-config/useConfig';
-import useGUI from '../mmd-gui/useGUI';
-import Camera from './camera';
+import Camera from './camera/Camera';
 import Character from './character';
 import Controls from './controls';
-import Helpers from './helpers';
+import useRenderLoop from './renderLoop/useRenderLoop';
 import Stage from './stage';
 import useGlobalStore from '@/app/stores/useGlobalStore';
 import useHelpers from './helpers/useHelpers';
-import Ammo from './ammo';
+import { Leva, useControls } from 'leva';
+import { useEffect } from 'react';
+import { CameraMode } from '@/app/modules/MMDCameraWorkHelper';
+import usePreset from './preset/usePreset';
 
 declare global {
     interface Window { Ammo: Function; }
@@ -16,22 +17,62 @@ declare global {
 
 function WebMMD() {
     useConfig()
-    useGUI()
     useHelpers()
-    const { api } = useGlobalStore()
-    if(!api) return
+    usePreset()
+    const { api, player, cwHelper } = useGlobalStore()
+
+    const [, set] = useControls(() => ({
+        'camera mode': {
+            value: CameraMode.MOTION_FILE,
+            options: {
+                "Motion File": CameraMode.MOTION_FILE,
+                "Composition": CameraMode.COMPOSITION,
+                "Fixed Follow": CameraMode.FIXED_FOLLOW
+            },
+            onChange: (motionType) => {
+                const { api } = useGlobalStore.getState()
+                if (!api) return
+                api["camera mode"] = motionType
+            },
+        },
+    }))
+
+    useEffect(() => {
+        if (!api || !player || !cwHelper) return
+        // keyboard shortcuts
+        document.addEventListener("keydown", (e) => {
+            if (e.key == " ") {
+                if (player.paused()) {
+                    player.play()
+                } else {
+                    player.pause()
+                }
+            } else if (e.key == "`") {
+                const isEditMode = api["camera mode"] != CameraMode.MOTION_FILE
+                let targetMode;
+                if (isEditMode) {
+                    targetMode = CameraMode.MOTION_FILE
+                } else {
+                    targetMode = CameraMode.COMPOSITION
+                }
+                set({ "camera mode": targetMode })
+
+                cwHelper.checkCameraMode()
+            }
+        })
+    }, [api, player, cwHelper])
+
+    useRenderLoop()
+    if (!api) return
     return (
         <>
-            <Canvas>
-                <fogExp2 attach="fog" color={api["fog color"]} density={api["fog density"]}></fogExp2>
-                <ambientLight intensity={Math.PI / 2} />
-                <directionalLight position={[-10, -10, -10]} intensity={Math.PI} />
-                <Character></Character>
-                <Stage></Stage>
-                <Helpers></Helpers>
-                <Camera></Camera>
-                <Controls></Controls>
-            </Canvas>
+            <fogExp2 attach="fog" color={api["fog color"]} density={api["fog density"]}></fogExp2>
+            <ambientLight intensity={Math.PI / 2} />
+            <directionalLight position={[-10, -10, -10]} intensity={Math.PI} />
+            <Character></Character>
+            <Stage></Stage>
+            <Camera></Camera>
+            <Controls></Controls>
         </>
     )
 }

@@ -7,8 +7,12 @@ import WebMMD from "@/app/components/web-mmd";
 import ControlBar from "../components/control-bar";
 import { useEffect } from "react";
 import Script from "next/script";
+import { Canvas } from "@react-three/fiber";
+import { Leva } from "leva";
+import useGlobalStore from "../stores/useGlobalStore";
 
 export default function Page() {
+  const { gui } = useGlobalStore()
   useEffect(() => {
     window.Ammo();
   }, [])
@@ -16,9 +20,12 @@ export default function Page() {
     <>
       {/* <LoadingOverlay></LoadingOverlay> */}
       <SceneTimeline></SceneTimeline>
-      <WebMMD></WebMMD>
+      <Canvas>
+        <WebMMD></WebMMD>
+      </Canvas>
       <ControlBar></ControlBar>
       <FileSelector></FileSelector>
+      <Leva {...gui}></Leva>
       <Script strategy="beforeInteractive" src="./ammo.wasm.js"></Script>
     </>
   );

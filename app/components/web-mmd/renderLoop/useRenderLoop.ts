@@ -2,7 +2,7 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame } from '@react-three/fiber';
 import { useRef } from "react";
 
-function Helpers(): null {
+function useRenderLoop() {
 
     const { helper, cwHelper, api, player, runtimeCharacter, controls, loadCamera } = useGlobalStore()
 
@@ -61,7 +61,6 @@ function Helpers(): null {
             runtimeCharacter.looped = false;
         }
     })
-    return null;
 }
 
-export default Helpers;
+export default useRenderLoop;
