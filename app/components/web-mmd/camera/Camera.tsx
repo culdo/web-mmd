@@ -2,15 +2,16 @@ import { CameraMode } from "@/app/modules/MMDCameraWorkHelper";
 import { MMDLoader } from "@/app/modules/MMDLoader";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { onProgress } from "@/app/utils/base";
+import { PerspectiveCamera } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { useEffect } from "react";
 
-function Camera(): null {
+function Camera() {
     const { camera } = useThree()
 
     const globalState = useGlobalStore()
     const { api, helper, cwHelper, character, controls } = globalState
-
+    
     useEffect(() => {
         if (!api || !helper || !cwHelper || !character || !controls) return
 
@@ -22,7 +23,7 @@ function Camera(): null {
                 enabled: api["camera mode"] == CameraMode.MOTION_FILE
             });
 
-            await cwHelper.init({...globalState, camera});
+            await cwHelper.init({ ...globalState, camera });
             if (api.cameraFile != url) {
                 api.camera = filename;
                 api.cameraFile = url;
@@ -36,7 +37,9 @@ function Camera(): null {
         }
         init()
     }, [api, character, controls])
-    return null;
+    return (
+        <PerspectiveCamera makeDefault></PerspectiveCamera>
+    )
 }
 
 export default Camera;

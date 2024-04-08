@@ -4,7 +4,7 @@ import localforage from "localforage";
 import { useEffect } from "react";
 
 function useConfig() {
-    const { gui } = useGlobalStore()
+    const { gui, changeToUntitled, preset } = useGlobalStore()
 
     const _getConfig = async () => {
         const configSep = "."
@@ -12,14 +12,14 @@ function useConfig() {
         const configSaver = {
             set: (target: any, key: any, value: undefined) => {
                 const { preset } = useGlobalStore.getState()
-                gui.panel.title("Controls (Saving...)");
+                document.title = "Web MMD (Saving...)";
                 const saveAsync = async () => {
                     const targetPreset = preset == "Default" ? "Untitled" : preset;
                     await localforage.setItem(`${targetPreset}${configSep}${key}`, value)
-                    if (preset == "Default" && gui.changeToUntitled) {
-                        await gui.changeToUntitled()
+                    if (preset == "Default" && changeToUntitled) {
+                        await changeToUntitled()
                     }
-                    gui.panel.title("Controls");
+                    document.title = "Web MMD";
                 };
                 if (value !== undefined) {
                     saveAsync();
@@ -36,14 +36,15 @@ function useConfig() {
 
         let userConfig = JSON.parse(JSON.stringify(defaultConfig));
 
-        const savedPresetName = await localforage.getItem<string>("currentPreset")
-        const preset = savedPresetName ?? "Default"
+        const savedPresetName = await localforage.getItem<string>("currentPreset") ?? preset
         if (!savedPresetName) {
             await localforage.setItem("currentPreset", "Default")
         }
 
         const savedPresetsList = await localforage.getItem<string[]>("presetsList")
-        const presetsList = savedPresetsList ?? new Set(["Default"])
+        if(savedPresetsList) {
+            useGlobalStore.setState({presetsList: new Set(savedPresetsList)})
+        }
 
         // always loads config from localforage (include data)
         await localforage.iterate((val, key) => {
@@ -64,13 +65,12 @@ function useConfig() {
         }
 
         const api = new Proxy(userConfig, configSaver);
-
-        useGlobalStore.setState({ defaultConfig, api, preset, presetsList })
+        useGlobalStore.setState({ defaultConfig, api, preset })
     }
     useEffect(() => {
-        if (!gui) return
+        if (!gui || !changeToUntitled) return
         _getConfig()
-    }, [gui])
+    }, [gui, changeToUntitled])
 }
 
 export default useConfig;
