@@ -4,17 +4,17 @@ import { button, folder, useControls } from "leva";
 import localforage from "localforage";
 import path from "path-browserify";
 import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 function usePreset() {
-    const { preset, presetsList, api } = useGlobalStore()
+    const preset = useGlobalStore(state => state.preset)
+    const presetsList = useGlobalStore(state => state.presetsList)
+    const api = useGlobalStore(useShallow(state => state.api))
 
     const _loadPreset = async (name: string) => {
-        console.log(name)
-        // useGlobalStore.setState({ preset: name })
-        await localforage.setItem("currentPreset", name);
-        if (name != "Untitled") {
-            // location.reload();
-        }
+        if(preset == name) return
+
+        useGlobalStore.setState({ preset: name })
     }
 
     const updateDropdown = () => {
@@ -27,7 +27,6 @@ function usePreset() {
 
     const _updatePresetList = async (newName: string) => {
         presetsList.add(newName)
-        await localforage.setItem("presetsList", presetsList)
     }
 
     const presetFn = {
@@ -49,13 +48,7 @@ function usePreset() {
         },
         deletePreset: async () => {
             if (confirm("Are you sure?")) {
-                await localforage.iterate(function (value, key, iterationNumber) {
-                    if (key.startsWith(preset)) {
-                        localforage.removeItem(key)
-                    }
-                })
                 presetsList.delete(preset)
-                await localforage.setItem("presetsList", presetsList)
 
                 const presetsArr: any[] = Array.from(presetsList)
                 await _loadPreset(presetsArr[presetsArr.length - 1]);
@@ -97,8 +90,8 @@ function usePreset() {
 
     const changeToUntitled = async () => {
         console.log("changeToUntitled")
-        await _updatePresetList("Untitled")
         useGlobalStore.setState({ preset: "Untitled" })
+        await _updatePresetList("Untitled")
         updateDropdown()
     }
 
@@ -114,7 +107,11 @@ function usePreset() {
             settings: {
                 collapsed: false
             },
-            onChange: _loadPreset
+            onChange: (val, prop, options) => {
+                if(!options.initial) {
+                    _loadPreset(val)
+                }
+            }
         }
     })
     Object.assign(controllers, {
