@@ -3,6 +3,7 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { withProgress } from "@/app/utils/base";
 import localforage from "localforage";
 import { useEffect } from "react";
+import defaultConfig from '@/public/presets/Default_config.json';
 
 function useConfig() {
     const gui = useGlobalStore(state => state.gui)
@@ -33,11 +34,7 @@ function useConfig() {
             }
         };
 
-        const configResp = await fetch('presets/Default_config.json')
-
-        const defaultConfig = await configResp.json()
-
-        let userConfig = JSON.parse(JSON.stringify(defaultConfig));
+        let userConfig: any = {...defaultConfig}
 
         const savedPresetName = await localforage.getItem<string>("currentPreset") ?? preset
         if (!savedPresetName) {
@@ -50,7 +47,7 @@ function useConfig() {
         }
 
         // always loads config from localforage (include data)
-        await localforage.iterate((val, key) => {
+        await localforage.iterate((val: any, key) => {
             if (key.startsWith(`${preset}${configSep}`)) {
                 const configKey = key.split(`${preset}${configSep}`)[1]
                 userConfig[configKey] = val
