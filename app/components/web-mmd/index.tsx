@@ -10,6 +10,7 @@ import { Leva, useControls } from 'leva';
 import { useEffect } from 'react';
 import { CameraMode } from '@/app/modules/MMDCameraWorkHelper';
 import usePreset from './preset/usePreset';
+import { useShallow } from 'zustand/react/shallow';
 
 declare global {
     interface Window { Ammo: Function; }
@@ -19,7 +20,9 @@ function WebMMD() {
     useConfig()
     useHelpers()
     usePreset()
-    const { api, player, cwHelper } = useGlobalStore()
+    const api = useGlobalStore(useShallow(state => state.api))
+    const player = useGlobalStore(useShallow(state => state.player))
+    const cwHelper = useGlobalStore(state => state.cwHelper)
 
     const [, set] = useControls(() => ({
         'camera mode': {

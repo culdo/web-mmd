@@ -12,7 +12,7 @@ import { Leva } from "leva";
 import useGlobalStore from "../stores/useGlobalStore";
 
 export default function Page() {
-  const { gui } = useGlobalStore()
+  const gui = useGlobalStore(state => state.gui)
   useEffect(() => {
     window.Ammo();
   }, [])
