@@ -4,7 +4,13 @@ import { useRef } from "react";
 
 function useRenderLoop() {
 
-    const { helper, cwHelper, api, player, runtimeCharacter, controls, loadCamera } = useGlobalStore()
+    const helper = useGlobalStore(state => state.helper)
+    const cwHelper = useGlobalStore(state => state.cwHelper)
+    const api = useGlobalStore(state => state.api)
+    const player = useGlobalStore(state => state.player)
+    const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
+    const controls = useGlobalStore(state => state.controls)
+    const loadCamera = useGlobalStore(state => state.loadCamera)
 
     const prevTime = 0.0
     const prevTimeRef = useRef(prevTime)

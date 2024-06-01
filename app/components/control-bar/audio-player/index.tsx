@@ -4,19 +4,16 @@ import videojs from "video.js";
 import { dataURItoBlobUrl, loadMusicFromYT } from "@/app/utils/base";
 import Player from "video.js/dist/types/player";
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import { useShallow } from "zustand/react/shallow";
 
 declare global {
     interface Window { vjplayer: Player; }
 }
 
 function AudioPlayer() {
-    const { api, runtimeCharacter, gui } = useGlobalStore(s => (
-        {
-            api: s.api,
-            runtimeCharacter: s.runtimeCharacter,
-            gui: s.gui
-        }
-    ))
+    const api= useGlobalStore(useShallow(state => state.api))
+    const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
+    const gui = useGlobalStore(state => state.gui)
 
     const init = () => {
         // music player
