@@ -1,17 +1,20 @@
+import useConfigStore from "@/app/stores/useConfigStore";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { withProgress } from "@/app/utils/base";
 import localforage from "localforage";
 import { useEffect } from "react";
 
 function useConfig() {
-    const { gui, changeToUntitled, preset } = useGlobalStore()
+    const gui = useGlobalStore(state => state.gui)
+    const changeToUntitled = useGlobalStore(state => state.changeToUntitled)
+    const preset = useConfigStore(state => state.preset)
 
     const _getConfig = async () => {
         const configSep = "."
 
         const configSaver = {
             set: (target: any, key: any, value: undefined) => {
-                const { preset } = useGlobalStore.getState()
+                const { preset } = useConfigStore.getState()
                 document.title = "Web MMD (Saving...)";
                 const saveAsync = async () => {
                     const targetPreset = preset == "Default" ? "Untitled" : preset;
@@ -43,7 +46,7 @@ function useConfig() {
 
         const savedPresetsList = await localforage.getItem<string[]>("presetsList")
         if(savedPresetsList) {
-            useGlobalStore.setState({presetsList: new Set(savedPresetsList)})
+            useConfigStore.setState({presetsList: new Set(savedPresetsList)})
         }
 
         // always loads config from localforage (include data)
@@ -64,8 +67,7 @@ function useConfig() {
             }
         }
 
-        const api = new Proxy(userConfig, configSaver);
-        useGlobalStore.setState({ defaultConfig, api, preset })
+        useConfigStore.setState({ preset })
     }
     useEffect(() => {
         if (!gui || !changeToUntitled) return

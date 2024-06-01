@@ -1,16 +1,18 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import usePresetStore from "@/app/stores/usePresetStore";
 import { onProgress } from "@/app/utils/base";
 import path from "path-browserify";
 import { Suspense, useEffect } from "react";
 
 function Stage() {
-    const { api, loader, stage } = useGlobalStore(
+    const { loader, stage } = useGlobalStore(
         (state) => ({
-            api: state.api,
             loader: state.loader,
             stage: state.stage
         })
     )
+    const api = usePresetStore()
+
 
     useEffect(() => {
         if (!api) return

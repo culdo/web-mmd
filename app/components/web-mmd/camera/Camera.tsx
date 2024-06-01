@@ -1,6 +1,7 @@
 import { CameraMode } from "@/app/modules/MMDCameraWorkHelper";
 import { MMDLoader } from "@/app/modules/MMDLoader";
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import usePresetStore from "@/app/stores/usePresetStore";
 import { onProgress } from "@/app/utils/base";
 import { PerspectiveCamera } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
@@ -10,7 +11,8 @@ function Camera() {
     const { camera } = useThree()
 
     const globalState = useGlobalStore()
-    const { api, helper, cwHelper, character, controls } = globalState
+    const api = usePresetStore()
+    const { helper, cwHelper, character, controls } = globalState
     
     useEffect(() => {
         if (!api || !helper || !cwHelper || !character || !controls) return

@@ -1,19 +1,20 @@
 import { MMDLoader } from "@/app/modules/MMDLoader";
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import usePresetStore from "@/app/stores/usePresetStore";
 import { onProgress } from "@/app/utils/base";
 import path from "path-browserify";
 import { Suspense, useEffect } from "react";
 
 function Character() {
-    const { helper, api, character, loader, updateMorphFolder } = useGlobalStore(
+    const { helper, character, loader, updateMorphFolder } = useGlobalStore(
         (state) => ({
             helper: state.helper,
-            api: state.api,
             character: state.character,
             loader: state.loader,
             updateMorphFolder: state.updateMorphFolder
         })
     )
+    const api = usePresetStore()
 
     useEffect(() => {
         if (!api || !helper) {
