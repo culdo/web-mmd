@@ -1,19 +1,17 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import AudioPlayer from "./audio-player";
 import FullScreenButton from "./fullscreen-button";
 
 function ControlBar() {
-    const {player, gui}  = useGlobalStore((s) => (
-        {
-            player: s.player,
-            gui: s.gui
-        }
-    ))
+    const player = useGlobalStore(state => state.player)
+    const gui = useGlobalStore.getState().gui
+    const [init, setInit] = useState(false)
 
     useEffect(() => {
-        if(!player || !gui) return
+        if (init || !player) return
 
+        console.log("gui._timeoutID")
         const fullScreenBt = document.getElementById("fsBtn")
         const rawPlayer = document.getElementById("rawPlayer")
         // control bar
@@ -24,6 +22,7 @@ function ControlBar() {
             document.body.style.cursor = "default"
             if (gui._timeoutID !== undefined) {
                 clearTimeout(gui._timeoutID);
+                gui._timeoutID = undefined
             }
 
             gui._timeoutID = setTimeout(function () {
@@ -33,8 +32,9 @@ function ControlBar() {
                     document.body.style.cursor = "none"
                 }
             }, 1000);
+            setInit(true)
         });
-    }, [player, gui])
+    }, [player])
     return (
         <>
             <AudioPlayer></AudioPlayer>

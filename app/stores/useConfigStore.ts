@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { persist, subscribeWithSelector } from 'zustand/middleware'
-import usePresetStore from './usePresetStore';
 
 export type ConfigState = {
     preset: string,
     presetsList: Set<string>,
+    addPreset: (newPreset: string) => void,
+    removePreset: (targetPreset: string) => void
 }
 
 const useConfigStore = create(
@@ -13,15 +14,15 @@ const useConfigStore = create(
             (set, get) => ({
                 preset: "Default",
                 presetsList: new Set(["Default"]),
+                addPreset: (newPreset: string) => set(state => ({ presetsList: state.presetsList.add(newPreset) })),
+                removePreset: (targetPreset: string) => set(state => {
+                    state.presetsList.delete(targetPreset)
+                    return { presetsList:  state.presetsList }
+                })
             }), {
             name: "mmd-storage",
         })
     )
 )
-
-useConfigStore.subscribe((state) => state.preset, (newPreset) => {
-    usePresetStore.persist.setOptions({ name: newPreset })
-    usePresetStore.persist.rehydrate()
-})
 
 export default useConfigStore;

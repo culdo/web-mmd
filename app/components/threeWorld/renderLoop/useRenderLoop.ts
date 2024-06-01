@@ -7,7 +7,7 @@ function useRenderLoop() {
 
     const helper = useGlobalStore(state => state.helper)
     const cwHelper = useGlobalStore(state => state.cwHelper)
-    const api = usePresetStore()
+    const physics = usePresetStore(state => state.physics)
     const player = useGlobalStore(state => state.player)
     const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
     const controls = useGlobalStore(state => state.controls)
@@ -17,7 +17,7 @@ function useRenderLoop() {
     const prevTimeRef = useRef(prevTime)
 
     useFrame(() => {
-        if (!runtimeCharacter || !loadCamera) {
+        if (!runtimeCharacter || !loadCamera || !player) {
             return
         }
 
@@ -44,7 +44,7 @@ function useRenderLoop() {
             // check if time seeking using player control
             if (Math.abs(delta) > 0.1) {
                 runtimeCharacter.physics.reset();
-                helper.enable('physics', api['physics']);
+                helper.enable('physics', physics);
             }
             prevTimeRef.current = currTime
 
@@ -52,7 +52,7 @@ function useRenderLoop() {
             if (controls.autoRotate) {
                 controls.update();
             }
-            if (api['physics']) {
+            if (physics) {
                 runtimeCharacter.physics.update(delta);
             }
         }

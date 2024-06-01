@@ -3,7 +3,7 @@ import styles from "./styles.module.css"
 import videojs from "video.js";
 import { dataURItoBlobUrl, loadMusicFromYT } from "@/app/utils/base";
 import Player from "video.js/dist/types/player";
-import useGlobalStore from "@/app/stores/useGlobalStore";
+import useGlobalStore, { Gui } from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 
 declare global {
@@ -12,52 +12,60 @@ declare global {
 
 function AudioPlayer() {
     const api = usePresetStore()
-    const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
-    const gui = useGlobalStore(state => state.gui)
+    const setVolume = (volume: number) => usePresetStore.setState({ volume })
+    const setTime = (currentTime: number) => usePresetStore.setState({ currentTime })
 
-    const init = () => {
+    const getRuntimeCharacter = () => useGlobalStore.getState().runtimeCharacter
+    const setGui = (gui: Partial<Gui>) => useGlobalStore.setState({ gui })
+
+    const init = async () => {
         // music player
         const player = videojs('rawPlayer', {
             "audioOnlyMode": true
         })
         // for testing
         window.vjplayer = player
+        console.log(api.currentTime)
         if (api.musicURL.startsWith("data:")) {
             player.src(dataURItoBlobUrl(api.musicURL))
         } else {
-            loadMusicFromYT(api);
+            await loadMusicFromYT(api);
         }
-
-        player.currentTime(api["currentTime"]);
-        player.volume(api['volume']);
-
+        
+        player.currentTime(api.currentTime);
+        player.volume(api.volume);
+        
         player.on('volumechange', () => {
-            api['volume'] = player.volume();
+            setVolume(player.volume());
             if (player.muted()) {
-                api['volume'] = 0.0;
+                setVolume(0.0);
             }
+            console.log("volumechange")
         })
 
         player.on('play', () => {
-            runtimeCharacter.physics.reset();
-            if (api["auto hide GUI"]) gui.hidden = true;
+            getRuntimeCharacter().physics.reset();
+            if (api["auto hide GUI"]) setGui({ hidden: true });
+            console.log("play")
         })
         player.on('pause', () => {
-            gui.hidden = false;
-            api.currentTime = player.currentTime();
+            setGui({ hidden: false });
+            setTime(player.currentTime());
+            console.log("pause")
         })
 
         player.on('seeked', () => {
-            api.currentTime = player.currentTime();
+            setTime(player.currentTime());
+            console.log("seeked")
         })
 
         useGlobalStore.setState({ player })
     }
 
     useEffect(() => {
-        if (!api || !runtimeCharacter || !gui) return
+        if(!api.pmxFiles) return
         init()
-    }, [api, runtimeCharacter, gui])
+    }, [api.pmxFiles])
     return (
         <audio
             id="rawPlayer"

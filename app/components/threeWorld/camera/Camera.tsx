@@ -1,5 +1,4 @@
 import { CameraMode } from "@/app/modules/MMDCameraWorkHelper";
-import { MMDLoader } from "@/app/modules/MMDLoader";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { onProgress } from "@/app/utils/base";
@@ -12,33 +11,28 @@ function Camera() {
 
     const globalState = useGlobalStore()
     const api = usePresetStore()
-    const { helper, cwHelper, character, controls } = globalState
-    
+    const { helper, cwHelper, character, controls, loader } = globalState
+
     useEffect(() => {
-        if (!api || !helper || !cwHelper || !character || !controls) return
+        if (!character || !controls) return
 
         const loadCamera = async (url = api.cameraFile, filename = api.camera) => {
 
-            const cameraAnimation = await (new MMDLoader()).loadAnimation(url, camera, onProgress);
+            const cameraAnimation = await loader.loadAnimation(url, camera, onProgress);
             helper.add(camera, {
                 animation: cameraAnimation,
                 enabled: api["camera mode"] == CameraMode.MOTION_FILE
             });
 
-            await cwHelper.init({ ...globalState, camera });
+            await cwHelper.init({ ...globalState, api, camera });
             if (api.cameraFile != url) {
                 api.camera = filename;
                 api.cameraFile = url;
             }
         }
-        const init = async () => {
-            await loadCamera()
-            useGlobalStore.setState({
-                loadCamera
-            })
-        }
-        init()
-    }, [api, character, controls])
+        loadCamera()
+        useGlobalStore.setState({ loadCamera })
+    }, [character, controls, api.camera])
     return (
         <PerspectiveCamera makeDefault></PerspectiveCamera>
     )

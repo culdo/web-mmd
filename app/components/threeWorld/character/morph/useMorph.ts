@@ -1,7 +1,11 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import usePresetStore from "@/app/stores/usePresetStore";
+import { useEffect } from "react";
 
 function useMorph() {
-    const { character, api } = useGlobalStore()
+    const { character } = useGlobalStore()
+    const api: any = usePresetStore()
+
     const _buildOnChangeMorph = (key: string) => {
         return () =>
             character.morphTargetInfluences[character.morphTargetDictionary[key]] = api[key];
@@ -16,8 +20,11 @@ function useMorph() {
             const onChangeMorph = _buildOnChangeMorph(key)
             onChangeMorph()
         }
+        usePresetStore.setState(api)
     }
-    updateMorphFolder();
+    useEffect(() => {
+        updateMorphFolder();
+    }, [character])
 }
 
 export default useMorph;

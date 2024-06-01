@@ -1,27 +1,26 @@
-import useConfig from '../default-config/useConfig';
+import { CameraMode } from '@/app/modules/MMDCameraWorkHelper';
+import useGlobalStore from '@/app/stores/useGlobalStore';
+import usePresetStore from '@/app/stores/usePresetStore';
+import { useControls } from 'leva';
+import { useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import Camera from './camera/Camera';
 import Character from './character';
 import Controls from './controls';
 import useRenderLoop from './renderLoop/useRenderLoop';
 import Stage from './stage';
-import useGlobalStore from '@/app/stores/useGlobalStore';
-import useHelpers from './helpers/useHelpers';
-import { Leva, useControls } from 'leva';
-import { useEffect } from 'react';
-import { CameraMode } from '@/app/modules/MMDCameraWorkHelper';
-import usePreset from './preset/usePreset';
-import { useShallow } from 'zustand/react/shallow';
-import usePresetStore from '@/app/stores/usePresetStore';
 
 declare global {
     interface Window { Ammo: Function; }
 }
 
-function WebMMD() {
-    useConfig()
-    useHelpers()
-    usePreset()
-    const api = usePresetStore()
+function ThreeWorld() {
+    const fogColor = usePresetStore(state => state["fog color"])
+    const fogDensity = usePresetStore(state => state["fog density"])
+
+    const getCameraMode = () => usePresetStore.getState()['camera mode']
+    const setCameraMode = (val: number) => usePresetStore.setState({"camera mode": val})
+    
     const player = useGlobalStore(useShallow(state => state.player))
     const cwHelper = useGlobalStore(state => state.cwHelper)
 
@@ -33,16 +32,16 @@ function WebMMD() {
                 "Composition": CameraMode.COMPOSITION,
                 "Fixed Follow": CameraMode.FIXED_FOLLOW
             },
-            onChange: (motionType) => {
-                const api = usePresetStore.getState()
-                if (!api) return
-                api["camera mode"] = motionType
+            onChange: (motionType, _, options) => {
+                if(!options.initial) {
+                    setCameraMode(motionType)
+                }
             },
         },
     }))
 
     useEffect(() => {
-        if (!api || !player || !cwHelper) return
+        if (!player || !cwHelper) return
         // keyboard shortcuts
         document.addEventListener("keydown", (e) => {
             if (e.key == " ") {
@@ -52,7 +51,7 @@ function WebMMD() {
                     player.pause()
                 }
             } else if (e.key == "`") {
-                const isEditMode = api["camera mode"] != CameraMode.MOTION_FILE
+                const isEditMode = getCameraMode() != CameraMode.MOTION_FILE
                 let targetMode;
                 if (isEditMode) {
                     targetMode = CameraMode.MOTION_FILE
@@ -64,13 +63,12 @@ function WebMMD() {
                 cwHelper.checkCameraMode()
             }
         })
-    }, [api, player, cwHelper])
+    }, [player, cwHelper])
 
     useRenderLoop()
-    if (!api) return
     return (
         <>
-            <fogExp2 attach="fog" color={api["fog color"]} density={api["fog density"]}></fogExp2>
+            <fogExp2 attach="fog" color={fogColor} density={fogDensity}></fogExp2>
             <ambientLight intensity={Math.PI / 2} />
             <directionalLight position={[-10, -10, -10]} intensity={Math.PI} />
             <Character></Character>
@@ -81,4 +79,4 @@ function WebMMD() {
     )
 }
 
-export default WebMMD
+export default ThreeWorld

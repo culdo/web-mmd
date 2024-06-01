@@ -1160,8 +1160,7 @@ class MaterialBuilder {
 	 * @return {Array<MMDToonMaterial>}
 	 */
 	build(data: any, geometry: any, onProgress: any, onError: any, shaderParams: any = {}) {
-		console.log(`sdef: ${shaderParams.enableSdef}`)
-		console.log(`PBR: ${shaderParams.enablePBR}`)
+		console.log(`[${data.metadata.modelName}] sdef: ${shaderParams.enableSdef}, PBR: ${shaderParams.enablePBR}`)
 
 		const materials = [];
 
