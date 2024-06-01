@@ -1,19 +1,19 @@
+import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
 import { Camera, SkinnedMesh } from 'three';
 import { OrbitControls } from 'three-stdlib';
 import Player from 'video.js/dist/types/player';
 import { create } from 'zustand';
 import { MMDAnimationHelper } from '../modules/MMDAnimationHelper';
 import { MMDCameraWorkHelper } from '../modules/MMDCameraWorkHelper';
-import { MMDGui } from '../modules/gui';
 import { MMDLoader } from '../modules/MMDLoader';
-import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
 
+export type Gui = LevaRootProps & { _timeoutID?: NodeJS.Timeout }
 export type GlobalState = {
     loader: MMDLoader
     helper: MMDAnimationHelper,
     cwHelper: MMDCameraWorkHelper,
     player: Player,
-    gui: LevaRootProps,
+    gui: Gui,
     camera: Camera,
     runtimeCharacter: any,
     controls: OrbitControls
@@ -21,15 +21,15 @@ export type GlobalState = {
     stage: SkinnedMesh,
     loadCamera: Function,
     loadCharacter: Function,
-    updateMorphFolder: Function,
-    changeToUntitled: Function
+    loadStage: Function,
+    updateMorphFolder: Function
 }
 
 const useGlobalStore = create<GlobalState>(
     () => ({
         loader: new MMDLoader(),
-        helper: null,
-        cwHelper: null,
+        helper: new MMDAnimationHelper(),
+        cwHelper: new MMDCameraWorkHelper(),
         player: null,
         gui: {},
         character: null,
@@ -39,8 +39,8 @@ const useGlobalStore = create<GlobalState>(
         controls: null,
         loadCamera: null,
         loadCharacter: null,
-        updateMorphFolder: null,
-        changeToUntitled: null
+        loadStage: null,
+        updateMorphFolder: null
     })
 )
 

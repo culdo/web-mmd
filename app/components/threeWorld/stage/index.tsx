@@ -15,8 +15,7 @@ function Stage() {
 
 
     useEffect(() => {
-        if (!api) return
-
+        if(!api.pmxFiles) return
         const loadStage = async (url = api.pmxFiles.stage[api.stage], filename = api.stage) => {
             const stageParams = {
                 enablePBR: api['enable PBR'],
@@ -41,7 +40,8 @@ function Stage() {
             useGlobalStore.setState({ stage })
         }
         loadStage()
-    }, [api])
+        useGlobalStore.setState({loadStage})
+    }, [api.stage, api.pmxFiles])
     return (
         <Suspense fallback={null}>
             {stage ? <primitive object={stage} dispose={null} /> : null}

@@ -17,9 +17,7 @@ function Character() {
     const api = usePresetStore()
 
     useEffect(() => {
-        if (!api || !helper) {
-            return
-        }
+        if(!api.pmxFiles) return
         const loadCharacter = async (url = api.pmxFiles.character[api.character], filename = api.character) => {
             const characterParams = {
                 enableSdef: api['enable SDEF'],
@@ -55,7 +53,7 @@ function Character() {
         loadCharacter()
         useGlobalStore.setState({ loadCharacter })
 
-    }, [api])
+    }, [api.character, api.pmxFiles])
 
     return (
         <Suspense fallback={null}>

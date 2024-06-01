@@ -3,6 +3,7 @@ import { createTrackInterpolant } from "./MMDLoader"
 import { cameraToClips } from "./cameraClipsBuilder"
 import WebMMD from "./WebMMD"
 import { GlobalState } from "../stores/useGlobalStore"
+import { PresetState } from "../stores/usePresetStore"
 
 
 export const CameraMode = {
@@ -39,18 +40,22 @@ export class MMDCameraWorkHelper {
     _deltaBuffer: Vector3 = new Vector3
     isOrbitControl: boolean = false
     orbitCameraPos: Vector3
-    
-    constructor() {
-        // Scrolling bar
-        this._scrollingBar = document.querySelector(".scrolling-bar")
-        this._scrollingDuration = 3.0  // seconds
 
+    constructor() {
+        this._scrollingDuration = 3.0  // seconds
+        
         // Clips is a array of clipInfo for composition camera mode
-        this._compositeClips = []
         // target clips reference above clips that currently running
         // default to motion file clips
-        this._compositeClips = this._compositeClips
+        this._compositeClips = []
 
+        // Keybindings
+        this._cutClipMap = {}
+    }
+
+    async init(mmd: Partial<GlobalState & { api: PresetState }> | WebMMD) {
+        // Scrolling bar
+        this._scrollingBar = document.querySelector(".scrolling-bar")
         // add buffer beats
         this._beatsBuffer = [...Array(30)].map(_ => {
             const beatEl = document.createElement("div")
@@ -60,11 +65,6 @@ export class MMDCameraWorkHelper {
             return beatEl
         })
 
-        // Keybindings
-        this._cutClipMap = {}
-    }
-
-    async init(mmd: Partial<GlobalState> | WebMMD) {
         // Internal properties
         this._mmd = mmd
         this._camera = mmd.camera
@@ -205,7 +205,7 @@ export class MMDCameraWorkHelper {
     async _saveCompositeClips() {
         const json = []
         for (const clip of this._compositeClips) {
-            const {action: _, ...saveClip} = clip;
+            const { action: _, ...saveClip } = clip;
             saveClip.clipJson = AnimationClip.toJSON(clip.action.getClip())
             json.push(saveClip)
         }
