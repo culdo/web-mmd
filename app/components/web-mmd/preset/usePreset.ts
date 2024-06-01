@@ -1,20 +1,21 @@
+import useConfigStore from "@/app/stores/useConfigStore";
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import usePresetStore from "@/app/stores/usePresetStore";
 import { startFileDownload } from "@/app/utils/base";
 import { button, folder, useControls } from "leva";
-import localforage from "localforage";
 import path from "path-browserify";
 import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 function usePreset() {
-    const preset = useGlobalStore(state => state.preset)
-    const presetsList = useGlobalStore(state => state.presetsList)
-    const api = useGlobalStore(useShallow(state => state.api))
+    const preset = useConfigStore(state => state.preset)
+    const presetsList = useConfigStore(state => state.presetsList)
+    const api = usePresetStore()
 
     const _loadPreset = async (name: string) => {
         if(preset == name) return
 
-        useGlobalStore.setState({ preset: name })
+        useConfigStore.setState({ preset: name })
     }
 
     const updateDropdown = () => {
@@ -40,7 +41,7 @@ function usePreset() {
         copyPreset: async () => {
             let newName = prompt("New preset name:");
             if (newName) {
-                useGlobalStore.setState({ preset: newName })
+                useConfigStore.setState({ preset: newName })
                 Object.assign(api, api);
                 await _updatePresetList(newName)
                 updateDropdown();
@@ -79,7 +80,7 @@ function usePreset() {
                 let reader = new FileReader();
                 reader.readAsText(presetFile);
                 reader.onloadend = async () => {
-                    useGlobalStore.setState({ preset: newName })
+                    useConfigStore.setState({ preset: newName })
                     Object.assign(api, JSON.parse(reader.result as string));
                     await _loadPreset(newName);
                 }
@@ -90,7 +91,7 @@ function usePreset() {
 
     const changeToUntitled = async () => {
         console.log("changeToUntitled")
-        useGlobalStore.setState({ preset: "Untitled" })
+        useConfigStore.setState({ preset: "Untitled" })
         await _updatePresetList("Untitled")
         updateDropdown()
     }

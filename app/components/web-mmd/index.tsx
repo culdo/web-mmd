@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import { CameraMode } from '@/app/modules/MMDCameraWorkHelper';
 import usePreset from './preset/usePreset';
 import { useShallow } from 'zustand/react/shallow';
+import usePresetStore from '@/app/stores/usePresetStore';
 
 declare global {
     interface Window { Ammo: Function; }
@@ -20,7 +21,7 @@ function WebMMD() {
     useConfig()
     useHelpers()
     usePreset()
-    const api = useGlobalStore(useShallow(state => state.api))
+    const api = usePresetStore()
     const player = useGlobalStore(useShallow(state => state.player))
     const cwHelper = useGlobalStore(state => state.cwHelper)
 
@@ -33,7 +34,7 @@ function WebMMD() {
                 "Fixed Follow": CameraMode.FIXED_FOLLOW
             },
             onChange: (motionType) => {
-                const { api } = useGlobalStore.getState()
+                const api = usePresetStore.getState()
                 if (!api) return
                 api["camera mode"] = motionType
             },

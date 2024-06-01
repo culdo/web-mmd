@@ -1,4 +1,5 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import usePresetStore from "@/app/stores/usePresetStore";
 import { useFrame } from '@react-three/fiber';
 import { useRef } from "react";
 
@@ -6,7 +7,7 @@ function useRenderLoop() {
 
     const helper = useGlobalStore(state => state.helper)
     const cwHelper = useGlobalStore(state => state.cwHelper)
-    const api = useGlobalStore(state => state.api)
+    const api = usePresetStore()
     const player = useGlobalStore(state => state.player)
     const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
     const controls = useGlobalStore(state => state.controls)
