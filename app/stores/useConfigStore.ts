@@ -3,7 +3,6 @@ import { persist, subscribeWithSelector } from 'zustand/middleware'
 import usePresetStore from './usePresetStore';
 
 export type ConfigState = {
-    defaultConfig: any,
     preset: string,
     presetsList: Set<string>,
 }
@@ -12,7 +11,6 @@ const useConfigStore = create(
     subscribeWithSelector(
         persist<ConfigState>(
             (set, get) => ({
-                defaultConfig: null,
                 preset: "Default",
                 presetsList: new Set(["Default"]),
             }), {

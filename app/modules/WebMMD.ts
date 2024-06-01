@@ -19,6 +19,7 @@ import { CameraMode, MMDCameraWorkHelper } from './MMDCameraWorkHelper';
 import logging from 'webpack/lib/logging/runtime'
 import Player from 'video.js/dist/types/player.js';
 import { EffectComposer } from 'postprocessing';
+import defaultConfig from '@/public/presets/Default_config.json';
 
 declare const window: any;
 
@@ -58,7 +59,6 @@ class WebMMD {
         bloomPass: any;
         composer: any;
     };
-    defaultConfig: any;
     loader: any;
     ambientLight: any;
     hemiLight: any;
@@ -114,11 +114,7 @@ class WebMMD {
             }
         };
 
-        const configResp = await fetch('presets/Default_config.json')
-
-        const defaultConfig = await configResp.json()
-
-        let userConfig = JSON.parse(JSON.stringify(defaultConfig));
+        let userConfig: any = {...defaultConfig}
 
         const savedPresetName = await localforage.getItem("currentPreset")
         const preset = savedPresetName ?? "Default"
@@ -150,7 +146,7 @@ class WebMMD {
         this._logger.info(userConfig)
         const api = new Proxy(userConfig, configSaver);
 
-        Object.assign(this, { defaultConfig, api, preset, presetsList })
+        Object.assign(this, { api, preset, presetsList })
     }
 
     async _setup() {

@@ -9,6 +9,7 @@ import { GlobalState } from '../stores/useGlobalStore';
 import { blobToBase64, dataURItoBlobUrl, disposeMesh, loadMusicFromYT, onProgress, startFileDownload } from '../utils/base';
 import { CameraMode } from './MMDCameraWorkHelper';
 import WebMMD from './WebMMD';
+import defaultConfig from '@/public/presets/Default_config.json';
 
 class MMDGui {
     panel: GUI;
@@ -214,7 +215,7 @@ class MMDGui {
                 bokehScaleController.disable()
             } else {
                 dofEffect.target = null
-                dofEffect.bokehScale = this._mmd.defaultConfig["bokeh scale"]
+                dofEffect.bokehScale = defaultConfig["bokeh scale"]
                 focusController.enable()
                 bokehScaleController.enable()
             }
@@ -277,12 +278,12 @@ class MMDGui {
         const folder = this.panel.addFolder('Camera');
         const guiFn = {
             reset: () => {
-                this._mmd.api.fov = this._mmd.defaultConfig.fov;
-                this._mmd.api.zoom = this._mmd.defaultConfig.zoom;
-                this._mmd.api.near = this._mmd.defaultConfig.near;
-                camera.fov = this._mmd.defaultConfig.fov;
-                camera.zoom = this._mmd.defaultConfig.zoom;
-                camera.near = this._mmd.defaultConfig.near;
+                this._mmd.api.fov = defaultConfig.fov;
+                this._mmd.api.zoom = defaultConfig.zoom;
+                this._mmd.api.near = defaultConfig.near;
+                camera.fov = defaultConfig.fov;
+                camera.zoom = defaultConfig.zoom;
+                camera.near = defaultConfig.near;
 
                 camera.updateProjectionMatrix();
             }
@@ -439,7 +440,7 @@ class MMDGui {
             folder.add(material.userData, 'normalMap', normalMapsKeys).onChange(updateTexture(material, 'normalMap', normalMaps));
             folder.add({
                 resetAll: () => {
-                    api.material = this._mmd.defaultConfig.material
+                    api.material = defaultConfig.material
                     setTimeout(() => location.reload(), 1000)
                 }
             }, 'resetAll');
