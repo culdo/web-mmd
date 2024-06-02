@@ -215,8 +215,9 @@ class WebMMD {
             depth: false
         });
 
-        renderer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(api['set pixelratio 1.0'] ? 1.0 : window.devicePixelRatio);
+
         // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.shadowMap.enabled = true;
         renderer.toneMapping = api["tone mapping"]

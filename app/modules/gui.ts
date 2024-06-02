@@ -857,11 +857,10 @@ class MMDGui {
         folder.add(this._mmd.api, 'set pixelratio 1.0').onChange((state: any) => {
             if (state) {
                 this._mmd.renderer.setPixelRatio(1.0);
-                this._mmd.postprocessor.composer.setPixelRatio(1.0);
             } else {
                 this._mmd.renderer.setPixelRatio(window.devicePixelRatio);
-                this._mmd.postprocessor.composer.setPixelRatio(window.devicePixelRatio);
             }
+            this._mmd.composer.setSize(window.innerWidth, window.innerHeight);
         });
         this._guiRefresh(folder);
 
