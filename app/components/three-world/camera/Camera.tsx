@@ -34,7 +34,7 @@ function Camera() {
         useGlobalStore.setState({ loadCamera })
     }, [character, controls, api.camera])
     return (
-        <PerspectiveCamera makeDefault></PerspectiveCamera>
+        <PerspectiveCamera fov={api.fov} near={api.near} zoom={api.zoom} makeDefault></PerspectiveCamera>
     )
 }
 

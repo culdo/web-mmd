@@ -25,7 +25,6 @@ function AudioPlayer() {
         })
         // for testing
         window.vjplayer = player
-        console.log(api.currentTime)
         if (api.musicURL.startsWith("data:")) {
             player.src(dataURItoBlobUrl(api.musicURL))
         } else {
@@ -40,23 +39,19 @@ function AudioPlayer() {
             if (player.muted()) {
                 setVolume(0.0);
             }
-            console.log("volumechange")
         })
 
         player.on('play', () => {
             getRuntimeCharacter().physics.reset();
             if (api["auto hide GUI"]) setGui({ hidden: true });
-            console.log("play")
         })
         player.on('pause', () => {
             setGui({ hidden: false });
             setTime(player.currentTime());
-            console.log("pause")
         })
 
         player.on('seeked', () => {
             setTime(player.currentTime());
-            console.log("seeked")
         })
 
         useGlobalStore.setState({ player })
