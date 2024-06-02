@@ -14,8 +14,7 @@ function OutlinePass() {
     })
     return (
         <Suspense fallback={null} >
-            {outlinePass ? <primitive object={outlinePass} dispose={null} /> : null
-            }
+            {outlinePass ? <primitive object={outlinePass} dispose={null} /> : null}
         </Suspense>
     );
 }
