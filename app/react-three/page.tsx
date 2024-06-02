@@ -21,12 +21,13 @@ export default function Page() {
   usePresetStore.persist.onHydrate(() => {
     setPresetReady(false)
   })
+  const isOneDpr = usePresetStore(state => state["set pixelratio 1.0"])
 
   if (!presetReady) return <LoadingOverlay />
   return (
         <>
           <SceneTimeline></SceneTimeline>
-          <Canvas>
+          <Canvas dpr={isOneDpr ? 1 : window.devicePixelRatio}>
             <ThreeWorld></ThreeWorld>
             <Effects></Effects>
           </Canvas>
