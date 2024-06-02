@@ -4,6 +4,7 @@ import defaultConfig from '@/public/presets/Default_config.json';
 import defaultData from '@/public/presets/Default_data.json';
 import localforage from 'localforage'
 import useConfigStore from './useConfigStore';
+import useGlobalStore from './useGlobalStore';
 
 export type PresetState = typeof defaultConfig
 export const presetSep = "."
@@ -41,9 +42,13 @@ usePresetStore.persist.onFinishHydration(() => {
 })
 
 
-usePresetStore.subscribe(() => {
-    if (usePresetStore.persist.hasHydrated() && useConfigStore.getState().preset == "Default") {
-        useConfigStore.setState({ preset: "Untitled" })
+usePresetStore.subscribe((api) => {
+    if (usePresetStore.persist.hasHydrated()) {
+        if (useConfigStore.getState().preset == "Default") {
+            useConfigStore.setState({ preset: "Untitled" })
+        }
+        const cwHelper = useGlobalStore.getState().cwHelper
+        cwHelper._api = api
     }
 })
 
