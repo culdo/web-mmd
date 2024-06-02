@@ -67,7 +67,7 @@ function useRenderLoop() {
 
             runtimeCharacter.looped = false;
         }
-    })
+    }, 0)
 }
 
 export default useRenderLoop;
