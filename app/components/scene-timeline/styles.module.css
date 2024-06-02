@@ -5,10 +5,10 @@
 	height: 50px;
 	left: 0;
 	right: 0;
-
 	margin-left: auto;
 	margin-right: auto;
 	bottom: 100px;
+	z-index: 99;
 }
 
 .hit-point {

@@ -97,7 +97,7 @@ function usePreset() {
     Object.assign(controllers, {
         presets: presetsFolder
     })
-    useControls('Preset', controllers, [preset, presetsList])
+    useControls('Preset', controllers, {order: 100},[preset, presetsList])
 }
 
 export default usePreset;
