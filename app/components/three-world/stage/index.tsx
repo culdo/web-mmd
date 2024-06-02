@@ -1,10 +1,12 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { onProgress } from "@/app/utils/base";
+import { disposeMesh, onProgress } from "@/app/utils/base";
+import { useThree } from "@react-three/fiber";
 import path from "path-browserify";
 import { Suspense, useEffect } from "react";
 
 function Stage() {
+    const { scene } = useThree()
     const { loader, stage } = useGlobalStore(
         (state) => ({
             loader: state.loader,
@@ -15,7 +17,7 @@ function Stage() {
 
 
     useEffect(() => {
-        if(!api.pmxFiles) return
+        if (!api.pmxFiles) return
         const loadStage = async (url = api.pmxFiles.stage[api.stage], filename = api.stage) => {
             const stageParams = {
                 enablePBR: api['enable PBR'],
@@ -40,7 +42,12 @@ function Stage() {
             useGlobalStore.setState({ stage })
         }
         loadStage()
-        useGlobalStore.setState({loadStage})
+        useGlobalStore.setState({ loadStage })
+
+        return () => {
+            scene.remove(stage);
+            disposeMesh(stage);
+        }
     }, [api.stage, api.pmxFiles])
     return (
         <Suspense fallback={null}>

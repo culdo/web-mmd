@@ -347,16 +347,16 @@ class WebMMD {
 
             const ikHelper = runtimeCharacter.ikSolver.createHelper();
             ikHelper.visible = api['show IK bones'];
-            scene.add(ikHelper);
+            character.add(ikHelper);
 
             const physicsHelper = runtimeCharacter.physics.createHelper();
             physicsHelper.visible = api['show rigid bodies'];
             helper.enable('physics', api['physics']);
-            scene.add(physicsHelper);
+            character.add(physicsHelper);
 
             const skeletonHelper = new THREE.SkeletonHelper(character);
             skeletonHelper.visible = api['show skeleton'];
-            scene.add(skeletonHelper);
+            character.add(skeletonHelper);
 
             runtimeCharacter.physics.reset();
 

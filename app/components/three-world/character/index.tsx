@@ -1,23 +1,20 @@
 import { MMDLoader } from "@/app/modules/MMDLoader";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { onProgress } from "@/app/utils/base";
+import { disposeMesh, onProgress } from "@/app/utils/base";
+import { useThree } from "@react-three/fiber";
 import path from "path-browserify";
 import { Suspense, useEffect } from "react";
+import THREE from "three";
 
 function Character() {
-    const { helper, character, loader, updateMorphFolder } = useGlobalStore(
-        (state) => ({
-            helper: state.helper,
-            character: state.character,
-            loader: state.loader,
-            updateMorphFolder: state.updateMorphFolder
-        })
-    )
+    const { scene } = useThree()
+
+    const { helper, runtimeCharacter, character, loader, updateMorphFolder } = useGlobalStore()
     const api = usePresetStore()
 
     useEffect(() => {
-        if(!api.pmxFiles) return
+        if (!api.pmxFiles) return
         const loadCharacter = async (url = api.pmxFiles.character[api.character], filename = api.character) => {
             const characterParams = {
                 enableSdef: api['enable SDEF'],
@@ -41,6 +38,19 @@ function Character() {
             });
             const runtimeCharacter = helper.objects.get(character)
 
+            const ikHelper = runtimeCharacter.ikSolver.createHelper();
+            ikHelper.visible = api['show IK bones'];
+            character.add(ikHelper);
+
+            const physicsHelper = runtimeCharacter.physics.createHelper();
+            physicsHelper.visible = api['show rigid bodies'];
+            helper.enable('physics', api['physics']);
+            character.add(physicsHelper);
+
+            const skeletonHelper = new THREE.SkeletonHelper(character);
+            skeletonHelper.visible = api['show skeleton'];
+            character.add(skeletonHelper);
+
             runtimeCharacter.physics.reset();
 
             if (api.character != filename) {
@@ -52,6 +62,13 @@ function Character() {
 
         loadCharacter()
         useGlobalStore.setState({ loadCharacter })
+
+        return () => {
+            runtimeCharacter.mixer.uncacheRoot(character);
+            scene.remove(character);
+            helper.remove(character);
+            disposeMesh(character);
+        }
 
     }, [api.character, api.pmxFiles])
 
