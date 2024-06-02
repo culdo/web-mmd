@@ -11,10 +11,10 @@ function Camera() {
 
     const globalState = useGlobalStore()
     const api = usePresetStore()
-    const { helper, cwHelper, character, controls, loader } = globalState
+    const { helper, cwHelper, character, controls, loader, player } = globalState
 
     useEffect(() => {
-        if (!character || !controls) return
+        if (!character || !controls || !player) return
 
         const loadCamera = async (url = api.cameraFile, filename = api.camera) => {
 
@@ -29,10 +29,10 @@ function Camera() {
                 api.camera = filename;
                 api.cameraFile = url;
             }
+            useGlobalStore.setState({ loadCamera })
         }
         loadCamera()
-        useGlobalStore.setState({ loadCamera })
-    }, [character, controls, api.camera])
+    }, [character, controls, player, api.camera])
     return (
         <PerspectiveCamera fov={api.fov} near={api.near} zoom={api.zoom} makeDefault></PerspectiveCamera>
     )

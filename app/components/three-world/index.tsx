@@ -26,7 +26,7 @@ function ThreeWorld() {
 
     const [, set] = useControls(() => ({
         'camera mode': {
-            value: CameraMode.MOTION_FILE,
+            value: getCameraMode(),
             options: {
                 "Motion File": CameraMode.MOTION_FILE,
                 "Composition": CameraMode.COMPOSITION,
@@ -37,6 +37,7 @@ function ThreeWorld() {
                     setCameraMode(motionType)
                 }
             },
+            order: 0,
         },
     }))
 
@@ -59,7 +60,7 @@ function ThreeWorld() {
                     targetMode = CameraMode.COMPOSITION
                 }
                 set({ "camera mode": targetMode })
-
+                
                 cwHelper.checkCameraMode()
             }
         })

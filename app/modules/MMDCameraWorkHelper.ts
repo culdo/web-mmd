@@ -43,7 +43,7 @@ export class MMDCameraWorkHelper {
 
     constructor() {
         this._scrollingDuration = 3.0  // seconds
-        
+
         // Clips is a array of clipInfo for composition camera mode
         // target clips reference above clips that currently running
         // default to motion file clips
@@ -172,8 +172,13 @@ export class MMDCameraWorkHelper {
         this.checkCameraMode()
     }
 
+    // get current time for motions (character, camera...etc)
     get _currentTime() {
-        return this._mmd.motionTime
+        const currTime = this._mmd.player.currentTime()! + (this._api.motionOffset * 0.001)
+        if (currTime < 0) {
+            return 0
+        }
+        return currTime
     }
 
     get isMotionFile() {
