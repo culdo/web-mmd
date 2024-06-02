@@ -13,6 +13,7 @@
   "dependencies": {
     "@react-three/drei": "^9.102.6",
     "@react-three/fiber": "^8.16.1",
+    "@react-three/postprocessing": "^2.16.2",
     "leva": "^0.9.35",
     "next": "14.2.0-canary.24",
     "react": "^18",
