@@ -80,7 +80,7 @@ class WebMMD {
     }
 
     async start() {
-        await Promise.all([this._getConfig(), window.Ammo()]);
+        await this._getConfig();
         await this._setup();
         await this._loadFiles();
         this._loadEffects();

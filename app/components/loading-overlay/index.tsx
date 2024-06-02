@@ -1,10 +1,10 @@
 import styles from "./styles.module.css"
 
-function LoadingOverlay({ content = "" }) {
+function LoadingOverlay({ children="" }: { children?: string }) {
     return (
         <div id="overlay" className={styles.overlay}>
             <h1 id="loading">
-                {content}
+                Loading {children}...
             </h1>
         </div>
     );
