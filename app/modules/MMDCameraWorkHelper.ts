@@ -253,7 +253,6 @@ export class MMDCameraWorkHelper {
     checkCameraMode() {
         this._scrollingBar.style.display = this.isComposite ? "block" : "none"
         this._origAction.enabled = this.isMotionFile
-        this._mmd.controls.enabled = this.isFixedFollow
         if (this.isMotionFile) {
             if (this._currentClip?.action.isRunning()) {
                 this._currentClip.action.stop()
