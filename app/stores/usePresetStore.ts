@@ -6,7 +6,7 @@ import localforage from 'localforage'
 import useConfigStore from './useConfigStore';
 import useGlobalStore from './useGlobalStore';
 
-export type PresetState = typeof defaultConfig
+export type PresetState = typeof defaultConfig & {compositeClips: string[]}
 export const presetSep = "."
 
 const storage: PersistStorage<PresetState> = {

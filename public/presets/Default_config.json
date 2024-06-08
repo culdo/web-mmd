@@ -154,5 +154,6 @@
     "collectionKeys": "1234567890",
     "cutKeys": "abcdefghijklmnopqrstuvwxyz",
     "follow smooth": 31,
-    "gravity": -9.8
+    "gravity": -9.8,
+    "compositeClips": []
 }

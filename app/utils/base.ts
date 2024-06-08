@@ -73,14 +73,11 @@ async function loadMusicFromYT(api: { [x: string]: any; musicYtURL: any; musicNa
         player.on('play', async () => {
             if (!init) {
                 player.pause()
+                player.currentTime(savedTime);
                 await player.play()
                 player.pause()
-                player.volume(savedVolume);
-            }
-        })
-        player.on('pause', () => {
-            if (!init) {
                 player.currentTime(savedTime);
+                player.volume(savedVolume);
                 init = true
             }
         })

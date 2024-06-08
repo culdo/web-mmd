@@ -1,4 +1,4 @@
-import { AnimationAction, AnimationActionLoopStyles, AnimationClip, LoopOnce, Vector3 } from "three"
+import { AnimationAction, AnimationActionLoopStyles, AnimationClip, AnimationMixer, LoopOnce, PerspectiveCamera, Vector3 } from "three"
 import { createTrackInterpolant } from "./MMDLoader"
 import { cameraToClips } from "./cameraClipsBuilder"
 import WebMMD from "./WebMMD"
@@ -29,10 +29,10 @@ export class MMDCameraWorkHelper {
     _compositeClips: CameraClip[]
     _beatsBuffer: HTMLDivElement[]
     _cutClipMap: Record<string, CameraClip>
-    _mmd: any
-    _camera: any
-    _origAction: any
-    _cameraMixer: any
+    _mmd: Partial<GlobalState & { api: PresetState }> | WebMMD
+    _camera: PerspectiveCamera
+    _origAction: AnimationAction
+    _cameraMixer: AnimationMixer
     _api: any
     _currentCollection: any
     _currentClip!: CameraClip
@@ -239,7 +239,7 @@ export class MMDCameraWorkHelper {
 
     _createAction(clip: AnimationClip) {
         const action = this._cameraMixer.clipAction(clip)
-        action.setLoop(LoopOnce)
+        action.setLoop(LoopOnce, null)
         action.clampWhenFinished = true
         return action
     }
@@ -253,6 +253,7 @@ export class MMDCameraWorkHelper {
     checkCameraMode() {
         this._scrollingBar.style.display = this.isComposite ? "block" : "none"
         this._origAction.enabled = this.isMotionFile
+        this._mmd.controls.enabled = this.isFixedFollow
         if (this.isMotionFile) {
             if (this._currentClip?.action.isRunning()) {
                 this._currentClip.action.stop()
@@ -274,9 +275,10 @@ export class MMDCameraWorkHelper {
 
         let minDiff = null
         let targetClip = null
+        const cTime = this._currentTime
         for (const clip of this._compositeClips) {
             // round to fix cutTime precision problem
-            const diff = Math.round((this._currentTime - clip.cutTime) * 1000)
+            const diff = Math.round((cTime - clip.cutTime) * 1000)
             if (diff >= 0) {
                 if (minDiff == null || diff < minDiff) {
                     minDiff = diff
@@ -306,6 +308,7 @@ export class MMDCameraWorkHelper {
         if (isOrig) {
             this._cameraMixer.setTime(time)
         } else if (onCustom) {
+            // set clip time
             // condition to fix cutTime precision problem that cause action be disabled
             const targetTime = (time - this._currentClip.cutTime) < 0 ? 0 : (time - this._currentClip.cutTime)
             this._cameraMixer.setTime(targetTime)

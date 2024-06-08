@@ -3,11 +3,12 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { onProgress } from "@/app/utils/base";
 import { PerspectiveCamera } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
+import { RootState, useThree } from "@react-three/fiber";
 import { useEffect } from "react";
+import { PerspectiveCamera as PerspectiveCameraImpl } from "three";
 
 function Camera() {
-    const { camera } = useThree()
+    const { camera } = useThree<RootState & { camera: PerspectiveCameraImpl }>()
 
     const globalState = useGlobalStore()
     const api = usePresetStore()
@@ -33,6 +34,7 @@ function Camera() {
         }
         loadCamera()
     }, [character, controls, player, api.camera])
+
     return (
         <PerspectiveCamera fov={api.fov} near={api.near} zoom={api.zoom} makeDefault></PerspectiveCamera>
     )

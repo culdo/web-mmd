@@ -1,5 +1,5 @@
 import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
-import { Camera, SkinnedMesh } from 'three';
+import { PerspectiveCamera, SkinnedMesh } from 'three';
 import { OrbitControls } from 'three-stdlib';
 import Player from 'video.js/dist/types/player';
 import { create } from 'zustand';
@@ -14,7 +14,7 @@ export type GlobalState = {
     cwHelper: MMDCameraWorkHelper,
     player: Player,
     gui: Gui,
-    camera: Camera,
+    camera: PerspectiveCamera,
     runtimeCharacter: any,
     controls: OrbitControls
     character: SkinnedMesh,
