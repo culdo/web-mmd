@@ -1,4 +1,4 @@
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "./orbit-controls";
 import { useEffect, useRef } from "react";
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import useGlobalStore from '@/app/stores/useGlobalStore';
