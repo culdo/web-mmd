@@ -4,7 +4,7 @@ import usePresetStore from '@/app/stores/usePresetStore';
 import { useControls } from 'leva';
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import Camera from './camera/Camera';
+import Camera from './camera';
 import Character from './character';
 import Controls from './controls';
 import useRenderLoop from './renderLoop/useRenderLoop';
