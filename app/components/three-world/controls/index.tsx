@@ -10,7 +10,6 @@ function Controls() {
     const cwHelper = useGlobalStore(state => state.cwHelper)
     useEffect(() => {
         const controls = controlsRef.current
-        if (!controls) return
         useGlobalStore.setState({
             controls
         })
@@ -20,7 +19,7 @@ function Controls() {
             camera.updateProjectionMatrix();
         });
 
-    }, [controlsRef.current, cwHelper])
+    }, [])
 
     const onStart = () => {
         cwHelper.isOrbitControl = true;
