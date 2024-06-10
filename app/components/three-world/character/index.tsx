@@ -1,22 +1,23 @@
-import { MMDLoader } from "@/app/modules/MMDLoader";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { disposeMesh, onProgress } from "@/app/utils/base";
 import { useThree } from "@react-three/fiber";
 import path from "path-browserify";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useMemo } from "react";
 import * as THREE from 'three';
+import PromisePrimitive from "../promise-primitive";
 
 function Character() {
+
     const { scene } = useThree()
 
-    const { helper, runtimeCharacter, character, loader, updateMorphFolder } = useGlobalStore()
+    const { helper, loader, updateMorphFolder } = useGlobalStore()
     const api = usePresetStore()
 
     const url = api.pmxFiles.character[api.character]
     const filename = api.character
 
-    const loadCharacter = useCallback(async () => {
+    const promise = useMemo(async () => {
         const characterParams = {
             enableSdef: api['enable SDEF'],
             enablePBR: api['enable PBR'],
@@ -59,27 +60,25 @@ function Character() {
             updateMorphFolder()
         }
         useGlobalStore.setState({ character, runtimeCharacter })
+
+        return character
     }, [url, filename])
 
     const disposeCharacter = useCallback(
         () => {
-            const character = useGlobalStore.getState().character
+            const { character, runtimeCharacter } = useGlobalStore.getState()
             runtimeCharacter.mixer.uncacheRoot(character);
             scene.remove(character);
             helper.remove(character);
             disposeMesh(character);
+            console.log("disposeCharacter")
         }, [])
-
-    useEffect(() => {
-        loadCharacter()
-        return disposeCharacter
-    }, [])
 
     return (
         <Suspense fallback={null}>
-            {character ? <primitive object={character} dispose={null} /> : null}
+            <PromisePrimitive promise={promise} dispose={disposeCharacter}></PromisePrimitive>
         </Suspense>
-    )
+    );
 }
 
 export default Character;

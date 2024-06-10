@@ -3,22 +3,20 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import { disposeMesh, onProgress } from "@/app/utils/base";
 import { useThree } from "@react-three/fiber";
 import path from "path-browserify";
-import { Suspense, useCallback, useEffect } from "react";
+import { Suspense, useCallback, useMemo } from "react";
+import PromisePrimitive from "../promise-primitive";
 
 function Stage() {
     const { scene } = useThree()
-    const { loader, stage } = useGlobalStore(
-        (state) => ({
-            loader: state.loader,
-            stage: state.stage
-        })
-    )
+
     const api = usePresetStore()
 
     const url = api.pmxFiles.stage[api.stage]
     const filename = api.stage
 
-    const loadStage = useCallback(async () => {
+    const promise = useMemo(async () => {
+        const { loader } = useGlobalStore.getState()
+        
         const stageParams = {
             enablePBR: api['enable PBR'],
         };
@@ -40,21 +38,18 @@ function Stage() {
             api.stage = filename
         }
         useGlobalStore.setState({ stage })
+        return stage
     }, [url, filename])
 
     const disposeStage = useCallback(() => {
-        const stage = useGlobalStore.getState().stage
+        const { stage } = useGlobalStore.getState()
         scene.remove(stage);
         disposeMesh(stage);
     }, [])
-    
-    useEffect(() => {
-        loadStage()
-        return disposeStage
-    }, [])
+
     return (
         <Suspense fallback={null}>
-            {stage ? <primitive object={stage} dispose={null} /> : null}
+            <PromisePrimitive promise={promise} dispose={disposeStage}></PromisePrimitive>
         </Suspense>
     );
 }

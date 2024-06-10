@@ -160,4 +160,8 @@ function disposeMesh(obj: SkinnedMesh) {
     }
 }
 
-export { withTimeElapse, onProgress, dataURItoBlobUrl, loadMusicFromYT, saveCurrTime, blobToBase64, withProgress, startFileDownload, disposeMesh }
+function debugWait(ms=2000) {
+    return new Promise((res) => setTimeout(() => res(true), ms))
+}
+
+export { withTimeElapse, onProgress, dataURItoBlobUrl, loadMusicFromYT, saveCurrTime, blobToBase64, withProgress, startFileDownload, disposeMesh, debugWait }

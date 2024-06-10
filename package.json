@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@react-three/drei": "^9.102.6",
-    "@react-three/fiber": "^8.16.1",
+    "@react-three/fiber": "https://github.com/culdo/react-three-fiber/raw/e8344a5b85db240960880e304073d70097ee88df/packages/fiber/react-three-fiber-v8.16.8.tgz",
     "@react-three/postprocessing": "^2.16.2",
     "leva": "^0.9.35",
     "next": "14.2.0-canary.24",
