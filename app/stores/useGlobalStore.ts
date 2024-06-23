@@ -1,4 +1,5 @@
 import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
+import { MutableRefObject, createRef } from 'react';
 import { PerspectiveCamera, SkinnedMesh } from 'three';
 import { OrbitControls } from 'three-stdlib';
 import Player from 'video.js/dist/types/player';
@@ -22,7 +23,8 @@ export type GlobalState = {
     loadCamera: Function,
     loadCharacter: Function,
     loadStage: Function,
-    updateMorphFolder: Function
+    updateMorphFolder: Function,
+    isMotionUpdating: MutableRefObject<boolean>
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -40,7 +42,12 @@ const useGlobalStore = create<GlobalState>(
         loadCamera: null,
         loadCharacter: null,
         loadStage: null,
-        updateMorphFolder: null
+        updateMorphFolder: null,
+        isMotionUpdating: (() => {
+            const ref: MutableRefObject<boolean> = createRef()
+            ref.current = false
+            return ref
+        })()
     })
 )
 

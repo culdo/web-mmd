@@ -5,8 +5,9 @@ import defaultData from '@/public/presets/Default_data.json';
 import localforage from 'localforage'
 import useConfigStore from './useConfigStore';
 import useGlobalStore from './useGlobalStore';
+import { CameraClip } from '../modules/MMDCameraWorkHelper';
 
-export type PresetState = typeof defaultConfig & {compositeClips: string[]}
+export type PresetState = typeof defaultConfig & { compositeClips: CameraClip[] }
 export const presetSep = "."
 
 const storage: PersistStorage<PresetState> = {

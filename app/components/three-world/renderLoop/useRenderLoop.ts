@@ -12,6 +12,7 @@ function useRenderLoop() {
     const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
     const controls = useGlobalStore(state => state.controls)
     const loadCamera = useGlobalStore(state => state.loadCamera)
+    const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
 
     const prevTime = 0.0
     const prevTimeRef = useRef(prevTime)
@@ -37,7 +38,7 @@ function useRenderLoop() {
             }
 
             // camera motion updating
-            cwHelper.setTime(currTime);
+            isMotionUpdating.current = true
             // character motion updating
             helper.update(delta, currTime);
 
@@ -49,6 +50,7 @@ function useRenderLoop() {
             prevTimeRef.current = currTime
 
         } else {
+            isMotionUpdating.current = false
             if (controls.autoRotate) {
                 controls.update();
             }

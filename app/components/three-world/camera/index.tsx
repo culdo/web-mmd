@@ -4,6 +4,7 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import { onProgress } from "@/app/utils/base";
 import { PerspectiveCamera } from "@react-three/drei";
 import { RootState, useThree } from "@react-three/fiber";
+import { useControls } from "leva";
 import { useEffect } from "react";
 import { PerspectiveCamera as PerspectiveCameraImpl } from "three";
 
@@ -25,7 +26,7 @@ function Camera() {
                 enabled: api["camera mode"] == CameraMode.MOTION_FILE
             });
 
-            await cwHelper.init({ ...globalState, api, camera });
+            // await cwHelper.init({ ...globalState, api, camera });
             if (api.cameraFile != url) {
                 api.camera = filename;
                 api.cameraFile = url;
@@ -35,8 +36,17 @@ function Camera() {
         loadCamera()
     }, [character, controls, player, api.camera])
 
+    const gui = useControls({
+        enabled: false
+    })
+
     return (
-        <PerspectiveCamera fov={api.fov} near={api.near} zoom={api.zoom} makeDefault></PerspectiveCamera>
+        <>
+            {
+                gui.enabled &&
+                <PerspectiveCamera fov={api.fov} near={api.near} zoom={api.zoom} makeDefault></PerspectiveCamera>
+            }
+        </>
     )
 }
 
