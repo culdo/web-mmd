@@ -3,49 +3,40 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { onProgress } from "@/app/utils/base";
 import { PerspectiveCamera } from "@react-three/drei";
-import { RootState, useThree } from "@react-three/fiber";
-import { useControls } from "leva";
-import { useEffect } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { PerspectiveCamera as PerspectiveCameraImpl } from "three";
+import CameraWorkHelper from "./helper";
 
 function Camera() {
-    const { camera } = useThree<RootState & { camera: PerspectiveCameraImpl }>()
+    const cameraRef = useRef<PerspectiveCameraImpl>()
 
-    const globalState = useGlobalStore()
-    const api = usePresetStore()
-    const { helper, cwHelper, character, controls, loader, player } = globalState
+    const helper = useGlobalStore(state => state.helper)
+    const loader = useGlobalStore(state => state.loader)
+    const cameraFile = usePresetStore(state => state.cameraFile)
+    const cameraMode = usePresetStore(state => state["camera mode"])
+    const fov = usePresetStore(state => state.fov)
+    const near = usePresetStore(state => state.near)
+    const zoom = usePresetStore(state => state.zoom)
 
-    useEffect(() => {
-        if (!character || !controls || !player) return
+    useLayoutEffect(() => {
+        const loadCamera = async () => {
 
-        const loadCamera = async (url = api.cameraFile, filename = api.camera) => {
-
-            const cameraAnimation = await loader.loadAnimation(url, camera, onProgress);
-            helper.add(camera, {
+            const cameraAnimation = await loader.loadAnimation(cameraFile, cameraRef.current, onProgress);
+            helper.add(cameraRef.current, {
                 animation: cameraAnimation,
-                enabled: api["camera mode"] == CameraMode.MOTION_FILE
+                enabled: cameraMode == CameraMode.MOTION_FILE
             });
 
-            // await cwHelper.init({ ...globalState, api, camera });
-            if (api.cameraFile != url) {
-                api.camera = filename;
-                api.cameraFile = url;
-            }
             useGlobalStore.setState({ loadCamera })
         }
         loadCamera()
-    }, [character, controls, player, api.camera])
 
-    const gui = useControls({
-        enabled: false
-    })
+    }, [cameraFile])
 
     return (
         <>
-            {
-                gui.enabled &&
-                <PerspectiveCamera fov={api.fov} near={api.near} zoom={api.zoom} makeDefault></PerspectiveCamera>
-            }
+            <PerspectiveCamera ref={cameraRef} fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault />
+            <CameraWorkHelper></CameraWorkHelper>
         </>
     )
 }
