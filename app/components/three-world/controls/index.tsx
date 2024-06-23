@@ -6,7 +6,7 @@ import { useThree } from "@react-three/fiber";
 
 function Controls() {
     const controlsRef = useRef<OrbitControlsImpl>()
-    const { camera } = useThree()
+    const camera = useThree(state => state.camera)
     const cwHelper = useGlobalStore(state => state.cwHelper)
     useEffect(() => {
         const controls = controlsRef.current

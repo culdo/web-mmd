@@ -1,0 +1,23 @@
+.scrolling-bar {
+	display: none;
+	position: absolute;
+	width: 75%;
+	height: 50px;
+	left: 0;
+	right: 0;
+	margin-left: auto;
+	margin-right: auto;
+	bottom: 100px;
+	z-index: 99;
+}
+
+.hit-point {
+	position: absolute;
+	width: 10px;
+	height: 70px;
+	top: 50%;
+	transform: translateY(-50%);
+
+	margin-left: 28.5px;
+	border-left: 3px solid #00000085;
+}

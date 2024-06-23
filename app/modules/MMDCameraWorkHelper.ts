@@ -11,8 +11,8 @@ export const CameraMode = {
     COMPOSITION: 1,
     FIXED_FOLLOW: 2
 }
-type CameraClip = {
-    action: AnimationAction;
+export type CameraClip = {
+    action?: AnimationAction;
     cutTime: number;
     keyBinding: string;
     clipJson?: any;

@@ -1,10 +1,11 @@
-import { GlobalState } from "@/app/stores/useGlobalStore"
 import { use } from "react"
+import { SkinnedMesh } from "three"
 
-function PromisePrimitive({ promise, dispose }: { promise: Promise<GlobalState["character"]>, dispose: Function }) {
-    const character = use(promise)
+function PromisePrimitive({ promise }: { promise: Promise<SkinnedMesh>}) {
+    if(!promise) return null
+    const modelMesh = use(promise)
     return (
-        <primitive object={character} dispose={dispose} />
+        <primitive object={modelMesh} dispose={null} />
     )
 }
 
