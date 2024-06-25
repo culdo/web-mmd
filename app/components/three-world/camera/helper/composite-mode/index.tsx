@@ -115,7 +115,7 @@ function CompositeMode({ promise }: { promise: Promise<any> }) {
         camera.lookAt(camera.getObjectByName("target").position);
         camera.updateProjectionMatrix();
     }
-    
+
     const updateScrollingBar = (time: number) => {
         resetAllBeats()
         let beatsBufferIdx = 0;
@@ -171,12 +171,11 @@ function CompositeMode({ promise }: { promise: Promise<any> }) {
                 // if we have another beat(pressed ArrowLeft), clear it
                 clearCurrentBeat()
 
-                const targetClip = keyToClips[pressedKeyBinding]
-                targetClip.cutTime = mmd.currentTime
+                const copiedClip = { ...keyToClips[pressedKeyBinding] }
+                copiedClip.cutTime = mmd.currentTime
 
-                compositeClips.push(targetClip)
+                compositeClips.push(copiedClip)
                 saveCompositeClips()
-                setTime(mmd.currentTime)
 
             } else if (e.key == "ArrowLeft") {
                 let minDiff = null
@@ -212,13 +211,16 @@ function CompositeMode({ promise }: { promise: Promise<any> }) {
             } else if (["Delete", "Backspace"].includes(e.key)) {
                 clearCurrentBeat()
                 saveCompositeClips()
-                setTime(mmd.currentTime)
             }
         }
         document.addEventListener("keydown", onKeydown)
         return () => document.removeEventListener("keydown", onKeydown)
     })
 
+    useLayoutEffect(() => {
+        setTime(mmd.currentTime)
+    }, [compositeClips])
+    
     useFrame(() => {
         if (isMotionUpdating.current) setTime(mmd.currentTime)
     }, 0)
@@ -234,6 +236,7 @@ function SetupCompsite() {
 
     const collectionKeys = usePresetStore(state => state.collectionKeys)
     const cutKeys = usePresetStore(state => state.cutKeys)
+    const savedCompositeClips = usePresetStore(state => state.compositeClips)
 
     // Setup functions
     const restoreInterpolant = (clip: AnimationClip, interpolations: { [x: string]: any; "target.position"?: any; ".quaternion"?: any; ".position"?: any; ".fov"?: any }) => {
@@ -249,12 +252,34 @@ function SetupCompsite() {
         return action
     }
 
-    const promise = useMemo(async () => {
+    const loadSavedClips = async () => {
+        const compositeClips = []
+        const keysToClips: Record<string, CameraClip> = {}
+
+        for (const saveClip of savedCompositeClips) {
+            const clipInfo: CameraClip = { ...saveClip }
+            delete clipInfo.clipJson
+
+            const clip = AnimationClip.parse(saveClip.clipJson)
+            if (!clipInfo.interpolations) {
+                usePresetStore.setState({ compositeClips: savedCompositeClips })
+                setTimeout(() => location.reload(), 5000)
+            }
+            restoreInterpolant(clip, clipInfo.interpolations)
+            clipInfo.action = createAction(clip)
+
+            compositeClips.push(clipInfo)
+            keysToClips[clipInfo.keyBinding] = clipInfo
+        }
+        return [compositeClips, keysToClips]
+    }
+
+    const loadClipsFromMotion = async () => {
         const resp = await fetch(cameraFile)
         const { cutTimes, clips: rawClips } = cameraToClips(await resp.arrayBuffer())
 
         const compositeClips = []
-        const keysToClips: any = {}
+        const keysToClips: Record<string, CameraClip> = {}
         for (const [idx, cutTime] of cutTimes.entries()) {
             const rawClip = rawClips[idx]
             const clip = AnimationClip.parse(rawClip.clip)
@@ -276,7 +301,9 @@ function SetupCompsite() {
             keysToClips[keyBinding] = clipInfo
         }
         return [compositeClips, keysToClips]
-    }, [])
+    }
+
+    const promise = useMemo(savedCompositeClips ? loadSavedClips : loadClipsFromMotion, [])
     return (
         <Suspense fallback={null}>
             <CompositeMode promise={promise}></CompositeMode>
