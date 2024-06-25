@@ -71,14 +71,13 @@ function CompositeMode({ promise }: { promise: Promise<any> }) {
         }
     }
 
-    const playComposite = () => {
+    const playComposite = (time: number) => {
 
         let minDiff = null
         let targetClip = null
-        const cTime = mmd.currentTime
         for (const clip of compositeClips) {
             // round to fix cutTime precision problem
-            const diff = Math.round((cTime - clip.cutTime) * 1000)
+            const diff = Math.round((time - clip.cutTime) * 1000)
             if (diff >= 0) {
                 if (minDiff == null || diff < minDiff) {
                     minDiff = diff
@@ -98,8 +97,9 @@ function CompositeMode({ promise }: { promise: Promise<any> }) {
     }
 
     const setTime = (time: number) => {
-        playComposite()
+        playComposite(time)
 
+        if (!currentClipRef.current.action.isRunning()) return
         // set clip time
         // condition to fix cutTime precision problem that cause action be disabled
         const targetTime = (time - currentClipRef.current.cutTime) < 0 ? 0 : (time - currentClipRef.current.cutTime)
@@ -110,18 +110,18 @@ function CompositeMode({ promise }: { promise: Promise<any> }) {
         camera.lookAt(camera.getObjectByName("target").position);
         camera.updateProjectionMatrix();
 
-        updateScrollingBar()
+        updateScrollingBar(time)
     }
 
-    const updateScrollingBar = () => {
+    const updateScrollingBar = (time: number) => {
         resetAllBeats()
         let beatsBufferIdx = 0;
         for (const { cutTime, keyBinding } of compositeClips) {
 
-            if (mmd.currentTime <= cutTime && cutTime <= mmd.currentTime + scrollingDuration) {
+            if (time <= cutTime && cutTime <= time + scrollingDuration) {
                 const beatEl = beatsBufferRef.current[beatsBufferIdx]
                 beatsBufferIdx++
-                const timeDiff = cutTime - mmd.currentTime
+                const timeDiff = cutTime - time
                 beatEl.style.left = `${100 * (timeDiff / scrollingDuration)}%`;
                 beatEl.style.display = "block";
                 beatEl.textContent = keyBinding.toUpperCase()
@@ -218,7 +218,7 @@ function CompositeMode({ promise }: { promise: Promise<any> }) {
 
     useFrame(() => {
         if (isMotionUpdating.current) setTime(mmd.currentTime)
-    })
+    }, 0)
     return <></>;
 }
 
