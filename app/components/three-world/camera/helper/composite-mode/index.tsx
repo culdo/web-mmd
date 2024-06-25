@@ -100,6 +100,11 @@ function CompositeMode({ promise }: { promise: Promise<any> }) {
         playComposite(time)
 
         if (!currentClipRef.current.action.isRunning()) return
+        updateCamera(time)
+        updateScrollingBar(time)
+    }
+
+    const updateCamera = (time: number) => {
         // set clip time
         // condition to fix cutTime precision problem that cause action be disabled
         const targetTime = (time - currentClipRef.current.cutTime) < 0 ? 0 : (time - currentClipRef.current.cutTime)
@@ -109,10 +114,8 @@ function CompositeMode({ promise }: { promise: Promise<any> }) {
         camera.up.applyQuaternion(camera.quaternion);
         camera.lookAt(camera.getObjectByName("target").position);
         camera.updateProjectionMatrix();
-
-        updateScrollingBar(time)
     }
-
+    
     const updateScrollingBar = (time: number) => {
         resetAllBeats()
         let beatsBufferIdx = 0;
