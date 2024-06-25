@@ -62,7 +62,7 @@ function CompositeMode({ promise }: { promise: Promise<any> }) {
         }
 
         usePresetStore.setState({ compositeClips: json })
-
+        setTime(mmd.currentTime)
     }
 
     const resetAllBeats = () => {
@@ -219,7 +219,7 @@ function CompositeMode({ promise }: { promise: Promise<any> }) {
 
     useLayoutEffect(() => {
         setTime(mmd.currentTime)
-    }, [compositeClips])
+    }, [])
     
     useFrame(() => {
         if (isMotionUpdating.current) setTime(mmd.currentTime)
