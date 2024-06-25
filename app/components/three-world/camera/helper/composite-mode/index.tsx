@@ -1,13 +1,27 @@
-import { CameraClip } from "@/app/modules/MMDCameraWorkHelper";
 import { createTrackInterpolant } from "@/app/modules/MMDLoader";
 import { cameraToClips } from "@/app/modules/cameraClipsBuilder";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { useFrame, useThree } from "@react-three/fiber";
 import React, { Suspense, use, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { AnimationClip, AnimationMixer, LoopOnce } from "three";
+import { AnimationAction, AnimationClip, AnimationMixer, LoopOnce } from "three";
 
-function CompositeMode({ promise }: { promise: Promise<any> }) {
+export type CameraClip = {
+    action?: AnimationAction;
+    cutTime: number;
+    keyBinding: string;
+    clipJson?: any;
+    interpolations: {
+        'target.position': any;
+        '.quaternion': any;
+        '.position': any;
+        '.fov': any;
+    };
+}
+
+type LoadResult = [CameraClip[], Record<string, CameraClip>]
+
+function CompositeMode({ promise }: { promise: Promise<LoadResult> }) {
 
     const player = useGlobalStore(state => state.player)
     const helper = useGlobalStore(state => state.helper)
@@ -220,7 +234,7 @@ function CompositeMode({ promise }: { promise: Promise<any> }) {
     useLayoutEffect(() => {
         setTime(mmd.currentTime)
     }, [])
-    
+
     useFrame(() => {
         if (isMotionUpdating.current) setTime(mmd.currentTime)
     }, 0)
@@ -271,7 +285,7 @@ function SetupCompsite() {
             compositeClips.push(clipInfo)
             keysToClips[clipInfo.keyBinding] = clipInfo
         }
-        return [compositeClips, keysToClips]
+        return [compositeClips, keysToClips] as LoadResult
     }
 
     const loadClipsFromMotion = async () => {
@@ -291,7 +305,7 @@ function SetupCompsite() {
             const keyBinding = collectionKey + cutKey
             const action = createAction(clip)
 
-            const clipInfo = {
+            const clipInfo: CameraClip = {
                 action,
                 cutTime,
                 keyBinding,
@@ -300,7 +314,7 @@ function SetupCompsite() {
             compositeClips.push(clipInfo)
             keysToClips[keyBinding] = clipInfo
         }
-        return [compositeClips, keysToClips]
+        return [compositeClips, keysToClips] as LoadResult
     }
 
     const promise = useMemo(savedCompositeClips ? loadSavedClips : loadClipsFromMotion, [])

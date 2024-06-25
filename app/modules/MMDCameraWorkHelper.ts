@@ -4,6 +4,7 @@ import { cameraToClips } from "./cameraClipsBuilder"
 import WebMMD from "./WebMMD"
 import { GlobalState } from "../stores/useGlobalStore"
 import { PresetState } from "../stores/usePresetStore"
+import { CameraClip } from "../components/three-world/camera/helper/composite-mode"
 
 
 export const CameraMode = {
@@ -11,18 +12,7 @@ export const CameraMode = {
     COMPOSITION: 1,
     FIXED_FOLLOW: 2
 }
-export type CameraClip = {
-    action?: AnimationAction;
-    cutTime: number;
-    keyBinding: string;
-    clipJson?: any;
-    interpolations: {
-        'target.position': any;
-        '.quaternion': any;
-        '.position': any;
-        '.fov': any;
-    };
-}
+
 export class MMDCameraWorkHelper {
     _scrollingBar: any
     _scrollingDuration: number

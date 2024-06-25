@@ -5,7 +5,7 @@ import defaultData from '@/public/presets/Default_data.json';
 import localforage from 'localforage'
 import useConfigStore from './useConfigStore';
 import useGlobalStore from './useGlobalStore';
-import { CameraClip } from '../modules/MMDCameraWorkHelper';
+import { CameraClip } from '../components/three-world/camera/helper/composite-mode';
 
 export type PresetState = typeof defaultConfig & { compositeClips: CameraClip[] }
 export const presetSep = "."
@@ -28,7 +28,7 @@ const storage: PersistStorage<PresetState> = {
 const usePresetStore = create(
     subscribeWithSelector(
         persist<PresetState>(
-            (set, get) => defaultConfig,
+            (set, get) => defaultConfig as PresetState,
             {
                 name: useConfigStore.getState().preset,
                 storage
