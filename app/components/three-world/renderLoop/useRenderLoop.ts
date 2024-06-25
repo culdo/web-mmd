@@ -6,7 +6,6 @@ import { useRef } from "react";
 function useRenderLoop() {
 
     const helper = useGlobalStore(state => state.helper)
-    const cwHelper = useGlobalStore(state => state.cwHelper)
     const physics = usePresetStore(state => state.physics)
     const player = useGlobalStore(state => state.player)
     const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
