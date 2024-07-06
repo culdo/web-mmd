@@ -19,22 +19,85 @@ export type CameraClip = {
     };
 }
 
-type LoadResult = [CameraClip[], Record<string, CameraClip>]
+function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
 
-function CompositeMode({ promise }: { promise: Promise<LoadResult> }) {
+    const motionFileBuffer = use(promise)
 
     const player = useGlobalStore(state => state.player)
-    const helper = useGlobalStore(state => state.helper)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
     const beatsBufferRef = useGlobalStore(state => state.beatsBufferRef)
 
     const camera = useThree(state => state.camera)
-    const cameraMixer: AnimationMixer = useMemo(() => helper.get(camera)?.mixer, [helper, camera])
+    const cameraMixer = useMemo(() => new AnimationMixer(camera), [camera])
 
     const motionOffset = usePresetStore(state => state.motionOffset)
     const collectionKeys = usePresetStore(state => state.collectionKeys)
     const cutKeys = usePresetStore(state => state.cutKeys)
+    const savedCompositeClips = usePresetStore(state => state.compositeClips)
+    
+    // Setup functions
+    const restoreInterpolant = (clip: AnimationClip, interpolations: { [x: string]: any; "target.position"?: any; ".quaternion"?: any; ".position"?: any; ".fov"?: any }) => {
+        for (const track of clip.tracks) {
+            createTrackInterpolant(track, interpolations[track.name], true)
+        }
+    }
 
+    const createAction = (clip: AnimationClip) => {
+        const action = cameraMixer.clipAction(clip)
+        action.setLoop(LoopOnce, null)
+        action.clampWhenFinished = true
+        return action
+    }
+
+    const loadSavedClips = () => {
+        const compositeClips = []
+        const keysToClips: Record<string, CameraClip> = {}
+
+        for (const saveClip of savedCompositeClips) {
+            const clipInfo: CameraClip = { ...saveClip }
+            delete clipInfo.clipJson
+
+            const clip = AnimationClip.parse(saveClip.clipJson)
+            if (!clipInfo.interpolations) {
+                usePresetStore.setState({ compositeClips: savedCompositeClips })
+                setTimeout(() => location.reload(), 5000)
+            }
+            restoreInterpolant(clip, clipInfo.interpolations)
+            clipInfo.action = createAction(clip)
+
+            compositeClips.push(clipInfo)
+            keysToClips[clipInfo.keyBinding] = clipInfo
+        }
+        return [compositeClips, keysToClips]
+    }
+
+    const loadClipsFromMotion = () => {
+        const { cutTimes, clips: rawClips } = cameraToClips(motionFileBuffer)
+
+        const compositeClips = []
+        const keysToClips: Record<string, CameraClip> = {}
+        for (const [idx, cutTime] of cutTimes.entries()) {
+            const rawClip = rawClips[idx]
+            const clip = AnimationClip.parse(rawClip.clip)
+            restoreInterpolant(clip, rawClip.interpolations)
+
+            // add scrolling bar beat key binding
+            const collectionKey = collectionKeys[Math.floor(idx / cutKeys.length)]
+            const cutKey = cutKeys[idx % cutKeys.length]
+            const keyBinding = collectionKey + cutKey
+            const action = createAction(clip)
+
+            const clipInfo: CameraClip = {
+                action,
+                cutTime,
+                keyBinding,
+                interpolations: rawClip.interpolations
+            }
+            compositeClips.push(clipInfo)
+            keysToClips[keyBinding] = clipInfo
+        }
+        return [compositeClips, keysToClips]
+    }
 
     const mmd = {
         get currentTime() {
@@ -46,7 +109,7 @@ function CompositeMode({ promise }: { promise: Promise<LoadResult> }) {
     // Clips is a array of clipInfo for composition camera mode
     // target clips reference above clips that currently running
     // default to motion file clips
-    const [initClips, initKeysToClips] = use(promise)
+    const [initClips, initKeysToClips] = (savedCompositeClips ? loadSavedClips() : loadClipsFromMotion()) as [CameraClip[], Record<string, CameraClip>]
     const [compositeClips, setCompositeClips] = useState<CameraClip[]>(initClips)
 
     // Keybindings
@@ -58,7 +121,7 @@ function CompositeMode({ promise }: { promise: Promise<LoadResult> }) {
 
     const clearCurrentBeat = () => {
         if (currentClipRef.current) {
-            const diff = player.currentTime() - (currentClipRef.current.cutTime - (motionOffset * 0.001))
+            const diff = mmd.currentTime - (currentClipRef.current.cutTime - (motionOffset * 0.001))
             if (Math.round(diff * 1000) == 0) {
                 currentClipRef.current.action.stop()
                 const idx = compositeClips.indexOf(currentClipRef.current)
@@ -230,9 +293,11 @@ function CompositeMode({ promise }: { promise: Promise<LoadResult> }) {
         document.addEventListener("keydown", onKeydown)
         return () => document.removeEventListener("keydown", onKeydown)
     })
-
+    console.log("render CM")
     useLayoutEffect(() => {
-        setTime(mmd.currentTime)
+        const savedCurrentTime = usePresetStore.getState().currentTime
+        setTime(savedCurrentTime)
+        return () => cameraMixer.stopAllAction() && cameraMixer.uncacheRoot(camera)
     }, [])
 
     useFrame(() => {
@@ -243,81 +308,13 @@ function CompositeMode({ promise }: { promise: Promise<LoadResult> }) {
 
 function SetupCompsite() {
     const cameraFile = usePresetStore(state => state.cameraFile)
-    const helper = useGlobalStore(state => state.helper)
 
-    const camera = useThree(state => state.camera)
-    const cameraMixer: AnimationMixer = useMemo(() => helper.get(camera)?.mixer, [helper, camera])
-
-    const collectionKeys = usePresetStore(state => state.collectionKeys)
-    const cutKeys = usePresetStore(state => state.cutKeys)
-    const savedCompositeClips = usePresetStore(state => state.compositeClips)
-
-    // Setup functions
-    const restoreInterpolant = (clip: AnimationClip, interpolations: { [x: string]: any; "target.position"?: any; ".quaternion"?: any; ".position"?: any; ".fov"?: any }) => {
-        for (const track of clip.tracks) {
-            createTrackInterpolant(track, interpolations[track.name], true)
-        }
-    }
-
-    const createAction = (clip: AnimationClip) => {
-        const action = cameraMixer.clipAction(clip)
-        action.setLoop(LoopOnce, null)
-        action.clampWhenFinished = true
-        return action
-    }
-
-    const loadSavedClips = async () => {
-        const compositeClips = []
-        const keysToClips: Record<string, CameraClip> = {}
-
-        for (const saveClip of savedCompositeClips) {
-            const clipInfo: CameraClip = { ...saveClip }
-            delete clipInfo.clipJson
-
-            const clip = AnimationClip.parse(saveClip.clipJson)
-            if (!clipInfo.interpolations) {
-                usePresetStore.setState({ compositeClips: savedCompositeClips })
-                setTimeout(() => location.reload(), 5000)
-            }
-            restoreInterpolant(clip, clipInfo.interpolations)
-            clipInfo.action = createAction(clip)
-
-            compositeClips.push(clipInfo)
-            keysToClips[clipInfo.keyBinding] = clipInfo
-        }
-        return [compositeClips, keysToClips] as LoadResult
-    }
-
-    const loadClipsFromMotion = async () => {
+    const getMotionFile = async () => {
         const resp = await fetch(cameraFile)
-        const { cutTimes, clips: rawClips } = cameraToClips(await resp.arrayBuffer())
-
-        const compositeClips = []
-        const keysToClips: Record<string, CameraClip> = {}
-        for (const [idx, cutTime] of cutTimes.entries()) {
-            const rawClip = rawClips[idx]
-            const clip = AnimationClip.parse(rawClip.clip)
-            restoreInterpolant(clip, rawClip.interpolations)
-
-            // add scrolling bar beat key binding
-            const collectionKey = collectionKeys[Math.floor(idx / cutKeys.length)]
-            const cutKey = cutKeys[idx % cutKeys.length]
-            const keyBinding = collectionKey + cutKey
-            const action = createAction(clip)
-
-            const clipInfo: CameraClip = {
-                action,
-                cutTime,
-                keyBinding,
-                interpolations: rawClip.interpolations
-            }
-            compositeClips.push(clipInfo)
-            keysToClips[keyBinding] = clipInfo
-        }
-        return [compositeClips, keysToClips] as LoadResult
+        return await resp.arrayBuffer()
     }
 
-    const promise = useMemo(savedCompositeClips ? loadSavedClips : loadClipsFromMotion, [])
+    const promise = getMotionFile()
     return (
         <Suspense fallback={null}>
             <CompositeMode promise={promise}></CompositeMode>
