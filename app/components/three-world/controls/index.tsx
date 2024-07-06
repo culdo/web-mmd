@@ -1,8 +1,8 @@
-import { OrbitControls } from "./orbit-controls";
-import { useEffect, useRef } from "react";
-import { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import useGlobalStore from '@/app/stores/useGlobalStore';
 import { useThree } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
+import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
+import { OrbitControls } from "./orbit-controls";
 
 function Controls() {
     const controlsRef = useRef<OrbitControlsImpl>()
@@ -14,12 +14,12 @@ function Controls() {
             controls
         })
 
-        controls.domElement.addEventListener('mousedown', () => {
-            camera.up.set(0, 1, 0);
-            camera.updateProjectionMatrix();
-        });
-
     }, [])
+
+    const onPointerDown = () => {
+        camera.up.set(0, 1, 0);
+        camera.updateProjectionMatrix();
+    }
 
     const onStart = () => {
         cwHelper.isOrbitControl = true;
@@ -30,7 +30,13 @@ function Controls() {
         cwHelper.isOrbitControl = false;
     }
     return (
-        <OrbitControls onStart={onStart} onEnd={onEnd} enableDamping={false} ref={controlsRef}></OrbitControls>
+        <OrbitControls
+            onPointerDown={onPointerDown}
+            onStart={onStart} onEnd={onEnd}
+            enableDamping={false}
+            ref={controlsRef}
+            makeDefault
+        />
     );
 }
 
