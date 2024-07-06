@@ -1,5 +1,5 @@
 import { ForwardRefComponent } from '@react-three/drei/helpers/ts-utils'
-import { EventManager, ReactThreeFiber, useFrame, useThree } from '@react-three/fiber'
+import { EventManager, ReactThreeFiber, useThree } from '@react-three/fiber'
 import * as React from 'react'
 import type { Camera, Event, OrthographicCamera, PerspectiveCamera } from 'three'
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
@@ -40,6 +40,7 @@ export const OrbitControls: ForwardRefComponent<OrbitControlsProps, OrbitControl
         onChange,
         onStart,
         onEnd,
+        onPointerDown,
         ...restProps
       },
       ref
@@ -57,6 +58,7 @@ export const OrbitControls: ForwardRefComponent<OrbitControlsProps, OrbitControl
       const controls = React.useMemo(() => new OrbitControlsImpl(explCamera), [explCamera])
 
       React.useEffect(() => {
+        explDomElement.addEventListener("pointerdown", onPointerDown as unknown as (event: PointerEvent) => void)
         if (keyEvents) {
           controls.connect(keyEvents === true ? explDomElement : keyEvents)
         }
