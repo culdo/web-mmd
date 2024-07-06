@@ -5,7 +5,7 @@ import { Material, SkinnedMesh } from 'three';
 
 
 function onProgress(xhr: { lengthComputable: any; loaded: number; total: number; }) {
-    
+
     const loading = document.getElementById("loading")!
     let progressMap: Record<number, number> = {};
     window.onload = () => {
@@ -31,7 +31,7 @@ function onProgress(xhr: { lengthComputable: any; loaded: number; total: number;
 }
 
 function withProgress(resp: Response, totalSize: number) {
-    
+
     const loading = document.getElementById("loading")!
     if (!totalSize) {
         totalSize = parseInt(resp.headers.get('content-length') as string, 10);
@@ -57,7 +57,7 @@ function withProgress(resp: Response, totalSize: number) {
 }
 
 let init = false
-async function loadMusicFromYT(api: { [x: string]: any; musicYtURL: any; musicName: any; musicURL: string; }) {
+async function loadMusicFromYT(api: { currentTime: number; volume: number; musicYtURL: any; musicName: any; musicURL: string; }) {
     const player = videojs.getPlayer("rawPlayer")
     player.src({
         "type": "video/youtube",
@@ -160,7 +160,7 @@ function disposeMesh(obj: SkinnedMesh) {
     }
 }
 
-function debugWait(ms=2000) {
+function debugWait(ms = 2000) {
     return new Promise((res) => setTimeout(() => res(true), ms))
 }
 

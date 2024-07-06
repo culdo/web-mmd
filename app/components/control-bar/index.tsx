@@ -4,18 +4,15 @@ import AudioPlayer from "./audio-player";
 import FullScreenButton from "./fullscreen-button";
 
 function ControlBar() {
-    const player = useGlobalStore(state => state.player)
-    const gui = useGlobalStore.getState().gui
-    const [init, setInit] = useState(false)
+    const getPlayer = () => useGlobalStore.getState().player
+    const gui = useGlobalStore(state => state.gui)
 
     useEffect(() => {
-        if (init || !player) return
-
-        console.log("gui._timeoutID")
         const fullScreenBt = document.getElementById("fsBtn")
         const rawPlayer = document.getElementById("rawPlayer")
         // control bar
         document.addEventListener('mousemove', (e) => {
+            const player = getPlayer()
 
             rawPlayer.style.opacity = "0.5";
             fullScreenBt.style.opacity = "0.5";
@@ -28,13 +25,12 @@ function ControlBar() {
             gui._timeoutID = setTimeout(function () {
                 rawPlayer.style.opacity = "0";
                 fullScreenBt.style.opacity = "0";
-                if (!player.paused()) {
+                if (player && !player.paused()) {
                     document.body.style.cursor = "none"
                 }
             }, 1000);
-            setInit(true)
         });
-    }, [player])
+    }, [])
     return (
         <>
             <AudioPlayer></AudioPlayer>

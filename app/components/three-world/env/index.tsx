@@ -1,10 +1,9 @@
 import { CameraMode } from "@/app/modules/MMDCameraWorkHelper"
-import useRenderLoop from "../renderLoop/useRenderLoop"
-import { useEffect } from "react"
-import usePresetStore from "@/app/stores/usePresetStore"
 import useGlobalStore from "@/app/stores/useGlobalStore"
-import { useShallow } from "zustand/react/shallow"
+import usePresetStore from "@/app/stores/usePresetStore"
 import { useControls } from "leva"
+import { useLayoutEffect } from "react"
+import useRenderLoop from "../renderLoop/useRenderLoop"
 
 function Env() {
     const fogColor = usePresetStore(state => state["fog color"])
@@ -12,9 +11,6 @@ function Env() {
 
     const getCameraMode = () => usePresetStore.getState()['camera mode']
     const setCameraMode = (val: number) => usePresetStore.setState({ "camera mode": val })
-
-    const player = useGlobalStore(useShallow(state => state.player))
-    const cwHelper = useGlobalStore(state => state.cwHelper)
 
     const [, set] = useControls(() => ({
         'camera mode': {
@@ -33,15 +29,16 @@ function Env() {
         },
     }))
 
-    useEffect(() => {
-        if (!player || !cwHelper) return
+    useLayoutEffect(() => {
         // keyboard shortcuts
         document.addEventListener("keydown", (e) => {
             if (e.key == " ") {
-                if (player.paused()) {
-                    player.play()
+                const player = useGlobalStore.getState().player
+
+                if (player?.paused()) {
+                    player?.play()
                 } else {
-                    player.pause()
+                    player?.pause()
                 }
             } else if (e.key == "`") {
                 const isEditMode = getCameraMode() != CameraMode.MOTION_FILE
@@ -53,10 +50,9 @@ function Env() {
                 }
                 set({ "camera mode": targetMode })
 
-                cwHelper.checkCameraMode()
             }
         })
-    }, [player, cwHelper])
+    }, [])
 
     useRenderLoop()
     return (
