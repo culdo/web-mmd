@@ -31,9 +31,11 @@ function MotionFileMode({ promise }: { promise: Promise<AnimationClip> }) {
     }
 
     useLayoutEffect(() => {
+        const savedCurrentTime = usePresetStore.getState().currentTime
+        
         const action = cameraMixer.clipAction(clip)
         action.play()
-        setTime(mmd.currentTime)
+        setTime(savedCurrentTime)
         return () => cameraMixer.stopAllAction() && cameraMixer.uncacheRoot(camera)
     }, [])
 
