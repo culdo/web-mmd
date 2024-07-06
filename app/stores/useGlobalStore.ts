@@ -25,6 +25,7 @@ export type GlobalState = {
     updateMorphFolder: Function,
     isMotionUpdating: MutableRefObject<boolean>
     beatsBufferRef: MutableRefObject<HTMLDivElement[]>
+    isOrbitControl: MutableRefObject<boolean>
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -47,7 +48,12 @@ const useGlobalStore = create<GlobalState>(
             ref.current = false
             return ref
         })(),
-        beatsBufferRef: null
+        beatsBufferRef: null,
+        isOrbitControl: (() => {
+            const ref: MutableRefObject<boolean> = createRef()
+            ref.current = false
+            return ref
+        })()
     })
 )
 
