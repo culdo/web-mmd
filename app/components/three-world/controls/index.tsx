@@ -7,7 +7,8 @@ import { OrbitControls } from "./orbit-controls";
 function Controls() {
     const controlsRef = useRef<OrbitControlsImpl>()
     const camera = useThree(state => state.camera)
-    const cwHelper = useGlobalStore(state => state.cwHelper)
+    const isOrbitControl = useGlobalStore(state => state.isOrbitControl)
+
     useEffect(() => {
         const controls = controlsRef.current
         useGlobalStore.setState({
@@ -22,12 +23,11 @@ function Controls() {
     }
 
     const onStart = () => {
-        cwHelper.isOrbitControl = true;
+        isOrbitControl.current = true 
     }
 
     const onEnd = () => {
-        cwHelper.orbitCameraPos = camera.position;
-        cwHelper.isOrbitControl = false;
+        isOrbitControl.current = false 
     }
     return (
         <OrbitControls
