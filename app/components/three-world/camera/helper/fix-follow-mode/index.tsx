@@ -1,9 +1,7 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import usePresetStore from "@/app/stores/usePresetStore";
-import { onProgress } from "@/app/utils/base";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Suspense, use, useLayoutEffect, useMemo, useRef } from "react";
-import { AnimationClip, AnimationMixer, Vector3 } from "three";
+import { useLayoutEffect, useRef } from "react";
+import { Vector3 } from "three";
 
 
 function FixFollowMode() {
