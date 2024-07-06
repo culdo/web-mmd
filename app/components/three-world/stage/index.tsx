@@ -48,9 +48,7 @@ function Stage() {
     }, [])
 
     return (
-        <Suspense fallback={null}>
-            <PromisePrimitive promise={promise} dispose={disposeStage}></PromisePrimitive>
-        </Suspense>
+            <PromisePrimitive promise={promise}></PromisePrimitive>
     );
 }
 
