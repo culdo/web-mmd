@@ -7,6 +7,8 @@ import { AnimationClip, AnimationMixer } from "three";
 
 
 function MotionFileMode({ promise }: { promise: Promise<AnimationClip> }) {
+    const cameraName = usePresetStore(state => state.camera)
+
     const clip = use(promise)
 
     const player = useGlobalStore(state => state.player)
@@ -37,7 +39,7 @@ function MotionFileMode({ promise }: { promise: Promise<AnimationClip> }) {
         action.play()
         setTime(savedCurrentTime)
         return () => cameraMixer.stopAllAction() && cameraMixer.uncacheRoot(camera)
-    }, [])
+    }, [cameraName])
 
     useFrame(() => {
         if (isMotionUpdating.current) setTime(mmd.currentTime)

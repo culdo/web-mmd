@@ -1,10 +1,8 @@
-import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { useThree } from "@react-three/fiber";
 import { EffectComposerContext } from "@react-three/postprocessing";
 import { useControls } from "leva";
 import { useContext } from "react";
-import * as THREE from "three";
 
 function ComposerEffect() {
     const { setSize } = useThree()
@@ -21,7 +19,7 @@ function ComposerEffect() {
                 }
             }
         }
-    }, { order: 1 })
+    }, { order: 1, collapsed: true })
     return <></>
 }
 

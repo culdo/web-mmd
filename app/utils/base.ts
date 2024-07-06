@@ -1,7 +1,7 @@
-import videojs from 'video.js'
-import 'videojs-youtube'
-import "video.js/dist/video-js.css";
 import { Material, SkinnedMesh } from 'three';
+import videojs from 'video.js';
+import "video.js/dist/video-js.css";
+import 'videojs-youtube';
 
 
 function onProgress(xhr: { lengthComputable: any; loaded: number; total: number; }) {
@@ -57,7 +57,7 @@ function withProgress(resp: Response, totalSize: number) {
 }
 
 let init = false
-async function loadMusicFromYT(api: { currentTime: number; volume: number; musicYtURL: any; musicName: any; musicURL: string; }) {
+async function loadMusicFromYT(api: { currentTime: number; volume: number; musicYtURL: string }) {
     const player = videojs.getPlayer("rawPlayer")
     player.src({
         "type": "video/youtube",
@@ -82,9 +82,6 @@ async function loadMusicFromYT(api: { currentTime: number; volume: number; music
             }
         })
     }
-
-    api.musicName = (player.tech(true) as any).ytPlayer.videoTitle
-    api.musicURL = "";
 }
 
 function dataURItoBlobUrl(dataURI: string) {
@@ -121,10 +118,10 @@ function saveCurrTime(api: { currentTime: any; }, currTime: any) {
     }
 }
 
-function blobToBase64(blob: Blob) {
+function blobToBase64(blob: Blob): Promise<string> {
     return new Promise((resolve, _) => {
         const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
+        reader.onloadend = () => resolve(reader.result as string);
         reader.readAsDataURL(blob);
     });
 }
@@ -164,4 +161,4 @@ function debugWait(ms = 2000) {
     return new Promise((res) => setTimeout(() => res(true), ms))
 }
 
-export { withTimeElapse, onProgress, dataURItoBlobUrl, loadMusicFromYT, saveCurrTime, blobToBase64, withProgress, startFileDownload, disposeMesh, debugWait }
+export { blobToBase64, dataURItoBlobUrl, debugWait, disposeMesh, loadMusicFromYT, onProgress, saveCurrTime, startFileDownload, withProgress, withTimeElapse };

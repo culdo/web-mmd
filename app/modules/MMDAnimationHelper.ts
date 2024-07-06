@@ -544,7 +544,7 @@ class MMDAnimationHelper {
 
 		}
 
-		if (physics && this.enabled.physics && !this.sharedPhysics) {
+		if (delta > 0 && physics && this.enabled.physics && !this.sharedPhysics) {
 
 			physics.update(delta);
 
