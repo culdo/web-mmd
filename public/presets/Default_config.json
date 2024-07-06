@@ -6,7 +6,14 @@
     "stage": "EPDS.pmx",
     "motionFile": null,
     "cameraFile": null,
-    "pmxFiles": null,
+    "pmxFiles": {
+        "character": null,
+        "stage": null,
+        "modelTextures": {
+            "character": null,
+            "stage": null
+        }
+    },
     "currentTime": 0,
     "volume": 1.0,
     "camera mode": 0,

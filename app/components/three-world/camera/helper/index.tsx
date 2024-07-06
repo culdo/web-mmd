@@ -4,10 +4,13 @@ import CompositeMode from "./composite-mode";
 import MotionFileMode from "./motion-file-mode";
 import FixFollowMode from "./fix-follow-mode";
 import { useLayoutEffect } from "react";
-import { useControls } from "leva";
+import { button, useControls } from "leva";
+import { buildLoadFileFn } from "@/app/utils/gui";
 
 function CameraWorkHelper() {
     const cameraMode = usePresetStore(state => state["camera mode"])
+    const cameraName = usePresetStore(state => state.camera)
+    const cameraFile = usePresetStore(state => state.cameraFile)
 
     const getCameraMode = () => usePresetStore.getState()['camera mode']
     const setCameraMode = (val: number) => usePresetStore.setState({ "camera mode": val })
@@ -28,6 +31,21 @@ function CameraWorkHelper() {
             order: 0,
         },
     }))
+
+    const [_, setCameraGui] = useControls('MMD Files', () => ({
+        camera: {
+            value: cameraName,
+            editable: false
+        },
+        "select camera file": button(() => {
+            const selectFile = document.getElementById("selectFile") as HTMLInputElement
+            selectFile.onchange = buildLoadFileFn((cameraFile, camera) => {
+                usePresetStore.setState({ cameraFile, camera })
+                setCameraGui({ camera })
+            })
+            selectFile.click();
+        }),
+    }), { order: 2 }, [cameraName])
 
     useLayoutEffect(() => {
         // keyboard shortcuts

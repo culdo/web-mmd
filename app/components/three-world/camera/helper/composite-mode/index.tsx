@@ -30,6 +30,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
     const camera = useThree(state => state.camera)
     const cameraMixer = useMemo(() => new AnimationMixer(camera), [camera])
 
+    const cameraName = usePresetStore(state => state.camera)
     const motionOffset = usePresetStore(state => state.motionOffset)
     const collectionKeys = usePresetStore(state => state.collectionKeys)
     const cutKeys = usePresetStore(state => state.cutKeys)
@@ -298,7 +299,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
         const savedCurrentTime = usePresetStore.getState().currentTime
         setTime(savedCurrentTime)
         return () => cameraMixer.stopAllAction() && cameraMixer.uncacheRoot(camera)
-    }, [])
+    }, [cameraName])
 
     useFrame(() => {
         if (isMotionUpdating.current) setTime(mmd.currentTime)

@@ -84,7 +84,7 @@ function usePreset() {
             value: preset,
             options: presetsList,
             settings: {
-                collapsed: false
+                collapsed: true
             },
             onChange: (val, prop, options) => {
                 controllers.deletePreset.settings.disabled = (val == "Default")
