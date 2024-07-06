@@ -13,14 +13,17 @@ function FixFollowMode() {
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
     const camera = useThree(state => state.camera)
 
-    const getSmoothCenter = ()  => character.getObjectByName("smoothCenter").position
+    const getSmoothCenter = () => character.getObjectByName("smoothCenter").position
 
-    const prevCenterPos = useRef(getSmoothCenter().clone())
+    const prevCenterPos = useRef(null)
     const isOrbitControl = useGlobalStore(state => state.isOrbitControl)
-    
+
     const setTime = () => {
-        const position = getSmoothCenter()
-    
+        const position = getSmoothCenter().clone()
+        if(!prevCenterPos.current) {
+            prevCenterPos.current = position.clone()
+        }
+
         const delta = new Vector3()
         delta.subVectors(position, prevCenterPos.current)
 
@@ -29,14 +32,15 @@ function FixFollowMode() {
         controls.target.add(delta)
 
         if (!isOrbitControl.current) {
-            camera.lookAt(controls.target);
             camera.position.add(delta)
             camera.updateProjectionMatrix();
         }
     }
     useLayoutEffect(() => {
+        if (!character || !controls) return
+        controls.target = getSmoothCenter().clone()
         setTime()
-    }, [])
+    }, [character, controls])
 
     useFrame(() => {
         if (isMotionUpdating.current) setTime()
