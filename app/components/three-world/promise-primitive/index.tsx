@@ -1,4 +1,4 @@
-import { use } from "react"
+import { Suspense, use } from "react"
 import { SkinnedMesh } from "three"
 
 function PromisePrimitive({ promise }: { promise: Promise<SkinnedMesh>}) {
@@ -9,4 +9,12 @@ function PromisePrimitive({ promise }: { promise: Promise<SkinnedMesh>}) {
     )
 }
 
-export default PromisePrimitive
+function WithSuspense({ promise }: { promise: Promise<SkinnedMesh>}) {
+    return ( 
+        <Suspense fallback={null}>
+            <PromisePrimitive promise={promise}></PromisePrimitive>
+        </Suspense>
+     );
+}
+
+export default WithSuspense;

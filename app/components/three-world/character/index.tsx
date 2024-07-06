@@ -90,9 +90,7 @@ function Character() {
         }
     }, [url, filename, motionFile, gui.character])
     return (
-        <Suspense fallback={null}>
-            <PromisePrimitive promise={promise}></PromisePrimitive>
-        </Suspense>
+        <PromisePrimitive promise={promise}></PromisePrimitive>
     );
 }
 
