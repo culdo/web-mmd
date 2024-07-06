@@ -956,7 +956,7 @@ class MMDGui {
             },
             loadPreset: () => {
                 selectFile.onchange = async function (e: any) {
-                    const presetFile = e.target.files
+                    const presetFile = e.target.files[0]
                     const newName = path.parse(presetFile.name).name
                     await _updatePresetList(newName)
 
