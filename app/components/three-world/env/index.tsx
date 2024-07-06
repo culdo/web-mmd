@@ -9,26 +9,6 @@ function Env() {
     const fogColor = usePresetStore(state => state["fog color"])
     const fogDensity = usePresetStore(state => state["fog density"])
 
-    const getCameraMode = () => usePresetStore.getState()['camera mode']
-    const setCameraMode = (val: number) => usePresetStore.setState({ "camera mode": val })
-
-    const [, set] = useControls(() => ({
-        'camera mode': {
-            value: getCameraMode(),
-            options: {
-                "Motion File": CameraMode.MOTION_FILE,
-                "Composition": CameraMode.COMPOSITION,
-                "Fixed Follow": CameraMode.FIXED_FOLLOW
-            },
-            onChange: (motionType, _, options) => {
-                if (!options.initial) {
-                    setCameraMode(motionType)
-                }
-            },
-            order: 0,
-        },
-    }))
-
     useLayoutEffect(() => {
         // keyboard shortcuts
         document.addEventListener("keydown", (e) => {
@@ -40,17 +20,7 @@ function Env() {
                 } else {
                     player?.pause()
                 }
-            } else if (e.key == "`") {
-                const isEditMode = getCameraMode() != CameraMode.MOTION_FILE
-                let targetMode;
-                if (isEditMode) {
-                    targetMode = CameraMode.MOTION_FILE
-                } else {
-                    targetMode = CameraMode.COMPOSITION
-                }
-                set({ "camera mode": targetMode })
-
-            }
+            } 
         })
     }, [])
 
