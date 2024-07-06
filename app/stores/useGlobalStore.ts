@@ -20,7 +20,6 @@ export type GlobalState = {
     controls: OrbitControls
     character: SkinnedMesh,
     stage: SkinnedMesh,
-    loadCamera: Function,
     loadCharacter: Function,
     loadStage: Function,
     updateMorphFolder: Function,
@@ -40,7 +39,6 @@ const useGlobalStore = create<GlobalState>(
         runtimeCharacter: null,
         camera: null,
         controls: null,
-        loadCamera: null,
         loadCharacter: null,
         loadStage: null,
         updateMorphFolder: null,

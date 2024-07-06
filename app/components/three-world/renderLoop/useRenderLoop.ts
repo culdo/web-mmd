@@ -10,14 +10,13 @@ function useRenderLoop() {
     const player = useGlobalStore(state => state.player)
     const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
     const controls = useGlobalStore(state => state.controls)
-    const loadCamera = useGlobalStore(state => state.loadCamera)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
 
     const prevTime = 0.0
     const prevTimeRef = useRef(prevTime)
 
     useFrame(() => {
-        if (!runtimeCharacter || !loadCamera || !player) {
+        if (!runtimeCharacter || !player) {
             return
         }
 
