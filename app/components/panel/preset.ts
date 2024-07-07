@@ -1,8 +1,12 @@
 import useConfigStore from "@/app/stores/useConfigStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { startFileDownload } from "@/app/utils/base";
-import { button, folder, useControls } from "leva";
+import { button, useControls } from "leva";
 import path from "path-browserify";
+import defaultConfig from '@/app/configs/Default_config.json';
+import defaultData from '@/app/configs/Default_data.json';
+import { useEffect, useLayoutEffect } from "react";
+import localforage from "localforage";
 
 function usePreset() {
     const preset = useConfigStore(state => state.preset)
@@ -12,40 +16,38 @@ function usePreset() {
 
     const getApi = usePresetStore.getState
 
-    const _loadPreset = (name: string) => {
-        if(preset == name) throw "same preset name"
+    const loadPreset = (name: string) => {
         useConfigStore.setState({ preset: name })
     }
 
     const presetFn = {
-        newPreset: async () => {
+        "New Preset": async () => {
             let newName = prompt("New preset name:");
             if (newName) {
                 addPreset(newName)
-                _loadPreset(newName);
+                loadPreset(newName);
             }
         },
-        copyPreset: async () => {
+        "Copy Preset": async () => {
             let newName = prompt("New preset name:");
             if (newName) {
                 useConfigStore.setState({ preset: newName })
                 addPreset(newName)
             }
         },
-        deletePreset: async () => {
+        "Delete Preset": async () => {
             if (confirm("Are you sure?")) {
                 removePreset(preset)
-
-                const presetsArr: any[] = Array.from(presetsList)
-                _loadPreset(presetsArr[presetsArr.length - 1]);
+                const { presetsList } = useConfigStore.getState()
+                loadPreset(presetsList[presetsList.length - 1]);
             }
         },
-        savePreset: () => {
+        "Save Preset": () => {
             const presetBlob = new Blob([JSON.stringify(getApi())], { type: 'application/json' })
             const dlUrl = URL.createObjectURL(presetBlob)
             startFileDownload(dlUrl, `${preset}.json`)
         },
-        saveConfigOnly: () => {
+        "Save Config Only": () => {
             const apiCopy = JSON.parse(JSON.stringify(getApi()))
             delete apiCopy.pmxFiles
             delete apiCopy.cameraFile
@@ -55,7 +57,7 @@ function usePreset() {
             const dlUrl = URL.createObjectURL(presetBlob)
             startFileDownload(dlUrl, `${preset}_config.json`)
         },
-        loadPreset: () => {
+        "Load Preset": () => {
             const selectFile = document.getElementById("selectFile")
             selectFile.onchange = async function (e: any) {
                 const presetFile = e.target.files
@@ -67,10 +69,14 @@ function usePreset() {
                 reader.onloadend = async () => {
                     useConfigStore.setState({ preset: newName })
                     usePresetStore.setState(JSON.parse(reader.result as string))
-                    _loadPreset(newName);
+                    loadPreset(newName);
                 }
             };
             selectFile.click();
+        },
+        "Reset Preset": () => {
+            usePresetStore.setState(defaultConfig)
+            usePresetStore.setState(defaultData)
         }
     }
 
@@ -79,25 +85,27 @@ function usePreset() {
             ([k, v]) => [k, button(v)]
         )
     )
-    const presetsFolder = folder({
+    controllers["Delete Preset"].settings.disabled = (preset == "Default")
+
+    const [_, setGui] = useControls('Preset', () => ({
         preset: {
             value: preset,
             options: presetsList,
             settings: {
-                collapsed: true
+                collapsed: false
             },
             onChange: (val, prop, options) => {
-                controllers.deletePreset.settings.disabled = (val == "Default")
-                if(!options.initial) {
-                    _loadPreset(val)
+                if (!options.initial) {
+                    loadPreset(val)
                 }
             }
-        }
-    })
-    Object.assign(controllers, {
-        presets: presetsFolder
-    })
-    useControls('Preset', controllers, {order: 100},[preset, presetsList])
+        },
+        ...controllers
+    }), { order: 100, collapsed: true }, [controllers, presetsList])
+
+    useEffect(() => {
+        setGui({ preset })
+    }, [preset])
 }
 
 export default usePreset;

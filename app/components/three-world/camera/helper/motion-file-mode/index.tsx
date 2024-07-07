@@ -39,7 +39,7 @@ function MotionFileMode({ promise }: { promise: Promise<AnimationClip> }) {
         action.play()
         setTime(savedCurrentTime)
         return () => cameraMixer.stopAllAction() && cameraMixer.uncacheRoot(camera)
-    }, [cameraName])
+    }, [camera, cameraName])
 
     useFrame(() => {
         if (isMotionUpdating.current) setTime(mmd.currentTime)

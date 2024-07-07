@@ -1,11 +1,10 @@
+import defaultConfig from '@/app/configs/Default_config.json';
+import defaultData from '@/app/configs/Default_data.json';
+import localforage from 'localforage';
 import { create } from 'zustand';
-import { PersistStorage, StorageValue, persist, subscribeWithSelector } from 'zustand/middleware'
-import defaultConfig from '@/public/presets/Default_config.json';
-import defaultData from '@/public/presets/Default_data.json';
-import localforage from 'localforage'
-import useConfigStore from './useConfigStore';
-import useGlobalStore from './useGlobalStore';
+import { PersistStorage, StorageValue, persist, subscribeWithSelector } from 'zustand/middleware';
 import { CameraClip } from '../components/three-world/camera/helper/composite-mode';
+import useConfigStore from './useConfigStore';
 
 export type PresetState = typeof defaultConfig & { compositeClips: CameraClip[] }
 export const presetSep = "."
@@ -28,30 +27,13 @@ const storage: PersistStorage<PresetState> = {
 const usePresetStore = create(
     subscribeWithSelector(
         persist<PresetState>(
-            (set, get) => defaultConfig as PresetState,
+            (set, get) => ({...defaultConfig, ...defaultData}) as PresetState,
             {
                 name: useConfigStore.getState().preset,
                 storage
             })
     )
 )
-
-usePresetStore.persist.onFinishHydration(() => {
-    if (!usePresetStore.getState().pmxFiles) {
-        usePresetStore.setState(defaultData)
-    }
-})
-
-
-usePresetStore.subscribe((api) => {
-    if (usePresetStore.persist.hasHydrated()) {
-        if (useConfigStore.getState().preset == "Default") {
-            useConfigStore.setState({ preset: "Untitled" })
-        }
-        const cwHelper = useGlobalStore.getState().cwHelper
-        cwHelper._api = api
-    }
-})
 
 // move to here to avoid cycle imports
 useConfigStore.subscribe((state) => state.preset, (newPreset) => {

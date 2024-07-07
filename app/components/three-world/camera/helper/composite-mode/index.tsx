@@ -299,7 +299,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
         const savedCurrentTime = usePresetStore.getState().currentTime
         setTime(savedCurrentTime)
         return () => cameraMixer.stopAllAction() && cameraMixer.uncacheRoot(camera)
-    }, [cameraName])
+    }, [camera, cameraName])
 
     useFrame(() => {
         if (isMotionUpdating.current) setTime(mmd.currentTime)
