@@ -1,5 +1,5 @@
 import usePresetStore from "@/app/stores/usePresetStore";
-import { Autofocus, AutofocusApi, DepthOfField, EffectComposer, SelectiveBloom } from "@react-three/postprocessing";
+import { Autofocus, AutofocusApi, Bloom, DepthOfField, EffectComposer, SelectiveBloom } from "@react-three/postprocessing";
 import OutlinePass from "./OutlinePass";
 import EffectControls from "./controls";
 import CopyPass from "./CopyPass";
@@ -25,6 +25,16 @@ function Effects() {
 
     }, { collapsed: true });
 
+    const bloomConfig = useControls('Effects.Bloom', {
+        enabled: {
+            value: false,
+        },
+        intensity: { min: 0, max: 10, value: 1.0 },
+        luminanceThreshold: { min: 0, max: 1, value: 1.0 },
+        luminanceSmoothing: { min: 0, max: 1, value: 0.025 },
+
+    }, { collapsed: true });
+
     useEffect(() => {
         if (!character || !dofRef.current) return
         dofRef.current.target = character.getObjectByName("smoothCenter").position
@@ -37,7 +47,7 @@ function Effects() {
                 <EffectControls></EffectControls>
                 {showOutline && <OutlinePass></OutlinePass>}
                 {dofConfig.enabled && <DepthOfField ref={dofRef} {...dofConfig}></DepthOfField>}
-                <SelectiveBloom></SelectiveBloom>
+                {bloomConfig.enabled && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 <CopyPass></CopyPass>
             </EffectComposer>
         </>
