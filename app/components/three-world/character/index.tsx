@@ -118,7 +118,7 @@ function CharacterBase() {
             disposeMesh(character);
             console.log("Character disposed")
         }
-    }, [url, characterName, motionFile])
+    }, [url, characterName, motionFile, enablePBR])
 
 
     return (
