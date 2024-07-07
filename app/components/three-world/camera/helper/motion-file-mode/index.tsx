@@ -43,7 +43,7 @@ function MotionFileMode({ promise }: { promise: Promise<AnimationClip> }) {
 
     useFrame(() => {
         if (isMotionUpdating.current) setTime(mmd.currentTime)
-    }, 0)
+    }, 1)
     return <></>;
 }
 

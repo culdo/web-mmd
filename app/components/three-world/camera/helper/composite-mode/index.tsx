@@ -303,7 +303,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
 
     useFrame(() => {
         if (isMotionUpdating.current) setTime(mmd.currentTime)
-    }, 0)
+    }, 1)
     return <></>;
 }
 

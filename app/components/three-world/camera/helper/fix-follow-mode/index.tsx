@@ -42,7 +42,7 @@ function FixFollowMode() {
 
     useFrame(() => {
         if (isMotionUpdating.current) setTime()
-    }, 0)
+    }, 1)
     return <></>;
 }
 
