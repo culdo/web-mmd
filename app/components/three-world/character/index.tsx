@@ -8,8 +8,9 @@ import path from "path-browserify";
 import { useLayoutEffect, useState } from "react";
 import * as THREE from 'three';
 import PromisePrimitive from "../promise-primitive";
+import Morph from "./morph";
 
-function Character() {
+function CharacterBase() {
 
     const { scene } = useThree()
 
@@ -100,28 +101,37 @@ function Character() {
             const skeletonHelper = new THREE.SkeletonHelper(character);
             skeletonHelper.visible = showSkeleton;
             character.add(skeletonHelper);
-            
+
             useGlobalStore.setState({ character, runtimeCharacter })
             set({ character: characterName })
             helper.update(0, usePresetStore.getState().currentTime);
             runtimeCharacter.physics.reset();
-            
+
             return character
         }
         setPromise(load())
         return () => {
-            console.log("disposing Character")
             const { character, runtimeCharacter } = useGlobalStore.getState()
             runtimeCharacter.mixer.uncacheRoot(character);
             scene.remove(character);
             helper.remove(character);
             disposeMesh(character);
+            console.log("Character disposed")
         }
     }, [url, characterName, motionFile])
 
 
     return (
         <PromisePrimitive promise={promise}></PromisePrimitive>
+    );
+}
+
+function Character() {
+    return (
+        <>
+            <CharacterBase></CharacterBase>
+            <Morph></Morph>
+        </>
     );
 }
 
