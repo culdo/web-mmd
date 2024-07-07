@@ -72,7 +72,7 @@ function Stage() {
             scene.remove(stage);
             disposeMesh(stage);
         }
-    }, [url, filename])
+    }, [url, filename, enablePBR])
 
 
     return (

@@ -59,7 +59,7 @@ function Env() {
     return (
         <>
             <fogExp2 attach="fog" color={fog.color} density={fog.density * 0.001}></fogExp2>
-            <ambientLight color={ambientLight.color} intensity={ambientIntensity} />
+            <ambientLight color={ambientLight.color} intensity={ambientLight.intensity} />
             <directionalLight color={directionalLight.color} position={directionalLight.position} intensity={directionalLight.intensity} />
         </>
     );
