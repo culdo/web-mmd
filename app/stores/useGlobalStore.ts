@@ -12,7 +12,6 @@ export type Gui = LevaRootProps & { _timeoutID?: NodeJS.Timeout }
 export type GlobalState = {
     loader: MMDLoader
     helper: MMDAnimationHelper,
-    cwHelper: MMDCameraWorkHelper,
     player: Player,
     gui: Gui,
     camera: PerspectiveCamera,
@@ -20,19 +19,17 @@ export type GlobalState = {
     controls: OrbitControls
     character: SkinnedMesh,
     stage: SkinnedMesh,
-    loadCharacter: Function,
-    loadStage: Function,
     updateMorphFolder: Function,
     isMotionUpdating: MutableRefObject<boolean>
     beatsBufferRef: MutableRefObject<HTMLDivElement[]>
     isOrbitControl: MutableRefObject<boolean>
+    presetReady: boolean
 }
 
 const useGlobalStore = create<GlobalState>(
     () => ({
         loader: new MMDLoader(),
         helper: new MMDAnimationHelper(),
-        cwHelper: new MMDCameraWorkHelper(),
         player: null,
         gui: {},
         character: null,
@@ -40,20 +37,23 @@ const useGlobalStore = create<GlobalState>(
         runtimeCharacter: null,
         camera: null,
         controls: null,
-        loadCharacter: null,
-        loadStage: null,
         updateMorphFolder: null,
         isMotionUpdating: (() => {
             const ref: MutableRefObject<boolean> = createRef()
             ref.current = false
             return ref
         })(),
-        beatsBufferRef: null,
+        beatsBufferRef: (() => {
+            const ref: MutableRefObject<HTMLDivElement[]> = createRef()
+            ref.current = []
+            return ref
+        })(),
         isOrbitControl: (() => {
             const ref: MutableRefObject<boolean> = createRef()
             ref.current = false
             return ref
-        })()
+        })(),
+        presetReady: false
     })
 )
 

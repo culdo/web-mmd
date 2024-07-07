@@ -14,7 +14,7 @@ function useRenderLoop() {
 
     const prevTime = 0.0
     const prevTimeRef = useRef(prevTime)
-
+    
     useFrame(() => {
         if (!runtimeCharacter || !player) {
             return

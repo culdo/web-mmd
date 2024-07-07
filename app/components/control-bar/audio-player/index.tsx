@@ -39,7 +39,7 @@ function AudioPlayer() {
                 }
             },
         },
-    }), { order: 2 }, [musicName])
+    }), { order: 2, collapsed: true }, [musicName])
 
     const init = async () => {
         // music player

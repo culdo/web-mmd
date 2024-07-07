@@ -8,14 +8,13 @@ function SceneTimeline({ children = null }:
   { children?: React.ReactNode }) {
   const isComposite = usePresetStore(state => state["camera mode"]) == CameraMode.COMPOSITION
 
-  const beatsBufferRef = useRef<HTMLDivElement[]>([])
-  useGlobalStore.setState({ beatsBufferRef })
+  const beatsBufferRef = useGlobalStore(state => state.beatsBufferRef)
 
   const scrollingBar = useRef<HTMLDivElement>()
   useLayoutEffect(() => {
 
     // add buffer beats
-    const beatsBuffer = [...Array(30)].map(_ => {
+    [...Array(30)].map(_ => {
       const beatEl = document.createElement("div")
       beatEl.className = "cut"
       beatEl.style.display = "none"

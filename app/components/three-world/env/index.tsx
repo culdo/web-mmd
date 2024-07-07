@@ -1,7 +1,7 @@
 import { CameraMode } from "@/app/modules/MMDCameraWorkHelper"
 import useGlobalStore from "@/app/stores/useGlobalStore"
 import usePresetStore from "@/app/stores/usePresetStore"
-import { useControls } from "leva"
+import { folder, useControls } from "leva"
 import { useLayoutEffect } from "react"
 import useRenderLoop from "../renderLoop/useRenderLoop"
 
@@ -29,16 +29,38 @@ function Env() {
                 } else {
                     player?.pause()
                 }
-            } 
+            }
         })
     }, [])
+
+    const fog = useControls('Light', {
+        fog: folder({
+            color: `#${fogColor.toString(16)}`,
+            density: fogDensity * 1000
+        }),
+    }, { order: 3, collapsed: true })
+
+    const ambientLight = useControls('Light', {
+        ambientLight: folder({
+            color: `#${ambientColor.toString(16)}`,
+            intensity: ambientIntensity
+        })
+    })
+
+    const directionalLight = useControls('Light', {
+        directionalLight: folder({
+            color: `#${directionalColor.toString(16)}`,
+            intensity: directionalIntensity,
+            position: [lightX, lightY, lightZ]
+        })
+    })
 
     useRenderLoop()
     return (
         <>
-            <fogExp2 attach="fog" color={fogColor} density={fogDensity}></fogExp2>
-            <ambientLight color={ambientColor} intensity={ambientIntensity} />
-            <directionalLight color={directionalColor} position={[lightX, lightY, lightZ]} intensity={directionalIntensity} />
+            <fogExp2 attach="fog" color={fog.color} density={fog.density * 0.001}></fogExp2>
+            <ambientLight color={ambientLight.color} intensity={ambientIntensity} />
+            <directionalLight color={directionalLight.color} position={directionalLight.position} intensity={directionalLight.intensity} />
         </>
     );
 }

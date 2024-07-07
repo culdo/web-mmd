@@ -9,7 +9,7 @@ import { GlobalState } from '../stores/useGlobalStore';
 import { blobToBase64, dataURItoBlobUrl, disposeMesh, loadMusicFromYT, onProgress, startFileDownload } from '../utils/base';
 import { CameraMode } from './MMDCameraWorkHelper';
 import WebMMD from './WebMMD';
-import defaultConfig from '@/public/presets/Default_config.json';
+import defaultConfig from '@/app/configs/Default_config.json';
 
 class MMDGui {
     panel: GUI;

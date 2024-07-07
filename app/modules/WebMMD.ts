@@ -19,7 +19,7 @@ import { CameraMode, MMDCameraWorkHelper } from './MMDCameraWorkHelper';
 import logging from 'webpack/lib/logging/runtime'
 import Player from 'video.js/dist/types/player.js';
 import { EffectComposer } from 'postprocessing';
-import defaultConfig from '@/public/presets/Default_config.json';
+import defaultConfig from '@/app/configs/Default_config.json';
 
 declare const window: any;
 
