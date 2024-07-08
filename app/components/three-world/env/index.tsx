@@ -36,21 +36,33 @@ function Env() {
     const fog = useControls('Light', {
         fog: folder({
             color: `#${fogColor.toString(16)}`,
-            density: fogDensity * 1000
+            density: {
+                value: fogDensity * 1000,
+                min: 0,
+                max: 10
+            }
         }),
     }, { order: 3, collapsed: true })
 
     const ambientLight = useControls('Light', {
         ambientLight: folder({
             color: `#${ambientColor.toString(16)}`,
-            intensity: ambientIntensity
+            intensity: {
+                value: ambientIntensity,
+                min: 0,
+                max: 10
+            },
         })
     })
 
     const directionalLight = useControls('Light', {
         directionalLight: folder({
             color: `#${directionalColor.toString(16)}`,
-            intensity: directionalIntensity,
+            intensity: {
+                value: directionalIntensity,
+                min: 0,
+                max: 10
+            },
             position: [lightX, lightY, lightZ]
         })
     })
