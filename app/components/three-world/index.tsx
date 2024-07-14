@@ -1,7 +1,7 @@
 import Camera from './camera';
 import Character from './character';
 import Controls from './controls';
-import Env from './env';
+import Lights from './lights';
 import Stage from './stage';
 
 declare global {
@@ -11,7 +11,7 @@ declare global {
 function ThreeWorld() {
     return (
         <>
-            <Env></Env>
+            <Lights></Lights>
             <Character></Character>
             <Stage></Stage>
             <Camera></Camera>
