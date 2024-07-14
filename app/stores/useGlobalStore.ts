@@ -19,7 +19,6 @@ export type GlobalState = {
     controls: OrbitControls
     character: SkinnedMesh,
     stage: SkinnedMesh,
-    updateMorphFolder: Function,
     isMotionUpdating: MutableRefObject<boolean>
     beatsBufferRef: MutableRefObject<HTMLDivElement[]>
     isOrbitControl: MutableRefObject<boolean>
@@ -37,7 +36,6 @@ const useGlobalStore = create<GlobalState>(
         runtimeCharacter: null,
         camera: null,
         controls: null,
-        updateMorphFolder: null,
         isMotionUpdating: (() => {
             const ref: MutableRefObject<boolean> = createRef()
             ref.current = false

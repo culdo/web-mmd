@@ -4,6 +4,7 @@ import usePresetStore from "@/app/stores/usePresetStore"
 import { folder, useControls } from "leva"
 import { useLayoutEffect } from "react"
 import useRenderLoop from "../renderLoop/useRenderLoop"
+import { buildGuiHandler, buildGuiItem } from "@/app/utils/gui"
 
 function Env() {
     const fogColor = usePresetStore(state => state["fog color"])
@@ -35,9 +36,9 @@ function Env() {
 
     const fog = useControls('Light', {
         fog: folder({
-            color: `#${fogColor.toString(16)}`,
+            color: buildGuiItem(`#${fogColor.toString(16)}`),
             density: {
-                value: fogDensity * 1000,
+                ...buildGuiItem( fogDensity * 1000),
                 min: 0,
                 max: 10
             }
@@ -46,24 +47,24 @@ function Env() {
 
     const ambientLight = useControls('Light', {
         ambientLight: folder({
-            color: `#${ambientColor.toString(16)}`,
+            color: buildGuiItem(`#${ambientColor.toString(16)}`),
             intensity: {
-                value: ambientIntensity,
+                ...buildGuiItem(ambientIntensity),
                 min: 0,
-                max: 10
+                max: 10,
             },
         })
     })
 
     const directionalLight = useControls('Light', {
         directionalLight: folder({
-            color: `#${directionalColor.toString(16)}`,
+            color: buildGuiItem(`#${directionalColor.toString(16)}`),
             intensity: {
-                value: directionalIntensity,
+                ...buildGuiItem(directionalIntensity),
                 min: 0,
                 max: 10
             },
-            position: [lightX, lightY, lightZ]
+            position: buildGuiItem([lightX, lightY, lightZ]),
         })
     })
 

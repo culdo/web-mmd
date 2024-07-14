@@ -1,18 +1,16 @@
+import useConfigStore from "@/app/stores/useConfigStore";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import usePresetStore from "@/app/stores/usePresetStore";
-import { useControls } from "leva";
+import usePresetStore, { PresetState } from "@/app/stores/usePresetStore";
+import { setLevaValue } from "@/app/utils/gui";
+import { button, levaStore, useControls } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
 import { useEffect, useState } from "react";
 
 function Morph() {
     const character = useGlobalStore(state => state.character)
-    const morphs: any = usePresetStore(state => state.morphs)
+    const presetReady = useGlobalStore(state => state.presetReady)
 
-    const buildOnChangeMorph = (key: string) => {
-        return (value: number) =>
-            character.morphTargetInfluences[character.morphTargetDictionary[key]] = value;
-    }
-
+    const morphs: Record<string, number> = usePresetStore(state => state.morphs)
 
     const [controllers, setControllers] = useState<Schema>({})
 
@@ -22,11 +20,21 @@ function Morph() {
             if (!(key in morphs)) {
                 morphs[key] = 0.0;
             }
-            const onChangeMorph = buildOnChangeMorph(key)
             newControllers[key] = {
                 value: morphs[key],
-                onChange: (value, path, context) => {
-                    onChangeMorph(value)
+                min: 0,
+                max: 1,
+                onChange: (value: number, path, context) => {
+                    if (!context.initial) {
+                        usePresetStore.setState(({ morphs }) => {
+                            morphs[key as keyof PresetState["morphs"]] = value
+                            return { morphs }
+                        })
+                    } else {
+                        value = morphs[key]
+                        setLevaValue(path, value)
+                    }
+                    character.morphTargetInfluences[character.morphTargetDictionary[key]] = value;
                 }
             }
 
@@ -38,14 +46,15 @@ function Morph() {
             }
         }
         setControllers(newControllers)
-        usePresetStore.setState({ morphs })
+        usePresetStore.setState({ morphs } as any)
     }
 
-    useControls("Morphs", controllers, {collapsed: true}, [controllers])
+    const [_, setGui] = useControls("Morphs", () => controllers, { collapsed: true }, [controllers])
+
     useEffect(() => {
-        if (!character) return
+        if (!presetReady || !character) return
         updateMorphFolder();
-    }, [character])
+    }, [presetReady, character])
 
     return <></>
 }

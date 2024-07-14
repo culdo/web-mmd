@@ -8,16 +8,13 @@ import { Canvas } from "@react-three/fiber";
 import ControlBar from "../components/control-bar";
 import Effects from "../components/effects";
 import Panel from "../components/panel";
-import usePresetStore from "../stores/usePresetStore";
 
 export default function Page() {
-
-  const isOneDpr = usePresetStore(state => state["set pixelratio 1.0"])
 
   return (
     <>
       <SceneTimeline></SceneTimeline>
-      <Canvas dpr={isOneDpr ? 1 : window.devicePixelRatio}>
+      <Canvas>
         <ThreeWorld />
         <Effects></Effects>
       </Canvas>

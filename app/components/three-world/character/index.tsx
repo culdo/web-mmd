@@ -16,7 +16,6 @@ function CharacterBase() {
 
     const helper = useGlobalStore(state => state.helper)
     const loader = useGlobalStore(state => state.loader)
-    const updateMorphFolder = useGlobalStore(state => state.updateMorphFolder)
 
     const characterName = usePresetStore(state => state.character)
     const motionName = usePresetStore(state => state.motion)
