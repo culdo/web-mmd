@@ -1,24 +1,19 @@
 import useConfigStore from "@/app/stores/useConfigStore";
-import usePresetStore from "@/app/stores/usePresetStore";
+import usePresetStore, { resetPreset } from "@/app/stores/usePresetStore";
 import { startFileDownload } from "@/app/utils/base";
 import { button, useControls } from "leva";
 import path from "path-browserify";
-import defaultConfig from '@/app/configs/Default_config.json';
-import defaultData from '@/app/configs/Default_data.json';
-import { useEffect, useLayoutEffect } from "react";
-import localforage from "localforage";
+import { useEffect } from "react";
 
 function usePreset() {
     const preset = useConfigStore(state => state.preset)
     const presetsList = useConfigStore(state => state.presetsList)
     const addPreset = useConfigStore(state => state.addPreset)
     const removePreset = useConfigStore(state => state.removePreset)
+    const loadPreset = useConfigStore(state => state.loadPreset)
 
     const getApi = usePresetStore.getState
 
-    const loadPreset = (name: string) => {
-        useConfigStore.setState({ preset: name })
-    }
 
     const presetFn = {
         "New Preset": async () => {
@@ -26,13 +21,14 @@ function usePreset() {
             if (newName) {
                 addPreset(newName)
                 loadPreset(newName);
+                resetPreset()
             }
         },
         "Copy Preset": async () => {
-            let newName = prompt("New preset name:");
+            let newName = prompt("Copy as preset name:");
             if (newName) {
-                useConfigStore.setState({ preset: newName })
                 addPreset(newName)
+                loadPreset(newName);
             }
         },
         "Delete Preset": async () => {
@@ -62,22 +58,18 @@ function usePreset() {
             selectFile.onchange = async function (e: any) {
                 const presetFile = e.target.files
                 const newName = path.parse(presetFile.name).name
-                addPreset(newName)
-
+                
                 let reader = new FileReader();
                 reader.readAsText(presetFile);
                 reader.onloadend = async () => {
-                    useConfigStore.setState({ preset: newName })
-                    usePresetStore.setState(JSON.parse(reader.result as string))
+                    addPreset(newName)
                     loadPreset(newName);
+                    usePresetStore.setState(JSON.parse(reader.result as string))
                 }
             };
             selectFile.click();
         },
-        "Reset Preset": () => {
-            usePresetStore.setState(defaultConfig)
-            usePresetStore.setState(defaultData)
-        }
+        "Reset Preset": resetPreset
     }
 
     const controllers = Object.fromEntries(
