@@ -15,7 +15,7 @@ function CameraWorkHelper() {
 
     const [, set] = useControls(() => ({
         'camera mode': {
-            ...buildGuiItem(cameraMode) as object,
+            ...buildGuiItem("camera mode") as object,
             options: {
                 "Motion File": CameraMode.MOTION_FILE,
                 "Composition": CameraMode.COMPOSITION,

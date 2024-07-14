@@ -72,22 +72,26 @@ function buildGuiHandler<T>(initialValue: T, handler?: OnChangeHandler): OnChang
     }
 }
 
-// extract type from readonly type
-type GuiValue<T> = T extends readonly [number, number, number] ? [number, number, number] : T;
+// extract type from array type
+type GuiValue<T> = T extends number[] ? [number, number, number] : T;
 
-function buildGuiItem<const T>(initialValue: T, handler?: OnChangeHandler) {
+function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnChangeHandler) {
+
+    const initialValue = usePresetStore.getState()[key]
+    
     const onChange: OnChangeHandler = (value, path, options) => {
+        if (!options.initial) {
+            usePresetStore.setState(Object.fromEntries([[key, value]]))
+        } else {
+            value = initialValue
+            setLevaValue(path, initialValue)
+        }
         if (handler) {
             handler(value, path, options)
         }
-        if (!options.initial) {
-            usePresetStore.setState(Object.fromEntries([[path, value]]))
-        } else {
-            setLevaValue(path, initialValue)
-        }
     }
     return {
-        value: initialValue as GuiValue<T>,
+        value: initialValue as GuiValue<typeof initialValue>,
         onChange,
         transient: false as const
     }

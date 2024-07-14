@@ -7,17 +7,8 @@ import useRenderLoop from "../renderLoop/useRenderLoop"
 import { buildGuiHandler, buildGuiItem } from "@/app/utils/gui"
 
 function Env() {
-    const fogColor = usePresetStore(state => state["fog color"])
-    const fogDensity = usePresetStore(state => state["fog density"])
+    const presetReady = useGlobalStore(state => state.presetReady)
 
-    const ambientIntensity = usePresetStore(state => state["Ambient intensity"])
-    const ambientColor = usePresetStore(state => state["Ambient color"])
-
-    const lightX = usePresetStore(state => state.lightX)
-    const lightY = usePresetStore(state => state.lightY)
-    const lightZ = usePresetStore(state => state.lightZ)
-    const directionalColor = usePresetStore(state => state.Directional)
-    const directionalIntensity = usePresetStore(state => state["Directional intensity"])
 
     useLayoutEffect(() => {
         // keyboard shortcuts
@@ -36,42 +27,42 @@ function Env() {
 
     const fog = useControls('Light', {
         fog: folder({
-            color: buildGuiItem(`#${fogColor.toString(16)}`),
+            color: buildGuiItem("fog color"),
             density: {
-                ...buildGuiItem( fogDensity * 1000),
+                ...buildGuiItem("fog density"),
                 min: 0,
                 max: 10
             }
         }),
-    }, { order: 3, collapsed: true })
+    }, { order: 3, collapsed: true }, [presetReady])
 
     const ambientLight = useControls('Light', {
         ambientLight: folder({
-            color: buildGuiItem(`#${ambientColor.toString(16)}`),
+            color: buildGuiItem("Ambient color"),
             intensity: {
-                ...buildGuiItem(ambientIntensity),
+                ...buildGuiItem("Ambient intensity"),
                 min: 0,
                 max: 10,
             },
         })
-    })
+    }, [presetReady])
 
     const directionalLight = useControls('Light', {
         directionalLight: folder({
-            color: buildGuiItem(`#${directionalColor.toString(16)}`),
+            color: buildGuiItem("Directional"),
             intensity: {
-                ...buildGuiItem(directionalIntensity),
+                ...buildGuiItem("Directional intensity"),
                 min: 0,
                 max: 10
             },
-            position: buildGuiItem([lightX, lightY, lightZ]),
+            position: buildGuiItem("Directional position"),
         })
-    })
+    }, [presetReady])
 
     useRenderLoop()
     return (
         <>
-            <fogExp2 attach="fog" color={fog.color} density={fog.density * 0.001}></fogExp2>
+            <fogExp2 attach="fog" color={fog.color} density={fog.density}></fogExp2>
             <ambientLight color={ambientLight.color} intensity={ambientLight.intensity} />
             <directionalLight color={directionalLight.color} position={directionalLight.position} intensity={directionalLight.intensity} />
         </>
