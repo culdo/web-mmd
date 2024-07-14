@@ -5,8 +5,11 @@ import { create } from 'zustand';
 import { PersistStorage, StorageValue, persist, subscribeWithSelector } from 'zustand/middleware';
 import { CameraClip } from '../components/three-world/camera/helper/composite-mode';
 import useConfigStore from './useConfigStore';
+import useGlobalStore from './useGlobalStore';
 
-export type PresetState = typeof defaultConfig & { compositeClips: CameraClip[] }
+export type PresetState = typeof defaultConfig & {
+    compositeClips: CameraClip[]
+}
 export const presetSep = "."
 
 const storage: PersistStorage<PresetState> = {
@@ -34,6 +37,16 @@ const usePresetStore = create(
             })
     )
 )
+
+export const resetPreset = () => usePresetStore.setState({ ...defaultConfig, ...defaultData })
+
+usePresetStore.persist.onFinishHydration(() => {
+    useGlobalStore.setState({ presetReady: true })
+})
+
+usePresetStore.persist.onHydrate(() => {
+    useGlobalStore.setState({ presetReady: false })
+})
 
 // move to here to avoid cycle imports
 useConfigStore.subscribe((state) => state.preset, (newPreset) => {
