@@ -5,32 +5,25 @@ import MotionFileMode from "./motion-file-mode";
 import FixFollowMode from "./fix-follow-mode";
 import { useLayoutEffect } from "react";
 import { button, useControls } from "leva";
-import { buildLoadFileFn } from "@/app/utils/gui";
+import { buildGuiItem, buildLoadFileFn, setLevaValue } from "@/app/utils/gui";
 
 function CameraWorkHelper() {
     const cameraMode = usePresetStore(state => state["camera mode"])
     const cameraName = usePresetStore(state => state.camera)
-    const cameraFile = usePresetStore(state => state.cameraFile)
 
     const getCameraMode = () => usePresetStore.getState()['camera mode']
-    const setCameraMode = (val: number) => usePresetStore.setState({ "camera mode": val })
 
     const [, set] = useControls(() => ({
         'camera mode': {
-            value: getCameraMode(),
+            ...buildGuiItem(cameraMode) as object,
             options: {
                 "Motion File": CameraMode.MOTION_FILE,
                 "Composition": CameraMode.COMPOSITION,
                 "Fixed Follow": CameraMode.FIXED_FOLLOW
             },
-            onChange: (motionType, _, options) => {
-                if (!options.initial) {
-                    setCameraMode(motionType)
-                }
-            },
             order: 0,
         },
-    }))
+    }), [cameraMode])
 
     const [_, setCameraGui] = useControls('MMD Files', () => ({
         camera: {

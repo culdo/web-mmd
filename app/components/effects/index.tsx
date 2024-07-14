@@ -4,7 +4,7 @@ import OutlinePass from "./OutlinePass";
 import EffectControls from "./controls";
 import CopyPass from "./CopyPass";
 import { useEffect, useRef } from "react";
-import { button, folder, useControls } from "leva";
+import { useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { DepthOfFieldEffect } from "postprocessing";
 

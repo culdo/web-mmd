@@ -1,13 +1,15 @@
+import { levaStore } from "leva";
 import useGlobalStore from "../stores/useGlobalStore";
 import usePresetStore, { PresetState } from "../stores/usePresetStore";
 import { blobToBase64 } from "./base";
+import { OnChangeHandler, Schema } from "leva/dist/declarations/src/types";
 
 function buildLoadModelFn(itemType: "character" | "stage") {
-    
+
     return async function (event: Event) {
         const pmxFiles = usePresetStore.getState().pmxFiles;
         const modelTextures = pmxFiles.modelTextures
-        
+
         const input = event.target as HTMLInputElement
         if (input.files.length < 1) return;
         let pmxFilesByType: any = pmxFiles[itemType] = {};
@@ -35,10 +37,10 @@ function buildLoadModelFn(itemType: "character" | "stage") {
             }
         }
         usePresetStore.setState({ pmxFiles });
-        
-        if(itemType == "character") {
+
+        if (itemType == "character") {
             usePresetStore.setState({ character: firstKey });
-        } else if(itemType == "stage") {
+        } else if (itemType == "stage") {
             usePresetStore.setState({ stage: firstKey });
         }
     }
@@ -51,4 +53,46 @@ function buildLoadFileFn(cb: (file: string, name: string) => void) {
         cb(await blobToBase64(input.files[0]), input.files[0].name);
     }
 }
-export { buildLoadModelFn, buildLoadFileFn }
+
+function setLevaValue<T>(path: string, value: T) {
+    const newProp = Object.fromEntries([[path, value]])
+    levaStore.set(newProp, false)
+}
+
+function buildGuiHandler<T>(initialValue: T, handler?: OnChangeHandler): OnChangeHandler {
+    return (value, path, options) => {
+        if (handler) {
+            handler(value, path, options)
+        }
+        if (!options.initial) {
+            usePresetStore.setState(Object.fromEntries([[path, value]]))
+        } else {
+            setLevaValue(path, initialValue)
+        }
+    }
+}
+
+// extract type from readonly type
+type GuiValue<T> = T extends readonly [number, number, number] ? [number, number, number] : T;
+
+function buildGuiItem<const T>(initialValue: T, handler?: OnChangeHandler) {
+    const onChange: OnChangeHandler = (value, path, options) => {
+        if (handler) {
+            handler(value, path, options)
+        }
+        if (!options.initial) {
+            usePresetStore.setState(Object.fromEntries([[path, value]]))
+        } else {
+            setLevaValue(path, initialValue)
+        }
+    }
+    return {
+        value: initialValue as GuiValue<T>,
+        onChange,
+        transient: false as const
+    }
+}
+
+
+
+export { buildLoadModelFn, buildLoadFileFn, setLevaValue, buildGuiHandler, buildGuiItem }
