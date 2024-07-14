@@ -8,6 +8,7 @@ import { Canvas } from "@react-three/fiber";
 import ControlBar from "../components/control-bar";
 import Effects from "../components/effects";
 import Panel from "../components/panel";
+import usePresetStore from "../stores/usePresetStore";
 
 export default function Page() {
 
