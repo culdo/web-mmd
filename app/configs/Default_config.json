@@ -1,6 +1,7 @@
 {
     "musicURL": "",
     "character": "つみ式ミクさんv4.pmx",
+    "Character.position": [0, 0, 0],
     "motion": "GimmeGimme_with_emotion.vmd",
     "camera": "GimmexGimme.vmd",
     "stage": "EPDS.pmx",

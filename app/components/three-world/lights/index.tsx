@@ -1,10 +1,8 @@
-import { CameraMode } from "@/app/modules/MMDCameraWorkHelper"
 import useGlobalStore from "@/app/stores/useGlobalStore"
-import usePresetStore from "@/app/stores/usePresetStore"
-import { folder, useControls } from "leva"
+import { buildGuiItem } from "@/app/utils/gui"
+import { button, folder, useControls } from "leva"
 import { useLayoutEffect } from "react"
 import useRenderLoop from "../renderLoop/useRenderLoop"
-import { buildGuiHandler, buildGuiItem } from "@/app/utils/gui"
 
 function Env() {
     const presetReady = useGlobalStore(state => state.presetReady)
@@ -56,6 +54,7 @@ function Env() {
                 max: 10
             },
             position: buildGuiItem("Directional position"),
+            select: button(() => useGlobalStore.setState({ selectedName: "Light.directionalLight.position" }))
         })
     }, [presetReady])
 
@@ -64,7 +63,7 @@ function Env() {
         <>
             <fogExp2 attach="fog" color={fog.color} density={fog.density}></fogExp2>
             <ambientLight color={ambientLight.color} intensity={ambientLight.intensity} />
-            <directionalLight color={directionalLight.color} position={directionalLight.position} intensity={directionalLight.intensity} />
+            <directionalLight name="Light.directionalLight.position" color={directionalLight.color} position={directionalLight.position} intensity={directionalLight.intensity} />
         </>
     );
 }

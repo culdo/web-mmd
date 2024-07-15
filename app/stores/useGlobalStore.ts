@@ -22,7 +22,8 @@ export type GlobalState = {
     isMotionUpdating: MutableRefObject<boolean>
     beatsBufferRef: MutableRefObject<HTMLDivElement[]>
     isOrbitControl: MutableRefObject<boolean>
-    presetReady: boolean
+    presetReady: boolean,
+    selectedName: string
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -51,7 +52,8 @@ const useGlobalStore = create<GlobalState>(
             ref.current = false
             return ref
         })(),
-        presetReady: false
+        presetReady: false,
+        selectedName: null
     })
 )
 
