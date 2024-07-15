@@ -47,13 +47,13 @@ function Env() {
 
     const directionalLight = useControls('Light', {
         directionalLight: folder({
-            color: buildGuiItem("Directional"),
+            color: buildGuiItem("Light.directionalLight.color"),
             intensity: {
-                ...buildGuiItem("Directional intensity"),
+                ...buildGuiItem("Light.directionalLight.intensity"),
                 min: 0,
                 max: 10
             },
-            position: buildGuiItem("Directional position"),
+            position: buildGuiItem("Light.directionalLight.position"),
             select: button(() => useGlobalStore.setState({ selectedName: "Light.directionalLight.position" }))
         })
     }, [presetReady])

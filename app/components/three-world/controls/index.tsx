@@ -37,7 +37,7 @@ function Controls() {
     
     const onObjectChange = (e: Event<string, any>) => {
         const pos = e.target.object.position.toArray()
-        levaStore.set(Object.fromEntries([[selectedName, pos]]), false)
+        levaStore.set({[selectedName]: pos}, false)
     }
     return (
         <>

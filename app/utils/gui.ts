@@ -55,7 +55,9 @@ function buildLoadFileFn(cb: (file: string, name: string) => void) {
 }
 
 function setLevaValue<T>(path: string, value: T) {
-    const newProp = Object.fromEntries([[path, value]])
+    const newProp = {
+        [path]: value
+    }
     levaStore.set(newProp, false)
 }
 
@@ -65,7 +67,7 @@ function buildGuiHandler<T>(initialValue: T, handler?: OnChangeHandler): OnChang
             handler(value, path, options)
         }
         if (!options.initial) {
-            usePresetStore.setState(Object.fromEntries([[path, value]]))
+            usePresetStore.setState({[path]: value})
         } else {
             setLevaValue(path, initialValue)
         }
@@ -81,7 +83,7 @@ function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnCha
     
     const onChange: OnChangeHandler = (value, path, options) => {
         if (!options.initial) {
-            usePresetStore.setState(Object.fromEntries([[key, value]]))
+            usePresetStore.setState({[path]: value})
         } else {
             value = initialValue
             setLevaValue(path, initialValue)
