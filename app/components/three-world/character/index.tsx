@@ -1,8 +1,8 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { disposeMesh, onProgress } from "@/app/utils/base";
-import { buildLoadFileFn, buildLoadModelFn } from "@/app/utils/gui";
-import { useFrame, useThree } from "@react-three/fiber";
+import { buildGuiItem, buildLoadFileFn, buildLoadModelFn } from "@/app/utils/gui";
+import { useThree } from "@react-three/fiber";
 import { button, useControls } from "leva";
 import path from "path-browserify";
 import { useLayoutEffect, useState } from "react";
@@ -29,11 +29,12 @@ function CharacterBase() {
     const showRigidBodies = usePresetStore(state => state["show rigid bodies"])
     const physics = usePresetStore(state => state.physics)
     const showSkeleton = usePresetStore(state => state["show skeleton"])
+    const position = usePresetStore(state => state["Character.position"])
 
     const url = pmxFiles.character[characterName]
 
-    const [_, set] = useControls('MMD Files', () => ({
-        character: {
+    const [_, set] = useControls('Character', () => ({
+        "model": {
             value: characterName,
             options: Object.keys(pmxFiles.character),
             onChange: (value, path, options) => {
@@ -49,7 +50,8 @@ function CharacterBase() {
             selectFile.click();
             selectFile.webkitdirectory = false;
         }),
-        motion: {
+        "position": buildGuiItem("Character.position"),
+        "motion name": {
             value: motionName,
             editable: false
         },
@@ -57,7 +59,7 @@ function CharacterBase() {
             const selectFile = document.getElementById("selectFile") as HTMLInputElement
             selectFile.onchange = buildLoadFileFn((motionFile, motion) => {
                 usePresetStore.setState({ motionFile, motion })
-                set({ motion })
+                set({ "motion name": motion })
             })
             selectFile.click();
         }),
@@ -102,7 +104,7 @@ function CharacterBase() {
             character.add(skeletonHelper);
 
             useGlobalStore.setState({ character, runtimeCharacter })
-            set({ character: characterName })
+            set({ model: characterName })
             helper.update(0, usePresetStore.getState().currentTime);
             runtimeCharacter.physics.reset();
 
@@ -119,9 +121,22 @@ function CharacterBase() {
         }
     }, [url, characterName, motionFile, enablePBR])
 
-
     return (
-        <PromisePrimitive promise={promise}></PromisePrimitive>
+        <>
+            <PromisePrimitive
+                name="Character.position"
+                position={position}
+                promise={promise}
+                onClick={(e: Event) => {
+                    e.stopPropagation()
+                    useGlobalStore.setState(({ selectedName: "Character.position" }))
+                }}
+                onPointerMissed={(e: Event) => {
+                    e.type === 'click' && useGlobalStore.setState({ selectedName: null })
+
+                }}
+            />
+        </>
     );
 }
 
