@@ -2,6 +2,7 @@ import Camera from './camera';
 import Character from './character';
 import Controls from './controls';
 import Lights from './lights';
+import useRenderLoop from './renderLoop/useRenderLoop';
 import Stage from './stage';
 
 declare global {
@@ -9,6 +10,7 @@ declare global {
 }
 
 function ThreeWorld() {
+    useRenderLoop()
     return (
         <>
             <Lights></Lights>

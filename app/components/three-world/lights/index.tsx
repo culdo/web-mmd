@@ -1,12 +1,11 @@
+import defaultConfig from '@/app/configs/Default_config.json'
 import useGlobalStore from "@/app/stores/useGlobalStore"
-import { buildGuiItem } from "@/app/utils/gui"
-import { button, folder, useControls } from "leva"
-import { useEffect, useLayoutEffect, useState } from "react"
-import useRenderLoop from "../renderLoop/useRenderLoop"
-import DirectionalLight from "./DirectionalLight"
 import usePresetStore from "@/app/stores/usePresetStore"
+import { buildGuiItem } from "@/app/utils/gui"
 import { randomBytes } from "crypto"
-import defaultConfig from '@/app/configs/Default_config.json';
+import { button, folder, useControls } from "leva"
+import { useLayoutEffect } from "react"
+import DirectionalLight from "./DirectionalLight"
 
 function Env() {
     const presetReady = useGlobalStore(state => state.presetReady)
@@ -53,8 +52,8 @@ function Env() {
 
     useControls('Light', {
         "Add Directional Light": button(() => {
+            const newLightName = `directionalLight-${randomBytes(3).toString('base64')}`
             usePresetStore.setState(({ Light }) => {
-                const newLightName = `directionalLight-${randomBytes(3).toString('base64')}`
                 const defaultName = "Light.directionalLight"
                 // init default value
                 const states = {
@@ -64,10 +63,9 @@ function Env() {
                 }
                 return { Light: { ...Light, [newLightName]: states } }
             })
+            useGlobalStore.setState({ selectedName: `Light.${newLightName}.position` })
         })
     })
-
-    useRenderLoop()
     return (
         <>
             <fogExp2 attach="fog" color={fog.color} density={fog.density}></fogExp2>
