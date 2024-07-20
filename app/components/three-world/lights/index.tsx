@@ -1,8 +1,12 @@
 import useGlobalStore from "@/app/stores/useGlobalStore"
 import { buildGuiItem } from "@/app/utils/gui"
 import { button, folder, useControls } from "leva"
-import { useLayoutEffect } from "react"
+import { useEffect, useLayoutEffect, useState } from "react"
 import useRenderLoop from "../renderLoop/useRenderLoop"
+import DirectionalLight from "./DirectionalLight"
+import usePresetStore from "@/app/stores/usePresetStore"
+import { randomBytes } from "crypto"
+import defaultConfig from '@/app/configs/Default_config.json';
 
 function Env() {
     const presetReady = useGlobalStore(state => state.presetReady)
@@ -45,25 +49,32 @@ function Env() {
         })
     }, [presetReady])
 
-    const directionalLight = useControls('Light', {
-        directionalLight: folder({
-            color: buildGuiItem("Light.directionalLight.color"),
-            intensity: {
-                ...buildGuiItem("Light.directionalLight.intensity"),
-                min: 0,
-                max: 10
-            },
-            position: buildGuiItem("Light.directionalLight.position"),
-            select: button(() => useGlobalStore.setState({ selectedName: "Light.directionalLight.position" }))
+    const dirLights = usePresetStore(states => states.Light)
+
+    useControls('Light', {
+        "Add Directional Light": button(() => {
+            usePresetStore.setState(({ Light }) => {
+                const newLightName = `directionalLight-${randomBytes(3).toString('base64')}`
+                const defaultName = "Light.directionalLight"
+                // init default value
+                const states = {
+                    color: defaultConfig[`${defaultName}.color`],
+                    intensity: defaultConfig[`${defaultName}.intensity`],
+                    position: defaultConfig[`${defaultName}.position`]
+                }
+                return { Light: { ...Light, [newLightName]: states } }
+            })
         })
-    }, [presetReady])
+    })
 
     useRenderLoop()
     return (
         <>
             <fogExp2 attach="fog" color={fog.color} density={fog.density}></fogExp2>
             <ambientLight color={ambientLight.color} intensity={ambientLight.intensity} />
-            <directionalLight name="Light.directionalLight.position" color={directionalLight.color} position={directionalLight.position} intensity={directionalLight.intensity} />
+            {
+                Object.entries(dirLights).map(([name, _]) => <DirectionalLight key={name} name={name}></DirectionalLight>)
+            }
         </>
     );
 }

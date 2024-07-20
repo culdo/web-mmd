@@ -1,8 +1,8 @@
 import { levaStore } from "leva";
-import useGlobalStore from "../stores/useGlobalStore";
+import { OnChangeHandler } from "leva/dist/declarations/src/types";
+import _ from "lodash";
 import usePresetStore, { PresetState } from "../stores/usePresetStore";
 import { blobToBase64 } from "./base";
-import { OnChangeHandler, Schema } from "leva/dist/declarations/src/types";
 
 function buildLoadModelFn(itemType: "character" | "stage") {
 
@@ -67,7 +67,7 @@ function buildGuiHandler<T>(initialValue: T, handler?: OnChangeHandler): OnChang
             handler(value, path, options)
         }
         if (!options.initial) {
-            usePresetStore.setState({[path]: value})
+            usePresetStore.setState({ [path]: value })
         } else {
             setLevaValue(path, initialValue)
         }
@@ -80,10 +80,10 @@ type GuiValue<T> = T extends number[] ? [number, number, number] : T;
 function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnChangeHandler) {
 
     const initialValue = usePresetStore.getState()[key]
-    
+
     const onChange: OnChangeHandler = (value, path, options) => {
         if (!options.initial) {
-            usePresetStore.setState({[path]: value})
+            usePresetStore.setState({ [path]: value })
         } else {
             value = initialValue
             setLevaValue(path, initialValue)
@@ -99,6 +99,30 @@ function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnCha
     }
 }
 
+function buildFlexGuiItem<T>(path: string, handler?: OnChangeHandler) {
+
+    const initialValue = _.get(usePresetStore.getState(), path)
+
+    const onChange: OnChangeHandler = (value, path, options) => {
+        if (!options.initial) {
+            usePresetStore.setState((prevState) => {
+                _.set(prevState, path, value)
+                return { ...prevState }
+            })
+        } else {
+            value = initialValue
+            setLevaValue(path, initialValue)
+        }
+        if (handler) {
+            handler(value, path, options)
+        }
+    }
+    return {
+        value: initialValue as T,
+        onChange,
+        transient: false as const
+    }
+}
 
 
-export { buildLoadModelFn, buildLoadFileFn, setLevaValue, buildGuiHandler, buildGuiItem }
+export { buildFlexGuiItem, buildGuiHandler, buildGuiItem, buildLoadFileFn, buildLoadModelFn, setLevaValue };
