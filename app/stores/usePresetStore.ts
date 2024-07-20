@@ -9,7 +9,8 @@ import useGlobalStore from './useGlobalStore';
 
 export type PresetState = typeof defaultConfig & {
     compositeClips: CameraClip[]
-}
+} & { [key: `${string}.color`]: string, [key: `${string}.intensity`]: number, [key: `${string}.position`]: number[] }
+    & { Light: Record<string, any> };
 export const presetSep = "."
 
 const storage: PersistStorage<PresetState> = {
@@ -30,7 +31,7 @@ const storage: PersistStorage<PresetState> = {
 const usePresetStore = create(
     subscribeWithSelector(
         persist<PresetState>(
-            (set, get) => ({...defaultConfig, ...defaultData}) as PresetState,
+            (set, get) => ({ ...defaultConfig, ...defaultData }) as PresetState,
             {
                 name: useConfigStore.getState().preset,
                 storage

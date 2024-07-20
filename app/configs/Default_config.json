@@ -29,6 +29,7 @@
     "Light.directionalLight.intensity": 2,
     "Light.directionalLight.color": "#ffffff",
     "Light.directionalLight.position": [0.3, 1, 1],
+    "Light": {},
     "distanceScalar": 15,
     "Ambient color": "#ffffff",
     "Ambient intensity": 0.2,
