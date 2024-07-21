@@ -137,7 +137,7 @@
             }
         }
     },
-    "targetMaterial": 0,
+    "targetMaterialIdx": 0,
     "Hemisphere intensity": 0,
     "bokeh enabled": false,
     "bokeh resolution": 480,

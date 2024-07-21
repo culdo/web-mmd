@@ -9,6 +9,7 @@ import { useLayoutEffect, useState } from "react";
 import * as THREE from 'three';
 import PromisePrimitive from "../promise-primitive";
 import Morph from "./morph";
+import Material from "./material";
 
 function CharacterBase() {
 
@@ -16,6 +17,7 @@ function CharacterBase() {
 
     const helper = useGlobalStore(state => state.helper)
     const loader = useGlobalStore(state => state.loader)
+    const characterPromise = useGlobalStore(state => state.characterPromise)
 
     const characterName = usePresetStore(state => state.character)
     const motionName = usePresetStore(state => state.motion)
@@ -65,7 +67,6 @@ function CharacterBase() {
         }),
     }), { order: 2 }, [pmxFiles.character, motionName])
 
-    const [promise, setPromise] = useState(null)
     useLayoutEffect(() => {
         const load = async () => {
             const characterParams = {
@@ -110,7 +111,7 @@ function CharacterBase() {
 
             return character
         }
-        setPromise(load())
+        useGlobalStore.setState({characterPromise: load()})
         return () => {
             const { character, runtimeCharacter } = useGlobalStore.getState()
             runtimeCharacter.mixer.uncacheRoot(character);
@@ -126,7 +127,7 @@ function CharacterBase() {
             <PromisePrimitive
                 name="Character.position"
                 position={position}
-                promise={promise}
+                promise={characterPromise}
                 onClick={(e: Event) => {
                     e.stopPropagation()
                     useGlobalStore.setState(({ selectedName: "Character.position" }))
@@ -145,6 +146,7 @@ function Character() {
         <>
             <CharacterBase></CharacterBase>
             <Morph></Morph>
+            <Material></Material>
         </>
     );
 }

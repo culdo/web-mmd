@@ -3,6 +3,8 @@ import { OnChangeHandler } from "leva/dist/declarations/src/types";
 import _ from "lodash";
 import usePresetStore, { PresetState } from "../stores/usePresetStore";
 import { blobToBase64 } from "./base";
+import useGlobalStore from "../stores/useGlobalStore";
+import * as THREE from "three";
 
 function buildLoadModelFn(itemType: "character" | "stage") {
 
@@ -83,7 +85,7 @@ function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnCha
 
     const onChange: OnChangeHandler = (value, path, options) => {
         if (!options.initial) {
-            usePresetStore.setState({ [path]: value })
+            usePresetStore.setState({ [key]: value })
         } else {
             value = initialValue
             setLevaValue(path, initialValue)
@@ -124,5 +126,55 @@ function buildFlexGuiItem<T>(path: string, handler?: OnChangeHandler) {
     }
 }
 
+function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userData.${string}`, handler?: OnChangeHandler, min = 0, max = 1) {
+    const character = useGlobalStore.getState()["character"]
+    const targetMaterialIdx = usePresetStore.getState()["targetMaterialIdx"]
 
-export { buildFlexGuiItem, buildGuiHandler, buildGuiItem, buildLoadFileFn, buildLoadModelFn, setLevaValue };
+    const materials = character.material as any[]
+
+    const targetMaterial = materials[targetMaterialIdx]
+
+    const configPath = `material.${targetMaterial.name}.${key}`
+
+    const targetProp = _.get(targetMaterial, key)
+
+    const initValFromMaterial = targetProp instanceof THREE.Color ? `#${targetProp.getHexString()}` : targetProp
+    const initialValue = _.get(usePresetStore.getState(), configPath) ?? initValFromMaterial
+
+    const onChange: OnChangeHandler = (value, path, options) => {
+        if (!options.initial) {
+            usePresetStore.setState((prevState) => {
+                _.set(prevState, configPath, value)
+                return { ...prevState }
+            })
+        } else {
+            value = initialValue
+            setLevaValue(path, initialValue)
+        }
+        if (targetProp instanceof THREE.Color) {
+            targetProp.set(value)
+        } else {
+            _.set(targetMaterial, key, value)
+        }
+        if (handler) {
+            handler(value, path, options)
+        }
+    }
+    if(initialValue instanceof Number) {
+        return {
+            value: initialValue as T,
+            min,
+            max,
+            onChange,
+            transient: false as const
+        }
+    } 
+    return {
+        value: initialValue as T,
+        onChange,
+        transient: false as const
+    }
+}
+
+
+export { buildMaterialGuiItem, buildFlexGuiItem, buildGuiHandler, buildGuiItem, buildLoadFileFn, buildLoadModelFn, setLevaValue };
