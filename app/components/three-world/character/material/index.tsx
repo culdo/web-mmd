@@ -9,6 +9,7 @@ import defaultConfig from '@/app/configs/Default_config.json';
 import { buildGuiItem, buildMaterialGuiItem } from "@/app/utils/gui";
 import WithSuspense from "@/app/components/suspense";
 import _ from "lodash";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function Material() {
     const loader = new THREE.MaterialLoader()
@@ -19,6 +20,7 @@ function Material() {
 
     const targetMaterialIdx = usePresetStore(states => states.targetMaterialIdx)
     const material = usePresetStore(states => states.material)
+    const presetReady = useGlobalStore(states => states.presetReady)
 
     const normals = useRef<THREE.BufferAttribute>()
     const normalsOrig = useRef<THREE.BufferAttribute>()
@@ -156,10 +158,6 @@ function Material() {
         return result
     }, [character])
 
-    useEffect(() => {
-        updateControls(targetMaterialIdx);
-    }, [targetMaterialIdx])
-
     useControls("Material", {
         "targetMaterial": {
             ...buildGuiItem("targetMaterialIdx"),
@@ -167,6 +165,12 @@ function Material() {
         },
         ...controllers
     }, [controllers, materialMap])
+
+    useEffect(() => {
+        if(!presetReady) return
+        updateControls(targetMaterialIdx);
+    }, [targetMaterialIdx, presetReady])
+    
     return <></>;
 }
 
