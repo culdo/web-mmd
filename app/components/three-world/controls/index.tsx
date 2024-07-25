@@ -13,6 +13,7 @@ function Controls() {
     const scene = useThree(state => state.scene)
     const isOrbitControl = useGlobalStore(state => state.isOrbitControl)
     const selectedName = useGlobalStore(state => state.selectedName)
+    const enabledTransform = useGlobalStore(state => state.enabledTransform)
 
     useEffect(() => {
         const controls = controlsRef.current
@@ -48,7 +49,7 @@ function Controls() {
                 ref={controlsRef}
                 makeDefault
             />
-            {selectedName && <TransformControls onObjectChange={onObjectChange} object={scene.getObjectByName(selectedName)} mode="translate" />}
+            {selectedName && enabledTransform && <TransformControls onObjectChange={onObjectChange} object={scene.getObjectByName(selectedName)} mode="translate" />}
         </>
     );
 }

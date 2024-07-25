@@ -21,6 +21,7 @@ function AudioPlayer() {
     const musicName = usePresetStore(state => state.musicName)
     const musicURL = usePresetStore(state => state.musicURL)
     const musicYtURL = usePresetStore(state => state.musicYtURL)
+    const enabledTransform = useGlobalStore(state => state.enabledTransform)
 
     const autoHideGui = usePresetStore(state => state["auto hide GUI"])
 
@@ -35,7 +36,7 @@ function AudioPlayer() {
             value: musicYtURL,
             onChange: (value, path, context) => {
                 if (!context.initial) {
-                    loadMusicFromYT({currentTime, volume, musicYtURL: value})
+                    loadMusicFromYT({ currentTime, volume, musicYtURL: value })
                 }
             },
         },
@@ -51,12 +52,12 @@ function AudioPlayer() {
         if (musicURL.startsWith("data:")) {
             player.src(dataURItoBlobUrl(musicURL))
         } else {
-            await loadMusicFromYT({currentTime, volume, musicYtURL});
+            await loadMusicFromYT({ currentTime, volume, musicYtURL });
         }
 
         player.currentTime(currentTime);
         player.volume(volume);
-        
+
         player.on('durationchange', () => {
             const musicName = (player.tech(true) as any).ytPlayer.videoTitle
             usePresetStore.setState({ musicName })
@@ -71,12 +72,18 @@ function AudioPlayer() {
 
         player.on('play', () => {
             if (autoHideGui) setGui({ hidden: true });
+            useGlobalStore.setState({ enabledTransform: false })
         })
+
         player.on('pause', () => {
             setGui({ hidden: false });
             setTime(player.currentTime());
+            useGlobalStore.setState({ enabledTransform: true })
         })
-
+        player.on('ended', () => {
+            useGlobalStore.setState({ enabledTransform: true })
+        })
+        
         player.on('seeked', () => {
             setTime(player.currentTime());
         })
