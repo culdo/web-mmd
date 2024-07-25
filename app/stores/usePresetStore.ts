@@ -44,6 +44,7 @@ export const resetPreset = () => usePresetStore.setState({ ...defaultConfig, ...
 
 usePresetStore.persist.onFinishHydration(() => {
     useGlobalStore.setState({ presetReady: true })
+    useGlobalStore.setState({ presetInit: true })
 })
 
 usePresetStore.persist.onHydrate(() => {

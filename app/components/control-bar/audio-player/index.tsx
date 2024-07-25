@@ -21,7 +21,6 @@ function AudioPlayer() {
     const musicName = usePresetStore(state => state.musicName)
     const musicURL = usePresetStore(state => state.musicURL)
     const musicYtURL = usePresetStore(state => state.musicYtURL)
-    const enabledTransform = useGlobalStore(state => state.enabledTransform)
 
     const autoHideGui = usePresetStore(state => state["auto hide GUI"])
 
@@ -80,12 +79,10 @@ function AudioPlayer() {
             setTime(player.currentTime());
             useGlobalStore.setState({ enabledTransform: true })
         })
-        player.on('ended', () => {
-            useGlobalStore.setState({ enabledTransform: true })
-        })
         
         player.on('seeked', () => {
             setTime(player.currentTime());
+            useGlobalStore.setState({ enabledTransform: true })
         })
 
         useGlobalStore.setState({ player })

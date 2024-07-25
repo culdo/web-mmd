@@ -24,6 +24,7 @@ export type GlobalState = {
     beatsBufferRef: MutableRefObject<HTMLDivElement[]>
     isOrbitControl: MutableRefObject<boolean>
     presetReady: boolean,
+    presetInit: boolean,
     selectedName: string,
     enabledTransform: boolean
 }
@@ -56,6 +57,7 @@ const useGlobalStore = create<GlobalState>(
             return ref
         })(),
         presetReady: false,
+        presetInit: false,
         selectedName: null,
         enabledTransform: true
     })
