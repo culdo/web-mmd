@@ -160,7 +160,7 @@ function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userDa
             handler(value, path, options)
         }
     }
-    if(initialValue instanceof Number) {
+    if(typeof initialValue == "number") {
         return {
             value: initialValue as T,
             min,

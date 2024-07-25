@@ -24,7 +24,8 @@ export type GlobalState = {
     beatsBufferRef: MutableRefObject<HTMLDivElement[]>
     isOrbitControl: MutableRefObject<boolean>
     presetReady: boolean,
-    selectedName: string
+    selectedName: string,
+    enabledTransform: boolean
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -34,7 +35,7 @@ const useGlobalStore = create<GlobalState>(
         player: null,
         gui: {},
         character: null,
-        characterPromise: new Promise(()=> {}),
+        characterPromise: new Promise(() => { }),
         stage: null,
         runtimeCharacter: null,
         camera: null,
@@ -55,7 +56,8 @@ const useGlobalStore = create<GlobalState>(
             return ref
         })(),
         presetReady: false,
-        selectedName: null
+        selectedName: null,
+        enabledTransform: true
     })
 )
 
