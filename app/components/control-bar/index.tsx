@@ -6,8 +6,10 @@ import FullScreenButton from "./fullscreen-button";
 function ControlBar() {
     const getPlayer = () => useGlobalStore.getState().player
     const gui = useGlobalStore(state => state.gui)
+    const presetInit = useGlobalStore(state => state.presetInit)
 
     useEffect(() => {
+        if(!presetInit) return
         const fullScreenBt = document.getElementById("fsBtn")
         const rawPlayer = document.getElementById("rawPlayer")
         // control bar
@@ -30,10 +32,10 @@ function ControlBar() {
                 }
             }, 1000);
         });
-    }, [])
+    }, [presetInit])
     return (
         <>
-            <AudioPlayer></AudioPlayer>
+            {presetInit && <AudioPlayer></AudioPlayer>}
             <FullScreenButton></FullScreenButton>
         </>
     );
