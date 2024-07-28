@@ -1,15 +1,13 @@
+import WithSuspense from "@/app/components/suspense";
+import defaultConfig from '@/app/configs/Default_config.json';
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { stat } from "fs";
+import { buildGuiItem, buildMaterialGuiItem } from "@/app/utils/gui";
 import { button, folder, useControls } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
+import _ from "lodash";
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import defaultConfig from '@/app/configs/Default_config.json';
-import { buildGuiItem, buildMaterialGuiItem } from "@/app/utils/gui";
-import WithSuspense from "@/app/components/suspense";
-import _ from "lodash";
-import useConfigStore from "@/app/stores/useConfigStore";
 
 function Material() {
     const loader = new THREE.MaterialLoader()
@@ -158,19 +156,19 @@ function Material() {
         return result
     }, [character])
 
-    useControls("Material", {
+    useControls("Character.Material", {
         "targetMaterial": {
             ...buildGuiItem("targetMaterialIdx"),
             options: materialMap
         },
         ...controllers
-    }, [controllers, materialMap])
+    }, { collapsed: true }, [controllers, materialMap])
 
     useEffect(() => {
-        if(!presetReady) return
+        if (!presetReady) return
         updateControls(targetMaterialIdx);
     }, [targetMaterialIdx, presetReady])
-    
+
     return <></>;
 }
 

@@ -1,8 +1,7 @@
-import useConfigStore from "@/app/stores/useConfigStore";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore, { PresetState } from "@/app/stores/usePresetStore";
 import { setLevaValue } from "@/app/utils/gui";
-import { button, levaStore, useControls } from "leva";
+import { useControls } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
 import { useEffect, useState } from "react";
 
@@ -49,7 +48,7 @@ function Morph() {
         usePresetStore.setState({ morphs } as any)
     }
 
-    const [_, setGui] = useControls("Morphs", () => controllers, { collapsed: true }, [controllers])
+    useControls("Character.Morphs", () => controllers, { collapsed: true }, [controllers])
 
     useEffect(() => {
         if (!presetReady || !character) return
