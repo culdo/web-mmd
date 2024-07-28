@@ -1,26 +1,27 @@
 "use client"
 
-import LoadingOverlay from "./components/loading-overlay";
-import SceneTimeline from "./components/scene-timeline";
-import FullScreenButton from "./components/control-bar/fullscreen-button";
-import AudioPlayer from "./components/control-bar/audio-player";
-import FileSelector from "./components/file-selector";
-import { useEffect } from "react";
-import WebMMD from "./modules/WebMMD";
+import FileSelector from "@/app/components/file-selector";
+import SceneTimeline from "@/app/components/scene-timeline";
+import ThreeWorld from "@/app/components/three-world";
+import { Canvas } from "@react-three/fiber";
 
-export default function Home() {
-  useEffect(() => {
-    // localforage.clear()
-    const app = new WebMMD()
-    app.start()
-  }, [])
+import ControlBar from "./components/control-bar";
+import Effects from "./components/effects";
+import Panel from "./components/panel";
+
+export default function Page() {
+
   return (
     <>
-      <LoadingOverlay></LoadingOverlay>
       <SceneTimeline></SceneTimeline>
-      <AudioPlayer></AudioPlayer>
+      <Canvas>
+        <ThreeWorld />
+        <Effects></Effects>
+      </Canvas>
+      <ControlBar></ControlBar>
       <FileSelector></FileSelector>
-      <FullScreenButton></FullScreenButton>
+      <Panel></Panel>
     </>
   );
+
 }
