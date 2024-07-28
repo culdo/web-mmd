@@ -5,8 +5,13 @@ import { OrbitControls } from 'three-stdlib';
 import Player from 'video.js/dist/types/player';
 import { create } from 'zustand';
 import { MMDAnimationHelper } from '../modules/MMDAnimationHelper';
-import { MMDCameraWorkHelper } from '../modules/MMDCameraWorkHelper';
 import { MMDLoader } from '../modules/MMDLoader';
+
+export const CameraMode = {
+    MOTION_FILE: 0,
+    COMPOSITION: 1,
+    FIXED_FOLLOW: 2
+}
 
 export type Gui = LevaRootProps & { _timeoutID?: NodeJS.Timeout }
 export type GlobalState = {

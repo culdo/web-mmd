@@ -1,8 +1,7 @@
 import usePresetStore from "@/app/stores/usePresetStore";
 import styles from "./styles.module.css"
-import { CameraMode } from "@/app/modules/MMDCameraWorkHelper";
 import { useLayoutEffect, useRef } from "react";
-import useGlobalStore from "@/app/stores/useGlobalStore";
+import useGlobalStore, { CameraMode } from "@/app/stores/useGlobalStore";
 
 function SceneTimeline({ children = null }:
   { children?: React.ReactNode }) {

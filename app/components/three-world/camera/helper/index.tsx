@@ -1,11 +1,11 @@
-import { CameraMode } from "@/app/modules/MMDCameraWorkHelper";
 import usePresetStore from "@/app/stores/usePresetStore";
 import CompositeMode from "./composite-mode";
 import MotionFileMode from "./motion-file-mode";
 import FixFollowMode from "./fix-follow-mode";
 import { useLayoutEffect } from "react";
 import { button, useControls } from "leva";
-import { buildGuiItem, buildLoadFileFn, setLevaValue } from "@/app/utils/gui";
+import { buildGuiItem, buildLoadFileFn } from "@/app/utils/gui";
+import { CameraMode } from "@/app/stores/useGlobalStore";
 
 function CameraWorkHelper() {
     const cameraMode = usePresetStore(state => state["camera mode"])
