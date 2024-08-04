@@ -7,13 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "playwright test",
-    "postinstall": "ts-node ./scripts/copyAmmoJS.ts"
+    "test": "playwright test"
   },
   "dependencies": {
     "@react-three/drei": "^9.107.0",
     "@react-three/fiber": "https://github.com/culdo/react-three-fiber/raw/e8344a5b85db240960880e304073d70097ee88df/packages/fiber/react-three-fiber-v8.16.8.tgz",
     "@react-three/postprocessing": "^2.16.2",
+    "ammojs-typed": "^1.0.6",
     "leva": "^0.9.35",
     "lodash": "^4.17.21",
     "next": "14.2.0-canary.24",
@@ -34,7 +34,6 @@
     "@types/react-dom": "^18",
     "@types/three": "^0.157.2",
     "@types/webpack": "^5.28.5",
-    "ammo.js": "github:kripken/ammo.js",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.1.3",

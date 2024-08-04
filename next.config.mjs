@@ -10,6 +10,7 @@ const nextConfig = {
             test: /\.glsl$/,
             loader: 'raw-loader'
         },)
+        config.resolve.fallback = { fs: false };
         return config
     },
 };

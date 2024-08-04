@@ -1,15 +1,18 @@
 "use client"
+import AmmoLib from 'ammojs-typed';
+import { useEffect } from "react";
 import "./globals.css";
-import Script from "next/script";
-import LoadingOverlay from "./components/loading-overlay";
-import { useState } from "react";
+
+declare global {
+  const Ammo: typeof AmmoLib;
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const init = () => window.Ammo()
+  useEffect(() => { AmmoLib() }, [])
   return (
     <html lang="en">
       <head>
@@ -18,7 +21,6 @@ export default function RootLayout({
         <meta name="description" content="Play MMD everywhere" />
       </head>
       <body>{children}</body>
-      <Script src="./ammo.wasm.js" onLoad={init}></Script>
     </html>
   );
 }
