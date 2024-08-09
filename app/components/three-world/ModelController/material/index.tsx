@@ -9,12 +9,12 @@ import _ from "lodash";
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
-function Material() {
+function Material({ type, modelPromise }: { type: string, modelPromise: Promise<THREE.SkinnedMesh> }) {
     const loader = new THREE.MaterialLoader()
     const textureLoader = new THREE.TextureLoader()
-    const character = use(useGlobalStore(states => states.characterPromise))
-    const materials = character.material as THREE.MeshPhysicalMaterial[]
-    const geometry = character.geometry
+    const model = use(modelPromise)
+    const materials = model.material as THREE.MeshPhysicalMaterial[]
+    const geometry = model.geometry
 
     const targetMaterialIdx = usePresetStore(states => states.targetMaterialIdx)
     const material = usePresetStore(states => states.material)
@@ -146,7 +146,7 @@ function Material() {
 
     useEffect(() => {
         updateTargetMaterial();
-    }, [character])
+    }, [model])
 
     const materialMap = useMemo(() => {
         const result: Record<string, number> = {}
@@ -154,9 +154,9 @@ function Material() {
             result[material.name] = i
         }
         return result
-    }, [character])
+    }, [model])
 
-    useControls("Character.Material", {
+    useControls(`${type}.Material`, {
         "targetMaterial": {
             ...buildGuiItem("targetMaterialIdx"),
             options: materialMap

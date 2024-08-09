@@ -12,6 +12,7 @@ function Controls() {
     const camera = useThree(state => state.camera)
     const scene = useThree(state => state.scene)
     const isOrbitControl = useGlobalStore(state => state.isOrbitControl)
+    const isTransformControl = useGlobalStore(state => state.isTransformControl)
     const selectedName = useGlobalStore(state => state.selectedName)
     const enabledTransform = useGlobalStore(state => state.enabledTransform)
 
@@ -35,10 +36,30 @@ function Controls() {
     const onEnd = () => {
         isOrbitControl.current = false
     }
-    
+
+    const onStartTc = () => {
+        isTransformControl.current = true
+    }
+
+    const onEndTc = () => {
+        isTransformControl.current = false
+    }
+
     const onObjectChange = (e: Event<string, any>) => {
         const pos = e.target.object.position.toArray()
-        levaStore.set({[selectedName]: pos}, false)
+        if (levaStore.get(selectedName)) {
+            levaStore.set({ [selectedName]: pos }, false)
+        } else if(e.target.object.userData.physicsBody) {
+            const rigidBody = e.target.object.userData.physicsBody
+            // get
+            const ms = rigidBody.getMotionState()
+            const transform = new Ammo.btTransform();
+            ms.getWorldTransform(transform)
+            // set
+            transform.setOrigin(new Ammo.btVector3(pos[0], pos[1], pos[2]))
+            ms.setWorldTransform(transform)
+            rigidBody.setMotionState(ms)
+        }
     }
     return (
         <>
@@ -49,7 +70,7 @@ function Controls() {
                 ref={controlsRef}
                 makeDefault
             />
-            {selectedName && enabledTransform && <TransformControls onObjectChange={onObjectChange} object={scene.getObjectByName(selectedName)} mode="translate" />}
+            {selectedName && enabledTransform && <TransformControls onMouseDown={onStartTc} onMouseUp={onEndTc} onObjectChange={onObjectChange} object={scene.getObjectByName(selectedName)} mode="translate" />}
         </>
     );
 }

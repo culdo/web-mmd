@@ -338,26 +338,22 @@ class MMDLoader extends Loader {
 	 *
 	 * @param {string} url - url to .vpd file
 	 * @param {boolean} isUnicode
-	 * @param {function} onLoad
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	loadVPD(url: any, isUnicode: boolean, onLoad: (arg0: any) => void, onProgress: any, onError: any) {
-
+	async loadVPD(url: any, isUnicode: boolean, onProgress?: any, onError?: any) {
+		
 		const parser = this._getParser();
 
-		this.loader
-			.setMimeType(undefined)
+		const text = await this.loader
+			.setMimeType( isUnicode ? undefined : 'text/plain; charset=shift_jis' as unknown as MimeType )
 			.setPath(this.animationPath)
 			.setResponseType('text')
 			.setRequestHeader(this.requestHeader)
 			.setWithCredentials(this.withCredentials)
-			.load(url, function (text: any) {
+			.loadAsync(url, onProgress) as string;
 
-				onLoad(parser.parseVpd(text, true));
-
-			}, onProgress, onError);
-
+		return parser.parseVpd(text, true)
 	}
 
 	// private methods

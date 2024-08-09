@@ -197,10 +197,10 @@ class MMDAnimationHelper {
 	 * @param {boolean} params.grant - Default is true.
 	 * @return {MMDAnimationHelper}
 	 */
-	pose(mesh: THREE.SkinnedMesh, vpd: { bones: any; }, params: { resetPose: boolean; ik: boolean; grant: boolean; } = {
-		resetPose: false,
-		ik: false,
-		grant: false
+	pose(mesh: THREE.SkinnedMesh, vpd: { bones: any; }, params: { resetPose?: boolean; ik?: boolean; grant?: boolean; } = {
+		resetPose: true,
+		ik: true,
+		grant: true
 	}): MMDAnimationHelper {
 
 		if (params.resetPose !== false) mesh.pose();
@@ -257,6 +257,9 @@ class MMDAnimationHelper {
 			}
 
 		}
+
+		const objects = this.objects.get(mesh);
+		objects.physics.reset();
 
 		return this;
 
