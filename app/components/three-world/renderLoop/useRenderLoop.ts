@@ -52,7 +52,7 @@ function useRenderLoop() {
             if (controls.autoRotate) {
                 controls.update();
             }
-            if (physics) {
+            if (helper.enabled["physics"]) {
                 runtimeCharacter.physics.update(delta);
             }
         }

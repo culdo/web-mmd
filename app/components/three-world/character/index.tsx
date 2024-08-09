@@ -5,11 +5,11 @@ import { buildGuiItem, buildLoadFileFn, buildLoadModelFn } from "@/app/utils/gui
 import { useThree } from "@react-three/fiber";
 import { button, useControls } from "leva";
 import path from "path-browserify";
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect } from "react";
 import * as THREE from 'three';
+import ModelController from "../ModelController";
 import PromisePrimitive from "../promise-primitive";
-import Morph from "./morph";
-import Material from "./material";
+import Pose from "./Pose";
 
 function CharacterBase() {
 
@@ -87,7 +87,9 @@ function CharacterBase() {
             character.receiveShadow = selfShadow;
 
             helper.add(character, {
-                animation: mmd.animation
+                animation: mmd.animation,
+                unitStep: 1/60,
+                maxStepNum: 1,
             });
             const runtimeCharacter = helper.objects.get(character)
 
@@ -137,6 +139,7 @@ function CharacterBase() {
 
                 }}
             />
+            <Pose></Pose>
         </>
     );
 }
@@ -145,8 +148,7 @@ function Character() {
     return (
         <>
             <CharacterBase></CharacterBase>
-            <Morph></Morph>
-            <Material></Material>
+            <ModelController type="Character"></ModelController>
         </>
     );
 }

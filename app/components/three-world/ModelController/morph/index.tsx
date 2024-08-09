@@ -1,12 +1,13 @@
+import WithSuspense from "@/app/components/suspense";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore, { PresetState } from "@/app/stores/usePresetStore";
 import { setLevaValue } from "@/app/utils/gui";
 import { useControls } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 
-function Morph() {
-    const character = useGlobalStore(state => state.character)
+function Morph({ type, modelPromise }: { type: string, modelPromise: Promise<THREE.SkinnedMesh> }) {
+    const character = use(modelPromise)
     const presetReady = useGlobalStore(state => state.presetReady)
 
     const morphs: Record<string, number> = usePresetStore(state => state.morphs)
@@ -48,14 +49,14 @@ function Morph() {
         usePresetStore.setState({ morphs } as any)
     }
 
-    useControls("Character.Morphs", () => controllers, { collapsed: true }, [controllers])
+    useControls(`${type}.Morphs`, () => controllers, { collapsed: true }, [controllers])
 
     useEffect(() => {
-        if (!presetReady || !character) return
+        if (!presetReady) return
         updateMorphFolder();
-    }, [presetReady, character])
+    }, [presetReady])
 
     return <></>
 }
 
-export default Morph;
+export default WithSuspense(Morph);

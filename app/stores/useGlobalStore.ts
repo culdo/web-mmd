@@ -25,9 +25,12 @@ export type GlobalState = {
     character: SkinnedMesh,
     characterPromise: Promise<SkinnedMesh>,
     stage: SkinnedMesh,
+    stagePromise: Promise<SkinnedMesh>,
     isMotionUpdating: MutableRefObject<boolean>
     beatsBufferRef: MutableRefObject<HTMLDivElement[]>
     isOrbitControl: MutableRefObject<boolean>
+    isTransformControl: MutableRefObject<boolean>
+    bindParentCb: Function,
     presetReady: boolean,
     presetInit: boolean,
     selectedName: string,
@@ -43,6 +46,7 @@ const useGlobalStore = create<GlobalState>(
         character: null,
         characterPromise: new Promise(() => { }),
         stage: null,
+        stagePromise: new Promise(() => { }),
         runtimeCharacter: null,
         camera: null,
         controls: null,
@@ -61,6 +65,12 @@ const useGlobalStore = create<GlobalState>(
             ref.current = false
             return ref
         })(),
+        isTransformControl: (() => {
+            const ref: MutableRefObject<boolean> = createRef()
+            ref.current = false
+            return ref
+        })(),
+        bindParentCb: null,
         presetReady: false,
         presetInit: false,
         selectedName: null,
