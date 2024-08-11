@@ -35,6 +35,11 @@ function Swing() {
     const physicsWorldRef = useRef<AmmoCls.btDiscreteDynamicsWorld>(null);
     const ballRef = useRef<THREE.Mesh>(null)
 
+    // harmonic motion
+    const maxPendulumAngleRef = useRef(0.25 * Math.PI)
+    const directionRef = useRef(1)
+    const isSetDirectionRef = useRef(true)
+    
     const [grip, setGrip] = useState<THREE.Mesh>(null)
     //Ball
     const ballMass = 60;
@@ -255,18 +260,32 @@ function Swing() {
     }
 
 
-    useFrame(() => {
+    useFrame((_, delta) => {
         if (!readyRef.current || isTransformControl.current) return
-        updatePhysics();
+        updatePhysics(delta);
     }, 0)
 
-    function updatePhysics() {
-
+    function updatePhysics(delta: number) {
         // Hinge control
         if (armMovementRef.current == 0) {
-            hingeRef.current.enableAngularMotor(false, 0, 0);
+            // simulate pendulum behavior
+
+            if(grip) {
+                const vel = 3 * directionRef.current * maxPendulumAngleRef.current * Math.sin(Math.acos(grip?.rotation.x / maxPendulumAngleRef.current))
+                if(Math.abs(vel) > 0.01) {
+                    hingeRef.current.enableAngularMotor(true, vel, 10000);
+                    isSetDirectionRef.current = false
+                } else if(!isSetDirectionRef.current) {
+                    directionRef.current *= -1
+                    hingeRef.current.enableAngularMotor(false, 0, 0);
+                    isSetDirectionRef.current = true;
+                }
+            } else {
+                hingeRef.current.enableAngularMotor(false, 0, 0);
+            }
         } else {
             hingeRef.current.enableAngularMotor(true, 2 * armMovementRef.current, 10000);
+            maxPendulumAngleRef.current = grip?.rotation.x
         }
 
         // Update rigid bodies
