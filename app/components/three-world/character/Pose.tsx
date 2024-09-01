@@ -5,7 +5,7 @@ import { use } from "react";
 import WithSuspense from "../../suspense";
 
 function Pose() {
-    
+
     const characterPromise = useGlobalStore(state => state.characterPromise)
     const bindParentCb = useGlobalStore(state => state.bindParentCb)
     const character = use(characterPromise)
@@ -24,14 +24,14 @@ function Pose() {
             selectFile.onchange = buildLoadFileFn(async (url) => {
                 const vpd = await loader.loadVPD(url, false)
                 helper.pose(character, vpd)
-                if(bindParentCb) {
+                if (bindParentCb) {
                     bindParentCb()
                 }
             })
             selectFile.click();
             selectFile.webkitdirectory = false;
         }),
-    }), [bindParentCb])
+    }), { collapsed: true }, [bindParentCb])
     return (
 
         <></>
