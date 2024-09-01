@@ -135,7 +135,7 @@ function CharacterBase() {
                 name={positionKey}
                 position={position}
                 promise={characterPromise}
-                onClick={(e: Event) => {
+                onDoubleClick={(e: Event) => {
                     e.stopPropagation()
                     useGlobalStore.setState(({ selectedName: positionKey }))
                 }}

@@ -14,7 +14,7 @@ export default function Page() {
   return (
     <>
       <SceneTimeline></SceneTimeline>
-      <Canvas>
+      <Canvas shadows>
         <ThreeWorld />
         <Effects></Effects>
       </Canvas>
