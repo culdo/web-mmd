@@ -19,7 +19,7 @@ function Pose() {
                 helper.enable("animation", !state)
             }
         },
-        "select character folder": button(() => {
+        "select pose file": button(() => {
             const selectFile = document.getElementById("selectFile") as HTMLInputElement
             selectFile.onchange = buildLoadFileFn(async (url) => {
                 const vpd = await loader.loadVPD(url, false)

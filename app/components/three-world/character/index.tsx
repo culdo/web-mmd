@@ -31,7 +31,9 @@ function CharacterBase() {
     const showRigidBodies = usePresetStore(state => state["show rigid bodies"])
     const physics = usePresetStore(state => state.physics)
     const showSkeleton = usePresetStore(state => state["show skeleton"])
-    const position = usePresetStore(state => state["Character.position"])
+
+    const positionKey = "Character.position"
+    const position = usePresetStore(state => state[positionKey])
 
     const url = pmxFiles.character[characterName]
 
@@ -52,7 +54,10 @@ function CharacterBase() {
             selectFile.click();
             selectFile.webkitdirectory = false;
         }),
-        "position": buildGuiItem("Character.position"),
+        "position": buildGuiItem(positionKey),
+        "reset": button(() => {
+            set({position: [0, 0, 0]})
+        }),
         "motion name": {
             value: motionName,
             editable: false
@@ -127,12 +132,12 @@ function CharacterBase() {
     return (
         <>
             <PromisePrimitive
-                name="Character.position"
+                name={positionKey}
                 position={position}
                 promise={characterPromise}
                 onClick={(e: Event) => {
                     e.stopPropagation()
-                    useGlobalStore.setState(({ selectedName: "Character.position" }))
+                    useGlobalStore.setState(({ selectedName: positionKey }))
                 }}
                 onPointerMissed={(e: Event) => {
                     e.type === 'click' && useGlobalStore.setState({ selectedName: null })
