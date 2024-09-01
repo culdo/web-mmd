@@ -5,6 +5,7 @@ import { button, folder, useControls } from "leva"
 
 function DirectionalLight({ name }: { name?: string }) {
     const presetReady = useGlobalStore(state => state.presetReady)
+    const shadowBias = usePresetStore(state => state["shadow bias"])
 
     const guiName = `Light.${name}`
 
@@ -29,8 +30,8 @@ function DirectionalLight({ name }: { name?: string }) {
         <>
             <directionalLight castShadow={directionalLight.castShadow} name={`${guiName}.position`} 
             color={directionalLight.color} position={directionalLight.position} intensity={directionalLight.intensity}
-            shadow-mapSize={[1024, 1024]}>
-                <orthographicCamera attach="shadow-camera" args={[-10, 10, 10, -10, 2, 1000]} />
+            shadow-mapSize={[1024, 1024]} shadow-bias={shadowBias}>
+                <orthographicCamera attach="shadow-camera" args={[-20, 20, 25, -20, 0.1, 80]} />
             </directionalLight>
         </>
     );
