@@ -6,7 +6,7 @@ import { button, useControls } from "leva";
 import path from "path-browserify";
 import { useLayoutEffect, useState } from "react";
 import PromisePrimitive from "../promise-primitive";
-import { buildLoadModelFn } from "@/app/utils/gui";
+import { buildGuiItem, buildLoadModelFn } from "@/app/utils/gui";
 
 function Stage() {
     const { scene } = useThree()
@@ -29,6 +29,7 @@ function Stage() {
                 }
             }
         },
+        "ground shadow": buildGuiItem("ground shadow"),
         "select stage folder": button(() => {
             const selectFile = document.getElementById("selectFile") as HTMLInputElement
             selectFile.webkitdirectory = true;
@@ -58,8 +59,7 @@ function Stage() {
                 .setModelParams(stageParams)
                 .loadAsync(url, onProgress)
             const stage = mesh;
-            stage.castShadow = true;
-            stage.receiveShadow = groundShadow;
+            // stage.castShadow = true;
 
             useGlobalStore.setState({ stage })
             set({ stage: stageName })
@@ -76,7 +76,7 @@ function Stage() {
 
 
     return (
-        <PromisePrimitive promise={promise}></PromisePrimitive>
+        <PromisePrimitive promise={promise} receiveShadow={groundShadow}></PromisePrimitive>
     );
 }
 

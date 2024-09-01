@@ -6,6 +6,7 @@ import { randomBytes } from "crypto"
 import { button, folder, useControls } from "leva"
 import { useLayoutEffect } from "react"
 import DirectionalLight from "./DirectionalLight"
+import PointLight from './PointLight'
 
 function Env() {
     const presetReady = useGlobalStore(state => state.presetReady)
@@ -59,6 +60,21 @@ function Env() {
                 const states = {
                     color: defaultConfig[`${defaultName}.color`],
                     intensity: defaultConfig[`${defaultName}.intensity`],
+                    position: defaultConfig[`${defaultName}.position`],
+                    castShadow: defaultConfig[`${defaultName}.castShadow`]
+                }
+                return { Light: { ...Light, [newLightName]: states } }
+            })
+            useGlobalStore.setState({ selectedName: `Light.${newLightName}.position` })
+        }),
+        "Add Point Light": button(() => {
+            const newLightName = `pointLight-${randomBytes(3).toString('base64')}`
+            usePresetStore.setState(({ Light }) => {
+                const defaultName = "Light.pointLight"
+                // init default value
+                const states = {
+                    color: defaultConfig[`${defaultName}.color`],
+                    intensity: defaultConfig[`${defaultName}.intensity`],
                     position: defaultConfig[`${defaultName}.position`]
                 }
                 return { Light: { ...Light, [newLightName]: states } }
@@ -71,7 +87,13 @@ function Env() {
             <fogExp2 attach="fog" color={fog.color} density={fog.density}></fogExp2>
             <ambientLight color={ambientLight.color} intensity={ambientLight.intensity} />
             {
-                Object.entries(dirLights).map(([name, _]) => <DirectionalLight key={name} name={name}></DirectionalLight>)
+                Object.entries(dirLights).map(([name, _]) => {
+                if(name.startsWith("directionalLight")) {
+                    return <DirectionalLight key={name} name={name}></DirectionalLight>
+                } else if(name.startsWith("pointLight")) {
+                    return <PointLight key={name} name={name}></PointLight>
+                }
+            })
             }
         </>
     );

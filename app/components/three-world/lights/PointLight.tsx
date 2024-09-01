@@ -3,12 +3,12 @@ import usePresetStore from "@/app/stores/usePresetStore"
 import { buildFlexGuiItem } from "@/app/utils/gui"
 import { button, folder, useControls } from "leva"
 
-function DirectionalLight({ name }: { name?: string }) {
+function PointLight({ name }: { name?: string }) {
     const presetReady = useGlobalStore(state => state.presetReady)
 
     const guiName = `Light.${name}`
 
-    const directionalLight = useControls('Light', {
+    const pointLight = useControls('Light', {
         [name]: folder({
             color: buildFlexGuiItem<string>(`${guiName}.color`),
             intensity: {
@@ -17,7 +17,6 @@ function DirectionalLight({ name }: { name?: string }) {
                 max: 10
             },
             position: buildFlexGuiItem<[number, number, number]>(`${guiName}.position`),
-            castShadow: buildFlexGuiItem<boolean>(`${guiName}.castShadow`),
             select: button(() => useGlobalStore.setState({ selectedName: `${guiName}.position` })),
             delete: button(() => usePresetStore.setState(({ Light }) => {
                 delete Light[name]
@@ -27,13 +26,9 @@ function DirectionalLight({ name }: { name?: string }) {
     }, [presetReady])
     return (
         <>
-            <directionalLight castShadow={directionalLight.castShadow} name={`${guiName}.position`} 
-            color={directionalLight.color} position={directionalLight.position} intensity={directionalLight.intensity}
-            shadow-mapSize={[1024, 1024]}>
-                <orthographicCamera attach="shadow-camera" args={[-10, 10, 10, -10, 2, 1000]} />
-            </directionalLight>
+            <pointLight name={`${guiName}.position`} color={pointLight.color} position={pointLight.position} intensity={pointLight.intensity} />
         </>
     );
 }
 
-export default DirectionalLight;
+export default PointLight;
