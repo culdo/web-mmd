@@ -45,6 +45,8 @@ function Swing() {
     const ballMass = 60;
     const ballRadius = 3;
 
+    const pervTime = useRef(performance.now())
+
     useEffect(() => {
         if (!runtimeCharacter) return
         physicsWorldRef.current = runtimeCharacter.physics.world
@@ -103,21 +105,6 @@ function Swing() {
         const hinge = new Ammo.btHingeConstraint(arm.userData.physicsBody, swing.userData.physicsBody, pivotA, pivotB, axis, axis, true);
         physicsWorldRef.current.addConstraint(hinge, true);
         hingeRef.current = hinge
-
-        // // Hinge B
-        // pivotA.setValue(-armLength * 0.5 + indent, 0, 0)
-
-        // const hingeB = new Ammo.btHingeConstraint(arm.userData.physicsBody, gripB.userData.physicsBody, pivotA, pivotB, axis, axis, true);
-        // physicsWorldRef.current.addConstraint(hingeB, true);
-
-        // // Left hand
-        // pivotA.setValue(0, 5, 0)
-        // pivotB.setValue(0, 0, 0)
-
-        // const leftHand = new Ammo.btHingeConstraint(gripB.userData.physicsBody, runtimeCharacter.physics.bodies[19].body, pivotA, pivotB, axis, axis, true);
-        // physicsWorldRef.current.addConstraint(leftHand, true);
-
-
 
     }
 
@@ -271,8 +258,9 @@ function Swing() {
             // simulate pendulum behavior
 
             if(grip) {
-                const vel = 3 * directionRef.current * maxPendulumAngleRef.current * Math.sin(Math.acos(grip?.rotation.x / maxPendulumAngleRef.current))
-                if(Math.abs(vel) > 0.01) {
+                const ratio = 3.10 / 1.84
+                const vel = ratio * directionRef.current * maxPendulumAngleRef.current * Math.sin(Math.acos(grip?.rotation.x / maxPendulumAngleRef.current))
+                if(vel) {
                     hingeRef.current.enableAngularMotor(true, vel, 10000);
                     isSetDirectionRef.current = false
                 } else if(!isSetDirectionRef.current) {
