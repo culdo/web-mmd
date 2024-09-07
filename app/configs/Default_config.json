@@ -149,7 +149,7 @@
     "edge blur kernel": 2,
     "bokeh autofocus": true,
     "bokeh focus": 2,
-    "bokeh focal length": 5,
+    "bokeh focus range": 0.04,
     "bloom enabled": false,
     "bloom intensity": 1.0,
     "bloom radius": 0.85,
