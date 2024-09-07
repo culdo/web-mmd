@@ -1,4 +1,4 @@
-import { BasicDepthPacking, Uniform, UnsignedByteType, WebGLRenderTarget, SRGBColorSpace, Camera, Vector3, Texture, WebGLRenderer, PerspectiveCamera } from "three";
+import { Uniform, UnsignedByteType, WebGLRenderTarget, SRGBColorSpace, Camera, Vector3, Texture, WebGLRenderer, PerspectiveCamera, DepthPackingStrategies } from "three";
 import { 
 	Resolution, Effect,
 	ColorChannel, EffectAttribute, KernelSize, MaskFunction,
@@ -36,7 +36,7 @@ export class DepthOfFieldEffect extends Effect {
 	bokehNearFillPass: BokehPass;
 	bokehFarBasePass: BokehPass;
 	bokehFarFillPass: BokehPass;
-	target: null;
+	target: Vector3;
 	resolution: Resolution;
 	defaultBokehScale: number;
 	scaleFov: number;
@@ -469,7 +469,7 @@ export class DepthOfFieldEffect extends Effect {
 	 * @param {DepthPackingStrategies} [depthPacking=BasicDepthPacking] - The depth packing.
 	 */
 
-	setDepthTexture(depthTexture: any, depthPacking = BasicDepthPacking) {
+	setDepthTexture(depthTexture: any, depthPacking: DepthPackingStrategies) {
 
 		this.cocMaterial.depthBuffer = depthTexture;
 		this.cocMaterial.depthPacking = depthPacking;

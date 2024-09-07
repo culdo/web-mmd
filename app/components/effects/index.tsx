@@ -1,54 +1,64 @@
 import usePresetStore from "@/app/stores/usePresetStore";
-import { Autofocus, AutofocusApi, Bloom, DepthOfField, EffectComposer, SelectiveBloom } from "@react-three/postprocessing";
+import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import OutlinePass from "./OutlinePass";
 import EffectControls from "./controls";
-import CopyPass from "./CopyPass";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import { DepthOfFieldEffect } from "postprocessing";
+
+import { buildGuiItem } from "@/app/utils/gui";
+import { DepthOfFieldEffect } from "@/app/modules/effects/DOFeffect";
+import { DepthOfField } from "./DepthOfField";
+import { useThree } from "@react-three/fiber";
 
 function Effects() {
     const showOutline = usePresetStore(state => state["show outline"])
 
     const dofRef = useRef<DepthOfFieldEffect>()
     const character = useGlobalStore(state => state.character)
+    const camera = useThree(state => state.camera)
 
     const dofConfig = useControls('Effects.DepthOfField', {
-        enabled: {
-            value: false,
+        enabled: buildGuiItem("bokeh enabled"),
+        focusRange: {
+            ...buildGuiItem("bokeh focus range"),
+            min: 0,
+            max: 1
         },
-        focusRange: { min: 0, max: 1, value: 0.02 },
-        bokehScale: { min: 0, max: 50, value: 8 },
-        width: { value: 512, min: 256, max: 2048, step: 256, optional: true, disabled: true },
-        height: { value: 512, min: 256, max: 2048, step: 256, optional: true, disabled: true }
-
+        bokehScale: {
+            ...buildGuiItem("bokeh scale"),
+            min: 0,
+            max: 50
+        }
     }, { collapsed: true });
 
     const bloomConfig = useControls('Effects.Bloom', {
-        enabled: {
-            value: false,
+        enabled: buildGuiItem("bloom enabled"),
+        intensity: {
+            ...buildGuiItem("bloom intensity"),
+            min: 0,
+            max: 10
         },
-        intensity: { min: 0, max: 10, value: 1.0 },
-        luminanceThreshold: { min: 0, max: 1, value: 1.0 },
-        luminanceSmoothing: { min: 0, max: 1, value: 0.025 },
+        luminanceThreshold: {
+            ...buildGuiItem("bloom threshold"),
+            min: 0,
+            max: 1
+        },
+        luminanceSmoothing: {
+            ...buildGuiItem("bloom smoothing"),
+            min: 0,
+            max: 1
+        },
 
     }, { collapsed: true });
-
-    useEffect(() => {
-        if (!character || !dofRef.current) return
-        dofRef.current.target = character.getObjectByName("smoothCenter").position
-    }, [character, dofConfig.enabled])
-
-
+    
     return (
         <>
             <EffectComposer renderPriority={1}>
                 <EffectControls></EffectControls>
                 {showOutline && <OutlinePass></OutlinePass>}
-                {dofConfig.enabled && <DepthOfField ref={dofRef} {...dofConfig}></DepthOfField>}
-                {bloomConfig.enabled && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
-                <CopyPass></CopyPass>
+                {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
+                {dofConfig.enabled && character && <DepthOfField ref={dofRef} target={character.getObjectByName("smoothCenter").position} {...dofConfig}></DepthOfField>}
             </EffectComposer>
         </>
     );
