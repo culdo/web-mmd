@@ -7,9 +7,9 @@ const nextConfig = {
         config
     ) => {
         config.module.rules.push({
-            test: /\.glsl$/,
+            test: /\.(vert|frag)$/,
             loader: 'raw-loader'
-        },)
+        })
         config.resolve.fallback = { fs: false };
         return config
     },

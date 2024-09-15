@@ -2,12 +2,13 @@ import { Uniform, UnsignedByteType, WebGLRenderTarget, SRGBColorSpace, Camera, V
 import { 
 	Resolution, Effect,
 	ColorChannel, EffectAttribute, KernelSize, MaskFunction,
-	BokehMaterial, CircleOfConfusionMaterial, MaskMaterial,
+	BokehMaterial, MaskMaterial,
 	KawaseBlurPass, ShaderPass, BlendFunction
 } from "postprocessing";
 
-import fragmentShader from "./shaders/dof.glsl";
+import fragmentShader from "./shaders/dof.frag";
 import { getOutputColorSpace, setTextureColorSpace, viewZToOrthographicDepth } from "./utils/all";
+import { CircleOfConfusionMaterial } from "./CircleOfConfusionMaterial"
 
 /**
  * A depth of field effect.
@@ -497,11 +498,11 @@ export class DepthOfFieldEffect extends Effect {
 			const distance = this.calculateFocusDistance(this.target);
 			this.cocMaterial.focusDistance = distance;
 			// console.log(this.camera.getObjectByName("target").userData.frameNum)
-			if(this.camera.fov < this.scaleFov) {
-				this.bokehScale = this.defaultBokehScale * ((this.scaleFov - this.camera.fov) / this.scaleFov)
-			} else {
-				this.bokehScale = 0.0
-			}
+			// if(this.camera.fov < this.scaleFov) {
+			// 	this.bokehScale = this.defaultBokehScale * ((this.scaleFov - this.camera.fov) / this.scaleFov)
+			// } else {
+			// 	this.bokehScale = 0.0
+			// }
 		}
 
 		// Render the CoC and create a blurred version for soft near field blending.
