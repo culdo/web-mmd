@@ -23,7 +23,7 @@
       "@/*": ["./*"]
     },
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/modules/WebMMD.ts", "app/modules/effects/DOFeffect.ts", "index.d.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/modules/WebMMD.ts", "index.d.ts"],
   "exclude": ["node_modules"],
   "ts-node": {
     "transpileOnly": true,

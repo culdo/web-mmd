@@ -3,7 +3,7 @@ import { Ref, forwardRef, useMemo, useEffect, useContext } from 'react'
 import { ReactThreeFiber } from '@react-three/fiber'
 import { type DepthPackingStrategies, PerspectiveCamera, type Texture, Vector3 } from 'three'
 import { EffectComposerContext } from '@react-three/postprocessing'
-import { DepthOfFieldEffect } from '@/app/modules/effects/DOFeffect'
+import { DepthOfFieldEffect } from '@/app/modules/effects/DepthOfFieldEffect'
 
 type DOFProps = ConstructorParameters<typeof DepthOfFieldEffect>[1] &
   Partial<{

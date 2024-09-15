@@ -7,7 +7,7 @@ import { useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 
 import { buildGuiItem } from "@/app/utils/gui";
-import { DepthOfFieldEffect } from "@/app/modules/effects/DOFeffect";
+import { DepthOfFieldEffect } from "@/app/modules/effects/DepthOfFieldEffect";
 import { DepthOfField } from "./DepthOfField";
 import { useThree } from "@react-three/fiber";
 
