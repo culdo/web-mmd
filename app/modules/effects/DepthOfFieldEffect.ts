@@ -1,4 +1,4 @@
-import { Uniform, UnsignedByteType, WebGLRenderTarget, SRGBColorSpace, Camera, Vector3, Texture, WebGLRenderer, PerspectiveCamera, DepthPackingStrategies } from "three";
+import { Uniform, UnsignedByteType, WebGLRenderTarget, SRGBColorSpace, Camera, Vector3, Texture, WebGLRenderer, PerspectiveCamera, DepthPackingStrategies, Scene, ShaderMaterial, BasicDepthPacking } from "three";
 import { 
 	Resolution, Effect,
 	ColorChannel, EffectAttribute, KernelSize, MaskFunction,
@@ -9,6 +9,7 @@ import {
 import fragmentShader from "./shaders/dof.frag";
 import { getOutputColorSpace, setTextureColorSpace, viewZToOrthographicDepth } from "./utils/all";
 import { CircleOfConfusionMaterial } from "./CircleOfConfusionMaterial"
+import { BokehDepthShader } from "./shaders/BokehShader2";
 
 /**
  * A depth of field effect.
@@ -24,12 +25,12 @@ type MaskPass = ShaderPass & {fullscreenMaterial: MaskMaterial}
 
 export class DepthOfFieldEffect extends Effect {
 	camera: PerspectiveCamera;
-	renderTarget: any;
-	renderTargetMasked: any;
-	renderTargetNear: any;
-	renderTargetFar: any;
-	renderTargetCoC: any;
-	renderTargetCoCBlurred: any;
+	renderTarget: WebGLRenderTarget;
+	renderTargetMasked: WebGLRenderTarget;
+	renderTargetNear: WebGLRenderTarget;
+	renderTargetFar: WebGLRenderTarget;
+	renderTargetCoC: WebGLRenderTarget;
+	renderTargetCoCBlurred: WebGLRenderTarget;
 	cocPass: CocPass;
 	blurPass: KawaseBlurPass;
 	maskPass: MaskPass;
@@ -470,7 +471,7 @@ export class DepthOfFieldEffect extends Effect {
 	 * @param {DepthPackingStrategies} [depthPacking=BasicDepthPacking] - The depth packing.
 	 */
 
-	setDepthTexture(depthTexture: any, depthPacking: DepthPackingStrategies) {
+	setDepthTexture(depthTexture: Texture, depthPacking: DepthPackingStrategies = BasicDepthPacking) {
 
 		this.cocMaterial.depthBuffer = depthTexture;
 		this.cocMaterial.depthPacking = depthPacking;
@@ -494,7 +495,6 @@ export class DepthOfFieldEffect extends Effect {
 
 		// Auto focus.
 		if(this.target !== null) {
-
 			const distance = this.calculateFocusDistance(this.target);
 			this.cocMaterial.focusDistance = distance;
 			// console.log(this.camera.getObjectByName("target").userData.frameNum)
@@ -564,7 +564,7 @@ export class DepthOfFieldEffect extends Effect {
 	 * @param {Number} frameBufferType - The type of the main frame buffers.
 	 */
 
-	initialize(renderer: WebGLRenderer, alpha: boolean, frameBufferType: number) {
+	initialize(renderer: WebGLRenderer, alpha: boolean, frameBufferType: THREE.TextureDataType) {
 
 		this.cocPass.initialize(renderer, alpha, frameBufferType);
 		this.maskPass.initialize(renderer, alpha, frameBufferType);
