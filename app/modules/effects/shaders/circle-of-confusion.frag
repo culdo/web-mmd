@@ -16,8 +16,6 @@ uniform float focusRange;
 uniform float cameraNear;
 uniform float cameraFar;
 
-uniform mat4 projectionMatrix;
-
 varying vec2 vUv;
 
 float readDepth(const in vec2 uv) {
@@ -45,38 +43,27 @@ float readDepth(const in vec2 uv) {
 
 }
 
-float GetFocalLength(float focusRange, float focalDistance)
-{
-	return 1.0 / (1.0 / (0.5 * focusRange * projectionMatrix[2][2]) + 1.0 / focalDistance);
-}
-
-float GetFocalAperture(float Fstop)
-{
-	float aperture = 1.0 / Fstop;
-	return aperture;
-}
-
 void main() {
 
 	float depth = readDepth(vUv);
 
-	float D = depth;
-	float P = focusDistance;
-	float F = GetFocalLength(focusRange, focusDistance);
-	float aspect = GetFocalAperture(1.8);
-	float focalRegion = 3.0;
+	#ifdef PERSPECTIVE_CAMERA
 
-	P *= 0.001f;
-	D *= 0.001f;
-	F *= 0.001f;
+		float viewZ = perspectiveDepthToViewZ(depth, cameraNear, cameraFar);
+		float linearDepth = viewZToOrthographicDepth(viewZ, cameraNear, cameraFar);
 
-	float CoC = aspect * F * (D - P) / (D * (P - F));
- 	CoC = clamp(CoC, -2.0, 4.0);
- 	CoC = pow(abs(CoC) / 4.0, focalRegion) * sign(CoC) * 4.0;
+	#else
 
-	gl_FragColor.rg = vec2(
-		step(CoC, 0.0),
-		step(0.0, CoC)
+		float linearDepth = depth;
+
+	#endif
+
+	float signedDistance = linearDepth - focusDistance;
+	float magnitude = smoothstep(0.0, focusRange, abs(signedDistance));
+
+	gl_FragColor.rg = magnitude * vec2(
+		step(signedDistance, 0.0),
+		step(0.0, signedDistance)
 	);
 
 }

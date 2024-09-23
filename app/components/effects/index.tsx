@@ -2,14 +2,15 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import OutlinePass from "./OutlinePass";
 import EffectControls from "./controls";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 
 import { buildGuiItem } from "@/app/utils/gui";
 import { DepthOfFieldEffect } from "@/app/modules/effects/DepthOfFieldEffect";
 import { DepthOfField } from "./DepthOfField";
-import { useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
+import { Vector3 } from "three";
 
 function Effects() {
     const showOutline = usePresetStore(state => state["show outline"])
@@ -51,6 +52,19 @@ function Effects() {
         },
 
     }, { collapsed: true });
+
+    useEffect(() => {
+        if(dofRef.current) {
+            dofRef.current.target = charGPos.current
+        }
+    }, [character])
+
+    const charGPos = useRef(new Vector3())
+    
+    useFrame(() => {
+        if(!dofRef.current) return
+        character.skeleton.getBoneByName("センター").getWorldPosition(charGPos.current)
+    })
     
     return (
         <>
@@ -58,7 +72,7 @@ function Effects() {
                 <EffectControls></EffectControls>
                 {showOutline && <OutlinePass></OutlinePass>}
                 {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
-                {dofConfig.enabled && character && <DepthOfField ref={dofRef} target={character.getObjectByName("smoothCenter").position} {...dofConfig}></DepthOfField>}
+                {dofConfig.enabled && character && <DepthOfField ref={dofRef} {...dofConfig}></DepthOfField>}
             </EffectComposer>
         </>
     );

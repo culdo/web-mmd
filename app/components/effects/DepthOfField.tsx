@@ -37,7 +37,7 @@ export const DepthOfField = forwardRef(function DepthOfField(
   }: DOFProps,
   ref: Ref<DepthOfFieldEffect>
 ) {
-  const { camera } = useContext(EffectComposerContext)
+  const { camera, scene } = useContext(EffectComposerContext)
   const autoFocus = target != null
   const effect = useMemo(() => {
     const effect = new DepthOfFieldEffect(camera as PerspectiveCamera, {
