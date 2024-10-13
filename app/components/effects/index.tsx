@@ -1,15 +1,15 @@
+import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
+import { useControls } from "leva";
+import { useEffect, useRef, useState } from "react";
 import OutlinePass from "./OutlinePass";
 import EffectControls from "./controls";
-import { useEffect, useRef } from "react";
-import { useControls } from "leva";
-import useGlobalStore from "@/app/stores/useGlobalStore";
 
-import { buildGuiItem } from "@/app/utils/gui";
 import { DepthOfFieldEffect } from "@/app/modules/effects/DepthOfFieldEffect";
-import { DepthOfField } from "./DepthOfField";
+import { buildGuiItem } from "@/app/utils/gui";
 import { useFrame, useThree } from "@react-three/fiber";
+import { DepthOfField } from "./DepthOfField";
 import { Vector3 } from "three";
 
 function Effects() {
@@ -21,6 +21,11 @@ function Effects() {
 
     const dofConfig = useControls('Effects.DepthOfField', {
         enabled: buildGuiItem("bokeh enabled"),
+        distance: {
+            value: 0,
+            min: 0,
+            max: 1
+        },
         focusRange: {
             ...buildGuiItem("bokeh focus range"),
             min: 0,
@@ -53,17 +58,11 @@ function Effects() {
 
     }, { collapsed: true });
 
-    useEffect(() => {
-        if(dofRef.current) {
-            dofRef.current.target = charGPos.current
-        }
-    }, [character])
-
     const charGPos = useRef(new Vector3())
     
     useFrame(() => {
         if(!dofRef.current) return
-        character.skeleton.getBoneByName("センター").getWorldPosition(charGPos.current)
+        dofRef.current.target = character.skeleton.getBoneByName("センター").getWorldPosition(charGPos.current)
     })
     
     return (
@@ -73,6 +72,7 @@ function Effects() {
                 {showOutline && <OutlinePass></OutlinePass>}
                 {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.enabled && character && <DepthOfField ref={dofRef} {...dofConfig}></DepthOfField>}
+                
             </EffectComposer>
         </>
     );

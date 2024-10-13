@@ -1,15 +1,20 @@
-import { Uniform, UnsignedByteType, WebGLRenderTarget, SRGBColorSpace, Camera, Vector3, Texture, WebGLRenderer, PerspectiveCamera, DepthPackingStrategies, Scene, ShaderMaterial, BasicDepthPacking } from "three";
-import { 
-	Resolution, Effect,
-	ColorChannel, EffectAttribute, KernelSize, MaskFunction,
-	BokehMaterial, MaskMaterial,
-	KawaseBlurPass, ShaderPass, BlendFunction
+import {
+	BlendFunction,
+	BokehMaterial,
+	ColorChannel,
+	Effect,
+	EffectAttribute,
+	KawaseBlurPass,
+	KernelSize, MaskFunction,
+	MaskMaterial,
+	Resolution,
+	ShaderPass
 } from "postprocessing";
+import { BasicDepthPacking, Camera, DepthPackingStrategies, PerspectiveCamera, SRGBColorSpace, Texture, Uniform, UnsignedByteType, Vector3, WebGLRenderer, WebGLRenderTarget } from "three";
 
+import { CircleOfConfusionMaterial } from "./CircleOfConfusionMaterial";
 import fragmentShader from "./shaders/dof.frag";
 import { getOutputColorSpace, setTextureColorSpace, viewZToOrthographicDepth } from "./utils/all";
-import { CircleOfConfusionMaterial } from "./CircleOfConfusionMaterial"
-import { BokehDepthShader } from "./shaders/BokehShader2";
 
 /**
  * A depth of field effect.
