@@ -58,11 +58,12 @@ function Effects() {
 
     }, { collapsed: true });
 
-    const charGPos = useRef(new Vector3())
-    
     useFrame(() => {
         if(!dofRef.current) return
-        dofRef.current.target = character.skeleton.getBoneByName("センター").getWorldPosition(charGPos.current)
+        if(!dofRef.current.target) {
+            dofRef.current.target = new Vector3()
+        }
+        character.skeleton.getBoneByName("センター").getWorldPosition(dofRef.current.target)
     })
     
     return (
