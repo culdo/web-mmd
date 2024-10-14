@@ -105,7 +105,7 @@ function Material({ type, modelPromise }: { type: string, modelPromise: Promise<
             'clearcoat': buildMaterialGuiItem("clearcoat"),
             'clearcoatRoughness': buildMaterialGuiItem("clearcoatRoughness"),
             'specularIntensity': buildMaterialGuiItem("specularIntensity"),
-            'specularColor': buildMaterialGuiItem("specularIntensity"),
+            'specularColor': buildMaterialGuiItem("specularColor"),
             'fog': buildMaterialGuiItem("fog", needsUpdate(material)),
             'normalMap': buildMaterialGuiItem("normalMap", updateTexture(material, 'normalMap', normalMaps)),
             "reset All": button(() => {
