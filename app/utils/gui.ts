@@ -66,7 +66,7 @@ function setLevaValue<T>(path: string, value: T) {
 // extract type from array type
 type GuiValue<T> = T extends number[] ? [number, number, number] : T;
 
-function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnChangeHandler) {
+function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnChangeHandler, min = 0, max = 1) {
 
     const initialValue = usePresetStore.getState()[key]
 
@@ -81,6 +81,15 @@ function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnCha
             handler(value, path, options)
         }
     }
+    if(typeof initialValue == "number") {
+        return {
+            value: initialValue as GuiValue<typeof initialValue>,
+            min,
+            max,
+            onChange,
+            transient: false as const
+        }
+    } 
     return {
         value: initialValue as GuiValue<typeof initialValue>,
         onChange,
