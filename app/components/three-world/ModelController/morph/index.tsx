@@ -5,8 +5,9 @@ import { setLevaValue } from "@/app/utils/gui";
 import { useControls } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
 import { use, useEffect, useState } from "react";
+import { SkinnedMesh } from "three";
 
-function Morph({ type, modelPromise }: { type: string, modelPromise: Promise<THREE.SkinnedMesh> }) {
+function Morph({ type, modelPromise }: { type: string, modelPromise: Promise<SkinnedMesh> }) {
     const character = use(modelPromise)
     const presetReady = useGlobalStore(state => state.presetReady)
 

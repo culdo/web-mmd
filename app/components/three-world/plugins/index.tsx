@@ -12,8 +12,8 @@ function Plugins() {
             value: v !== null,
             onChange: async (state: boolean) => {
                 if (state) {
-                    const module = await import(`./${key}`);
-                    const PluginFile = module.default;
+                    const dynamicModule = await import(`./${key}`);
+                    const PluginFile = dynamicModule.default;
                     setPlugins(prev => {
                         const newState = { ...prev }
                         newState[key] = <PluginFile />

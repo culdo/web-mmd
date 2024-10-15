@@ -108,6 +108,8 @@ function Material({ type, modelPromise }: { type: string, modelPromise: Promise<
             'specularColor': buildMaterialGuiItem("specularColor"),
             'fog': buildMaterialGuiItem("fog", needsUpdate(material)),
             'normalMap': buildMaterialGuiItem("normalMap", updateTexture(material, 'normalMap', normalMaps)),
+            'envMap': buildMaterialGuiItem("envMap", updateTexture(material, 'envMap', normalMaps)),
+            'envMapIntensity': buildMaterialGuiItem("envMapIntensity"),
             "reset All": button(() => {
                 usePresetStore.setState({ material: defaultConfig.material })
             }),

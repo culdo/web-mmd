@@ -63,19 +63,6 @@ function setLevaValue<T>(path: string, value: T) {
     levaStore.set(newProp, false)
 }
 
-function buildGuiHandler<T>(initialValue: T, handler?: OnChangeHandler): OnChangeHandler {
-    return (value, path, options) => {
-        if (handler) {
-            handler(value, path, options)
-        }
-        if (!options.initial) {
-            usePresetStore.setState({ [path]: value })
-        } else {
-            setLevaValue(path, initialValue)
-        }
-    }
-}
-
 // extract type from array type
 type GuiValue<T> = T extends number[] ? [number, number, number] : T;
 
@@ -177,4 +164,4 @@ function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userDa
 }
 
 
-export { buildMaterialGuiItem, buildFlexGuiItem, buildGuiHandler, buildGuiItem, buildLoadFileFn, buildLoadModelFn, setLevaValue };
+export { buildMaterialGuiItem, buildFlexGuiItem, buildGuiItem, buildLoadFileFn, buildLoadModelFn, setLevaValue };
