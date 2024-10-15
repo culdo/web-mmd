@@ -81,14 +81,19 @@ export const OrbitControls: ForwardRefComponent<OrbitControlsProps, OrbitControl
         const onEndCb = (e: Event) => {
           if (onEnd) onEnd(e)
         }
-
+        // @ts-ignore
         controls.addEventListener('change', callback)
+        // @ts-ignore
         controls.addEventListener('start', onStartCb)
+        // @ts-ignore
         controls.addEventListener('end', onEndCb)
 
         return () => {
+          // @ts-ignore
           controls.removeEventListener('start', onStartCb)
+          // @ts-ignore
           controls.removeEventListener('end', onEndCb)
+          // @ts-ignore
           controls.removeEventListener('change', callback)
         }
       }, [onChange, onStart, onEnd, controls, invalidate, setEvents])

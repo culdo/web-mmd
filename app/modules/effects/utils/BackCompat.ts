@@ -1,5 +1,5 @@
 import { ToneMappingMode } from "postprocessing";
-import { ColorSpace, REVISION, Texture } from "three";
+import { ColorSpace, REVISION, Texture, WebGLRenderer } from "three";
 
 const revision = Number(REVISION.replace(/\D+/g, ""));
 
@@ -11,7 +11,7 @@ const revision = Number(REVISION.replace(/\D+/g, ""));
  * @ignore
  */
 
-export function getOutputColorSpace(renderer: { outputColorSpace: any; outputEncoding: number; } | null) {
+export function getOutputColorSpace(renderer: WebGLRenderer | null) {
 
 	return renderer === null ? null : renderer.outputColorSpace
 

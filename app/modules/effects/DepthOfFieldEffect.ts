@@ -10,7 +10,7 @@ import {
 	Resolution,
 	ShaderPass
 } from "postprocessing";
-import { BasicDepthPacking, Camera, DepthPackingStrategies, PerspectiveCamera, SRGBColorSpace, Texture, Uniform, UnsignedByteType, Vector3, WebGLRenderer, WebGLRenderTarget } from "three";
+import { BasicDepthPacking, Camera, DepthPackingStrategies, PerspectiveCamera, SRGBColorSpace, Texture, TextureDataType, Uniform, UnsignedByteType, Vector3, WebGLRenderer, WebGLRenderTarget } from "three";
 
 import { CircleOfConfusionMaterial } from "./CircleOfConfusionMaterial";
 import fragmentShader from "./shaders/dof.frag";
@@ -271,6 +271,7 @@ export class DepthOfFieldEffect extends Effect {
 		 */
 
 		const resolution = this.resolution = new Resolution(this, resolutionX, resolutionY, resolutionScale);
+		// @ts-ignore
 		resolution.addEventListener("change", (e) => this.setSize(resolution.baseWidth, resolution.baseHeight));
 
 		this.bokehScale = bokehScale;
@@ -569,7 +570,7 @@ export class DepthOfFieldEffect extends Effect {
 	 * @param {Number} frameBufferType - The type of the main frame buffers.
 	 */
 
-	initialize(renderer: WebGLRenderer, alpha: boolean, frameBufferType: THREE.TextureDataType) {
+	initialize(renderer: WebGLRenderer, alpha: boolean, frameBufferType: TextureDataType) {
 
 		this.cocPass.initialize(renderer, alpha, frameBufferType);
 		this.maskPass.initialize(renderer, alpha, frameBufferType);
