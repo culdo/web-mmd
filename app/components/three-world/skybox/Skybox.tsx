@@ -12,6 +12,9 @@ function Skybox({ hdrUrl }: { hdrUrl: string }) {
     useControls("Skybox", {
         "envIntensity": buildGuiItem("envIntensity", (value) => {
             scene.environmentIntensity = value
+        }),
+        "envRotation": buildGuiItem("envRotation", (value) => {
+            scene.environmentRotation = value
         })
     })
     useEffect(() => {
