@@ -503,6 +503,8 @@ export class DepthOfFieldEffect extends Effect {
 		if(this.target !== null) {
 			const distance = this.calculateFocusDistance(this.target);
 			this.cocMaterial.focusDistance = distance;
+			this.cocMaterial.focusRange = this.camera.getFocalLength() / 70
+			// console.log(this.cocMaterial.focusRange)
 			// console.log(this.camera.getObjectByName("target").userData.frameNum)
 			// if(this.camera.fov < this.scaleFov) {
 			// 	this.bokehScale = this.defaultBokehScale * ((this.scaleFov - this.camera.fov) / this.scaleFov)
