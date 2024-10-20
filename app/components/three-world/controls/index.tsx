@@ -4,7 +4,7 @@ import { useThree } from "@react-three/fiber";
 import { levaStore } from 'leva';
 import { useEffect, useRef } from "react";
 import { Event } from 'three';
-import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
+import { OrbitControls as OrbitControlsImpl } from './OrbitControls';
 import { OrbitControls } from "./orbit-controls";
 
 function Controls() {

@@ -57,10 +57,7 @@ function buildLoadFileFn(cb: (file: string, name: string) => void) {
 }
 
 function setLevaValue<T>(path: string, value: T) {
-    const newProp = {
-        [path]: value
-    }
-    levaStore.set(newProp, false)
+    levaStore.set({ [path]: value }, false)
 }
 
 // extract type from array type

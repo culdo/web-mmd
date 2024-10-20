@@ -17,7 +17,6 @@ function Effects() {
 
     const dofRef = useRef<DepthOfFieldEffect>()
     const character = useGlobalStore(state => state.character)
-    const camera = useThree(state => state.camera)
 
     const dofConfig = useControls('Effects.DepthOfField', {
         enabled: buildGuiItem("bokeh enabled"),

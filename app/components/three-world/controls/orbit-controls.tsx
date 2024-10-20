@@ -2,7 +2,7 @@ import { ForwardRefComponent } from '@react-three/drei/helpers/ts-utils'
 import { EventManager, ReactThreeFiber, useThree } from '@react-three/fiber'
 import * as React from 'react'
 import type { Camera, Event, OrthographicCamera, PerspectiveCamera } from 'three'
-import { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
+import { OrbitControls as OrbitControlsImpl } from './OrbitControls'
 
 export type OrbitControlsChangeEvent = Event & {
   target: EventTarget & { object: Camera }
