@@ -3,7 +3,7 @@ import { cameraToClips } from "@/app/modules/cameraClipsBuilder";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { useFrame, useThree } from "@react-three/fiber";
-import React, { Suspense, use, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Suspense, use, useEffect, useMemo, useRef, useState } from "react";
 import { AnimationAction, AnimationClip, AnimationMixer, LoopOnce } from "three";
 
 export type CameraClip = {
@@ -295,7 +295,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
         return () => document.removeEventListener("keydown", onKeydown)
     })
     console.log("render CM")
-    useLayoutEffect(() => {
+    useEffect(() => {
         const savedCurrentTime = usePresetStore.getState().currentTime
         setTime(savedCurrentTime)
         return () => cameraMixer.stopAllAction() && cameraMixer.uncacheRoot(camera)

@@ -1,6 +1,6 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Vector3 } from "three";
 
 
@@ -34,7 +34,7 @@ function FixFollowMode() {
             camera.updateProjectionMatrix();
         }
     }
-    useLayoutEffect(() => {
+    useEffect(() => {
         if (!character || !controls) return
         controls.target = getSmoothCenter().clone()
         setTime()

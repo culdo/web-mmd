@@ -1,5 +1,5 @@
 import { PerspectiveCamera } from "@react-three/drei";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { PerspectiveCamera as PerspectiveCameraImpl } from "three";
 import CameraWorkHelper from "./helper";
 import { button, useControls } from "leva";
@@ -11,7 +11,6 @@ import defaultConfig from '@/app/configs/Default_config.json';
 function Camera() {
     const cameraRef = useRef<PerspectiveCameraImpl>()
 
-    const camera = useThree(state => state.camera)
     const presetReady = useGlobalStore(state => state.presetReady)
 
     const [{ fov, near, zoom }, set] = useControls('Camera', () => ({
