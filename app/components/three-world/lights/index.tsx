@@ -4,7 +4,7 @@ import usePresetStore from "@/app/stores/usePresetStore"
 import { buildGuiItem } from "@/app/utils/gui"
 import { randomBytes } from "crypto"
 import { button, folder, useControls } from "leva"
-import { useLayoutEffect } from "react"
+import { useEffect } from "react"
 import DirectionalLight from "./DirectionalLight"
 import PointLight from './PointLight'
 
@@ -12,7 +12,7 @@ function Env() {
     const presetReady = useGlobalStore(state => state.presetReady)
 
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         // keyboard shortcuts
         document.addEventListener("keydown", (e) => {
             if (e.key == " ") {

@@ -2,7 +2,7 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { onProgress } from "@/app/utils/base";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Suspense, use, useLayoutEffect, useMemo } from "react";
+import { Suspense, use, useEffect, useMemo } from "react";
 import { AnimationClip, AnimationMixer } from "three";
 
 
@@ -32,7 +32,7 @@ function MotionFileMode({ promise }: { promise: Promise<AnimationClip> }) {
         camera.updateProjectionMatrix();
     }
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const savedCurrentTime = usePresetStore.getState().currentTime
         
         const action = cameraMixer.clipAction(clip)

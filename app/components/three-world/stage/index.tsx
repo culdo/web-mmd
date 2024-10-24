@@ -1,12 +1,12 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { disposeMesh, onProgress } from "@/app/utils/base";
+import { buildGuiItem, buildLoadModelFn } from "@/app/utils/gui";
 import { useThree } from "@react-three/fiber";
 import { button, useControls } from "leva";
 import path from "path-browserify";
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import PromisePrimitive from "../promise-primitive";
-import { buildGuiItem, buildLoadModelFn } from "@/app/utils/gui";
 
 function Stage() {
     const { scene } = useThree()
@@ -41,7 +41,7 @@ function Stage() {
 
     const [promise, setPromise] = useState(null)
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const init = async () => {
             const { loader } = useGlobalStore.getState()
 

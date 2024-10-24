@@ -1,7 +1,7 @@
-import usePresetStore from "@/app/stores/usePresetStore";
-import styles from "./styles.module.css"
-import { useLayoutEffect, useRef } from "react";
 import useGlobalStore, { CameraMode } from "@/app/stores/useGlobalStore";
+import usePresetStore from "@/app/stores/usePresetStore";
+import { useEffect, useRef } from "react";
+import styles from "./styles.module.css";
 
 function SceneTimeline({ children = null }:
   { children?: React.ReactNode }) {
@@ -10,7 +10,7 @@ function SceneTimeline({ children = null }:
   const beatsBufferRef = useGlobalStore(state => state.beatsBufferRef)
 
   const scrollingBar = useRef<HTMLDivElement>()
-  useLayoutEffect(() => {
+  useEffect(() => {
 
     // add buffer beats
     [...Array(30)].map(_ => {

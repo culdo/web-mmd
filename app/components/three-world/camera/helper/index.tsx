@@ -1,11 +1,11 @@
-import usePresetStore from "@/app/stores/usePresetStore";
-import CompositeMode from "./composite-mode";
-import MotionFileMode from "./motion-file-mode";
-import FixFollowMode from "./fix-follow-mode";
-import { useLayoutEffect } from "react";
-import { button, useControls } from "leva";
-import { buildGuiItem, buildLoadFileFn } from "@/app/utils/gui";
 import { CameraMode } from "@/app/stores/useGlobalStore";
+import usePresetStore from "@/app/stores/usePresetStore";
+import { buildGuiItem, buildLoadFileFn } from "@/app/utils/gui";
+import { button, useControls } from "leva";
+import { useEffect } from "react";
+import CompositeMode from "./composite-mode";
+import FixFollowMode from "./fix-follow-mode";
+import MotionFileMode from "./motion-file-mode";
 
 function CameraWorkHelper() {
     const cameraMode = usePresetStore(state => state["camera mode"])
@@ -40,7 +40,7 @@ function CameraWorkHelper() {
         }),
     }), { order: 2 }, [cameraName])
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         // keyboard shortcuts
         document.addEventListener("keydown", (e) => {
             if (e.key == "`") {

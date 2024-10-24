@@ -5,7 +5,7 @@ import { buildGuiItem, buildLoadFileFn, buildLoadModelFn } from "@/app/utils/gui
 import { useThree } from "@react-three/fiber";
 import { button, useControls } from "leva";
 import path from "path-browserify";
-import { useLayoutEffect } from "react";
+import { useEffect } from "react";
 import * as THREE from 'three';
 import ModelController from "../ModelController";
 import PromisePrimitive from "../promise-primitive";
@@ -72,7 +72,7 @@ function CharacterBase() {
         }),
     }), { order: 2 }, [pmxFiles.character, motionName])
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const load = async () => {
             const characterParams = {
                 enableSdef,
