@@ -17,7 +17,7 @@ export class CircleOfConfusionMaterial extends ShaderMaterial {
 	 * @param {Camera} camera - A camera.
 	 */
 
-	constructor(camera) {
+	constructor(depthTexture, camera) {
 
 		super({
 			name: "CircleOfConfusionMaterial",
@@ -25,7 +25,7 @@ export class CircleOfConfusionMaterial extends ShaderMaterial {
 				DEPTH_PACKING: "0"
 			},
 			uniforms: {
-				depthBuffer: new Uniform(null),
+				depthBuffer: new Uniform(depthTexture),
 				focusDistance: new Uniform(0.0),
 				focusRange: new Uniform(0.0),
 				cameraNear: new Uniform(0.3),

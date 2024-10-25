@@ -7,15 +7,19 @@ import {
 	KawaseBlurPass,
 	KernelSize, MaskFunction,
 	MaskMaterial,
+	RenderPass,
 	Resolution,
-	ShaderPass
+	ShaderPass,
+	OverrideMaterialManager
 } from "postprocessing";
-import { BasicDepthPacking, Camera, DepthPackingStrategies, PerspectiveCamera, SRGBColorSpace, Texture, TextureDataType, Uniform, UnsignedByteType, Vector3, WebGLRenderer, WebGLRenderTarget } from "three";
+import { BasicDepthPacking, Camera, Color, DepthPackingStrategies, PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureDataType, Uniform, UnsignedByteType, Vector3, WebGLRenderer, WebGLRenderTarget } from "three";
 
 import { CircleOfConfusionMaterial } from "./CircleOfConfusionMaterial";
+import { RealisiticDepthMaterial } from "./RealisiticDepthMaterial";
 import fragmentShader from "./shaders/dof.frag";
 import { getOutputColorSpace, setTextureColorSpace, viewZToOrthographicDepth } from "./utils/all";
 
+OverrideMaterialManager.workaroundEnabled = true;
 /**
  * A depth of field effect.
  *
@@ -32,10 +36,12 @@ export class DepthOfFieldEffect extends Effect {
 	camera: PerspectiveCamera;
 	renderTarget: WebGLRenderTarget;
 	renderTargetMasked: WebGLRenderTarget;
+	renderTargetDepth: WebGLRenderTarget;
 	renderTargetNear: WebGLRenderTarget;
 	renderTargetFar: WebGLRenderTarget;
 	renderTargetCoC: WebGLRenderTarget;
 	renderTargetCoCBlurred: WebGLRenderTarget;
+	depthPass: RenderPass
 	cocPass: CocPass;
 	blurPass: KawaseBlurPass;
 	maskPass: MaskPass;
@@ -45,8 +51,7 @@ export class DepthOfFieldEffect extends Effect {
 	bokehFarFillPass: BokehPass;
 	target: Vector3;
 	resolution: Resolution;
-	defaultBokehScale: number;
-	scaleFov: number;
+	scene: Scene;
 
 	/**
 	 * Constructs a new depth of field effect.
@@ -67,7 +72,7 @@ export class DepthOfFieldEffect extends Effect {
 	 * @param {Number} [options.height=Resolution.AUTO_SIZE] - Deprecated. Use resolutionY instead.
 	 */
 
-	constructor(camera: PerspectiveCamera, {
+	constructor(scene: Scene, camera: PerspectiveCamera, {
 		blendFunction,
 		worldFocusDistance,
 		worldFocusRange,
@@ -84,7 +89,6 @@ export class DepthOfFieldEffect extends Effect {
 
 		super("DepthOfFieldEffect", fragmentShader, {
 			blendFunction,
-			attributes: EffectAttribute.DEPTH,
 			uniforms: new Map([
 				["nearColorBuffer", new Uniform(null)],
 				["farColorBuffer", new Uniform(null)],
@@ -102,6 +106,7 @@ export class DepthOfFieldEffect extends Effect {
 		 */
 
 		this.camera = camera;
+		this.scene = scene;
 
 		/**
 		 * A render target for intermediate results.
@@ -112,6 +117,9 @@ export class DepthOfFieldEffect extends Effect {
 
 		this.renderTarget = new WebGLRenderTarget(1, 1, { depthBuffer: false });
 		this.renderTarget.texture.name = "DoF.Intermediate";
+
+		this.renderTargetDepth = this.renderTarget.clone();
+		this.renderTargetDepth.texture.name = "DoF.Depth";
 
 		/**
 		 * A render target for masked background colors (premultiplied with CoC).
@@ -170,6 +178,13 @@ export class DepthOfFieldEffect extends Effect {
 		this.renderTargetCoCBlurred.texture.name = "DoF.CoC.Blurred";
 		this.uniforms.get("nearCoCBuffer").value = this.renderTargetCoCBlurred.texture;
 
+		// Depth pass
+		this.depthPass = new RenderPass(scene, camera, new RealisiticDepthMaterial(camera));
+
+		const clearPass = this.depthPass.clearPass;
+		clearPass.overrideClearColor = new Color(0xffffff);
+		clearPass.overrideClearAlpha = 1;
+
 		/**
 		 * A circle of confusion pass.
 		 *
@@ -177,7 +192,7 @@ export class DepthOfFieldEffect extends Effect {
 		 * @private
 		 */
 
-		this.cocPass = new ShaderPass(new CircleOfConfusionMaterial(camera)) as CocPass;
+		this.cocPass = new ShaderPass(new CircleOfConfusionMaterial(this.renderTargetDepth.texture, camera)) as CocPass;
 		const cocMaterial = this.cocMaterial;
 		cocMaterial.focusDistance = focusDistance;
 		cocMaterial.focusRange = focusRange;
@@ -275,8 +290,6 @@ export class DepthOfFieldEffect extends Effect {
 		resolution.addEventListener("change", (e) => this.setSize(resolution.baseWidth, resolution.baseHeight));
 
 		this.bokehScale = bokehScale;
-		this.defaultBokehScale = bokehScale;
-		this.scaleFov = 30
 
 	}
 
@@ -506,6 +519,9 @@ export class DepthOfFieldEffect extends Effect {
 			this.cocMaterial.focusRange = this.camera.getFocalLength() / 70
 		}
 
+		// Render Depth
+		this.depthPass.render(renderer, this.renderTargetDepth, null);
+
 		// Render the CoC and create a blurred version for soft near field blending.
 		this.cocPass.render(renderer, null, renderTargetCoC);
 		this.blurPass.render(renderer, renderTargetCoC, renderTargetCoCBlurred);
@@ -541,10 +557,11 @@ export class DepthOfFieldEffect extends Effect {
 		this.maskPass.setSize(width, height);
 
 		// These buffers require full resolution to prevent color bleeding.
+		this.renderTargetDepth.setSize(width, height);
 		this.renderTargetFar.setSize(width, height);
 		this.renderTargetCoC.setSize(width, height);
 		this.renderTargetMasked.setSize(width, height);
-
+		
 		this.renderTarget.setSize(w, h);
 		this.renderTargetNear.setSize(w, h);
 		this.renderTargetCoCBlurred.setSize(w, h);
@@ -567,6 +584,7 @@ export class DepthOfFieldEffect extends Effect {
 
 	initialize(renderer: WebGLRenderer, alpha: boolean, frameBufferType: TextureDataType) {
 
+		this.depthPass.initialize(renderer, alpha, frameBufferType);
 		this.cocPass.initialize(renderer, alpha, frameBufferType);
 		this.maskPass.initialize(renderer, alpha, frameBufferType);
 		this.bokehNearBasePass.initialize(renderer, alpha, frameBufferType);

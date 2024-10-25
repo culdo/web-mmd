@@ -5,7 +5,7 @@ import { type DepthPackingStrategies, PerspectiveCamera, type Texture, Vector3 }
 import { EffectComposerContext } from '@react-three/postprocessing'
 import { DepthOfFieldEffect } from '@/app/modules/effects/DepthOfFieldEffect'
 
-type DOFProps = ConstructorParameters<typeof DepthOfFieldEffect>[1] &
+type DOFProps = ConstructorParameters<typeof DepthOfFieldEffect>[2] &
   Partial<{
     target: ReactThreeFiber.Vector3
     depthTexture: {
@@ -40,7 +40,7 @@ export const DepthOfField = forwardRef(function DepthOfField(
   const { camera, scene } = useContext(EffectComposerContext)
   const autoFocus = target != null
   const effect = useMemo(() => {
-    const effect = new DepthOfFieldEffect(camera as PerspectiveCamera, {
+    const effect = new DepthOfFieldEffect(scene, camera as PerspectiveCamera, {
       blendFunction,
       worldFocusDistance,
       worldFocusRange,
