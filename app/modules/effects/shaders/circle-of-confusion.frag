@@ -33,6 +33,7 @@ void main() {
 	float nearDoF = (focalPlaneMM - focusRange) / (focalPlaneMM * 0.9 * CIRCLE_OF_CONFUSION);
 
 	float blur = abs(focalPlane - farDoF) * nearDoF;
+	blur = clamp(blur, 0.0, 1.0);
 
 	gl_FragColor.rg = blur * vec2(
 		step(signedDistance, 0.0),

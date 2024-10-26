@@ -11,6 +11,7 @@ import PromisePrimitive from "../promise-primitive";
 function Stage() {
     const { scene } = useThree()
 
+    const stagePromise = useGlobalStore(state => state.stagePromise)
     const stageName = usePresetStore(state => state.stage)
     const pmxFiles = usePresetStore(state => state.pmxFiles)
     const enablePBR = usePresetStore(state => state["enable PBR"])
@@ -39,8 +40,6 @@ function Stage() {
         }),
     }), { order: 2 }, [pmxFiles.stage])
 
-    const [promise, setPromise] = useState(null)
-
     useEffect(() => {
         const init = async () => {
             const { loader } = useGlobalStore.getState()
@@ -66,7 +65,7 @@ function Stage() {
 
             return stage
         }
-        setPromise(init())
+        useGlobalStore.setState({stagePromise: init()})
         return () => {
             const { stage } = useGlobalStore.getState()
             scene.remove(stage);
@@ -76,7 +75,7 @@ function Stage() {
 
 
     return (
-        <PromisePrimitive promise={promise} receiveShadow={groundShadow}></PromisePrimitive>
+        <PromisePrimitive promise={stagePromise} receiveShadow={groundShadow}></PromisePrimitive>
     );
 }
 

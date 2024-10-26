@@ -7,8 +7,10 @@ import WithSuspense from "../../suspense";
 function Pose() {
 
     const characterPromise = useGlobalStore(state => state.characterPromise)
+    const stagePromise = useGlobalStore(state => state.stagePromise)
     const bindParentCb = useGlobalStore(state => state.bindParentCb)
     const character = use(characterPromise)
+    const stage = use(stagePromise)
     const helper = useGlobalStore(state => state.helper)
     const loader = useGlobalStore(state => state.loader)
 
@@ -17,6 +19,18 @@ function Pose() {
             value: false,
             onChange: (state) => {
                 helper.enable("animation", !state)
+            }
+        },
+        "visible": {
+            value: true,
+            onChange: (state) => {
+                character.visible = state
+            }
+        },
+        "stage visible": {
+            value: true,
+            onChange: (state) => {
+                stage.visible = state
             }
         },
         "select pose file": button(() => {

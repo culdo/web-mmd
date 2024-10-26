@@ -1,6 +1,5 @@
 import {
 	BlendFunction,
-	BokehMaterial,
 	ColorChannel,
 	Effect,
 	EffectAttribute,
@@ -10,7 +9,8 @@ import {
 	RenderPass,
 	Resolution,
 	ShaderPass,
-	OverrideMaterialManager
+	OverrideMaterialManager,
+	BokehMaterial
 } from "postprocessing";
 import { BasicDepthPacking, Camera, Color, DepthPackingStrategies, PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureDataType, Uniform, UnsignedByteType, Vector3, WebGLRenderer, WebGLRenderTarget } from "three";
 
@@ -118,7 +118,7 @@ export class DepthOfFieldEffect extends Effect {
 		this.renderTarget = new WebGLRenderTarget(1, 1, { depthBuffer: false });
 		this.renderTarget.texture.name = "DoF.Intermediate";
 
-		this.renderTargetDepth = this.renderTarget.clone();
+		this.renderTargetDepth = new WebGLRenderTarget(1, 1);
 		this.renderTargetDepth.texture.name = "DoF.Depth";
 
 		/**
@@ -557,11 +557,11 @@ export class DepthOfFieldEffect extends Effect {
 		this.maskPass.setSize(width, height);
 
 		// These buffers require full resolution to prevent color bleeding.
-		this.renderTargetDepth.setSize(width, height);
 		this.renderTargetFar.setSize(width, height);
 		this.renderTargetCoC.setSize(width, height);
 		this.renderTargetMasked.setSize(width, height);
 		
+		this.renderTargetDepth.setSize(w, h);
 		this.renderTarget.setSize(w, h);
 		this.renderTargetNear.setSize(w, h);
 		this.renderTargetCoCBlurred.setSize(w, h);

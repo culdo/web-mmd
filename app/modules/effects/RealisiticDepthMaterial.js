@@ -25,8 +25,8 @@ export class RealisiticDepthMaterial extends ShaderMaterial {
 			},
 			blending: NoBlending,
 			toneMapped: false,
-			depthWrite: false,
-			depthTest: false,
+			depthWrite: true,
+			depthTest: true,
 			fragmentShader,
 			vertexShader
 		});

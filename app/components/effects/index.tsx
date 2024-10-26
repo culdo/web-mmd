@@ -10,12 +10,14 @@ import { DepthOfFieldEffect } from "@/app/modules/effects/DepthOfFieldEffect";
 import { buildGuiItem } from "@/app/utils/gui";
 import { useFrame, useThree } from "@react-three/fiber";
 import { DepthOfField } from "./DepthOfField";
-import { Vector3 } from "three";
+import { Texture, Vector3 } from "three";
+import { TextureEffectComp } from "./TextureEffectComp";
 
 function Effects() {
     const showOutline = usePresetStore(state => state["show outline"])
 
-    const dofRef = useRef<DepthOfFieldEffect>()
+    const [dof, setDof] = useState<DepthOfFieldEffect>()
+    const [depthTexture, setDepthTexture] = useState<Texture>()
     const character = useGlobalStore(state => state.character)
 
     const dofConfig = useControls('Effects.DepthOfField', {
@@ -34,7 +36,8 @@ function Effects() {
             ...buildGuiItem("bokeh scale"),
             min: 0,
             max: 50
-        }
+        },
+        depthDebug: buildGuiItem("texture enabled")
     }, { collapsed: true });
 
     const bloomConfig = useControls('Effects.Bloom', {
@@ -58,12 +61,18 @@ function Effects() {
     }, { collapsed: true });
 
     useFrame(() => {
-        if(!dofRef.current) return
-        if(!dofRef.current.target) {
-            dofRef.current.target = new Vector3()
+        if(!dof) return
+        if(!dof.target) {
+            dof.target = new Vector3()
         }
-        character.skeleton.getBoneByName("センター").getWorldPosition(dofRef.current.target)
+        character.skeleton.getBoneByName("センター").getWorldPosition(dof.target)
     })
+
+    useEffect(() => {
+        if(!dof || !dofConfig.depthDebug) return
+        setDepthTexture(dof.renderTargetDepth.texture)
+        return () => setDepthTexture(null)
+    }, [dof, dofConfig.depthDebug])
     
     return (
         <>
@@ -71,9 +80,11 @@ function Effects() {
                 <EffectControls></EffectControls>
                 {showOutline && <OutlinePass></OutlinePass>}
                 {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
-                {dofConfig.enabled && character && <DepthOfField ref={dofRef} {...dofConfig}></DepthOfField>}
+                {dofConfig.enabled && character && <DepthOfField ref={setDof} {...dofConfig}></DepthOfField>}
+                {depthTexture && <TextureEffectComp texture={depthTexture} ></TextureEffectComp>}
                 
             </EffectComposer>
+            
         </>
     );
 }
