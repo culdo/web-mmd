@@ -479,7 +479,7 @@ export class DepthOfFieldEffect extends Effect {
 
 		const camera = this.camera;
 		const distance = camera.position.distanceTo(target);
-		return viewZToOrthographicDepth(-distance, camera.near, camera.far);
+		return distance / camera.far;
 
 	}
 

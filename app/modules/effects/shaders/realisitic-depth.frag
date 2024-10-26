@@ -8,8 +8,6 @@ varying vec4 vPos;
 void main() {
 
 	float distance = length(vPos);
-	float linearDepth = viewZToOrthographicDepth(-distance, cameraNear, cameraFar);
-
-	gl_FragColor.rg = vec2(linearDepth, 0.0);
+	gl_FragColor.rg = vec2(distance / cameraFar, 0.0);
 
 }
