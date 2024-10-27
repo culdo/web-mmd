@@ -2,21 +2,23 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { useControls } from "leva";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import OutlinePass from "./OutlinePass";
 import EffectControls from "./controls";
 
 import { DepthOfFieldEffect } from "@/app/modules/effects/DepthOfFieldEffect";
 import { buildGuiItem } from "@/app/utils/gui";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { DepthOfField } from "./DepthOfField";
 import { Texture, Vector3 } from "three";
 import { TextureEffectComp } from "./TextureEffectComp";
+import { ColorChannel } from "postprocessing";
 
 function Effects() {
     const showOutline = usePresetStore(state => state["show outline"])
 
     const [dof, setDof] = useState<DepthOfFieldEffect>()
+    const [depthDebugColor, setDepthDebugColor] = useState<[number, number?, number?, number?]>()
     const [depthTexture, setDepthTexture] = useState<Texture>()
     const character = useGlobalStore(state => state.character)
 
@@ -71,6 +73,7 @@ function Effects() {
     useEffect(() => {
         if(!dof || !dofConfig.depthDebug) return
         setDepthTexture(dof.renderTargetDepth.texture)
+        setDepthDebugColor([ColorChannel.RED])
         return () => setDepthTexture(null)
     }, [dof, dofConfig.depthDebug])
     
@@ -81,7 +84,7 @@ function Effects() {
                 {showOutline && <OutlinePass></OutlinePass>}
                 {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.enabled && character && <DepthOfField ref={setDof} {...dofConfig}></DepthOfField>}
-                {depthTexture && <TextureEffectComp texture={depthTexture} ></TextureEffectComp>}
+                {depthTexture && <TextureEffectComp texture={depthTexture} colorChannel={depthDebugColor} ></TextureEffectComp>}
                 
             </EffectComposer>
             

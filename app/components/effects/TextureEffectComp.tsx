@@ -1,11 +1,13 @@
-import { ColorChannel, TextureEffect } from 'postprocessing'
+import { TextureEffect } from 'postprocessing'
 import { Ref, forwardRef, useLayoutEffect, useMemo } from 'react'
 import { RepeatWrapping } from 'three'
 
-type TextureProps = ConstructorParameters<typeof TextureEffect>[0]
+type TextureProps = ConstructorParameters<typeof TextureEffect>[0] & {
+  colorChannel: [number, number?, number?, number?]
+}
 
 export const TextureEffectComp = forwardRef<TextureEffect, TextureProps>(function Texture(
-  { texture, ...props }: TextureProps,
+  { texture, colorChannel, ...props }: TextureProps,
   ref: Ref<TextureEffect>
 ) {
   const t = texture
@@ -18,8 +20,8 @@ export const TextureEffectComp = forwardRef<TextureEffect, TextureProps>(functio
   }, [t])
   const effect = useMemo(() => {
     const textureEffect = new TextureEffect({ ...props, texture })
-    textureEffect.setTextureSwizzleRGBA(ColorChannel.RED);
+    textureEffect.setTextureSwizzleRGBA(...colorChannel);
     return textureEffect
-  }, [props, texture])
+  }, [props, texture, colorChannel])
   return <primitive ref={ref} object={effect} dispose={null} />
 })
