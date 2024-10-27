@@ -285,9 +285,7 @@ export class DepthOfFieldEffect extends Effect {
 		 * @readonly
 		 */
 
-		const resolution = this.resolution = new Resolution(this, resolutionX, resolutionY, resolutionScale);
-		// @ts-ignore
-		resolution.addEventListener("change", (e) => this.setSize(resolution.baseWidth, resolution.baseHeight));
+		this.resolution = new Resolution(this, resolutionX, resolutionY, resolutionScale);
 
 		this.bokehScale = bokehScale;
 
@@ -604,6 +602,7 @@ export class DepthOfFieldEffect extends Effect {
 		if(frameBufferType !== undefined) {
 
 			this.renderTarget.texture.type = frameBufferType;
+			this.renderTargetDepth.texture.type = frameBufferType;
 			this.renderTargetNear.texture.type = frameBufferType;
 			this.renderTargetFar.texture.type = frameBufferType;
 			this.renderTargetMasked.texture.type = frameBufferType;
