@@ -68,7 +68,7 @@ function Material({ type, modelPromise }: { type: string, modelPromise: Promise<
         }
     }
 
-    const updateFaceForward = (idx: number) => {
+    const buildFaceForwardFn = (idx: number) => {
         return (ratio: number) => {
             const group = geometry.groups[idx]
             for (let i = 0; i < group.count; i++) {
@@ -84,11 +84,12 @@ function Material({ type, modelPromise }: { type: string, modelPromise: Promise<
             normals.current.needsUpdate = true;
         }
     }
+
     const updateControls = (idx: number) => {
         const material = materials[idx]
 
         setContollers({
-            "faceForward": buildMaterialGuiItem("userData.faceForward", updateFaceForward(idx), 0, 1),
+            "faceForward": buildMaterialGuiItem("userData.faceForward", buildFaceForwardFn(idx), 0, 1),
             'visible': buildMaterialGuiItem("visible"),
             'color': buildMaterialGuiItem("color"),
             'emissive': buildMaterialGuiItem("emissive"),
@@ -129,8 +130,11 @@ function Material({ type, modelPromise }: { type: string, modelPromise: Promise<
 
     }
 
-    const updateTargetMaterial = () => {
-        for (const item of materials) {
+    const initTargetMaterials = () => {
+        normalsOrig.current = geometry.attributes.normal.clone()
+        normals.current = geometry.attributes.normal as THREE.BufferAttribute
+        
+        for (const [idx, item] of materials.entries()) {
             const userData = {
                 faceForward: 0,
                 normalMap: "none"
@@ -139,15 +143,16 @@ function Material({ type, modelPromise }: { type: string, modelPromise: Promise<
             const savedMaterial = material[item.name]
             if (savedMaterial) {
                 _.merge(item, savedMaterial)
+                if(savedMaterial.userData?.faceForward){
+                    buildFaceForwardFn(idx)(savedMaterial.userData.faceForward)
+                }
             }
         }
 
-        normalsOrig.current = geometry.attributes.normal.clone()
-        normals.current = geometry.attributes.normal as THREE.BufferAttribute
     }
 
     useEffect(() => {
-        updateTargetMaterial();
+        initTargetMaterials();
     }, [model])
 
     const materialMap = useMemo(() => {
