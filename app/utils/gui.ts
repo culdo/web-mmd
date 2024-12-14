@@ -80,7 +80,7 @@ function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnCha
     }
     if(typeof initialValue == "number") {
         return {
-            value: initialValue as GuiValue<typeof initialValue>,
+            value: initialValue as GuiValue<PresetState[T]>,
             min,
             max,
             onChange,
@@ -88,7 +88,7 @@ function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnCha
         }
     } 
     return {
-        value: initialValue as GuiValue<typeof initialValue>,
+        value: initialValue as GuiValue<PresetState[T]>,
         onChange,
         transient: false as const
     }
