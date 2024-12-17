@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "playwright test"
+    "test": "playwright test",
+    "update-snapshot": "playwright test --update-snapshots"
   },
   "dependencies": {
     "@react-three/drei": "^9.107.0",

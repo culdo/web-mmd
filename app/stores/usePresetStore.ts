@@ -8,7 +8,18 @@ import useConfigStore from './useConfigStore';
 import useGlobalStore from './useGlobalStore';
 
 export type PresetState = typeof defaultConfig & {
-    compositeClips: CameraClip[]
+    motionFile: string,
+    cameraFile: string,
+    pmxFiles: {
+        character: Record<string, string>,
+        stage: Record<string, string>,
+        modelTextures: {
+            character: Record<string, Record<string, string>>,
+            stage: Record<string, Record<string, string>>
+        }
+    },
+} & {
+    compositeClips?: CameraClip[]
 } & { [key: `${string}.color`]: string, [key: `${string}.intensity`]: number, [key: `${string}.position`]: number[] }
     & { Light: Record<string, any> }
     & { material: Record<string, any>};
@@ -21,7 +32,9 @@ const storage: PersistStorage<PresetState> = {
     },
     setItem: async (name: string, value: StorageValue<PresetState>): Promise<void> => {
         console.log(name, 'with value', value, 'has been saved')
+        document.title = "Web MMD (Saving...)"
         await localforage.setItem(name, value)
+        document.title = "Web MMD"
     },
     removeItem: async (name: string): Promise<void> => {
         console.log(name, 'has been deleted')

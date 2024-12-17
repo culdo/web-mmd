@@ -8,11 +8,13 @@ import { Canvas } from "@react-three/fiber";
 import ControlBar from "./components/control-bar";
 import Effects from "./components/effects";
 import Panel from "./components/panel";
+import LoadingOverlay from "./components/loading-overlay";
 
 export default function Page() {
 
   return (
     <>
+      <LoadingOverlay></LoadingOverlay>
       <SceneTimeline></SceneTimeline>
       <Canvas shadows>
         <ThreeWorld />

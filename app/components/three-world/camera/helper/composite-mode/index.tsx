@@ -59,10 +59,6 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
             delete clipInfo.clipJson
 
             const clip = AnimationClip.parse(saveClip.clipJson)
-            if (!clipInfo.interpolations) {
-                usePresetStore.setState({ compositeClips: savedCompositeClips })
-                setTimeout(() => location.reload(), 5000)
-            }
             restoreInterpolant(clip, clipInfo.interpolations)
             clipInfo.action = createAction(clip)
 
@@ -131,6 +127,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
         }
     }
     const saveCompositeClips = () => {
+        updateScrollingBar(mmd.currentTime)
         setCompositeClips(compositeClips)
         const json = []
         for (const clip of compositeClips) {
@@ -177,7 +174,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
     const setTime = (time: number) => {
         playComposite(time)
 
-        if (!currentClipRef.current.action.isRunning()) return
+        if (!currentClipRef.current?.action.isRunning()) return
         updateCamera(time)
         updateScrollingBar(time)
     }

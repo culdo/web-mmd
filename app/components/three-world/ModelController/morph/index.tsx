@@ -47,7 +47,6 @@ function Morph({ type, modelPromise }: { type: string, modelPromise: Promise<Ski
             }
         }
         setControllers(newControllers)
-        usePresetStore.setState({ morphs } as any)
     }
 
     useControls(`${type}.Morphs`, () => controllers, { collapsed: true }, [controllers])

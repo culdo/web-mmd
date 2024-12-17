@@ -48,7 +48,6 @@ function usePreset() {
             delete apiCopy.pmxFiles
             delete apiCopy.cameraFile
             delete apiCopy.motionFile
-            apiCopy.material = []
             const presetBlob = new Blob([JSON.stringify(apiCopy)], { type: 'application/json' })
             const dlUrl = URL.createObjectURL(presetBlob)
             startFileDownload(dlUrl, `${preset}_config.json`)

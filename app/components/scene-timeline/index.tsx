@@ -1,4 +1,5 @@
-import useGlobalStore, { CameraMode } from "@/app/stores/useGlobalStore";
+import useGlobalStore from "@/app/stores/useGlobalStore";
+import { CameraMode } from '@/app/types/camera';
 import usePresetStore from "@/app/stores/usePresetStore";
 import { useEffect, useRef } from "react";
 import styles from "./styles.module.css";

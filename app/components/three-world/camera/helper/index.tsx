@@ -1,4 +1,4 @@
-import { CameraMode } from "@/app/stores/useGlobalStore";
+import { CameraMode } from '@/app/types/camera';
 import usePresetStore from "@/app/stores/usePresetStore";
 import { buildGuiItem, buildLoadFileFn } from "@/app/utils/gui";
 import { button, useControls } from "leva";

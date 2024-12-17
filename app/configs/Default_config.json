@@ -1,22 +1,16 @@
 {
     "musicURL": "",
     "character": "つみ式ミクさんv4.pmx",
-    "Character.position": [0, 0, 0],
+    "Character.position": [
+        0,
+        0,
+        0
+    ],
     "motion": "GimmeGimme_with_emotion.vmd",
     "camera": "GimmexGimme.vmd",
     "stage": "EPDS.pmx",
-    "motionFile": null,
-    "cameraFile": null,
-    "pmxFiles": {
-        "character": null,
-        "stage": null,
-        "modelTextures": {
-            "character": null,
-            "stage": null
-        }
-    },
     "currentTime": 0,
-    "volume": 1.0,
+    "volume": 1,
     "camera mode": 0,
     "physics": true,
     "ground shadow": true,
@@ -28,15 +22,44 @@
     "Hemisphere ground": 4730414,
     "Light.directionalLight.intensity": 2,
     "Light.directionalLight.color": "#ffffff",
-    "Light.directionalLight.position": [0.3, 1, 1],
+    "Light.directionalLight.position": [
+        0.3,
+        1,
+        1
+    ],
     "Light.directionalLight.castShadow": true,
     "Light.pointLight.intensity": 2,
     "Light.pointLight.color": "#ffffff",
-    "Light.pointLight.position": [0.3, 1, 1],
-    "Light": {},
+    "Light.pointLight.position": [
+        0.3,
+        1,
+        1
+    ],
+    "Light": {
+        "directionalLight-6FjL": {
+            "color": "#ffffff",
+            "intensity": 3.7,
+            "position": [
+                0,
+                19.634107386682132,
+                -12.962967784178506
+            ],
+            "castShadow": true
+        },
+        "directionalLight-m7UH": {
+            "color": "#ffffff",
+            "intensity": 2,
+            "position": [
+                -0.10336838010410077,
+                3.045394279257195,
+                15.36233263336133
+            ],
+            "castShadow": true
+        }
+    },
     "distanceScalar": 15,
     "Ambient color": "#ffffff",
-    "Ambient intensity": 0.2,
+    "Ambient intensity": 0.19999999999999996,
     "enable SDEF": true,
     "enable PBR": true,
     "show FPS": false,
@@ -145,30 +168,50 @@
     "Hemisphere intensity": 0,
     "bokeh enabled": false,
     "bokeh resolution": 480,
-    "bokeh scale": 2,
+    "bokeh scale": 14.5,
     "edge blur kernel": 2,
     "bokeh autofocus": true,
     "bokeh focus": 2,
-    "bokeh focus range": 0.04,
-    "bloom enabled": false,
-    "bloom intensity": 1.0,
+    "bokeh focus range": 0.41000000000000003,
+    "bloom enabled": true,
+    "bloom intensity": 10,
     "bloom radius": 0.85,
     "bloom levels": 8,
     "luminance enabled": true,
-    "bloom threshold": 0.9,
-    "bloom smoothing": 0.025,
-    "envIntensity": 1.0,
-    "envRotation": [0, 0, 0],
-    "fov": 30,
+    "bloom threshold": 0.6500000000000001,
+    "bloom smoothing": 1,
+    "envIntensity": 0.5,
+    "envRotation": [
+        0,
+        0,
+        0
+    ],
+    "fov": 30.339199600077976,
     "zoom": 0.8,
     "near": 0.1,
     "tone mapping": 0,
-    "exposure": 1.0,
+    "exposure": 1,
     "auto rotate": false,
     "auto rotate speed": 2,
     "collectionKeys": "1234567890",
     "cutKeys": "abcdefghijklmnopqrstuvwxyz",
     "follow smooth": 31,
     "gravity": -9.8,
-    "texture enabled": false
+    "texture enabled": false,
+    "bokeh focal length": 5,
+    "Material.targetMaterial": 0,
+    "Light.ambientLight.intensity": 1.9000000000000001,
+    "Directional": "#ffffff",
+    "Directional position": [
+        0.3,
+        1,
+        1
+    ],
+    "lightX": 0.3,
+    "lightY": 1,
+    "lightZ": 1,
+    "targetMaterial": 0,
+    "Directional intensity": 0,
+    "Light.ambientLight.color": "#ffffff",
+    "Effects.set pixelratio 1": false
 }
