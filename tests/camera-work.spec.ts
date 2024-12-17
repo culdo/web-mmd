@@ -5,7 +5,7 @@ async function playToTime(page: Page, testInfo: TestInfo, time: number) {
     let prevTime = 0.0
     await expect(async () => {
         const currentTime = await page.evaluate('vjplayer.currentTime()') as number
-        if(currentTime - prevTime == 0.0) {
+        if(await page.evaluate('vjplayer.paused()')) {
             await page.keyboard.down(" ")
         }
         prevTime = currentTime
