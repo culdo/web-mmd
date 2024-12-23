@@ -8,24 +8,8 @@ import { useEffect } from "react"
 import DirectionalLight from "./DirectionalLight"
 import PointLight from './PointLight'
 
-function Env() {
+function Lights() {
     const presetReady = useGlobalStore(state => state.presetReady)
-
-
-    useEffect(() => {
-        // keyboard shortcuts
-        document.addEventListener("keydown", (e) => {
-            if (e.key == " ") {
-                const player = useGlobalStore.getState().player
-
-                if (player?.paused()) {
-                    player?.play()
-                } else {
-                    player?.pause()
-                }
-            }
-        })
-    }, [])
 
     const fog = useControls('Light', {
         fog: folder({
@@ -99,4 +83,4 @@ function Env() {
     );
 }
 
-export default Env;
+export default Lights;

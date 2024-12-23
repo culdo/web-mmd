@@ -17,12 +17,6 @@ function MotionFileMode({ promise }: { promise: Promise<AnimationClip> }) {
     const camera = useThree(state => state.camera)
     const cameraMixer = useMemo(() => new AnimationMixer(camera), [camera])
 
-    const mmd = {
-        get currentTime() {
-            return player.currentTime()
-        }
-    }
-
     const setTime = (time: number) => {
         cameraMixer.setTime(time)
 
@@ -42,7 +36,7 @@ function MotionFileMode({ promise }: { promise: Promise<AnimationClip> }) {
     }, [camera, cameraName])
 
     useFrame(() => {
-        if (isMotionUpdating.current) setTime(mmd.currentTime)
+        if (isMotionUpdating.current) setTime(player.currentTime)
     }, 1)
     return <></>;
 }

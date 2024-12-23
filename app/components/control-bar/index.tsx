@@ -27,7 +27,7 @@ function ControlBar() {
             gui._timeoutID = setTimeout(function () {
                 rawPlayer.style.opacity = "0";
                 fullScreenBt.style.opacity = "0";
-                if (player && !player.paused()) {
+                if (player && !player.paused) {
                     document.body.style.cursor = "none"
                 }
             }, 1000);

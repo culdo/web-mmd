@@ -20,10 +20,10 @@ function useRenderLoop() {
             return
         }
 
-        const currTime = player.currentTime()
+        const currTime = player.currentTime
         // player has a bug that sometimes jump to end(duration)
         // so we just skip that frame
-        if (player.currentTime() == player.duration()) {
+        if (player.currentTime == player.duration) {
             return
         }
 
@@ -60,7 +60,7 @@ function useRenderLoop() {
         // stop when motion is finished and then fix physics
         if (runtimeCharacter.looped) {
             player.pause();
-            player.currentTime(0.0);
+            player.currentTime = 0.0
 
             runtimeCharacter.physics.reset();
             runtimeCharacter.physics.update(0.1)

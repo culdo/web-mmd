@@ -2,16 +2,16 @@ import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRo
 import { MutableRefObject, createRef } from 'react';
 import { PerspectiveCamera, SkinnedMesh } from 'three';
 import { OrbitControls } from 'three-stdlib';
-import Player from 'video.js/dist/types/player';
 import { create } from 'zustand';
 import { MMDAnimationHelper } from '../modules/MMDAnimationHelper';
 import { MMDLoader } from '../modules/MMDLoader';
+import CustomVideoElement from 'youtube-video-element';
 
 export type Gui = LevaRootProps & { _timeoutID?: NodeJS.Timeout }
 export type GlobalState = {
     loader: MMDLoader
     helper: MMDAnimationHelper,
-    player: Player,
+    player: CustomVideoElement,
     gui: Gui,
     camera: PerspectiveCamera,
     runtimeCharacter: any,

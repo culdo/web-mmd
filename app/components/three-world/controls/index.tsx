@@ -19,6 +19,19 @@ function Controls() {
     const enabledTransform = useGlobalStore(state => state.enabledTransform)
 
     useEffect(() => {
+        // keyboard shortcuts
+        document.addEventListener("keydown", (e) => {
+            const player = useGlobalStore.getState().player
+            if(!player) return
+            if (e.key == " ") {
+                if (player.paused) {
+                    player.play()
+                } else {
+                    player.pause()
+                }
+            }
+        })
+
         const controls = controlsRef.current
         useGlobalStore.setState({
             controls

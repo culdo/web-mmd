@@ -96,12 +96,6 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
         return [compositeClips, keysToClips]
     }
 
-    const mmd = {
-        get currentTime() {
-            return player.currentTime()
-        }
-    }
-
     const scrollingDuration = 3.0  // seconds
     // Clips is a array of clipInfo for composition camera mode
     // target clips reference above clips that currently running
@@ -118,7 +112,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
 
     const clearCurrentBeat = () => {
         if (currentClipRef.current) {
-            const diff = mmd.currentTime - (currentClipRef.current.cutTime - (motionOffset * 0.001))
+            const diff = player.currentTime - (currentClipRef.current.cutTime - (motionOffset * 0.001))
             if (Math.round(diff * 1000) == 0) {
                 currentClipRef.current.action.stop()
                 const idx = compositeClips.indexOf(currentClipRef.current)
@@ -127,7 +121,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
         }
     }
     const saveCompositeClips = () => {
-        updateScrollingBar(mmd.currentTime)
+        updateScrollingBar(player.currentTime)
         setCompositeClips(compositeClips)
         const json = []
         for (const clip of compositeClips) {
@@ -137,7 +131,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
         }
 
         usePresetStore.setState({ compositeClips: json })
-        setTime(mmd.currentTime)
+        setTime(player.currentTime)
     }
 
     const resetAllBeats = () => {
@@ -247,7 +241,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
                 clearCurrentBeat()
 
                 const copiedClip = { ...keyToClips[pressedKeyBinding] }
-                copiedClip.cutTime = mmd.currentTime
+                copiedClip.cutTime = player.currentTime
 
                 compositeClips.push(copiedClip)
                 saveCompositeClips()
@@ -256,7 +250,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
                 let minDiff = null
                 let prevClip = null
                 for (const clip of compositeClips) {
-                    const diff = Math.round((mmd.currentTime - clip.cutTime) * 1000)
+                    const diff = Math.round((player.currentTime - clip.cutTime) * 1000)
                     if (diff > 0) {
                         if (minDiff == null || diff < minDiff) {
                             minDiff = diff
@@ -266,13 +260,13 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
                 }
                 if (prevClip != null) {
                     prevClip.action.reset()
-                    player.currentTime(prevClip.cutTime - (motionOffset * 0.001))
+                    player.currentTime = prevClip.cutTime - (motionOffset * 0.001)
                 }
             } else if (e.key == "ArrowRight") {
                 let minDiff = null
                 let nextCutTime = null
                 for (const { cutTime } of compositeClips) {
-                    const diff = Math.round((cutTime - mmd.currentTime) * 1000)
+                    const diff = Math.round((cutTime - player.currentTime) * 1000)
                     if (diff > 0) {
                         if (minDiff == null || diff < minDiff) {
                             minDiff = diff
@@ -281,7 +275,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
                     }
                 }
                 if (nextCutTime != null) {
-                    player.currentTime(nextCutTime - (motionOffset * 0.001))
+                    player.currentTime = nextCutTime - (motionOffset * 0.001)
                 }
             } else if (["Delete", "Backspace"].includes(e.key)) {
                 clearCurrentBeat()
@@ -299,7 +293,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
     }, [camera, cameraName])
 
     useFrame(() => {
-        if (isMotionUpdating.current) setTime(mmd.currentTime)
+        if (isMotionUpdating.current) setTime(player.currentTime)
     }, 1)
     return <></>;
 }

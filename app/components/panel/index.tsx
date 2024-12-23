@@ -6,9 +6,9 @@ function Panel() {
     const gui = useGlobalStore(state => state.gui)
     usePreset()
     const presetReady = useGlobalStore(states => states.presetReady)
-    gui.hidden = !presetReady
+    const hidden = !presetReady || gui.hidden
     return (
-        <Leva oneLineLabels {...gui}></Leva>
+        <Leva oneLineLabels {...gui} hidden={hidden}></Leva>
     );
 }
 

@@ -1,15 +1,14 @@
-import { useEffect } from "react";
+import { LegacyRef, SyntheticEvent, use, useEffect, useRef } from "react";
 import styles from "./styles.module.css"
-import videojs from "video.js";
-import { dataURItoBlobUrl, loadMusicFromYT } from "@/app/utils/base";
-import Player from "video.js/dist/types/player";
 import useGlobalStore, { Gui } from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { button, useControls } from "leva";
+import { useControls } from "leva";
 
-declare global {
-    interface Window { vjplayer: Player; }
-}
+import YoutubeVideo from 'youtube-video-element/react';
+import 'media-chrome/react';
+import 'media-chrome/react/menu';
+import { MediaTheme } from 'media-chrome/react/media-theme';
+import CustomVideoElement from "youtube-video-element";
 
 function AudioPlayer() {
 
@@ -23,81 +22,79 @@ function AudioPlayer() {
     const musicYtURL = usePresetStore(state => state.musicYtURL)
 
     const autoHideGui = usePresetStore(state => state["auto hide GUI"])
-
     const setGui = (gui: Partial<Gui>) => useGlobalStore.setState({ gui })
 
-    const [_, setMusicGui] = useControls('MMD Files', () => ({
+    const [gui, setMusicGui] = useControls('MMD Files', () => ({
         music: {
             value: musicName,
             editable: false
         },
-        "YT Url": {
-            value: musicYtURL,
-            onChange: (value, path, context) => {
-                if (!context.initial) {
-                    loadMusicFromYT({ currentTime, volume, musicYtURL: value })
-                }
-            },
+        ytUrl: {
+            label: "YT URL",
+            value: musicYtURL
         },
     }), { order: 2, collapsed: true }, [musicName])
 
-    const init = async () => {
-        // music player
-        const player = videojs('rawPlayer', {
-            "audioOnlyMode": true
-        })
-        // for testing
-        window.vjplayer = player
-        if (musicURL.startsWith("data:")) {
-            player.src(dataURItoBlobUrl(musicURL))
-        } else {
-            await loadMusicFromYT({ currentTime, volume, musicYtURL });
-        }
+    const ytPlayer = useRef<CustomVideoElement>()
 
-        player.currentTime(currentTime);
-        player.volume(volume);
-
-        player.on('durationchange', () => {
-            const musicName = (player.tech(true) as any).ytPlayer.videoTitle
-            usePresetStore.setState({ musicName })
-            setMusicGui({ music: musicName })
-        })
-        player.on('volumechange', () => {
-            setVolume(player.volume());
-            if (player.muted()) {
-                setVolume(0.0);
-            }
-        })
-
-        player.on('play', () => {
-            if (autoHideGui) setGui({ hidden: true });
-            useGlobalStore.setState({ enabledTransform: false })
-        })
-
-        player.on('pause', () => {
-            setGui({ hidden: false });
-            setTime(player.currentTime());
-            useGlobalStore.setState({ enabledTransform: true })
-        })
-        
-        player.on('seeked', () => {
-            setTime(player.currentTime());
-            useGlobalStore.setState({ enabledTransform: true })
-        })
-
-        useGlobalStore.setState({ player })
+    const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
+        if (autoHideGui) setGui({ hidden: true });
+        useGlobalStore.setState({ enabledTransform: false })
     }
 
-    useEffect(() => {
-        init()
-    }, [])
+    const onPause = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
+        setGui({ hidden: false });
+        setTime(ytPlayer.current.currentTime);
+        useGlobalStore.setState({ enabledTransform: true })
+    }
+
+    const onSeeked = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
+        setTime(ytPlayer.current.currentTime);
+        useGlobalStore.setState({ enabledTransform: true })
+    }
+
+    const onLoadedMetadata = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
+        ytPlayer.current.currentTime = currentTime
+        useGlobalStore.setState({ player: ytPlayer.current})
+        const musicName = ytPlayer.current.title
+        usePresetStore.setState({ musicName })
+        setMusicGui({ music: musicName })
+    }
+
     return (
-        <audio
-            id="rawPlayer"
-            className={`video-js vjs-default-skin ${styles.player}`}
-            controls
-        >
-        </audio>
+        <>
+            <template
+                id="media-theme-audio"
+                dangerouslySetInnerHTML={{
+                    __html: `
+                        <media-controller audio>
+                            <slot name="media" slot="media"></slot>
+                            <media-control-bar style="width: 100%;">
+                                <media-play-button></media-play-button>
+                                <media-mute-button></media-mute-button>
+                                <media-volume-range></media-volume-range>
+                                <media-time-range></media-time-range>
+                                <media-time-display showduration></media-time-display>
+                            </media-control-bar>
+                        </media-controller>` }}
+            />
+
+            <MediaTheme
+                id="rawPlayer"
+                template="media-theme-audio" 
+                className={styles.player}
+            >
+                <YoutubeVideo
+                    ref={ytPlayer}
+                    slot="media"
+                    src={gui.ytUrl}
+                    onPlay={onPlay}
+                    onPause={onPause}
+                    onSeeked={onSeeked}
+                    onLoadedMetadata={onLoadedMetadata}
+                ></YoutubeVideo>
+            </MediaTheme>
+        </>
     );
 }
 

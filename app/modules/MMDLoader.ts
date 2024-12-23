@@ -51,7 +51,6 @@ import {
 import { MMDToonShader } from './shaders/MMDToonShader';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
 import { MMDParser, Parser } from './mmdparser.module';
-// import nj from 'numjs'
 import { MMDPhysicalMaterial } from './MMDPhysicalMaterial';
 import { initSdef } from './shaders/SdefVertexShader';
 
