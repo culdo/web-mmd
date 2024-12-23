@@ -4,12 +4,14 @@ import { PerspectiveCamera as PerspectiveCameraImpl } from "three";
 import CameraWorkHelper from "./helper";
 import { button, useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import { buildGuiItem } from "@/app/utils/gui";
+import { buildGuiItem, buildLoadFileFn } from "@/app/utils/gui";
 import { useThree } from "@react-three/fiber";
 import defaultConfig from '@/app/configs/Default_config.json';
+import usePresetStore from "@/app/stores/usePresetStore";
 
 function Camera() {
     const cameraRef = useRef<PerspectiveCameraImpl>()
+    const cameraName = usePresetStore(state => state.camera)
 
     const presetReady = useGlobalStore(state => state.presetReady)
 
@@ -32,7 +34,19 @@ function Camera() {
         reset: button(() => {
             const { fov, near, zoom } = defaultConfig
             set({ fov, near, zoom })
-        })
+        }),
+        name: {
+            value: cameraName,
+            editable: false
+        },
+        "select camera file": button(() => {
+            const selectFile = document.getElementById("selectFile") as HTMLInputElement
+            selectFile.onchange = buildLoadFileFn((cameraFile, name) => {
+                usePresetStore.setState({ cameraFile, camera: name })
+                set({ name })
+            })
+            selectFile.click();
+        }),
     }), { order: 2, collapsed: true }, [presetReady])
 
     return (

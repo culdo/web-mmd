@@ -9,6 +9,7 @@ import 'media-chrome/react';
 import 'media-chrome/react/menu';
 import { MediaTheme } from 'media-chrome/react/media-theme';
 import CustomVideoElement from "youtube-video-element";
+import { buildGuiItem } from "@/app/utils/gui";
 
 function AudioPlayer() {
 
@@ -24,18 +25,18 @@ function AudioPlayer() {
     const autoHideGui = usePresetStore(state => state["auto hide GUI"])
     const setGui = (gui: Partial<Gui>) => useGlobalStore.setState({ gui })
 
-    const [gui, setMusicGui] = useControls('MMD Files', () => ({
-        music: {
+    const [gui, setMusicGui] = useControls('Music', () => ({
+        name: {
             value: musicName,
             editable: false
         },
         ytUrl: {
             label: "YT URL",
-            value: musicYtURL
+            ...buildGuiItem("musicYtURL")
         },
     }), { order: 2, collapsed: true }, [musicName])
 
-    const ytPlayer = useRef<CustomVideoElement>()
+    const ytPlayer = useRef<CustomVideoElement & { api: { videoTitle: string } }>()
 
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         if (autoHideGui) setGui({ hidden: true });
@@ -55,10 +56,10 @@ function AudioPlayer() {
 
     const onLoadedMetadata = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         ytPlayer.current.currentTime = currentTime
-        useGlobalStore.setState({ player: ytPlayer.current})
-        const musicName = ytPlayer.current.title
+        useGlobalStore.setState({ player: ytPlayer.current })
+        const musicName = ytPlayer.current.api.videoTitle
         usePresetStore.setState({ musicName })
-        setMusicGui({ music: musicName })
+        setMusicGui({ name: musicName })
     }
 
     return (
@@ -81,7 +82,7 @@ function AudioPlayer() {
 
             <MediaTheme
                 id="rawPlayer"
-                template="media-theme-audio" 
+                template="media-theme-audio"
                 className={styles.player}
             >
                 <YoutubeVideo

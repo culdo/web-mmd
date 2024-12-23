@@ -20,8 +20,8 @@ function Stage() {
     const url = pmxFiles.stage[stageName]
     const filename = stageName
 
-    const [_, set] = useControls('MMD Files', () => ({
-        stage: {
+    const [_, set] = useControls('Stage', () => ({
+        name: {
             value: stageName,
             options: Object.keys(pmxFiles.stage),
             onChange: (value, path, options) => {
@@ -38,7 +38,7 @@ function Stage() {
             selectFile.click();
             selectFile.webkitdirectory = false;
         }),
-    }), { order: 2 }, [pmxFiles.stage])
+    }), { collapsed: true, order: 2 }, [pmxFiles.stage])
 
     useEffect(() => {
         const init = async () => {
@@ -61,7 +61,7 @@ function Stage() {
             // stage.castShadow = true;
 
             useGlobalStore.setState({ stage })
-            set({ stage: stageName })
+            set({ name: stageName })
 
             return stage
         }

@@ -16,7 +16,7 @@ function Skybox({ hdrUrl }: { hdrUrl: string }) {
         "envRotation": buildGuiItem("envRotation", (value) => {
             scene.environmentRotation = value
         })
-    })
+    }, { collapsed: true })
     useEffect(() => {
         const pmremGenerator = new THREE.PMREMGenerator(gl);
         pmremGenerator.compileEquirectangularShader();

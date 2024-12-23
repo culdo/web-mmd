@@ -9,7 +9,6 @@ import MotionFileMode from "./motion-file-mode";
 
 function CameraWorkHelper() {
     const cameraMode = usePresetStore(state => state["camera mode"])
-    const cameraName = usePresetStore(state => state.camera)
 
     const getCameraMode = () => usePresetStore.getState()['camera mode']
 
@@ -24,21 +23,6 @@ function CameraWorkHelper() {
             order: 0,
         },
     }), [cameraMode])
-
-    const [_, setCameraGui] = useControls('MMD Files', () => ({
-        camera: {
-            value: cameraName,
-            editable: false
-        },
-        "select camera file": button(() => {
-            const selectFile = document.getElementById("selectFile") as HTMLInputElement
-            selectFile.onchange = buildLoadFileFn((cameraFile, camera) => {
-                usePresetStore.setState({ cameraFile, camera })
-                setCameraGui({ camera })
-            })
-            selectFile.click();
-        }),
-    }), { order: 2 }, [cameraName])
 
     useEffect(() => {
         // keyboard shortcuts

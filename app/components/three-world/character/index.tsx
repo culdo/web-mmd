@@ -70,7 +70,7 @@ function CharacterBase() {
             })
             selectFile.click();
         }),
-    }), { order: 2 }, [pmxFiles.character, motionName])
+    }), { collapsed: true, order: 2 }, [pmxFiles.character, motionName])
 
     useEffect(() => {
         const load = async () => {

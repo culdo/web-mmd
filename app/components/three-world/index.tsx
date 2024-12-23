@@ -7,6 +7,7 @@ import useRenderLoop from './renderLoop/useRenderLoop';
 import Stage from './stage';
 import Plugins from './plugins';
 import Skybox from './skybox/Skybox';
+import Debug from './debug';
 
 function ThreeWorld() {
     useRenderLoop()
@@ -19,6 +20,7 @@ function ThreeWorld() {
             <Camera></Camera>
             <Controls></Controls>
             <Skybox hdrUrl='BRDF.hdr'></Skybox>
+            <Debug></Debug>
         </>
     )
 }
