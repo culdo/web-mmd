@@ -5,9 +5,9 @@
   </a>
 </p>
 
-Try it now! -> https://culdo.github.io/web-mmd/
+[> Try it now ! <](https://culdo.github.io/web-mmd/)
 
-For who wants to play MMD in the browser, you can now play it anywhere.
+For who wants to play MMD in the browser, now you can play it anywhere.
 
 It is improved version of [the three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio).\
 It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) for effects.
@@ -15,13 +15,13 @@ It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) f
 # Features
 * Play MMD with time control bar(time seeking, jump to time...etc)
 * Change Model, Stage, Motion, Camera and Music(From YT or file)
-* Turn on/off auto camera(can playing manually)
+* Turn on/off auto camera(can play manually)
 * Adjust shadow/outline/color/...etc
 * Layout settings (Auto-hide gui/Show FPS/Fullscreen...etc)
 * Presets (open/save-as/copy/export as `JSON` format)
-* Camera Composition mode (create/del/next/prev camera cut)
-* Camera Fixed-Follow mode (can adjust using orbit controls)
-* Keyboard Shortcuts(play/pause, toggle camera mode, manipulate camera cut...)
+* Camera Composition mode (create/delete/jump forward/backward camera cuts)
+* Camera Fixed-Follow mode (can adjust using mouse)
+* Keyboard Shortcuts(play/pause, toggle camera mode, manipulate camera cuts...)
 
 # Demo credits
 * music: GimmexGimme by 八王子P × Giga
@@ -41,14 +41,14 @@ It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) f
 * `three.js` (For MMD)
 * `postprocessing.js` (For effects)
 * `Next.js` (For static site generating)
-* `video.js` (For audio from YT)
+* `media-chrome` (For audio from YT)
 * `playwright` (For testing)
 
 ## E2E Testing using Playwright
 Run `npm test`
 
 ## CI/CD
-It uses `Github Action` to auto test and deploy the demo site. Relative files located at `./.github/workflows`
+It uses `Github Action` to deploy the demo site. Relative files located at `./.github/workflows`.
 
 # To-do list
 ## Done
@@ -64,9 +64,10 @@ It uses `Github Action` to auto test and deploy the demo site. Relative files lo
 - [x] camera Fixed-Follow mode
 - [x] PBR rendering
 - [x] refactor to Typescript
+- [x] refactor to @react-three eco-system
+- [x] Skybox rendering
 
 ## WIP
-- [ ] refactor to @react-three eco system
 - [ ] timeline editor
     - [x] camera composition mode
 ## Planning
