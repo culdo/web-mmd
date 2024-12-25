@@ -6,14 +6,12 @@ import { useRef } from "react";
 function useRenderLoop() {
 
     const helper = useGlobalStore(state => state.helper)
-    const physics = usePresetStore(state => state.physics)
     const player = useGlobalStore(state => state.player)
     const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
     const controls = useGlobalStore(state => state.controls)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
 
-    const prevTime = 0.0
-    const prevTimeRef = useRef(prevTime)
+    const prevTimeRef = useRef(0.0)
     
     useFrame(() => {
         if (!runtimeCharacter || !player) {
@@ -24,23 +22,11 @@ function useRenderLoop() {
         const delta = currTime - prevTimeRef.current;
 
         if (Math.abs(delta) > 0) {
-            // check if time seeking using player control
-            if (Math.abs(delta) > 1.0) {
-                helper.enable('physics', false);
-            }
-
             // camera motion updating
             isMotionUpdating.current = true
             // character motion updating
             helper.update(delta, currTime);
-
-            // check if time seeking using player control
-            if (Math.abs(delta) > 1.0) {
-                runtimeCharacter.physics.reset();
-                helper.enable('physics', physics);
-            }
             prevTimeRef.current = currTime
-
         } else {
             isMotionUpdating.current = false
             if (controls.autoRotate) {
@@ -51,15 +37,11 @@ function useRenderLoop() {
             }
         }
 
-        // stop when motion is finished and then fix physics
+        // stop when motion is finished
         if (runtimeCharacter.looped) {
-            player.pause();
             player.currentTime = 0.0
-
-            runtimeCharacter.physics.reset();
-            runtimeCharacter.physics.update(0.1)
-
-            runtimeCharacter.looped = false;
+            player.pause()
+            runtimeCharacter.looped = false
         }
     }, 1)
 }

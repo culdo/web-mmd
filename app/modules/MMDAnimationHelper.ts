@@ -7,6 +7,7 @@ import {
 } from 'three';
 import { CCDIKSolver } from 'three/examples/jsm/animation/CCDIKSolver.js';
 import { MMDPhysics, MMDPhysicsParameter } from 'three/examples/jsm/animation/MMDPhysics.js';
+import AmmoCls from "ammojs-typed";
 
 /**
  * MMDAnimationHelper handles animation of MMD assets loaded by MMDLoader
@@ -33,6 +34,7 @@ class MMDAnimationHelper {
 	masterPhysics: null;
 	looped: boolean;
 	animations: any;
+	zeroVector: AmmoCls.btVector3;
 
 	/**
 	 * @param {Object} params - (optional)
@@ -55,6 +57,8 @@ class MMDAnimationHelper {
 		this.cameraTarget = new Object3D();
 		this.cameraTarget.name = 'target';
 		this.cameraTarget.userData.frameNum = 0;
+
+		this.zeroVector = new Ammo.btVector3();
 
 		this.objects = new WeakMap();
 
@@ -509,7 +513,7 @@ class MMDAnimationHelper {
 			// alternate solution to save/restore bones but less performant?
 			//mesh.pose();
 			//this._updatePropertyMixersBuffer( mesh );
-
+			
 			this._restoreBones(mesh);
 
 			mixer.setTime(time);
@@ -547,8 +551,11 @@ class MMDAnimationHelper {
 
 		}
 
-		if (delta > 0 && physics && this.enabled.physics && !this.sharedPhysics) {
-
+		if (Math.abs(delta) > 0 && physics && this.enabled.physics && !this.sharedPhysics) {
+		    // reset physic when time seeking
+			if (Math.abs(delta) > 1.0) {
+				this.reset(time);
+			}
 			physics.update(delta);
 
 		}
@@ -889,6 +896,19 @@ class MMDAnimationHelper {
 				objects.mixer.clipAction(this.animations[i]).play();
 
 			}
+		}
+	}
+
+	reset(currTime: number) {
+		for (const mesh of this.meshes) {
+			const physics = this.objects.get(mesh).physics;
+			this.update(0.0, currTime);
+            physics.reset();
+            for(const rigidBody of physics.bodies) {
+                rigidBody.body.clearForces()
+                rigidBody.body.setLinearVelocity(this.zeroVector)
+                rigidBody.body.setAngularVelocity(this.zeroVector)
+            }
 		}
 	}
 
