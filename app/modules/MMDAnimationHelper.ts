@@ -171,14 +171,14 @@ class MMDAnimationHelper {
 	/**
 	 * Updates the animation.
 	 *
-	 * @param {Number} delta
+	 * @param {Number} physicDelta
 	 * @return {MMDAnimationHelper}
 	 */
-	update(delta: number, time: number): MMDAnimationHelper {
+	update(physicDelta: number, motionTime: number): MMDAnimationHelper {
 
 		for (let i = 0; i < this.meshes.length; i++) {
 
-			this._animateMesh(this.meshes[i], delta, time);
+			this._animateMesh(this.meshes[i], physicDelta, motionTime);
 
 		}
 
