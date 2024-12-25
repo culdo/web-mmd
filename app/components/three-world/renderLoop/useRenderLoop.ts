@@ -50,6 +50,17 @@ function useRenderLoop() {
                 runtimeCharacter.physics.update(delta);
             }
         }
+
+        // stop when motion is finished and then fix physics
+        if (runtimeCharacter.looped) {
+            player.pause();
+            player.currentTime = 0.0
+
+            runtimeCharacter.physics.reset();
+            runtimeCharacter.physics.update(0.1)
+
+            runtimeCharacter.looped = false;
+        }
     }, 1)
 }
 
