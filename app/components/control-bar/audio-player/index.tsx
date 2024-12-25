@@ -1,4 +1,4 @@
-import { LegacyRef, SyntheticEvent, use, useEffect, useRef } from "react";
+import { SyntheticEvent, useRef } from "react";
 import styles from "./styles.module.css"
 import useGlobalStore, { Gui } from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
@@ -49,11 +49,6 @@ function AudioPlayer() {
         useGlobalStore.setState({ enabledTransform: true })
     }
 
-    const onSeeked = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        setTime(ytPlayer.current.currentTime);
-        useGlobalStore.setState({ enabledTransform: true })
-    }
-
     const onLoadedMetadata = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         ytPlayer.current.currentTime = currentTime
         useGlobalStore.setState({ player: ytPlayer.current })
@@ -91,7 +86,6 @@ function AudioPlayer() {
                     src={gui.ytUrl}
                     onPlay={onPlay}
                     onPause={onPause}
-                    onSeeked={onSeeked}
                     onLoadedMetadata={onLoadedMetadata}
                 ></YoutubeVideo>
             </MediaTheme>

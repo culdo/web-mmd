@@ -21,17 +21,11 @@ function useRenderLoop() {
         }
 
         const currTime = player.currentTime
-        // player has a bug that sometimes jump to end(duration)
-        // so we just skip that frame
-        if (player.currentTime == player.duration) {
-            return
-        }
-
         const delta = currTime - prevTimeRef.current;
 
         if (Math.abs(delta) > 0) {
             // check if time seeking using player control
-            if (Math.abs(delta) > 0.1) {
+            if (Math.abs(delta) > 1.0) {
                 helper.enable('physics', false);
             }
 
@@ -41,7 +35,7 @@ function useRenderLoop() {
             helper.update(delta, currTime);
 
             // check if time seeking using player control
-            if (Math.abs(delta) > 0.1) {
+            if (Math.abs(delta) > 1.0) {
                 runtimeCharacter.physics.reset();
                 helper.enable('physics', physics);
             }
@@ -55,17 +49,6 @@ function useRenderLoop() {
             if (helper.enabled["physics"]) {
                 runtimeCharacter.physics.update(delta);
             }
-        }
-
-        // stop when motion is finished and then fix physics
-        if (runtimeCharacter.looped) {
-            player.pause();
-            player.currentTime = 0.0
-
-            runtimeCharacter.physics.reset();
-            runtimeCharacter.physics.update(0.1)
-
-            runtimeCharacter.looped = false;
         }
     }, 1)
 }
