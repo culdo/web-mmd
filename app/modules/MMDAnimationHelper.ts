@@ -58,8 +58,6 @@ class MMDAnimationHelper {
 		this.cameraTarget.name = 'target';
 		this.cameraTarget.userData.frameNum = 0;
 
-		this.zeroVector = new Ammo.btVector3();
-
 		this.objects = new WeakMap();
 
 		this.configuration = {
@@ -496,6 +494,7 @@ class MMDAnimationHelper {
 		objects.physics.warmup(params.warmup !== undefined ? params.warmup : 60);
 
 		this._optimizeIK(mesh, true);
+		this.zeroVector = new Ammo.btVector3();
 
 	}
 
