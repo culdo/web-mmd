@@ -67,6 +67,23 @@ function AudioPlayer() {
                             <slot name="media" slot="media"></slot>
                             <media-control-bar style="width: 100%;">
                                 <media-play-button></media-play-button>
+                                <style>
+                                    media-mute-button + media-volume-range {
+                                        width: 0;
+                                        overflow: hidden;
+                                        transition: width 0.2s ease-in;
+                                    }
+
+                                    /* Expand volume control in all relevant states */
+                                    media-mute-button:hover + media-volume-range,
+                                    media-mute-button:focus + media-volume-range,
+                                    media-mute-button:focus-within + media-volume-range,
+                                    media-volume-range:hover,
+                                    media-volume-range:focus,
+                                    media-volume-range:focus-within {
+                                        width: 70px;
+                                    }
+                                </style>
                                 <media-mute-button></media-mute-button>
                                 <media-volume-range></media-volume-range>
                                 <media-time-range></media-time-range>

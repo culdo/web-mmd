@@ -1,11 +1,17 @@
 .player {
 	position: absolute;
-	width: 50%; 
+	width: 80%;
 	left: 0; 
 	right: 0; 
 	margin-left: auto; 
 	margin-right: auto; 
-	bottom: 25px; 
+	bottom: 25px;
 	transition: opacity 1s ease 0s; 
 	opacity: 0;
+}
+
+@media only screen and (min-width: 1000px) {
+	.player {
+		width: 50%;
+	}
 }
