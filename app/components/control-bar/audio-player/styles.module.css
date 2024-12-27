@@ -1,6 +1,6 @@
 .player {
 	position: absolute;
-	width: 80%;
+	width: 50%;
 	left: 0; 
 	right: 0; 
 	margin-left: auto; 
@@ -10,8 +10,8 @@
 	opacity: 0;
 }
 
-@media only screen and (min-width: 1000px) {
+@media only screen and (max-width: 1000px) {
 	.player {
-		width: 50%;
+		width: 80%;
 	}
 }

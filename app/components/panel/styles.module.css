@@ -1,0 +1,6 @@
+@media only screen and (max-width: 1000px) {
+	.levaContainer > div {
+		transform-origin: top right;
+		transform: scale(0.7);
+	}
+}

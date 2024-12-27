@@ -1,6 +1,6 @@
 .fsBtn {
 	position: fixed;
-	bottom: 75px;
+	bottom: 25px;
 	right: 25px;
 
 	padding: 12px;
@@ -15,9 +15,9 @@
 	box-shadow: 0 0 4px rgba(0, 0, 0, .15);
 }
 
-@media only screen and (min-width: 760px) {
+@media only screen and (max-width: 760px) {
 	.fsBtn {
-		bottom: 25px;
+		bottom: 75px;
 	}
 }
 
