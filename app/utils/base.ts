@@ -56,34 +56,6 @@ function withProgress(resp: Response, totalSize: number) {
     }));
 }
 
-let init = false
-async function loadMusicFromYT(api: { currentTime: number; volume: number; musicYtURL: string }) {
-    const player = videojs.getPlayer("rawPlayer")
-    player.src({
-        "type": "video/youtube",
-        "src": api.musicYtURL
-    })
-
-    // workaroud for yt policy
-    if (!init) {
-        const savedTime = api["currentTime"]
-        const savedVolume = api["volume"]
-        await player.play()
-        player.volume(0.0);
-        player.on('play', async () => {
-            if (!init) {
-                player.pause()
-                player.currentTime(savedTime);
-                await player.play()
-                player.pause()
-                player.currentTime(savedTime);
-                player.volume(savedVolume);
-                init = true
-            }
-        })
-    }
-}
-
 function dataURItoBlobUrl(dataURI: string) {
     // convert base64 to raw binary data held in a string
     // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
@@ -161,4 +133,4 @@ function debugWait(ms = 2000) {
     return new Promise((res) => setTimeout(() => res(true), ms))
 }
 
-export { blobToBase64, dataURItoBlobUrl, debugWait, disposeMesh, loadMusicFromYT, onProgress, saveCurrTime, startFileDownload, withProgress, withTimeElapse };
+export { blobToBase64, dataURItoBlobUrl, debugWait, disposeMesh, onProgress, saveCurrTime, startFileDownload, withProgress, withTimeElapse };
