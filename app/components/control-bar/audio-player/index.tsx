@@ -12,7 +12,7 @@ import CustomVideoElement from "youtube-video-element";
 import { buildGuiItem } from "@/app/utils/gui";
 
 function AudioPlayer() {
-    const setTime = (currentTime: number) => usePresetStore.setState({ currentTime })
+    const setCurrentTime = (currentTime: number) => usePresetStore.setState({ currentTime })
 
     const currentTime = usePresetStore(state => state.currentTime)
     const musicName = usePresetStore(state => state.musicName)
@@ -31,7 +31,11 @@ function AudioPlayer() {
         },
     }), { order: 2, collapsed: true }, [musicName])
 
-    const ytPlayer = useRef<CustomVideoElement & { api: { videoTitle: string } }>()
+    const ytPlayer = useRef<CustomVideoElement & { 
+        api: YT.Player & {
+            videoTitle: string
+        }
+    }>()
 
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         if (autoHideGui) setGui({ hidden: true });
@@ -40,12 +44,27 @@ function AudioPlayer() {
 
     const onPause = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         setGui({ hidden: false });
-        setTime(ytPlayer.current.currentTime);
+        setCurrentTime(ytPlayer.current.currentTime);
         useGlobalStore.setState({ enabledTransform: true })
     }
 
+    const lastTimeRef = useRef(currentTime)
+    const onSeeked = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
+        if(Math.abs(ytPlayer.current.currentTime - lastTimeRef.current) > 1.0) {
+            setCurrentTime(ytPlayer.current.currentTime);
+        }
+        lastTimeRef.current = ytPlayer.current.currentTime
+    }
+
     const onLoadedMetadata = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
+        ytPlayer.current.api.mute()
         ytPlayer.current.currentTime = currentTime
+        const fixPlayBt = setInterval(async () => {
+            if(ytPlayer.current.currentTime != currentTime && ytPlayer.current.paused) {
+                ytPlayer.current.api.unMute()
+                clearInterval(fixPlayBt)
+            }
+        }, 100)
         useGlobalStore.setState({ player: ytPlayer.current })
         const musicName = ytPlayer.current.api.videoTitle
         usePresetStore.setState({ musicName })
@@ -98,6 +117,7 @@ function AudioPlayer() {
                     src={gui.ytUrl}
                     onPlay={onPlay}
                     onPause={onPause}
+                    onSeeked={onSeeked}
                     onLoadedMetadata={onLoadedMetadata}
                 ></YoutubeVideo>
             </MediaTheme>
