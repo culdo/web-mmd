@@ -43,6 +43,7 @@ function AudioPlayer() {
     }
 
     const onPause = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
+        if(!loadedRef.current) return
         setGui({ hidden: false });
         setCurrentTime(ytPlayer.current.currentTime);
         useGlobalStore.setState({ enabledTransform: true })
@@ -50,18 +51,22 @@ function AudioPlayer() {
 
     const lastTimeRef = useRef(currentTime)
     const onSeeked = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
+        if(!loadedRef.current) return
         if(Math.abs(ytPlayer.current.currentTime - lastTimeRef.current) > 1.0) {
             setCurrentTime(ytPlayer.current.currentTime);
         }
         lastTimeRef.current = ytPlayer.current.currentTime
     }
 
+    const loadedRef = useRef(false)
     const onLoadedMetadata = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
+        loadedRef.current = false
         ytPlayer.current.api.mute()
         ytPlayer.current.currentTime = currentTime
         const fixPlayBt = setInterval(async () => {
-            if(ytPlayer.current.currentTime != currentTime && ytPlayer.current.paused) {
+            if(ytPlayer.current.currentTime != currentTime || ytPlayer.current.currentTime == 0.0 && ytPlayer.current.paused) {
                 ytPlayer.current.api.unMute()
+                loadedRef.current = true
                 clearInterval(fixPlayBt)
             }
         }, 100)
