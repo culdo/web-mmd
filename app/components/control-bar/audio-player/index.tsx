@@ -72,7 +72,6 @@ function AudioPlayer() {
         }, 100)
         useGlobalStore.setState({ player: ytPlayer.current })
         const musicName = ytPlayer.current.api.videoTitle
-        usePresetStore.setState({ musicName })
         setMusicGui({ name: musicName })
     }
 
