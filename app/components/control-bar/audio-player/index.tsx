@@ -12,15 +12,10 @@ import CustomVideoElement from "youtube-video-element";
 import { buildGuiItem } from "@/app/utils/gui";
 
 function AudioPlayer() {
-
-    const setVolume = (volume: number) => usePresetStore.setState({ volume })
     const setTime = (currentTime: number) => usePresetStore.setState({ currentTime })
 
     const currentTime = usePresetStore(state => state.currentTime)
-    const volume = usePresetStore(state => state.volume)
     const musicName = usePresetStore(state => state.musicName)
-    const musicURL = usePresetStore(state => state.musicURL)
-    const musicYtURL = usePresetStore(state => state.musicYtURL)
 
     const autoHideGui = usePresetStore(state => state["auto hide GUI"])
     const setGui = (gui: Partial<Gui>) => useGlobalStore.setState({ gui })
@@ -66,7 +61,7 @@ function AudioPlayer() {
                         <media-controller audio>
                             <slot name="media" slot="media"></slot>
                             <media-control-bar style="width: 100%;">
-                                <media-play-button></media-play-button>
+                                <media-play-button disabled></media-play-button>
                                 <style>
                                     media-mute-button + media-volume-range {
                                         width: 0;
