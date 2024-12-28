@@ -38,12 +38,19 @@ function AudioPlayer() {
     }>()
 
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
+        console.log("onPlay")
+        if(!loadedRef.current) return
         if (autoHideGui) setGui({ hidden: true });
         useGlobalStore.setState({ enabledTransform: false })
     }
 
     const onPause = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        if(!loadedRef.current) return
+        console.log("onPause")
+        if(!loadedRef.current) {
+            ytPlayer.current.api.unMute()
+            loadedRef.current = true
+            return
+        }
         setGui({ hidden: false });
         setCurrentTime(ytPlayer.current.currentTime);
         useGlobalStore.setState({ enabledTransform: true })
@@ -61,15 +68,12 @@ function AudioPlayer() {
     const loadedRef = useRef(false)
     const onLoadedMetadata = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         loadedRef.current = false
-        ytPlayer.current.api.mute()
-        ytPlayer.current.currentTime = currentTime
-        const fixPlayBt = setInterval(async () => {
-            if(ytPlayer.current.currentTime != currentTime || ytPlayer.current.currentTime == 0.0 && ytPlayer.current.paused) {
-                ytPlayer.current.api.unMute()
-                loadedRef.current = true
-                clearInterval(fixPlayBt)
-            }
-        }, 100)
+        if(currentTime == 0.0) {
+            ytPlayer.current.currentTime = 0.1
+            ytPlayer.current.currentTime = 0.0
+        } else {
+            ytPlayer.current.currentTime = currentTime
+        }
         useGlobalStore.setState({ player: ytPlayer.current })
         const musicName = ytPlayer.current.api.videoTitle
         setMusicGui({ name: musicName })
@@ -123,6 +127,7 @@ function AudioPlayer() {
                     onPause={onPause}
                     onSeeked={onSeeked}
                     onLoadedMetadata={onLoadedMetadata}
+                    muted
                 ></YoutubeVideo>
             </MediaTheme>
         </>
