@@ -11,15 +11,9 @@ function Panel() {
     const hidden = !presetReady || gui.hidden
     const [collapsed, setCollapsed] = useState(false)
 
-    function handleWindowSizeChange() {
+    useEffect(() => {
         if (window.innerWidth < 1000) {
             setCollapsed(true)
-        }
-    }
-    useEffect(() => {
-        window.addEventListener('resize', handleWindowSizeChange);
-        return () => {
-            window.removeEventListener('resize', handleWindowSizeChange);
         }
     }, []);
 
