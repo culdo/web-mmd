@@ -119,7 +119,7 @@ function AudioPlayer() {
             <MediaTheme
                 id="rawPlayer"
                 template="media-theme-audio"
-                className={styles.player}
+                className={`${styles.player} control-bar`}
             >
                 <YoutubeVideo
                     ref={ytPlayer}

@@ -15,7 +15,7 @@ function FullScreenButton() {
     }
     
     return (
-        <div id="fsBtn" className={styles.fsBtn} onClick={onClick}>
+        <div id="fsBtn" className={`${styles.fsBtn} control-bar`} onClick={onClick}>
             <Image src={icon} alt="fullscreen" height="24" width="24" />
         </div>
     );

@@ -1,5 +1,5 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AudioPlayer from "./audio-player";
 import FullScreenButton from "./fullscreen-button";
 
@@ -7,11 +7,13 @@ function ControlBar() {
     const getPlayer = () => useGlobalStore.getState().player
     const gui = useGlobalStore(state => state.gui)
     const presetInit = useGlobalStore(state => state.presetInit)
+    const isHoverRef = useRef(false)
 
     useEffect(() => {
         if(!presetInit) return
         const fullScreenBt = document.getElementById("fsBtn")
         const rawPlayer = document.getElementById("rawPlayer")
+        const controls = document.querySelectorAll(".control-bar")
         // control bar
         document.addEventListener('mousemove', (e) => {
             const player = getPlayer()
@@ -25,6 +27,7 @@ function ControlBar() {
             }
 
             gui._timeoutID = setTimeout(function () {
+                if(isHoverRef.current) return
                 rawPlayer.style.opacity = "0";
                 fullScreenBt.style.opacity = "0";
                 if (player && !player.paused) {
@@ -32,6 +35,14 @@ function ControlBar() {
                 }
             }, 1000);
         });
+        for(const control of controls) {
+            control.addEventListener('mouseenter', () => {
+                isHoverRef.current = true
+            })
+            control.addEventListener('mouseleave', () => {
+                isHoverRef.current = false
+            })
+        }
     }, [presetInit])
     return (
         <>
