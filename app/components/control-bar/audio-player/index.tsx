@@ -47,6 +47,9 @@ function AudioPlayer() {
     const onPause = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         console.log("onPause")
         if(!loadedRef.current) {
+            if(currentTime == 0.0) {
+                ytPlayer.current.currentTime = 0.0
+            }
             ytPlayer.current.api.unMute()
             loadedRef.current = true
             return
@@ -69,8 +72,7 @@ function AudioPlayer() {
     const onLoadedMetadata = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         loadedRef.current = false
         if(currentTime == 0.0) {
-            ytPlayer.current.currentTime = 0.1
-            ytPlayer.current.currentTime = 0.0
+            ytPlayer.current.currentTime = 1.0
         } else {
             ytPlayer.current.currentTime = currentTime
         }
