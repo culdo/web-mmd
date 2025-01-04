@@ -31,6 +31,7 @@ const storage: PersistStorage<PresetState> = {
         return (await localforage.getItem(name)) || null
     },
     setItem: async (name: string, value: StorageValue<PresetState>): Promise<void> => {
+        if(!useGlobalStore.getState().presetReady) return
         console.log(name, 'with value', value, 'has been saved')
         document.title = "Web MMD (Saving...)"
         await localforage.setItem(name, value)

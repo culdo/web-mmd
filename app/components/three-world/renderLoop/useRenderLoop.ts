@@ -27,6 +27,12 @@ function useRenderLoop() {
             // character motion updating
             helper.update(delta, currTime);
             prevTimeRef.current = currTime
+
+            // save seeked time
+            if (Math.abs(delta) > 1.0) {
+                usePresetStore.setState({currentTime: currTime})
+            }
+
         } else {
             isMotionUpdating.current = false
             if (controls.autoRotate) {
