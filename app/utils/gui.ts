@@ -119,7 +119,7 @@ function buildFlexGuiItem<T>(path: string, handler?: OnChangeHandler) {
     }
 }
 
-function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userData.${string}`, handler?: OnChangeHandler, min = 0, max = 1) {
+function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userData.${string}`, handlerOrArgs?: OnChangeHandler | readonly [OnChangeHandler, Record<string, any>], min = 0, max = 1) {
     const character = useGlobalStore.getState()["character"]
     const targetMaterialIdx = usePresetStore.getState()["targetMaterialIdx"]
 
@@ -134,8 +134,16 @@ function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userDa
     const initValFromMaterial = targetProp instanceof THREE.Color ? `#${targetProp.getHexString()}` : targetProp
     const initialValue = _.get(usePresetStore.getState(), configPath) ?? initValFromMaterial
 
-    const onChange: OnChangeHandler = (value, path, options) => {
-        if (!options.initial) {
+    let handler: OnChangeHandler;
+    let options: Record<string, any>;
+    if(Array.isArray(handlerOrArgs)) {
+        [handler, options] = handlerOrArgs
+    } else if(typeof handlerOrArgs == "function") {
+        handler = handlerOrArgs
+    }
+
+    const onChange: OnChangeHandler = (value, path, context) => {
+        if (!context.initial) {
             usePresetStore.setState((prevState) => {
                 _.set(prevState, configPath, value)
                 return { ...prevState }
@@ -150,7 +158,7 @@ function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userDa
             _.set(targetMaterial, key, value)
         }
         if (handler) {
-            handler(value, path, options)
+            handler(value, path, context)
         }
     }
     if(typeof initialValue == "number") {
@@ -161,7 +169,15 @@ function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userDa
             onChange,
             transient: false as const
         }
-    } 
+    }
+    if(options) {
+        return {
+            value: initialValue as T,
+            onChange,
+            transient: false as const,
+            options
+        }
+    }
     return {
         value: initialValue as T,
         onChange,

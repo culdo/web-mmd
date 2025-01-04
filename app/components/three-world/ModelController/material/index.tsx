@@ -4,7 +4,7 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { buildGuiItem, buildMaterialGuiItem } from "@/app/utils/gui";
 import { button, folder, useControls } from "leva";
-import { Schema } from "leva/dist/declarations/src/types";
+import { OnChangeHandler, Schema } from "leva/dist/declarations/src/types";
 import _ from "lodash";
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -25,11 +25,12 @@ function Material({ type, modelPromise }: { type: string, modelPromise: Promise<
 
     const [controllers, setContollers] = useState<Schema>()
 
-    function updateTexture(material: { [x: string]: any; needsUpdate: boolean; }, materialKey: string, textures: { [x: string]: any; none?: null; skin?: THREE.Texture; }) {
-        return function (key: string | number) {
+    function updateTexture(material: { [x: string]: any; needsUpdate: boolean; }, materialKey: string, textures: Record<string, any>) {
+        const handler: OnChangeHandler = (key: string) => {
             material[materialKey] = textures[key];
             material.needsUpdate = true;
-        };
+        }
+        return [handler, textures] as const;
     }
 
     const skin = textureLoader.load("https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Materials/_MaterialMap/skin.png");
@@ -37,22 +38,11 @@ function Material({ type, modelPromise }: { type: string, modelPromise: Promise<
     skin.wrapT = THREE.RepeatWrapping;
     skin.repeat.set(80, 80);
 
-    const normalMaps: any = {
-        none: null,
+    const normalMaps = {
+        none: null as null,
         skin
     };
-    const normalMapsKeys = Object.keys(normalMaps)
-
-    const saveMaterial = () => {
-        const target = materials[targetMaterialIdx]
-        const targetJson = target.toJSON()
-        delete targetJson.map
-
-        material[target.name] = targetJson
-
-        usePresetStore.setState({ material: { ...material } })
-    }
-
+    
     const needsUpdate = (material: THREE.Material) => {
         return () => {
             material.needsUpdate = true;
