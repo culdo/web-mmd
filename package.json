@@ -16,6 +16,7 @@
     "@react-three/postprocessing": "^2.16.2",
     "@types/youtube": "^0.1.0",
     "ammojs-typed": "^1.0.6",
+    "iconv-lite": "^0.6.3",
     "leva": "^0.9.35",
     "lodash": "^4.17.21",
     "media-chrome": "^4.3.0",
