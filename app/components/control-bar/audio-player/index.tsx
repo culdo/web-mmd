@@ -59,15 +59,6 @@ function AudioPlayer() {
         useGlobalStore.setState({ enabledTransform: true })
     }
 
-    const lastTimeRef = useRef(currentTime)
-    const onSeeked = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        if(!loadedRef.current) return
-        if(Math.abs(ytPlayer.current.currentTime - lastTimeRef.current) > 1.0) {
-            setCurrentTime(ytPlayer.current.currentTime);
-        }
-        lastTimeRef.current = ytPlayer.current.currentTime
-    }
-
     const loadedRef = useRef(false)
     const onLoadedMetadata = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         loadedRef.current = false
@@ -127,7 +118,6 @@ function AudioPlayer() {
                     src={gui.ytUrl}
                     onPlay={onPlay}
                     onPause={onPause}
-                    onSeeked={onSeeked}
                     onLoadedMetadata={onLoadedMetadata}
                     muted
                 ></YoutubeVideo>
