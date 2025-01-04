@@ -38,14 +38,12 @@ function AudioPlayer() {
     }>()
 
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        console.log("onPlay")
         if(!loadedRef.current) return
         if (autoHideGui) setGui({ hidden: true });
         useGlobalStore.setState({ enabledTransform: false })
     }
 
     const onPause = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        console.log("onPause")
         if(!loadedRef.current) {
             if(currentTime == 0.0) {
                 ytPlayer.current.currentTime = 0.0
