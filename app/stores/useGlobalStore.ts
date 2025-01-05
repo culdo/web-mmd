@@ -1,11 +1,12 @@
 import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
 import { MutableRefObject, createRef } from 'react';
-import { PerspectiveCamera, SkinnedMesh } from 'three';
+import { AnimationMixer, PerspectiveCamera, SkinnedMesh } from 'three';
 import { OrbitControls } from 'three-stdlib';
 import { create } from 'zustand';
 import { MMDAnimationHelper } from '../modules/MMDAnimationHelper';
 import { MMDLoader } from '../modules/MMDLoader';
 import CustomVideoElement from 'youtube-video-element';
+import { CCDIKSolver, GrantSolver, MMDPhysics } from 'three/examples/jsm/Addons.js';
 
 export type Gui = LevaRootProps & { _timeoutID?: NodeJS.Timeout }
 export type GlobalState = {
@@ -14,7 +15,13 @@ export type GlobalState = {
     player: CustomVideoElement,
     gui: Gui,
     camera: PerspectiveCamera,
-    runtimeCharacter: any,
+    runtimeCharacter: {
+        mixer: AnimationMixer,
+        ikSolver: CCDIKSolver,
+        grantSolver: GrantSolver,
+        physics: MMDPhysics,
+        looped: boolean
+    },
     controls: OrbitControls
     character: SkinnedMesh,
     characterPromise: Promise<SkinnedMesh>,
