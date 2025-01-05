@@ -52,7 +52,7 @@ function Camera() {
     return (
         <>
             <PerspectiveCamera ref={cameraRef} fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
-                <object3D name="target" userData={{ frameNum: 0 }} />
+                <object3D name="target" />
             </PerspectiveCamera>
             <CameraWorkHelper></CameraWorkHelper>
         </>
