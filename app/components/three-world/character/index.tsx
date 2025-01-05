@@ -113,8 +113,6 @@ function CharacterBase() {
 
             useGlobalStore.setState({ character, runtimeCharacter })
             set({ model: characterName })
-            helper.update(0, usePresetStore.getState().currentTime);
-            runtimeCharacter.physics.reset();
 
             return character
         }

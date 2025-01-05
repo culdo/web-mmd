@@ -6,10 +6,10 @@ import { Suspense, use, useEffect, useMemo } from "react";
 import { AnimationClip, AnimationMixer } from "three";
 
 
-function MotionFileMode({ promise }: { promise: Promise<AnimationClip> }) {
+function MotionFileMode({ animationPromise }: { animationPromise: Promise<AnimationClip> }) {
     const cameraName = usePresetStore(state => state.camera)
 
-    const clip = use(promise)
+    const clip = use(animationPromise)
 
     const player = useGlobalStore(state => state.player)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
@@ -46,10 +46,10 @@ function SetupMotionFile() {
     const loader = useGlobalStore(state => state.loader)
     const camera = useThree(state => state.camera)
 
-    const promise = loader.loadAnimation(cameraFile, camera, onProgress)
+    const animationPromise = loader.loadAnimation(cameraFile, camera, onProgress)
     return (
         <Suspense fallback={null}>
-            <MotionFileMode promise={promise}></MotionFileMode>
+            <MotionFileMode animationPromise={animationPromise}></MotionFileMode>
         </Suspense>
     );
 }

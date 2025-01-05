@@ -41,13 +41,11 @@ class MMDAnimationHelper {
 	 * @param {boolean} params.sync - Whether animation durations of added objects are synched. Default is true.
 	 * @param {Number} params.afterglow - Default is 0.0.
 	 * @param {boolean} params.resetPhysicsOnLoop - Default is true.
-	 * @param {boolean} params.pmxAnimation - Default is true.
 	 */
-	constructor(params: { sync: boolean; afterglow: number; resetPhysicsOnLoop: boolean; pmxAnimation: boolean; } = {
+	constructor(params: { sync: boolean; afterglow: number; resetPhysicsOnLoop: boolean; } = {
 		sync: false,
 		afterglow: 0,
-		resetPhysicsOnLoop: false,
-		pmxAnimation: false
+		resetPhysicsOnLoop: false
 	}) {
 
 		this.meshes = [];
@@ -102,25 +100,19 @@ class MMDAnimationHelper {
 	 * @param {Number} params.delayTime - Only for THREE.Audio. Default is 0.0.
 	 * @return {MMDAnimationHelper}
 	 */
-	add(object: any, params: any): MMDAnimationHelper {
+	add(object: THREE.SkinnedMesh, params: any): MMDAnimationHelper {
 
-		if (object.isSkinnedMesh) {
+		if (object instanceof THREE.SkinnedMesh) {
 
 			this._addMesh(object, params);
 			this.animations = params.animation
-
-		} else if (object.isCamera) {
-
-			this._setupCamera(object, params);
 
 		} else {
 
 			throw new Error('THREE.MMDAnimationHelper.add: '
 				+ 'accepts only '
 				+ 'THREE.SkinnedMesh or '
-				+ 'THREE.Camera or '
-				+ 'THREE.Audio instance.');
-
+				+ 'THREE.Camera.');
 		}
 
 		if (this.configuration.sync) this._syncDuration();
@@ -149,10 +141,6 @@ class MMDAnimationHelper {
 		if (object.isSkinnedMesh) {
 
 			this._removeMesh(object);
-
-		} else if (object.isCamera) {
-
-			this._clearCamera(object);
 
 		} else {
 
@@ -346,31 +334,6 @@ class MMDAnimationHelper {
 
 	}
 
-	_setupCamera(camera: THREE.Camera, params: { animation: any; enabled: boolean }) {
-
-		if (this.camera === camera) {
-
-			throw new Error('THREE.MMDAnimationHelper._setupCamera: '
-				+ 'Camera \'' + camera.name + '\' has already been set.');
-
-		}
-
-		this.camera = camera;
-
-		camera.add(this.cameraTarget);
-
-		this.objects.set(camera, { camera });
-
-		if (params.animation !== undefined) {
-
-			this._setupCameraAnimation(camera, params);
-
-		}
-
-		return this;
-
-	}
-
 	_removeMesh(mesh: THREE.SkinnedMesh) {
 
 		let found = false;
@@ -399,24 +362,6 @@ class MMDAnimationHelper {
 		}
 
 		this.meshes.length = writeIndex;
-
-		return this;
-
-	}
-
-	_clearCamera(camera: THREE.Camera) {
-
-		if (camera !== this.camera) {
-
-			throw new Error('THREE.MMDAnimationHelper._clearCamera: '
-				+ 'Camera \'' + camera.name + '\' has not been set yet.');
-
-		}
-
-		this.camera.remove(this.cameraTarget);
-
-		this.objects.delete(this.camera);
-		this.camera = null;
 
 		return this;
 
@@ -455,26 +400,6 @@ class MMDAnimationHelper {
 		objects.grantSolver = this.createGrantSolver(mesh);
 
 		return this;
-
-	}
-
-	_setupCameraAnimation(camera: THREE.Camera, params: { animation: any; enabled: any; }) {
-
-		const animations = Array.isArray(params.animation)
-			? params.animation : [params.animation];
-
-		const objects = this.objects.get(camera);
-
-		objects.mixer = new AnimationMixer(camera);
-		objects.actions = []
-
-		for (let i = 0, il = animations.length; i < il; i++) {
-			const action = objects.mixer.clipAction(animations[i])
-			action.enabled = params.enabled
-			action.play();
-
-			objects.actions.push(action)
-		}
 
 	}
 
