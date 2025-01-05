@@ -1949,7 +1949,7 @@ class AnimationBuilder {
 
 		// I expect an object whose name 'target' exists under THREE.Camera
 		tracks.push(this._createTrack('target.position', VectorKeyframeTrack, times, centers, cInterpolations, true));
-		tracks.push(new NumberKeyframeTrack('target.userData.frameNum', times, frameNums, InterpolateDiscrete));
+		tracks.push(new NumberKeyframeTrack('target.userData[frameNum]', times, frameNums, InterpolateDiscrete));
 
 		tracks.push(this._createTrack('.quaternion', QuaternionKeyframeTrack, times, quaternions, qInterpolations, true));
 		tracks.push(this._createTrack('.position', VectorKeyframeTrack, times, positions, pInterpolations, true));
