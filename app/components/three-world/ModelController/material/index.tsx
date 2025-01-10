@@ -1,5 +1,5 @@
 import WithSuspense from "@/app/components/suspense";
-import defaultConfig from '@/app/configs/Default_config.json';
+import defaultConfig from '@/app/presets/Default_config.json';
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { buildGuiItem, buildMaterialGuiItem } from "@/app/utils/gui";

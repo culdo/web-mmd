@@ -1,11 +1,11 @@
-import defaultConfig from '@/app/configs/Default_config.json';
-import defaultData from '@/app/configs/Default_data.json';
+import defaultConfig from '@/app/presets/Default_config.json';
 import localforage from 'localforage';
 import { create } from 'zustand';
 import { PersistStorage, StorageValue, persist, subscribeWithSelector } from 'zustand/middleware';
 import { CameraClip } from '../components/three-world/camera/helper/composite-mode';
 import useConfigStore from './useConfigStore';
 import useGlobalStore from './useGlobalStore';
+import { withProgress } from '../utils/base';
 
 export type PresetState = typeof defaultConfig & {
     motionFile: string,
@@ -18,12 +18,17 @@ export type PresetState = typeof defaultConfig & {
             stage: Record<string, Record<string, string>>
         }
     },
+    resetPreset: () => Promise<void>
 } & {
     compositeClips?: CameraClip[]
-} & { [key: `${string}.color`]: string, [key: `${string}.intensity`]: number, [key: `${string}.position`]: number[] }
-    & { Light: Record<string, any> }
-    & { material: Record<string, any>};
-export const presetSep = "."
+} & {
+    [key: `${string}.color`]: string,
+    [key: `${string}.intensity`]: number,
+    [key: `${string}.position`]: number[]
+} & {
+    Light: Record<string, any>,
+    material: Record<string, any>
+}
 
 const storage: PersistStorage<PresetState> = {
     getItem: async (name: string): Promise<StorageValue<PresetState>> => {
@@ -31,7 +36,7 @@ const storage: PersistStorage<PresetState> = {
         return (await localforage.getItem(name)) || null
     },
     setItem: async (name: string, value: StorageValue<PresetState>): Promise<void> => {
-        if(!useGlobalStore.getState().presetReady) return
+        if (!useGlobalStore.getState().presetReady) return
         console.log(name, 'with value', value, 'has been saved')
         document.title = "Web MMD (Saving...)"
         await localforage.setItem(name, value)
@@ -43,10 +48,24 @@ const storage: PersistStorage<PresetState> = {
     },
 }
 
+const getDefaultDataWithProgress = async () => {
+    const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
+    return await dataResp.json()
+}
+
+export const resetPreset = async () => {
+    const defaultData = await getDefaultDataWithProgress()
+    usePresetStore.setState({ ...defaultConfig, ...defaultData })
+}
+
 const usePresetStore = create(
     subscribeWithSelector(
         persist<PresetState>(
-            (set, get) => ({ ...defaultConfig, ...defaultData }) as PresetState,
+            () => {
+                return {
+                    ...defaultConfig
+                } as PresetState
+            },
             {
                 name: useConfigStore.getState().preset,
                 storage
@@ -54,9 +73,9 @@ const usePresetStore = create(
     )
 )
 
-export const resetPreset = () => usePresetStore.setState({ ...defaultConfig, ...defaultData })
-
-usePresetStore.persist.onFinishHydration(() => {
+usePresetStore.persist.onFinishHydration(async () => {
+    const defaultData = await getDefaultDataWithProgress()
+    usePresetStore.setState({ ...defaultData })
     useGlobalStore.setState({ presetReady: true })
     useGlobalStore.setState({ presetInit: true })
 })

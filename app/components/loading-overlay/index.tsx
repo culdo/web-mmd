@@ -6,7 +6,7 @@ function LoadingOverlay({ children = "" }: { children?: string }) {
     if (presetReady) return <></>
     return (
         <div className={styles.overlay}>
-            <h1 className="text-4xl">
+            <h1 id="loading" className="text-4xl">
                 Loading {children}...
             </h1>
         </div>

@@ -6,7 +6,7 @@ import { button, useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { buildGuiItem, buildLoadFileFn } from "@/app/utils/gui";
 import { useThree } from "@react-three/fiber";
-import defaultConfig from '@/app/configs/Default_config.json';
+import defaultConfig from '@/app/presets/Default_config.json';
 import usePresetStore from "@/app/stores/usePresetStore";
 
 function Camera() {
