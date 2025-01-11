@@ -17,8 +17,7 @@ export type PresetState = typeof defaultConfig & {
             character: Record<string, Record<string, string>>,
             stage: Record<string, Record<string, string>>
         }
-    },
-    resetPreset: () => Promise<void>
+    }
 } & {
     compositeClips?: CameraClip[]
 } & {
@@ -73,15 +72,28 @@ const usePresetStore = create(
     )
 )
 
+let presetReadySolve: () => void
+useGlobalStore.setState({
+    presetReadyPromise: new Promise<void>((resolve) => {
+        presetReadySolve = resolve
+    })
+})
 usePresetStore.persist.onFinishHydration(async () => {
-    const defaultData = await getDefaultDataWithProgress()
-    usePresetStore.setState({ ...defaultData })
+    if (!usePresetStore.getState()["pmxFiles"]) {
+        const defaultData = await getDefaultDataWithProgress()
+        usePresetStore.setState({ ...defaultData })
+    }
+    presetReadySolve()
     useGlobalStore.setState({ presetReady: true })
-    useGlobalStore.setState({ presetInit: true })
 })
 
 usePresetStore.persist.onHydrate(() => {
-    useGlobalStore.setState({ presetReady: false })
+    useGlobalStore.setState({
+        presetReady: false,
+        presetReadyPromise: new Promise<void>((resolve) => {
+            presetReadySolve = resolve
+        })
+    })
 })
 
 // move to here to avoid cycle imports

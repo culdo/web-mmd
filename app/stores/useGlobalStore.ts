@@ -33,9 +33,9 @@ export type GlobalState = {
     isTransformControl: MutableRefObject<boolean>
     bindParentCb: Function,
     presetReady: boolean,
-    presetInit: boolean,
     selectedName: string,
-    enabledTransform: boolean
+    enabledTransform: boolean,
+    presetReadyPromise: Promise<void>
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -73,9 +73,9 @@ const useGlobalStore = create<GlobalState>(
         })(),
         bindParentCb: null,
         presetReady: false,
-        presetInit: false,
         selectedName: null,
-        enabledTransform: true
+        enabledTransform: true,
+        presetReadyPromise: new Promise(() => { }),
     })
 )
 

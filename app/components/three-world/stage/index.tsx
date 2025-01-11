@@ -5,12 +5,15 @@ import { buildGuiItem, buildLoadModelFn } from "@/app/utils/gui";
 import { useThree } from "@react-three/fiber";
 import { button, useControls } from "leva";
 import path from "path-browserify";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import PromisePrimitive from "../promise-primitive";
+import usePresetReady from "@/app/stores/usePresetReady";
+import WithSuspense from "../../suspense";
 
 function Stage() {
     const { scene } = useThree()
 
+    usePresetReady()
     const stagePromise = useGlobalStore(state => state.stagePromise)
     const stageName = usePresetStore(state => state.stage)
     const pmxFiles = usePresetStore(state => state.pmxFiles)
@@ -65,7 +68,7 @@ function Stage() {
 
             return stage
         }
-        useGlobalStore.setState({stagePromise: init()})
+        useGlobalStore.setState({ stagePromise: init() })
         return () => {
             const { stage } = useGlobalStore.getState()
             scene.remove(stage);
@@ -79,4 +82,4 @@ function Stage() {
     );
 }
 
-export default Stage;
+export default WithSuspense(Stage);

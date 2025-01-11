@@ -5,32 +5,32 @@ import { useFrame } from "@react-three/fiber";
 import { use, useEffect } from "react";
 import { AnimationMixer, Camera, SkinnedMesh } from "three";
 
-function useAnimation(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: string, callback?: Function) {
+function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: string, onLoop?: Function) {
     const loader = useGlobalStore(state => state.loader)
     const clip = use(loader.loadAnimation(vmdFile, target, onProgress))
 
     const player = useGlobalStore(state => state.player)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
 
-    const setTime = (currentTime: number) => {
+    const _onLoop = (currentTime: number) => {
         mixer.setTime(currentTime)
-        callback(currentTime)
+        onLoop(currentTime)
     }
     useEffect(() => {
         const savedCurrentTime = usePresetStore.getState().currentTime
 
         const action = mixer.clipAction(clip)
         action.play()
-        if(callback) setTime(savedCurrentTime)
+        if(onLoop) _onLoop(savedCurrentTime)
         return () => {
             mixer.stopAllAction()
             mixer.uncacheRoot(target)
         }
-    }, [target, vmdFile, callback])
+    }, [target, vmdFile, onLoop])
 
     useFrame(() => {
-        if (isMotionUpdating.current) setTime(player.currentTime)
+        if (isMotionUpdating.current) _onLoop(player.currentTime)
     }, 1)
 }
 
-export default useAnimation;
+export default useVMD;

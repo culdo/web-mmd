@@ -10,11 +10,13 @@ import * as THREE from 'three';
 import ModelController from "../ModelController";
 import PromisePrimitive from "../promise-primitive";
 import Pose from "./Pose";
+import WithSuspense from "../../suspense";
+import usePresetReady from "@/app/stores/usePresetReady";
 
-function CharacterBase() {
+function Character() {
 
     const { scene } = useThree()
-
+    usePresetReady()
     const helper = useGlobalStore(state => state.helper)
     const loader = useGlobalStore(state => state.loader)
     const characterPromise = useGlobalStore(state => state.characterPromise)
@@ -56,7 +58,7 @@ function CharacterBase() {
         }),
         "position": buildGuiItem(positionKey),
         "reset": button(() => {
-            set({position: [0, 0, 0]})
+            set({ position: [0, 0, 0] })
         }),
         "motion name": {
             value: motionName,
@@ -93,7 +95,7 @@ function CharacterBase() {
 
             helper.add(character, {
                 animation: mmd.animation,
-                unitStep: 1/60,
+                unitStep: 1 / 60,
                 maxStepNum: 1,
             });
             const runtimeCharacter = helper.objects.get(character)
@@ -116,7 +118,7 @@ function CharacterBase() {
 
             return character
         }
-        useGlobalStore.setState({characterPromise: load()})
+        useGlobalStore.setState({ characterPromise: load() })
         return () => {
             const { character, runtimeCharacter } = useGlobalStore.getState()
             runtimeCharacter.mixer.uncacheRoot(character);
@@ -143,17 +145,9 @@ function CharacterBase() {
                 }}
             />
             <Pose></Pose>
-        </>
-    );
-}
-
-function Character() {
-    return (
-        <>
-            <CharacterBase></CharacterBase>
             <ModelController type="Character"></ModelController>
         </>
     );
 }
 
-export default Character;
+export default WithSuspense(Character);

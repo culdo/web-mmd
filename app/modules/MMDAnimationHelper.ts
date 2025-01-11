@@ -25,7 +25,6 @@ class MMDAnimationHelper {
 	meshes: THREE.SkinnedMesh[];
 	smoothCenter: THREE.Object3D<THREE.Object3DEventMap>;
 	camera: THREE.Camera = new THREE.Camera;
-	cameraTarget: THREE.Object3D<THREE.Object3DEventMap>;
 	objects: WeakMap<WeakKey, any>;
 	configuration: { sync: any; afterglow: any; resetPhysicsOnLoop: any; };
 	enabled: Record<string, boolean>;
@@ -51,10 +50,6 @@ class MMDAnimationHelper {
 		this.meshes = [];
 		this.smoothCenter = new Object3D();
 		this.smoothCenter.name = 'smoothCenter';
-
-		this.cameraTarget = new Object3D();
-		this.cameraTarget.name = 'target';
-		this.cameraTarget.userData.frameNum = 0;
 
 		this.objects = new WeakMap();
 
