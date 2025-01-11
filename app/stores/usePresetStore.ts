@@ -1,11 +1,12 @@
 import defaultConfig from '@/app/presets/Default_config.json';
 import localforage from 'localforage';
 import { create } from 'zustand';
-import { PersistStorage, StorageValue, persist, subscribeWithSelector } from 'zustand/middleware';
+import { subscribeWithSelector } from 'zustand/middleware';
 import { CameraClip } from '../components/three-world/camera/helper/composite-mode';
 import useConfigStore from './useConfigStore';
 import useGlobalStore from './useGlobalStore';
 import { withProgress } from '../utils/base';
+import { PersistStorage, StorageValue, persist } from '../middleware/persist';
 
 export type PresetState = typeof defaultConfig & {
     motionFile: string,
@@ -29,26 +30,38 @@ export type PresetState = typeof defaultConfig & {
     material: Record<string, any>
 }
 
+let db = localforage.createInstance({ name: useConfigStore.getState().preset })
+
 const storage: PersistStorage<PresetState> = {
     getItem: async (name: string): Promise<StorageValue<PresetState>> => {
-        console.log(name, 'has been retrieved')
-        return (await localforage.getItem(name)) || null
+        const keys = await db.keys()
+        const preset = Object.fromEntries(await Promise.all(
+            keys.map(async (key) =>
+                [key, await db.getItem(key)]
+        )
+        ))
+        console.log(name, 'has been retrieved', preset)
+        return {
+            state: preset,
+            version: 0
+        }
     },
     setItem: async (name: string, value: StorageValue<PresetState>): Promise<void> => {
-        if (!useGlobalStore.getState().presetReady) return
-        console.log(name, 'with value', value, 'has been saved')
+        console.log(name, 'with value', value.state, 'has been saved')
         document.title = "Web MMD (Saving...)"
-        await localforage.setItem(name, value)
+        for (const [key, val] of Object.entries(value.state)) {
+            await db.setItem(key, val)
+        }
         document.title = "Web MMD"
     },
     removeItem: async (name: string): Promise<void> => {
         console.log(name, 'has been deleted')
-        await localforage.removeItem(name)
+        await db.clear()
     },
 }
 
 const getDefaultDataWithProgress = async () => {
-    const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
+        const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
     return await dataResp.json()
 }
 
@@ -78,8 +91,8 @@ useGlobalStore.setState({
         presetReadySolve = resolve
     })
 })
-usePresetStore.persist.onFinishHydration(async () => {
-    if (!usePresetStore.getState()["pmxFiles"]) {
+usePresetStore.persist.onFinishHydration(async (state) => {
+    if (!state.pmxFiles) {
         const defaultData = await getDefaultDataWithProgress()
         usePresetStore.setState({ ...defaultData })
     }
@@ -99,6 +112,7 @@ usePresetStore.persist.onHydrate(() => {
 // move to here to avoid cycle imports
 useConfigStore.subscribe((state) => state.preset, (newPreset) => {
     usePresetStore.persist.setOptions({ name: newPreset })
+    db = localforage.createInstance({ name: newPreset })
     usePresetStore.persist.rehydrate()
 })
 

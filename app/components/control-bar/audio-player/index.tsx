@@ -1,4 +1,4 @@
-import { SyntheticEvent, useRef } from "react";
+import { SyntheticEvent, useEffect, useRef } from "react";
 import styles from "./styles.module.css"
 import useGlobalStore, { Gui } from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
@@ -19,6 +19,7 @@ function AudioPlayer() {
 
     const autoHideGui = usePresetStore(state => state["auto hide GUI"])
     const setGui = (gui: Partial<Gui>) => useGlobalStore.setState({ gui })
+    const presetReady = useGlobalStore(state => state.presetReady)
 
     const [gui, setMusicGui] = useControls('Music', () => ({
         name: {
@@ -69,6 +70,12 @@ function AudioPlayer() {
         const musicName = ytPlayer.current.api.videoTitle
         setMusicGui({ name: musicName })
     }
+
+    // seek to saved time when change preset
+    useEffect(() => {
+        if(!presetReady || !loadedRef.current) return
+        ytPlayer.current.currentTime = currentTime
+    }, [presetReady])
 
     return (
         <>
