@@ -511,17 +511,15 @@ class MMDAnimationHelper {
 	// If you need better method you would be required to write your own.
 	_animatePMXMesh(mesh: THREE.SkinnedMesh, sortedBonesData: any, ikSolver: CCDIKSolver, grantSolver: GrantSolver) {
 
-		_quaternionIndex = 0;
-		_grantResultMap.clear();
-
-		for (const bone of mesh.geometry.userData.MMD.bones) {
-
-			updateOne(mesh, bone.index, ikSolver, grantSolver);
-
+		_quaternionIndex = 0
+		_grantResultMap.clear()
+	
+		for (let i = 0, il = sortedBonesData.length; i < il; i++) {
+		  updateOne(mesh, sortedBonesData[i].index, ikSolver, grantSolver)
 		}
-
-		mesh.updateMatrixWorld(true);
-		return this;
+	
+		mesh.updateMatrixWorld(true)
+		return this
 
 	}
 
