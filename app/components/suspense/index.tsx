@@ -1,6 +1,6 @@
-import { Suspense } from "react";
+import { ReactNode, Suspense } from "react";
 
-function WithSuspense(Component: (props: any) => JSX.Element) {
+function WithSuspense(Component: (props: any) => ReactNode) {
     return function WrappedComponent(props: any) {
         return (
             <Suspense fallback={null}>
