@@ -25,7 +25,6 @@ export type GlobalState = {
     controls: OrbitControls
     character: SkinnedMesh,
     characterPromise: Promise<SkinnedMesh>,
-    stage: SkinnedMesh,
     stagePromise: Promise<SkinnedMesh>,
     isMotionUpdating: MutableRefObject<boolean>
     beatsBufferRef: MutableRefObject<HTMLDivElement[]>
@@ -46,7 +45,6 @@ const useGlobalStore = create<GlobalState>(
         gui: {},
         character: null,
         characterPromise: new Promise(() => { }),
-        stage: null,
         stagePromise: new Promise(() => { }),
         runtimeCharacter: null,
         camera: null,

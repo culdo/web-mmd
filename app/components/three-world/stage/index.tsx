@@ -1,14 +1,16 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { disposeMesh, onProgress } from "@/app/utils/base";
+import { onProgress } from "@/app/utils/base";
 import { buildGuiItem, buildLoadModelFn } from "@/app/utils/gui";
 import { useThree } from "@react-three/fiber";
 import { button, useControls } from "leva";
 import path from "path-browserify";
-import { useEffect } from "react";
-import PromisePrimitive from "../promise-primitive";
+import { useEffect, useState } from "react";
 import usePresetReady from "@/app/stores/usePresetReady";
 import WithSuspense from "../../suspense";
+import PmxModel from "../pmx-model";
+import { MMDLoader } from "@/app/modules/MMDLoader";
+import * as THREE from 'three';
 
 function Stage() {
     const { scene } = useThree()
@@ -41,44 +43,41 @@ function Stage() {
             selectFile.click();
             selectFile.webkitdirectory = false;
         }),
-    }), { collapsed: true, order: 2 }, [pmxFiles.stage])
+    }), { collapsed: true, order: 2 }, [url])
 
+    const [onCreate, setOnCreate] = useState<(mesh: THREE.SkinnedMesh) => void>()
+    const [props, setProps] = useState<Awaited<ReturnType<MMDLoader["loadAsync"]>>>()
     useEffect(() => {
+        const { loader } = useGlobalStore.getState()
+
+        const stageParams = {
+            enablePBR,
+        };
+        if (url.startsWith("data:")) {
+            Object.assign(stageParams, {
+                modelExtension: path.extname(filename).slice(1),
+                modelTextures: pmxFiles.modelTextures.stage[filename],
+            })
+        }
+
+        useGlobalStore.setState({
+            stagePromise: new Promise(res => setOnCreate(() => res))
+        })
         const init = async () => {
-            const { loader } = useGlobalStore.getState()
-
-            const stageParams = {
-                enablePBR,
-            };
-            if (url.startsWith("data:")) {
-                Object.assign(stageParams, {
-                    modelExtension: path.extname(filename).slice(1),
-                    modelTextures: pmxFiles.modelTextures.stage[filename],
-                })
-            }
-
-            const mesh = await loader
+            const props = await loader
                 .setModelParams(stageParams)
-                .loadAsync(url, onProgress)
-            const stage = mesh;
-            // stage.castShadow = true;
-
-            useGlobalStore.setState({ stage })
-            set({ name: stageName })
-
-            return stage
+                .loadAsync(url, onProgress);
+            setProps(props)
         }
-        useGlobalStore.setState({ stagePromise: init() })
-        return () => {
-            const { stage } = useGlobalStore.getState()
-            scene.remove(stage);
-            disposeMesh(stage);
-        }
+        init()
     }, [url, filename, enablePBR])
 
-
     return (
-        <PromisePrimitive promise={stagePromise} receiveShadow={groundShadow}></PromisePrimitive>
+        <PmxModel
+            {...props}
+            receiveShadow={groundShadow}
+            onCreate={onCreate}
+        />
     );
 }
 

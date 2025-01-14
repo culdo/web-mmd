@@ -97,7 +97,13 @@ class MMDLoader extends Loader {
 	animationBuilder: AnimationBuilder;
 	animationPath: any;
 	params: any;
-	loadAsync: (url: string, onProgress?: (event: ProgressEvent<EventTarget>) => void) => Promise<SkinnedMesh>;
+	loadAsync: (url: string, onProgress?: (event: ProgressEvent<EventTarget>) => void) => Promise<{ 
+		mesh: SkinnedMesh
+		geometry: MMDGeometry
+		material: (MMDPhysicalMaterial | MMDToonMaterial)[]
+		skeleton: Skeleton
+		rootBones: Bone[]
+	}>;
 
 	constructor(manager?: LoadingManager) {
 
@@ -236,7 +242,7 @@ class MMDLoader extends Loader {
 	 */
 	async loadWithAnimation(modelUrl: string, vmdUrl: string | string[], onProgress: any, onError = () => { }, params: any = null) {
 
-		const mesh = await this
+		const { mesh } = await this
 			.setModelParams(params)
 			.loadAsync(modelUrl, onProgress);
 		mesh.userData.followSmooth = params.followSmooth
@@ -341,11 +347,11 @@ class MMDLoader extends Loader {
 	 * @param {function} onError
 	 */
 	async loadVPD(url: any, isUnicode: boolean, onProgress?: any, onError?: any) {
-		
+
 		const parser = this._getParser();
 
 		const text = await this.loader
-			.setMimeType( isUnicode ? undefined : 'text/plain; charset=shift_jis' as unknown as MimeType )
+			.setMimeType(isUnicode ? undefined : 'text/plain; charset=shift_jis' as unknown as MimeType)
 			.setPath(this.animationPath)
 			.setResponseType('text')
 			.setRequestHeader(this.requestHeader)
@@ -458,12 +464,22 @@ class MeshBuilder {
 
 		const mesh = new SkinnedMesh(geometry, material);
 
-		const skeleton = new Skeleton(initBones(mesh));
+		const [bones, rootBones] = initBones(geometry)
+		for (const root of rootBones) {
+			mesh.add(root)
+		}
+		const skeleton = new Skeleton(bones);
 		mesh.bind(skeleton);
 
 		// console.log( mesh ); // for console debug
 
-		return mesh;
+		return {
+			mesh,
+			geometry,
+			material,
+			skeleton,
+			rootBones
+		};
 
 	}
 
@@ -471,11 +487,10 @@ class MeshBuilder {
 
 // TODO: Try to remove this function
 
-function initBones(mesh: SkinnedMesh<any, any>) {
-
-	const geometry = mesh.geometry;
+function initBones(geometry: MMDGeometry) {
 
 	const bones = [];
+	const rootBones = [];
 
 	if (geometry && geometry.bones !== undefined) {
 
@@ -515,7 +530,7 @@ function initBones(mesh: SkinnedMesh<any, any>) {
 
 				// topmost bone, immediate child of the skinned mesh
 
-				mesh.add(bones[i]);
+				rootBones.push(bones[i]);
 
 			}
 
@@ -526,9 +541,9 @@ function initBones(mesh: SkinnedMesh<any, any>) {
 	// now the bones are part of the scene graph and children of the skinned mesh.
 	// let's update the corresponding matrices
 
-	mesh.updateMatrixWorld(true);
+	// mesh.updateMatrixWorld(true);
 
-	return bones;
+	return [bones, rootBones];
 
 }
 
