@@ -245,7 +245,6 @@ class MMDLoader extends Loader {
 		const { mesh } = await this
 			.setModelParams(params)
 			.loadAsync(modelUrl, onProgress);
-		mesh.userData.followSmooth = params.followSmooth
 
 		const animation = await this.loadAnimation(vmdUrl, mesh, onProgress, onError);
 

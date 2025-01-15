@@ -5,7 +5,7 @@ import { buildGuiItem, buildLoadFileFn, buildLoadModelFn } from "@/app/utils/gui
 import { useThree } from "@react-three/fiber";
 import { button, useControls } from "leva";
 import path from "path-browserify";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from 'three';
 import ModelController from "../ModelController";
 import Pose from "./Pose";
@@ -27,7 +27,6 @@ function Character() {
     const pmxFiles = usePresetStore(state => state.pmxFiles)
     const enableSdef = usePresetStore(state => state["enable SDEF"])
     const enablePBR = usePresetStore(state => state["enable PBR"])
-    const followSmooth = usePresetStore(state => state["follow smooth"])
     const motionFile = usePresetStore(state => state.motionFile)
     const selfShadow = usePresetStore(state => state["self shadow"])
     const showIKbones = usePresetStore(state => state["show IK bones"])
@@ -75,49 +74,22 @@ function Character() {
         }),
     }), { collapsed: true, order: 2 }, [pmxFiles.character, motionName])
 
-    const [onCreate, setOnCreate] = useState<(mesh: THREE.SkinnedMesh) => void>()
-    const [props, setProps] = useState<Awaited<ReturnType<MMDLoader["loadAsync"]>>>()
-    useEffect(() => {
-        const characterParams = {
-            enableSdef,
-            enablePBR,
-            followSmooth
-        };
-        if (url.startsWith("data:")) {
-            Object.assign(characterParams, {
-                modelExtension: path.extname(characterName).slice(1),
-                modelTextures: pmxFiles.modelTextures.character[characterName]
-            });
-        }
-
-        let resolve: (mesh: THREE.SkinnedMesh) => void;
-        useGlobalStore.setState({
-            characterPromise: new Promise(res => resolve = res)
-        })
-        setOnCreate(() => (mesh: THREE.SkinnedMesh) => {
-            useGlobalStore.setState({
-                character: mesh
-            })
-            resolve(mesh)
-        })
-        const init = async () => {
-            const props = await loader
-                .setModelParams(characterParams)
-                .loadAsync(url, onProgress);
-            setProps(props)
-        }
-        init()
-        
-    }, [url, characterName, enablePBR])
-
-    const smoothCenterRef = useRef()
     return (
         <>
             <PmxModel
                 name={positionKey}
                 position={position}
-                {...props}
-                onCreate={onCreate}
+                url={url}
+                modelName={characterName}
+                modelTextures={pmxFiles.modelTextures.character[characterName]}
+                enableSdef={enableSdef}
+                enablePBR={enablePBR}
+                onCreate={(mesh: THREE.SkinnedMesh) => useGlobalStore.setState({
+                    character: mesh
+                })}
+                onCreatePromise={(characterPromise: Promise<THREE.SkinnedMesh>) => useGlobalStore.setState({
+                    characterPromise
+                })}
                 onDoubleClick={(e: Event) => {
                     e.stopPropagation()
                     useGlobalStore.setState(({ selectedName: positionKey }))
@@ -126,7 +98,7 @@ function Character() {
                     e.type === 'click' && useGlobalStore.setState({ selectedName: null })
                 }}
             >
-                <object3D ref={smoothCenterRef} name="smoothCenter"></object3D>
+                <object3D name="smoothCenter"></object3D>
             </PmxModel>
             <Pose></Pose>
             <ModelController type="Character"></ModelController>

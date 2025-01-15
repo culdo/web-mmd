@@ -45,38 +45,17 @@ function Stage() {
         }),
     }), { collapsed: true, order: 2 }, [url])
 
-    const [onCreate, setOnCreate] = useState<(mesh: THREE.SkinnedMesh) => void>()
-    const [props, setProps] = useState<Awaited<ReturnType<MMDLoader["loadAsync"]>>>()
-    useEffect(() => {
-        const { loader } = useGlobalStore.getState()
-
-        const stageParams = {
-            enablePBR,
-        };
-        if (url.startsWith("data:")) {
-            Object.assign(stageParams, {
-                modelExtension: path.extname(filename).slice(1),
-                modelTextures: pmxFiles.modelTextures.stage[filename],
-            })
-        }
-
-        useGlobalStore.setState({
-            stagePromise: new Promise(res => setOnCreate(() => res))
-        })
-        const init = async () => {
-            const props = await loader
-                .setModelParams(stageParams)
-                .loadAsync(url, onProgress);
-            setProps(props)
-        }
-        init()
-    }, [url, filename, enablePBR])
-
     return (
         <PmxModel
-            {...props}
+            url={url}
+            modelName={stageName}
+            modelTextures={pmxFiles.modelTextures.stage[stageName]}
+            enableSdef={false}
+            enablePBR={enablePBR}
             receiveShadow={groundShadow}
-            onCreate={onCreate}
+            onCreatePromise={(stagePromise: Promise<THREE.SkinnedMesh>) => useGlobalStore.setState({
+                stagePromise
+            })}
         />
     );
 }
