@@ -20,7 +20,6 @@ function Character() {
     usePresetReady()
     const helper = useGlobalStore(state => state.helper)
     const loader = useGlobalStore(state => state.loader)
-    const characterPromise = useGlobalStore(state => state.characterPromise)
 
     const characterName = usePresetStore(state => state.character)
     const motionName = usePresetStore(state => state.motion)
@@ -84,6 +83,8 @@ function Character() {
                 modelTextures={pmxFiles.modelTextures.character[characterName]}
                 enableSdef={enableSdef}
                 enablePBR={enablePBR}
+                receiveShadow={selfShadow}
+                castShadow={true}
                 onCreate={(mesh: THREE.SkinnedMesh) => useGlobalStore.setState({
                     character: mesh
                 })}

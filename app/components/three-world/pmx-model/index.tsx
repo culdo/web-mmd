@@ -23,7 +23,8 @@ function PMXModel({ url, modelName, modelTextures, enableSdef = false, enablePBR
     const loader = useGlobalStore(state => state.loader)
     const [initProps, setProps] = useState<Awaited<ReturnType<MMDLoader["loadAsync"]>>>()
 
-    const afterCreate = useMemo(() => {
+    const [resolve, setResolve] = useState<(mesh:SkinnedMesh)=>void>()
+    useEffect(() => {
         const params = {
             enableSdef,
             enablePBR
@@ -35,8 +36,7 @@ function PMXModel({ url, modelName, modelTextures, enableSdef = false, enablePBR
             });
         }
 
-        let resolve: (mesh: THREE.SkinnedMesh) => void;
-        onCreatePromise?.(new Promise(res => resolve = res))
+        onCreatePromise?.(new Promise(res => setResolve(() => res)))
 
         const init = async () => {
             const initProps = await loader
@@ -45,33 +45,30 @@ function PMXModel({ url, modelName, modelTextures, enableSdef = false, enablePBR
             setProps(initProps)
         }
         init()
-        return (mesh: THREE.SkinnedMesh) => {
-            onCreate?.(mesh)
-            resolve?.(mesh)
-        }
     }, [url, modelTextures, enableSdef, enablePBR])
 
     const [mesh, setMesh] = useState<SkinnedMesh>()
     useEffect(() => {
         if (!mesh) return
-        const { rootBones } = initProps
-        for (const root of rootBones) {
-            mesh.add(root)
-        }
-        afterCreate(mesh)
+        onCreate?.(mesh)
+        resolve?.(mesh)
     }, [mesh])
 
     if (!initProps) return
-    const { geometry, material, skeleton } = initProps
+
+    const { geometry, material, skeleton, rootBones } = initProps
     return (
         <skinnedMesh
             args={[geometry, material]}
-            ref={(mesh) => {
-                setMesh(mesh);
-            }}
+            ref={mesh => setMesh(mesh)}
             skeleton={skeleton}
             {...props}>
             {children}
+            {
+                rootBones.map(rootBone =>
+                    <primitive key={rootBone.uuid} object={rootBone}></primitive>
+                )
+            }
         </skinnedMesh>
     )
 }
