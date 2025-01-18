@@ -22,9 +22,11 @@ export type PresetState = typeof defaultConfig & {
 } & {
     compositeClips?: CameraClip[]
 } & {
+    // https://github.com/microsoft/TypeScript/issues/32063
+    ["Character.position"]: [number, number, number]
     [key: `${string}.color`]: string,
     [key: `${string}.intensity`]: number,
-    [key: `${string}.position`]: number[]
+    [key: `${string}.position`]: [number, number, number]
 } & {
     Light: Record<string, any>,
     material: Record<string, any>

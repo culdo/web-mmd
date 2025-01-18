@@ -293,7 +293,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
     }, [camera, cameraName])
 
     useFrame(() => {
-        if (isMotionUpdating.current) setTime(player.currentTime)
+        if (isMotionUpdating()) setTime(player.currentTime)
     }, 1)
     return <></>;
 }

@@ -13,15 +13,18 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
 
     const _onLoop = (currentTime: number) => {
-        mixer.setTime(currentTime)
-        onLoop(currentTime)
+        if(onLoop) {
+            onLoop(() => mixer.setTime(currentTime))
+        } else {
+            mixer.setTime(currentTime)
+        }
     }
     useEffect(() => {
         const savedCurrentTime = usePresetStore.getState().currentTime
 
         const action = mixer.clipAction(clip)
         action.play()
-        if(onLoop) _onLoop(savedCurrentTime)
+        _onLoop(savedCurrentTime)
         return () => {
             mixer.stopAllAction()
             mixer.uncacheRoot(target)
@@ -29,7 +32,7 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
     }, [target, vmdFile, onLoop])
 
     useFrame(() => {
-        if (isMotionUpdating.current) _onLoop(player.currentTime)
+        if (isMotionUpdating()) _onLoop(player.currentTime)
     }, 1)
 }
 

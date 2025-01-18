@@ -4,7 +4,7 @@ import { button, useControls } from "leva";
 import { use } from "react";
 import WithSuspense from "../../suspense";
 
-function Pose() {
+function usePose() {
 
     const characterPromise = useGlobalStore(state => state.characterPromise)
     const stagePromise = useGlobalStore(state => state.stagePromise)
@@ -46,10 +46,6 @@ function Pose() {
             selectFile.webkitdirectory = false;
         }),
     }), { collapsed: true }, [bindParentCb])
-    return (
-
-        <></>
-    );
 }
 
-export default WithSuspense(Pose);
+export default usePose;

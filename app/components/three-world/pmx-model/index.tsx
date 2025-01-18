@@ -1,11 +1,10 @@
-import { createRef, ForwardedRef, forwardRef, MutableRefObject, use, useEffect, useMemo, useRef, useState } from "react"
-import WithSuspense from "../../suspense"
-import { Bone, BufferGeometry, Material, SkinnedMesh } from "three"
+import { useEffect, useState } from "react"
+import { SkinnedMesh } from "three"
 import { MMDLoader } from "@/app/modules/MMDLoader"
 import useGlobalStore from "@/app/stores/useGlobalStore"
 import { onProgress } from "@/app/utils/base"
 import path from "path"
-import * as THREE from 'three';
+import { SkinnedMeshProps } from "@react-three/fiber"
 
 type PMXModelProps = {
     url: string,
@@ -16,7 +15,7 @@ type PMXModelProps = {
     children?: JSX.Element | JSX.Element[],
     onCreate?: (mesh: SkinnedMesh) => void,
     onCreatePromise?: (promise: Promise<SkinnedMesh>) => void
-}
+} & Partial<SkinnedMeshProps>
 
 function PMXModel({ url, modelName, modelTextures, enableSdef = false, enablePBR = true, children, onCreate, onCreatePromise, ...props }: PMXModelProps) {
 
@@ -73,4 +72,4 @@ function PMXModel({ url, modelName, modelTextures, enableSdef = false, enablePBR
     )
 }
 
-export default WithSuspense(PMXModel);
+export default PMXModel;

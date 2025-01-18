@@ -1026,4 +1026,4 @@ class GrantSolver {
 
 }
 
-export { MMDAnimationHelper };
+export { MMDAnimationHelper, GrantSolver };

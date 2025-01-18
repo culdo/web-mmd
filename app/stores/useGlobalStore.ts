@@ -26,7 +26,8 @@ export type GlobalState = {
     character: SkinnedMesh,
     characterPromise: Promise<SkinnedMesh>,
     stagePromise: Promise<SkinnedMesh>,
-    isMotionUpdating: MutableRefObject<boolean>
+    playDeltaRef: MutableRefObject<number>
+    isMotionUpdating: () => boolean,
     beatsBufferRef: MutableRefObject<HTMLDivElement[]>
     isOrbitControl: MutableRefObject<boolean>
     isTransformControl: MutableRefObject<boolean>
@@ -38,7 +39,7 @@ export type GlobalState = {
 }
 
 const useGlobalStore = create<GlobalState>(
-    () => ({
+    (set, get) => ({
         loader: new MMDLoader(),
         helper: new MMDAnimationHelper(),
         player: null,
@@ -49,11 +50,12 @@ const useGlobalStore = create<GlobalState>(
         runtimeCharacter: null,
         camera: null,
         controls: null,
-        isMotionUpdating: (() => {
-            const ref: MutableRefObject<boolean> = createRef()
-            ref.current = false
+        playDeltaRef: (() => {
+            const ref: MutableRefObject<number> = createRef()
+            ref.current = 0.0
             return ref
         })(),
+        isMotionUpdating: () => Math.abs(get().playDeltaRef.current) > 0,
         beatsBufferRef: (() => {
             const ref: MutableRefObject<HTMLDivElement[]> = createRef()
             ref.current = []

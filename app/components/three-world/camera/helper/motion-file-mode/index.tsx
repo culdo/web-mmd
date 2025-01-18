@@ -2,7 +2,7 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import { useThree } from "@react-three/fiber";
 import { useCallback, useMemo } from "react";
 import { AnimationMixer } from "three";
-import useVMD from "../../../animation/useAnimation";
+import useVMD from "../../../animation/useVMD";
 import WithSuspense from "@/app/components/suspense";
 import usePresetReady from "@/app/stores/usePresetReady";
 
@@ -12,7 +12,8 @@ function MotionFileMode() {
     const cameraMixer = useMemo(() => new AnimationMixer(camera), [camera])
     usePresetReady()
     const cameraFile = usePresetStore(state => state.cameraFile)
-    const setTimeCb = useCallback(() => {
+    const setTimeCb = useCallback((setTime: () => void) => {
+        setTime();
         camera.up.set(0, 1, 0);
         camera.up.applyQuaternion(camera.quaternion);
         camera.lookAt(camera.getObjectByName("target").position);
