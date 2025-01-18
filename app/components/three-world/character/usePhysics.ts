@@ -1,10 +1,11 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { RootState, useFrame } from "@react-three/fiber";
 import { use, useMemo } from "react";
+import { SkinnedMesh } from "three";
 import { MMDPhysics } from "three/examples/jsm/animation/MMDPhysics.js";
 
-function usePhysics() {
-    const mesh = use(useGlobalStore(state => state.characterPromise))
+function usePhysics(promise: Promise<SkinnedMesh>) {
+    const mesh = use(promise)
     const playDeltaRef = useGlobalStore(state => state.playDeltaRef)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
     const onUpdate = useMemo(() => {

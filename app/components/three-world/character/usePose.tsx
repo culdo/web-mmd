@@ -2,12 +2,9 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { buildLoadFileFn } from "@/app/utils/gui";
 import { button, useControls } from "leva";
 import { use } from "react";
-import WithSuspense from "../../suspense";
+import { SkinnedMesh } from "three";
 
-function usePose() {
-
-    const characterPromise = useGlobalStore(state => state.characterPromise)
-    const stagePromise = useGlobalStore(state => state.stagePromise)
+function usePose(characterPromise: Promise<SkinnedMesh>, stagePromise: Promise<SkinnedMesh>) {
     const bindParentCb = useGlobalStore(state => state.bindParentCb)
     const character = use(characterPromise)
     const stage = use(stagePromise)

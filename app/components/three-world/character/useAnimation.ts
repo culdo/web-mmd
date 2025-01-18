@@ -1,13 +1,14 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import useVMD from "../animation/useVMD";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { AnimationMixer, Quaternion } from "three";
+import { AnimationMixer, Quaternion, SkinnedMesh } from "three";
 import { use, useEffect, useMemo } from "react";
 import { GrantSolver } from "@/app/modules/MMDAnimationHelper";
 import { CCDIKSolver } from "three/examples/jsm/animation/CCDIKSolver.js";
 
-function useAnimation() {
-    const mesh = use(useGlobalStore(state => state.characterPromise))
+function useAnimation(characterPromise: Promise<SkinnedMesh>) {
+    const mesh = use(characterPromise)
+    console.log(mesh)
     const player = useGlobalStore(state => state.player)
     const motionFile = usePresetStore(state => state.motionFile)
     

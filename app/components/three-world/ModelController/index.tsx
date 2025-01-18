@@ -9,7 +9,7 @@ const keyMap = {
 
 function ModelController({ type }: { type: keyof typeof keyMap }) {
 
-    const modelPromise = useGlobalStore.getState()[keyMap[type]]
+    const modelPromise = useGlobalStore(state => state[keyMap[type]])
     const props = { type, modelPromise }
     
     return (
