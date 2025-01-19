@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react"
-import { SkinnedMesh } from "three"
-import { MMDLoader } from "@/app/modules/MMDLoader"
+import { Skeleton, SkinnedMesh } from "three"
+import { initBones, MMDLoader } from "@/app/modules/MMDLoader"
 import useGlobalStore from "@/app/stores/useGlobalStore"
 import { onProgress } from "@/app/utils/base"
-import path from "path"
 import { SkinnedMeshProps } from "@react-three/fiber"
 
 type PMXModelProps = {
     url: string,
-    modelName: string,
     modelTextures: Record<string, string>,
     enableSdef: boolean,
     enablePBR: boolean,
@@ -17,7 +15,7 @@ type PMXModelProps = {
     onCreatePromise?: (promise: Promise<SkinnedMesh>) => void
 } & Partial<SkinnedMeshProps>
 
-function PMXModel({ url, modelName, modelTextures, enableSdef = false, enablePBR = true, children, onCreate, onCreatePromise, ...props }: PMXModelProps) {
+function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, children, onCreate, onCreatePromise, ...props }: PMXModelProps) {
 
     const loader = useGlobalStore(state => state.loader)
     const [initProps, setProps] = useState<Awaited<ReturnType<MMDLoader["loadAsync"]>>>()
@@ -30,7 +28,6 @@ function PMXModel({ url, modelName, modelTextures, enableSdef = false, enablePBR
         }
         if (url.startsWith("data:")) {
             Object.assign(params, {
-                modelExtension: path.extname(modelName).slice(1),
                 modelTextures: modelTextures
             });
         }
@@ -49,25 +46,26 @@ function PMXModel({ url, modelName, modelTextures, enableSdef = false, enablePBR
     const [mesh, setMesh] = useState<SkinnedMesh>()
     useEffect(() => {
         if (!mesh) return
+        const [bones, rootBones] = initBones(geometry)
+		for (const root of rootBones) {
+			mesh.add(root)
+		}
+		const skeleton = new Skeleton(bones);
+		mesh.bind(skeleton);
         onCreate?.(mesh)
         resolve?.(mesh)
     }, [mesh])
 
     if (!initProps) return
 
-    const { geometry, material, skeleton, rootBones } = initProps
+    const { data, geometry, material } = initProps
     return (
         <skinnedMesh
+            name={data.metadata.modelName}
             args={[geometry, material]}
-            ref={mesh => setMesh(mesh)}
-            skeleton={skeleton}
+            ref={mesh => mesh && setMesh(mesh)}
             {...props}>
             {children}
-            {
-                rootBones.map(rootBone =>
-                    <primitive key={rootBone.uuid} object={rootBone}></primitive>
-                )
-            }
         </skinnedMesh>
     )
 }

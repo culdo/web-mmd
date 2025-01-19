@@ -1,14 +1,13 @@
-import WithSuspense from "@/app/components/suspense";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore, { PresetState } from "@/app/stores/usePresetStore";
 import { setLevaValue } from "@/app/utils/gui";
 import { useControls } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
-import { use, useEffect, useState } from "react";
-import { SkinnedMesh } from "three";
+import { useEffect, useState } from "react";
+import { useModel } from "./ModelContext";
 
-function Morph({ type, modelPromise }: { type: string, modelPromise: Promise<SkinnedMesh> }) {
-    const character = use(modelPromise)
+function Morph() {
+    const model = useModel()
     const presetReady = useGlobalStore(state => state.presetReady)
 
     const morphs: Record<string, number> = usePresetStore(state => state.morphs)
@@ -17,7 +16,7 @@ function Morph({ type, modelPromise }: { type: string, modelPromise: Promise<Ski
 
     const updateMorphFolder = () => {
         const newControllers: Schema = {}
-        for (const key in character.morphTargetDictionary) {
+        for (const key in model.morphTargetDictionary) {
             if (!(key in morphs)) {
                 morphs[key] = 0.0;
             }
@@ -35,21 +34,21 @@ function Morph({ type, modelPromise }: { type: string, modelPromise: Promise<Ski
                         value = morphs[key]
                         setLevaValue(path, value)
                     }
-                    character.morphTargetInfluences[character.morphTargetDictionary[key]] = value;
+                    model.morphTargetInfluences[model.morphTargetDictionary[key]] = value;
                 }
             }
 
         }
         //clear unused keys
         for (const key in morphs) {
-            if (!(key in character.morphTargetDictionary)) {
+            if (!(key in model.morphTargetDictionary)) {
                 delete morphs[key]
             }
         }
         setControllers(newControllers)
     }
 
-    useControls(`${type}.Morphs`, () => controllers, { collapsed: true }, [controllers])
+    useControls(`Character.Morphs`, () => controllers, { collapsed: true }, [controllers])
 
     useEffect(() => {
         if (!presetReady) return
@@ -59,4 +58,4 @@ function Morph({ type, modelPromise }: { type: string, modelPromise: Promise<Ski
     return <></>
 }
 
-export default WithSuspense(Morph);
+export default Morph;

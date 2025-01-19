@@ -1,19 +1,19 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { RootState, useFrame } from "@react-three/fiber";
-import { use, useMemo } from "react";
-import { SkinnedMesh } from "three";
+import { useMemo } from "react";
 import { MMDPhysics } from "three/examples/jsm/animation/MMDPhysics.js";
+import { useModel } from "./ModelContext";
 
-function usePhysics(promise: Promise<SkinnedMesh>) {
-    const mesh = use(promise)
+function Physics() {
+    const model = useModel()
     const playDeltaRef = useGlobalStore(state => state.playDeltaRef)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
     const onUpdate = useMemo(() => {
 
         const physics = new MMDPhysics(
-            mesh,
-            mesh.geometry.userData.MMD.rigidBodies,
-            mesh.geometry.userData.MMD.constraints,
+            model,
+            model.geometry.userData.MMD.rigidBodies,
+            model.geometry.userData.MMD.constraints,
             {
                 unitStep: 1 / 60,
                 maxStepNum: 1,
@@ -23,8 +23,8 @@ function usePhysics(promise: Promise<SkinnedMesh>) {
         const zeroVector = new Ammo.btVector3()
 
         const optimizeIK = (physicsEnabled: boolean) => {
-            const iks = mesh.geometry.userData.MMD.iks;
-            const bones = mesh.geometry.userData.MMD.bones;
+            const iks = model.geometry.userData.MMD.iks;
+            const bones = model.geometry.userData.MMD.bones;
             for (let i = 0, il = iks.length; i < il; i++) {
                 const ik = iks[i];
                 const links = ik.links;
@@ -62,10 +62,11 @@ function usePhysics(promise: Promise<SkinnedMesh>) {
 			physics.update(isMotionUpdating() ? playDeltaRef.current: delta);
         }
 
-    }, [mesh])
+    }, [model])
     // Physics need to be updated after the motion updating to make reset work
     // So the priority set to 2
     useFrame(onUpdate, 2)
+    return <></>
 }
 
-export default usePhysics;
+export default Physics;

@@ -3,7 +3,6 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import { buildGuiItem, buildLoadFileFn, buildLoadModelFn } from "@/app/utils/gui";
 import { button, useControls } from "leva";
 import * as THREE from 'three';
-import ModelController from "../ModelController";
 import WithSuspense from "../../suspense";
 import usePresetReady from "@/app/stores/usePresetReady";
 import PmxModel from "../pmx-model";
@@ -60,35 +59,27 @@ function Model() {
     }), { collapsed: true, order: 2 }, [pmxFiles.character, motionName])
 
     return (
-        <>
-            <PmxModel
-                name={positionKey}
-                position={position}
-                url={url}
-                modelName={characterName}
-                modelTextures={pmxFiles.modelTextures.character[characterName]}
-                enableSdef={enableSdef}
-                enablePBR={enablePBR}
-                receiveShadow={selfShadow}
-                castShadow={true}
-                onCreate={(mesh: THREE.SkinnedMesh) => useGlobalStore.setState({
-                    character: mesh
-                })}
-                onCreatePromise={(characterPromise: Promise<THREE.SkinnedMesh>) => useGlobalStore.setState({
-                    characterPromise
-                })}
-                onDoubleClick={(e: ThreeEvent<MouseEvent>) => {
-                    e.stopPropagation()
-                    useGlobalStore.setState(({ selectedName: positionKey }))
-                }}
-                onPointerMissed={(e: Event) => {
-                    e.type === 'click' && useGlobalStore.setState({ selectedName: null })
-                }}
-            >
-                <object3D name="smoothCenter"></object3D>
-            </PmxModel>
-            <ModelController type="Character"></ModelController>
-        </>
+        <PmxModel
+            position={position}
+            url={url}
+            modelTextures={pmxFiles.modelTextures.character[characterName]}
+            enableSdef={enableSdef}
+            enablePBR={enablePBR}
+            receiveShadow={selfShadow}
+            castShadow={true}
+            onCreate={(mesh: THREE.SkinnedMesh) => useGlobalStore.setState({
+                character: mesh
+            })}
+            onDoubleClick={(e: ThreeEvent<MouseEvent>) => {
+                e.stopPropagation()
+                useGlobalStore.setState(({ selectedName: positionKey }))
+            }}
+            onPointerMissed={(e: Event) => {
+                e.type === 'click' && useGlobalStore.setState({ selectedName: null })
+            }}
+        >
+            <object3D name="smoothCenter"></object3D>
+        </PmxModel>
     );
 }
 

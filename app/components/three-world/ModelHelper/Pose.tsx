@@ -1,13 +1,11 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { buildLoadFileFn } from "@/app/utils/gui";
 import { button, useControls } from "leva";
-import { use } from "react";
-import { SkinnedMesh } from "three";
+import { useModel } from "./ModelContext";
 
-function usePose(characterPromise: Promise<SkinnedMesh>, stagePromise: Promise<SkinnedMesh>) {
+function Pose() {
     const bindParentCb = useGlobalStore(state => state.bindParentCb)
-    const character = use(characterPromise)
-    const stage = use(stagePromise)
+    const model = useModel()
     const helper = useGlobalStore(state => state.helper)
     const loader = useGlobalStore(state => state.loader)
 
@@ -21,20 +19,14 @@ function usePose(characterPromise: Promise<SkinnedMesh>, stagePromise: Promise<S
         "visible": {
             value: true,
             onChange: (state) => {
-                character.visible = state
-            }
-        },
-        "stage visible": {
-            value: true,
-            onChange: (state) => {
-                stage.visible = state
+                model.visible = state
             }
         },
         "select pose file": button(() => {
             const selectFile = document.getElementById("selectFile") as HTMLInputElement
             selectFile.onchange = buildLoadFileFn(async (url) => {
                 const vpd = await loader.loadVPD(url, false)
-                helper.pose(character, vpd)
+                helper.pose(model, vpd)
                 if (bindParentCb) {
                     bindParentCb()
                 }
@@ -43,6 +35,7 @@ function usePose(characterPromise: Promise<SkinnedMesh>, stagePromise: Promise<S
             selectFile.webkitdirectory = false;
         }),
     }), { collapsed: true }, [bindParentCb])
+    return <></>
 }
 
-export default usePose;
+export default Pose;

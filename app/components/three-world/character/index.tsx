@@ -1,5 +1,5 @@
-import Model from "./Model";
 import Helper from "./Helper";
+import Model from "./Model";
 
 function Character() {
     return (

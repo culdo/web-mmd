@@ -5,6 +5,7 @@ import { use, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import WithSuspense from "../../suspense";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+import WithModel from "../ModelHelper/WithModel";
 
 type MeshWithPhys = THREE.Mesh & {
     userData: {
@@ -17,9 +18,8 @@ function Swing() {
     const scene = useThree(state => state.scene);
     const isTransformControl = useGlobalStore(state => state.isTransformControl)
     const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
-    const characterPromise = useGlobalStore(state => state.characterPromise)
     const helper = useGlobalStore(state => state.helper)
-    const character = use(characterPromise)
+    const character = useGlobalStore(state => state.character)
 
     // Physics variables
     const rigidBodiesRef = useRef<MeshWithPhys[]>([]);
@@ -327,4 +327,4 @@ function Swing() {
     );
 }
 
-export default WithSuspense(Swing);
+export default WithModel(Swing, "character");

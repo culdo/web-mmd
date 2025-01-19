@@ -1,21 +1,20 @@
-import WithSuspense from "../../suspense";
-import useAnimation from "./useAnimation";
-import usePose from "./usePose";
-import usePhysics from "./usePhysics";
-import useGlobalStore from "@/app/stores/useGlobalStore";
-import { SkinnedMesh } from "three";
-
-const BaseHelper = WithSuspense(({ characterPromise, stagePromise }: { characterPromise: Promise<SkinnedMesh>, stagePromise: Promise<SkinnedMesh> }) => {
-    useAnimation(characterPromise)
-    usePhysics(characterPromise)
-    usePose(characterPromise, stagePromise)
-    return <></>
-})
+import Morph from "../ModelHelper/Morph";
+import Material from "../ModelHelper/Material";
+import Physics from "../ModelHelper/Physics";
+import Animation from "../ModelHelper/Animation";
+import Pose from "../ModelHelper/Pose";
+import WithModel from "../ModelHelper/WithModel";
 
 function Helper() {
-    const characterPromise = useGlobalStore(state => state.characterPromise)
-    const stagePromise = useGlobalStore(state => state.stagePromise)
-    return <BaseHelper characterPromise={characterPromise} stagePromise={stagePromise}></BaseHelper>;
+    return (
+        <>
+            <Morph></Morph>
+            <Material></Material>
+            <Physics></Physics>
+            <Animation></Animation>
+            <Pose></Pose>
+        </>
+    );
 }
 
-export default WithSuspense(Helper);
+export default WithModel(Helper, "character");

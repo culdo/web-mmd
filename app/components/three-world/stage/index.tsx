@@ -1,22 +1,14 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { onProgress } from "@/app/utils/base";
 import { buildGuiItem, buildLoadModelFn } from "@/app/utils/gui";
-import { useThree } from "@react-three/fiber";
 import { button, useControls } from "leva";
-import path from "path-browserify";
-import { useEffect, useState } from "react";
 import usePresetReady from "@/app/stores/usePresetReady";
 import WithSuspense from "../../suspense";
 import PmxModel from "../pmx-model";
-import { MMDLoader } from "@/app/modules/MMDLoader";
 import * as THREE from 'three';
 
 function Stage() {
-    const { scene } = useThree()
-
     usePresetReady()
-    const stagePromise = useGlobalStore(state => state.stagePromise)
     const stageName = usePresetStore(state => state.stage)
     const pmxFiles = usePresetStore(state => state.pmxFiles)
     const enablePBR = usePresetStore(state => state["enable PBR"])
@@ -48,13 +40,12 @@ function Stage() {
     return (
         <PmxModel
             url={url}
-            modelName={stageName}
             modelTextures={pmxFiles.modelTextures.stage[stageName]}
             enableSdef={false}
             enablePBR={enablePBR}
             receiveShadow={groundShadow}
-            onCreatePromise={(stagePromise: Promise<THREE.SkinnedMesh>) => useGlobalStore.setState({
-                stagePromise
+            onCreate={(stage: THREE.SkinnedMesh) => useGlobalStore.setState({
+                stage
             })}
         />
     );

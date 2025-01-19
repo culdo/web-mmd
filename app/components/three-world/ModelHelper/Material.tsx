@@ -1,4 +1,3 @@
-import WithSuspense from "@/app/components/suspense";
 import defaultConfig from '@/app/presets/Default_config.json';
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
@@ -6,13 +5,13 @@ import { buildGuiItem, buildMaterialGuiItem } from "@/app/utils/gui";
 import { button, folder, useControls } from "leva";
 import { OnChangeHandler, Schema } from "leva/dist/declarations/src/types";
 import _ from "lodash";
-import { use, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { useModel } from './ModelContext';
 
-function Material({ type, modelPromise }: { type: string, modelPromise: Promise<THREE.SkinnedMesh> }) {
-    const loader = new THREE.MaterialLoader()
+function Material() {
     const textureLoader = new THREE.TextureLoader()
-    const model = use(modelPromise)
+    const model = useModel()
     const materials = model.material as THREE.MeshPhysicalMaterial[]
     const geometry = model.geometry
 
@@ -153,7 +152,7 @@ function Material({ type, modelPromise }: { type: string, modelPromise: Promise<
         return result
     }, [model])
 
-    useControls(`${type}.Material`, {
+    useControls(`Model.${model.name}.Material`, {
         "targetMaterial": {
             ...buildGuiItem("targetMaterialIdx"),
             options: materialMap
@@ -169,4 +168,4 @@ function Material({ type, modelPromise }: { type: string, modelPromise: Promise<
     return <></>;
 }
 
-export default WithSuspense(Material);
+export default Material;

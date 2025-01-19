@@ -1,14 +1,12 @@
-import WithSuspense from "@/app/components/suspense";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame, useThree } from "@react-three/fiber";
-import { use, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Vector3 } from "three";
-
+import WithModel from "../../../ModelHelper/WithModel";
 
 function FixFollowMode() {
-
     const controls = useGlobalStore(state => state.controls)
-    const character = use(useGlobalStore(state => state.characterPromise))
+    const character = useGlobalStore(state => state.character)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
     const camera = useThree(state => state.camera)
 
@@ -47,4 +45,4 @@ function FixFollowMode() {
     return <></>;
 }
 
-export default WithSuspense(FixFollowMode);
+export default WithModel(FixFollowMode, "character");

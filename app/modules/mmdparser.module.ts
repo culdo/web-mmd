@@ -391,513 +391,19 @@ class DataCreationHelper {
  */
 
 class Parser {
-	parsePmd(buffer: any, leftToRight: boolean) {
 
-		var pmd: any = {};
-		var dv = new DataViewEx(buffer);
+	parsePmx(buffer: ArrayBufferLike, leftToRight: boolean) {
 
-		pmd.metadata = {};
-		pmd.metadata.format = 'pmd';
-		pmd.metadata.coordinateSystem = 'left';
-
-		var parseHeader = function () {
-
-			var metadata = pmd.metadata;
-			metadata.magic = dv.getChars(3);
-
-			if (metadata.magic !== 'Pmd') {
-
-				throw 'PMD file magic is not Pmd, but ' + metadata.magic;
-
-			}
-
-			metadata.version = dv.getFloat32();
-			metadata.modelName = dv.getSjisStringsAsUnicode(20);
-			metadata.comment = dv.getSjisStringsAsUnicode(256);
-
-		};
-
-		var parseVertices = function () {
-
-			var parseVertex = function () {
-
-				var p: any = {};
-				p.position = dv.getFloat32Array(3);
-				p.normal = dv.getFloat32Array(3);
-				p.uv = dv.getFloat32Array(2);
-				p.skinIndices = dv.getUint16Array(2);
-				p.skinWeights = [dv.getUint8() / 100];
-				p.skinWeights.push(1.0 - p.skinWeights[0]);
-				p.edgeFlag = dv.getUint8();
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-			metadata.vertexCount = dv.getUint32();
-
-			pmd.vertices = [];
-
-			for (var i = 0; i < metadata.vertexCount; i++) {
-
-				pmd.vertices.push(parseVertex());
-
-			}
-
-		};
-
-		var parseFaces = function () {
-
-			var parseFace = function () {
-
-				var p: any = {};
-				p.indices = dv.getUint16Array(3);
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-			metadata.faceCount = dv.getUint32() / 3;
-
-			pmd.faces = [];
-
-			for (var i = 0; i < metadata.faceCount; i++) {
-
-				pmd.faces.push(parseFace());
-
-			}
-
-		};
-
-		var parseMaterials = function () {
-
-			var parseMaterial = function () {
-
-				var p: any = {};
-				p.diffuse = dv.getFloat32Array(4);
-				p.shininess = dv.getFloat32();
-				p.specular = dv.getFloat32Array(3);
-				p.ambient = dv.getFloat32Array(3);
-				p.toonIndex = dv.getInt8();
-				p.edgeFlag = dv.getUint8();
-				p.faceCount = dv.getUint32() / 3;
-				p.fileName = dv.getSjisStringsAsUnicode(20);
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-			metadata.materialCount = dv.getUint32();
-
-			pmd.materials = [];
-
-			for (var i = 0; i < metadata.materialCount; i++) {
-
-				pmd.materials.push(parseMaterial());
-
-			}
-
-		};
-
-		var parseBones = function () {
-
-			var parseBone = function () {
-
-				var p: any = {};
-				p.name = dv.getSjisStringsAsUnicode(20);
-				p.parentIndex = dv.getInt16();
-				p.tailIndex = dv.getInt16();
-				p.type = dv.getUint8();
-				p.ikIndex = dv.getInt16();
-				p.position = dv.getFloat32Array(3);
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-			metadata.boneCount = dv.getUint16();
-
-			pmd.bones = [];
-
-			for (var i = 0; i < metadata.boneCount; i++) {
-
-				pmd.bones.push(parseBone());
-
-			}
-
-		};
-
-		var parseIks = function () {
-
-			var parseIk = function () {
-
-				var p: any = {};
-				p.target = dv.getUint16();
-				p.effector = dv.getUint16();
-				p.linkCount = dv.getUint8();
-				p.iteration = dv.getUint16();
-				p.maxAngle = dv.getFloat32();
-
-				p.links = [];
-				for (var i = 0; i < p.linkCount; i++) {
-
-					var link: any = {};
-					link.index = dv.getUint16();
-					p.links.push(link);
-
-				}
-
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-			metadata.ikCount = dv.getUint16();
-
-			pmd.iks = [];
-
-			for (var i = 0; i < metadata.ikCount; i++) {
-
-				pmd.iks.push(parseIk());
-
-			}
-
-		};
-
-		var parseMorphs = function () {
-
-			var parseMorph = function () {
-
-				var p: any = {};
-				p.name = dv.getSjisStringsAsUnicode(20);
-				p.elementCount = dv.getUint32();
-				p.type = dv.getUint8();
-
-				p.elements = [];
-				for (var i = 0; i < p.elementCount; i++) {
-
-					p.elements.push({
-						index: dv.getUint32(),
-						position: dv.getFloat32Array(3)
-					});
-
-				}
-
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-			metadata.morphCount = dv.getUint16();
-
-			pmd.morphs = [];
-
-			for (var i = 0; i < metadata.morphCount; i++) {
-
-				pmd.morphs.push(parseMorph());
-
-			}
-
-
-		};
-
-		var parseMorphFrames = function () {
-
-			var parseMorphFrame = function () {
-
-				var p: any = {};
-				p.index = dv.getUint16();
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-			metadata.morphFrameCount = dv.getUint8();
-
-			pmd.morphFrames = [];
-
-			for (var i = 0; i < metadata.morphFrameCount; i++) {
-
-				pmd.morphFrames.push(parseMorphFrame());
-
-			}
-
-		};
-
-		var parseBoneFrameNames = function () {
-
-			var parseBoneFrameName = function () {
-
-				var p: any = {};
-				p.name = dv.getSjisStringsAsUnicode(50);
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-			metadata.boneFrameNameCount = dv.getUint8();
-
-			pmd.boneFrameNames = [];
-
-			for (var i = 0; i < metadata.boneFrameNameCount; i++) {
-
-				pmd.boneFrameNames.push(parseBoneFrameName());
-
-			}
-
-		};
-
-		var parseBoneFrames = function () {
-
-			var parseBoneFrame = function () {
-
-				var p: any = {};
-				p.boneIndex = dv.getInt16();
-				p.frameIndex = dv.getUint8();
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-			metadata.boneFrameCount = dv.getUint32();
-
-			pmd.boneFrames = [];
-
-			for (var i = 0; i < metadata.boneFrameCount; i++) {
-
-				pmd.boneFrames.push(parseBoneFrame());
-
-			}
-
-		};
-
-		var parseEnglishHeader = function () {
-
-			var metadata = pmd.metadata;
-			metadata.englishCompatibility = dv.getUint8();
-
-			if (metadata.englishCompatibility > 0) {
-
-				metadata.englishModelName = dv.getSjisStringsAsUnicode(20);
-				metadata.englishComment = dv.getSjisStringsAsUnicode(256);
-
-			}
-
-		};
-
-		var parseEnglishBoneNames = function () {
-
-			var parseEnglishBoneName = function () {
-
-				var p: any = {};
-				p.name = dv.getSjisStringsAsUnicode(20);
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-
-			if (metadata.englishCompatibility === 0) {
-
-				return;
-
-			}
-
-			pmd.englishBoneNames = [];
-
-			for (var i = 0; i < metadata.boneCount; i++) {
-
-				pmd.englishBoneNames.push(parseEnglishBoneName());
-
-			}
-
-		};
-
-		var parseEnglishMorphNames = function () {
-
-			var parseEnglishMorphName = function () {
-
-				var p: any = {};
-				p.name = dv.getSjisStringsAsUnicode(20);
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-
-			if (metadata.englishCompatibility === 0) {
-
-				return;
-
-			}
-
-			pmd.englishMorphNames = [];
-
-			for (var i = 0; i < metadata.morphCount - 1; i++) {
-
-				pmd.englishMorphNames.push(parseEnglishMorphName());
-
-			}
-
-		};
-
-		var parseEnglishBoneFrameNames = function () {
-
-			var parseEnglishBoneFrameName = function () {
-
-				var p: any = {};
-				p.name = dv.getSjisStringsAsUnicode(50);
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-
-			if (metadata.englishCompatibility === 0) {
-
-				return;
-
-			}
-
-			pmd.englishBoneFrameNames = [];
-
-			for (var i = 0; i < metadata.boneFrameNameCount; i++) {
-
-				pmd.englishBoneFrameNames.push(parseEnglishBoneFrameName());
-
-			}
-
-		};
-
-		var parseToonTextures = function () {
-
-			var parseToonTexture = function () {
-
-				var p: any = {};
-				p.fileName = dv.getSjisStringsAsUnicode(100);
-				return p;
-
-			};
-
-			pmd.toonTextures = [];
-
-			for (var i = 0; i < 10; i++) {
-
-				pmd.toonTextures.push(parseToonTexture());
-
-			}
-
-		};
-
-		var parseRigidBodies = function () {
-
-			var parseRigidBody = function () {
-
-				var p: any = {};
-				p.name = dv.getSjisStringsAsUnicode(20);
-				p.boneIndex = dv.getInt16();
-				p.groupIndex = dv.getUint8();
-				p.groupTarget = dv.getUint16();
-				p.shapeType = dv.getUint8();
-				p.width = dv.getFloat32();
-				p.height = dv.getFloat32();
-				p.depth = dv.getFloat32();
-				p.position = dv.getFloat32Array(3);
-				p.rotation = dv.getFloat32Array(3);
-				p.weight = dv.getFloat32();
-				p.positionDamping = dv.getFloat32();
-				p.rotationDamping = dv.getFloat32();
-				p.restitution = dv.getFloat32();
-				p.friction = dv.getFloat32();
-				p.type = dv.getUint8();
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-			metadata.rigidBodyCount = dv.getUint32();
-
-			pmd.rigidBodies = [];
-
-			for (var i = 0; i < metadata.rigidBodyCount; i++) {
-
-				pmd.rigidBodies.push(parseRigidBody());
-
-			}
-
-		};
-
-		var parseConstraints = function () {
-
-			var parseConstraint = function () {
-
-				var p: any = {};
-				p.name = dv.getSjisStringsAsUnicode(20);
-				p.rigidBodyIndex1 = dv.getUint32();
-				p.rigidBodyIndex2 = dv.getUint32();
-				p.position = dv.getFloat32Array(3);
-				p.rotation = dv.getFloat32Array(3);
-				p.translationLimitation1 = dv.getFloat32Array(3);
-				p.translationLimitation2 = dv.getFloat32Array(3);
-				p.rotationLimitation1 = dv.getFloat32Array(3);
-				p.rotationLimitation2 = dv.getFloat32Array(3);
-				p.springPosition = dv.getFloat32Array(3);
-				p.springRotation = dv.getFloat32Array(3);
-				return p;
-
-			};
-
-			var metadata = pmd.metadata;
-			metadata.constraintCount = dv.getUint32();
-
-			pmd.constraints = [];
-
-			for (var i = 0; i < metadata.constraintCount; i++) {
-
-				pmd.constraints.push(parseConstraint());
-
-			}
-
-		};
-
-		parseHeader();
-		parseVertices();
-		parseFaces();
-		parseMaterials();
-		parseBones();
-		parseIks();
-		parseMorphs();
-		parseMorphFrames();
-		parseBoneFrameNames();
-		parseBoneFrames();
-		parseEnglishHeader();
-		parseEnglishBoneNames();
-		parseEnglishMorphNames();
-		parseEnglishBoneFrameNames();
-		parseToonTextures();
-		parseRigidBodies();
-		parseConstraints();
-
-		if (leftToRight === true) this.leftToRightModel(pmd);
-
-		// console.log( pmd ); // for console debug
-
-		return pmd;
-
-	};
-
-	parsePmx(buffer: any, leftToRight: boolean) {
-
-		var pmx: any = {};
-		var dv = new DataViewEx(buffer);
-
-		pmx.metadata = {};
+		const pmx = {} as PMXModel;
+		const dv = new DataViewEx(buffer);
+		
+		pmx.metadata = {} as PMXModel["metadata"]
 		pmx.metadata.format = 'pmx';
 		pmx.metadata.coordinateSystem = 'left';
 
-		var parseHeader = function () {
+		const parseHeader = function () {
 
-			var metadata = pmx.metadata;
+			const metadata = pmx.metadata;
 			metadata.magic = dv.getChars(4);
 
 			// Note: don't remove the last blank space.
@@ -931,11 +437,11 @@ class Parser {
 
 		};
 
-		var parseVertices = function () {
+		const parseVertices = function () {
 
-			var parseVertex = function () {
+			const parseVertex = function () {
 
-				var p: any = {};
+				var p = {} as PMXVertex;
 				p.position = dv.getFloat32Array(3);
 				p.normal = dv.getFloat32Array(3);
 				p.uv = dv.getFloat32Array(2);
@@ -1039,7 +545,7 @@ class Parser {
 
 			var parseFace = function () {
 
-				var p: any = {};
+				var p = {} as PMXFace;
 				p.indices = dv.getIndexArray(metadata.vertexIndexSize, 3, true);
 				return p;
 
@@ -1083,7 +589,7 @@ class Parser {
 
 			var parseMaterial = function () {
 
-				var p: any = {};
+				var p = {} as PMXMaterial;
 				p.name = dv.getTextBuffer();
 				p.englishName = dv.getTextBuffer();
 				p.diffuse = dv.getFloat32Array(4);
@@ -1135,7 +641,7 @@ class Parser {
 
 			var parseBone = function () {
 
-				var p: any = {};
+				var p = {} as PMXBone;
 				p.name = dv.getTextBuffer();
 				p.englishName = dv.getTextBuffer();
 				p.position = dv.getFloat32Array(3);
@@ -1159,7 +665,7 @@ class Parser {
 					//       but I found that some English translated MMD tools use this term
 					//       so I've named it Grant so far.
 					//       I'd rename to more appropriate name from Grant later.
-					var grant: any = {};
+					var grant = {} as PMXGrant;
 
 					grant.isLocal = (p.flag & 0x80) !== 0 ? true : false;
 					grant.affectRotation = (p.flag & 0x100) !== 0 ? true : false;
@@ -1192,7 +698,7 @@ class Parser {
 
 				if (p.flag & 0x20) {
 
-					var ik: any = {};
+					var ik = {} as PMXIk;
 
 					ik.effector = dv.getIndex(pmx.metadata.boneIndexSize);
 					ik.target = null;
@@ -1203,7 +709,7 @@ class Parser {
 
 					for (var i = 0; i < ik.linkCount; i++) {
 
-						var link: any = {};
+						var link = {} as PMXIkLink;
 						link.index = dv.getIndex(pmx.metadata.boneIndexSize);
 						link.angleLimitation = dv.getUint8();
 
@@ -1242,11 +748,11 @@ class Parser {
 
 			var parseMorph = function () {
 
-				var p: any = {};
+				var p = {} as PMXMorph;
 				p.name = dv.getTextBuffer();
 				p.englishName = dv.getTextBuffer();
 				p.panel = dv.getUint8();
-				p.type = dv.getUint8();
+				p.type = dv.getUint8() as PMXMorphType;
 				p.elementCount = dv.getUint32();
 				p.elements = [];
 
@@ -1254,21 +760,21 @@ class Parser {
 
 					if (p.type === 0) {  // group morph
 
-						var m: any = {};
+						let m = {} as PMXGroupMorph;
 						m.index = dv.getIndex(pmx.metadata.morphIndexSize);
 						m.ratio = dv.getFloat32();
 						p.elements.push(m);
 
 					} else if (p.type === 1) {  // vertex morph
 
-						var m: any = {};
+						let m = {} as PMXVertexMorph;
 						m.index = dv.getIndex(pmx.metadata.vertexIndexSize, true);
 						m.position = dv.getFloat32Array(3);
 						p.elements.push(m);
 
 					} else if (p.type === 2) {  // bone morph
 
-						var m: any = {};
+						let m = {} as PMXBoneMorph;
 						m.index = dv.getIndex(pmx.metadata.boneIndexSize);
 						m.position = dv.getFloat32Array(3);
 						m.rotation = dv.getFloat32Array(4);
@@ -1276,7 +782,7 @@ class Parser {
 
 					} else if (p.type === 3) {  // uv morph
 
-						var m: any = {};
+						let m = {} as PMXUvMorph;
 						m.index = dv.getIndex(pmx.metadata.vertexIndexSize, true);
 						m.uv = dv.getFloat32Array(4);
 						p.elements.push(m);
@@ -1299,7 +805,7 @@ class Parser {
 
 					} else if (p.type === 8) {  // material morph
 
-						var m: any = {};
+						let m = {} as PMXMaterialMorph;
 						m.index = dv.getIndex(pmx.metadata.materialIndexSize);
 						m.type = dv.getUint8();
 						m.diffuse = dv.getFloat32Array(4);
@@ -1338,7 +844,7 @@ class Parser {
 
 			var parseFrame = function () {
 
-				var p: any = {};
+				var p = {} as PMXFrame;
 				p.name = dv.getTextBuffer();
 				p.englishName = dv.getTextBuffer();
 				p.type = dv.getUint8();
@@ -1347,7 +853,7 @@ class Parser {
 
 				for (var i = 0; i < p.elementCount; i++) {
 
-					var e: any = {};
+					var e = {} as PMXFrameElement;
 					e.target = dv.getUint8();
 					e.index = (e.target === 0) ? dv.getIndex(pmx.metadata.boneIndexSize) : dv.getIndex(pmx.metadata.morphIndexSize);
 					p.elements.push(e);
@@ -1375,7 +881,7 @@ class Parser {
 
 			var parseRigidBody = function () {
 
-				var p: any = {};
+				var p = {} as PMXRigidBody;
 				p.name = dv.getTextBuffer();
 				p.englishName = dv.getTextBuffer();
 				p.boneIndex = dv.getIndex(pmx.metadata.boneIndexSize);
@@ -1414,7 +920,7 @@ class Parser {
 
 			var parseConstraint = function () {
 
-				var p: any = {};
+				var p = {} as PMXConstraint;
 				p.name = dv.getTextBuffer();
 				p.englishName = dv.getTextBuffer();
 				p.type = dv.getUint8();
@@ -1786,7 +1292,7 @@ class Parser {
 
 	};
 
-	leftToRightModel(model: any) {
+	leftToRightModel(model: PMXModel) {
 
 		if (model.metadata.coordinateSystem === 'right') {
 
