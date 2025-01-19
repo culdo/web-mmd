@@ -1,16 +1,12 @@
 import { PerspectiveCamera } from "@react-three/drei";
-import { useEffect, useRef } from "react";
-import { PerspectiveCamera as PerspectiveCameraImpl } from "three";
 import CameraWorkHelper from "./helper";
 import { button, useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { buildGuiItem, buildLoadFileFn } from "@/app/utils/gui";
-import { useThree } from "@react-three/fiber";
 import defaultConfig from '@/app/presets/Default_config.json';
 import usePresetStore from "@/app/stores/usePresetStore";
 
 function Camera() {
-    const cameraRef = useRef<PerspectiveCameraImpl>()
     const cameraName = usePresetStore(state => state.camera)
 
     const presetReady = useGlobalStore(state => state.presetReady)
@@ -51,7 +47,7 @@ function Camera() {
 
     return (
         <>
-            <PerspectiveCamera ref={cameraRef} fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
+            <PerspectiveCamera fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
                 <object3D name="target" />
             </PerspectiveCamera>
             <CameraWorkHelper></CameraWorkHelper>
