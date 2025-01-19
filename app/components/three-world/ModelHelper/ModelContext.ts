@@ -1,5 +1,5 @@
-import { createContext, use } from 'react';
+import { createContext, useContext } from 'react';
 import { SkinnedMesh } from 'three';
 
 export const ModelContext = createContext<SkinnedMesh>(null);
-export const useModel = () => use(ModelContext);
+export const useModel = () => useContext(ModelContext);

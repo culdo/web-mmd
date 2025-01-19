@@ -3,14 +3,11 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import { buildGuiItem, buildLoadFileFn, buildLoadModelFn } from "@/app/utils/gui";
 import { button, useControls } from "leva";
 import * as THREE from 'three';
-import WithSuspense from "../../suspense";
-import usePresetReady from "@/app/stores/usePresetReady";
 import PmxModel from "../pmx-model";
 import { ThreeEvent } from "@react-three/fiber";
+import WithReady from "@/app/stores/WithReady";
 
 function Model() {
-    usePresetReady()
-
     const characterName = usePresetStore(state => state.character)
     const motionName = usePresetStore(state => state.motion)
     const pmxFiles = usePresetStore(state => state.pmxFiles)
@@ -83,4 +80,4 @@ function Model() {
     );
 }
 
-export default WithSuspense(Model);
+export default WithReady(Model);

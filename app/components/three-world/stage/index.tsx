@@ -2,20 +2,17 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { buildGuiItem, buildLoadModelFn } from "@/app/utils/gui";
 import { button, useControls } from "leva";
-import usePresetReady from "@/app/stores/usePresetReady";
-import WithSuspense from "../../suspense";
 import PmxModel from "../pmx-model";
 import * as THREE from 'three';
+import WithReady from "@/app/stores/WithReady";
 
 function Stage() {
-    usePresetReady()
     const stageName = usePresetStore(state => state.stage)
     const pmxFiles = usePresetStore(state => state.pmxFiles)
     const enablePBR = usePresetStore(state => state["enable PBR"])
     const groundShadow = usePresetStore(state => state["ground shadow"])
 
     const url = pmxFiles.stage[stageName]
-    const filename = stageName
 
     const [_, set] = useControls('Stage', () => ({
         name: {
@@ -51,4 +48,4 @@ function Stage() {
     );
 }
 
-export default WithSuspense(Stage);
+export default WithReady(Stage);

@@ -1,16 +1,15 @@
 import usePresetStore from "@/app/stores/usePresetStore";
 import { useThree } from "@react-three/fiber";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { AnimationMixer } from "three";
 import useVMD from "../../../animation/useVMD";
 import WithSuspense from "@/app/components/suspense";
-import usePresetReady from "@/app/stores/usePresetReady";
+import WithReady from "@/app/stores/WithReady";
 
 
 function MotionFileMode() {
     const camera = useThree(state => state.camera)
     const cameraMixer = useMemo(() => new AnimationMixer(camera), [camera])
-    usePresetReady()
     const cameraFile = usePresetStore(state => state.cameraFile)
     const setTimeCb = useCallback((setTime: () => void) => {
         setTime();
@@ -23,4 +22,4 @@ function MotionFileMode() {
     return <></>;
 }
 
-export default WithSuspense(MotionFileMode);
+export default WithReady(MotionFileMode);
