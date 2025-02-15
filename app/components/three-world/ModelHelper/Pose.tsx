@@ -1,40 +1,47 @@
-import useGlobalStore from "@/app/stores/useGlobalStore";
-import { buildLoadFileFn } from "@/app/utils/gui";
-import { button, useControls } from "leva";
 import { useModel } from "./ModelContext";
+import { useEffect, useMemo } from "react";
+import { Quaternion, Vector3 } from "three";
+import buildUpdatePMX from "./buildUpdatePMX";
 
-function Pose() {
-    const bindParentCb = useGlobalStore(state => state.bindParentCb)
-    const model = useModel()
-    const helper = useGlobalStore(state => state.helper)
-    const loader = useGlobalStore(state => state.loader)
+function Pose(vpd: any, afterCb: Function) {
+    const mesh = useModel()
 
-    const [_, set] = useControls('Character.Pose', () => ({
-        "enabled": {
-            value: false,
-            onChange: (state) => {
-                helper.enable("animation", !state)
-            }
-        },
-        "visible": {
-            value: true,
-            onChange: (state) => {
-                model.visible = state
-            }
-        },
-        "select pose file": button(() => {
-            const selectFile = document.getElementById("selectFile") as HTMLInputElement
-            selectFile.onchange = buildLoadFileFn(async (url) => {
-                const vpd = await loader.loadVPD(url, false)
-                helper.pose(model, vpd)
-                if (bindParentCb) {
-                    bindParentCb()
-                }
-            })
-            selectFile.click();
-            selectFile.webkitdirectory = false;
-        }),
-    }), { collapsed: true }, [bindParentCb])
+    const updatePmx = useMemo(() => buildUpdatePMX(mesh), [mesh])
+    useEffect(() => {
+        mesh.pose();
+
+        const bones = mesh.skeleton.bones;
+        const boneParams = vpd.bones;
+
+        const boneNameDictionary: Record<string, number> = {};
+
+        for (let i = 0, il = bones.length; i < il; i++) {
+
+            boneNameDictionary[bones[i].name] = i;
+
+        }
+
+        const vector = new Vector3();
+        const quaternion = new Quaternion();
+
+        for (let i = 0, il = boneParams.length; i < il; i++) {
+
+            const boneParam = boneParams[i];
+            const boneIndex = boneNameDictionary[boneParam.name];
+
+            if (boneIndex === undefined) continue;
+
+            const bone = bones[boneIndex];
+            bone.position.add(vector.fromArray(boneParam.translation));
+            bone.quaternion.multiply(quaternion.fromArray(boneParam.quaternion));
+
+        }
+
+        mesh.updateMatrixWorld(true);
+        updatePmx()
+
+        if(afterCb) afterCb()
+    }, [mesh])
     return <></>
 }
 

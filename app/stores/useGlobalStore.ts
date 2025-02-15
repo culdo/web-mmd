@@ -3,7 +3,6 @@ import { MutableRefObject, createRef } from 'react';
 import { AnimationMixer, PerspectiveCamera, SkinnedMesh } from 'three';
 import { OrbitControls } from 'three-stdlib';
 import { create } from 'zustand';
-import { MMDAnimationHelper } from '../modules/MMDAnimationHelper';
 import { MMDLoader } from '../modules/MMDLoader';
 import CustomVideoElement from 'youtube-video-element';
 import { CCDIKSolver, GrantSolver, MMDPhysics } from 'three/examples/jsm/Addons.js';
@@ -11,7 +10,6 @@ import { CCDIKSolver, GrantSolver, MMDPhysics } from 'three/examples/jsm/Addons.
 export type Gui = LevaRootProps & { _timeoutID?: NodeJS.Timeout }
 export type GlobalState = {
     loader: MMDLoader
-    helper: MMDAnimationHelper,
     player: CustomVideoElement,
     gui: Gui,
     camera: PerspectiveCamera,
@@ -40,7 +38,6 @@ export type GlobalState = {
 const useGlobalStore = create<GlobalState>(
     (set, get) => ({
         loader: new MMDLoader(),
-        helper: new MMDAnimationHelper(),
         player: null,
         gui: {},
         character: null,

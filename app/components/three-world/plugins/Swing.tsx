@@ -1,9 +1,8 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame, useThree } from "@react-three/fiber";
 import AmmoCls from "ammojs-typed";
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import WithSuspense from "../../suspense";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import WithModel from "../ModelHelper/WithModel";
 
@@ -18,7 +17,6 @@ function Swing() {
     const scene = useThree(state => state.scene);
     const isTransformControl = useGlobalStore(state => state.isTransformControl)
     const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
-    const helper = useGlobalStore(state => state.helper)
     const character = useGlobalStore(state => state.character)
 
     // Physics variables
@@ -169,13 +167,10 @@ function Swing() {
         setGrip(threeObject)
         useGlobalStore.setState({
             bindParentCb: () => {
-                helper.enable('physics', false);
                 threeObject.add(character.skeleton.bones[0])
                 character.skeleton.bones[0].position.x = -sitLength * 0.5 - 1
                 character.skeleton.bones[0].position.y = -gripHeight - 1.0
                 runtimeCharacter.physics.reset()
-                helper.enable('physics', true);
-
             }
         })
 

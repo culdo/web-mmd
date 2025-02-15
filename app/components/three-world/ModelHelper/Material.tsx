@@ -152,7 +152,7 @@ function Material() {
         return result
     }, [model])
 
-    useControls(`Model.${model.name}.Material`, {
+    useControls(`Character.Material`, {
         "targetMaterial": {
             ...buildGuiItem("targetMaterialIdx"),
             options: materialMap
