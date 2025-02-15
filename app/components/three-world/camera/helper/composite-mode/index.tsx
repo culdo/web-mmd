@@ -3,7 +3,7 @@ import { cameraToClips } from "@/app/modules/cameraClipsBuilder";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Suspense, use, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimationAction, AnimationClip, AnimationMixer, LoopOnce } from "three";
 
 export type CameraClip = {
@@ -19,9 +19,7 @@ export type CameraClip = {
     };
 }
 
-function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
-
-    const motionFileBuffer = use(promise)
+function CompositeMode({ motionFileBuffer }: { motionFileBuffer: ArrayBuffer }) {
 
     const player = useGlobalStore(state => state.player)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
@@ -65,7 +63,7 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
             compositeClips.push(clipInfo)
             keysToClips[clipInfo.keyBinding] = clipInfo
         }
-        return [compositeClips, keysToClips]
+        return [compositeClips, keysToClips] as const
     }
 
     const loadClipsFromMotion = () => {
@@ -93,14 +91,14 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
             compositeClips.push(clipInfo)
             keysToClips[keyBinding] = clipInfo
         }
-        return [compositeClips, keysToClips]
+        return [compositeClips, keysToClips] as const
     }
 
     const scrollingDuration = 3.0  // seconds
     // Clips is a array of clipInfo for composition camera mode
     // target clips reference above clips that currently running
     // default to motion file clips
-    const [initClips, initKeysToClips] = (savedCompositeClips ? loadSavedClips() : loadClipsFromMotion()) as [CameraClip[], Record<string, CameraClip>]
+    const [initClips, initKeysToClips] = savedCompositeClips ? loadSavedClips() : loadClipsFromMotion()
     const [compositeClips, setCompositeClips] = useState<CameraClip[]>(initClips)
 
     // Keybindings
@@ -300,18 +298,18 @@ function CompositeMode({ promise }: { promise: Promise<ArrayBuffer> }) {
 
 function SetupCompsite() {
     const cameraFile = usePresetStore(state => state.cameraFile)
+    const [motion, setMotion] = useState<ArrayBuffer>()
+    useEffect(() => {
+        const getMotionFile = async () => {
+            const resp = await fetch(cameraFile)
+            const motion = await resp.arrayBuffer()
+            setMotion(motion)
+        }
+        getMotionFile()
+    }, [cameraFile])
 
-    const getMotionFile = async () => {
-        const resp = await fetch(cameraFile)
-        return await resp.arrayBuffer()
-    }
-
-    const promise = getMotionFile()
-    return (
-        <Suspense fallback={null}>
-            <CompositeMode promise={promise}></CompositeMode>
-        </Suspense>
-    );
+    if(!motion) return <></>
+    return <CompositeMode motionFileBuffer={motion}></CompositeMode>
 }
 
 export default SetupCompsite;
