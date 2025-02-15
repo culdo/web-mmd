@@ -79,15 +79,13 @@ function Effects() {
     
     return (
         <>
+            <EffectControls></EffectControls>
             <EffectComposer renderPriority={1}>
-                <EffectControls></EffectControls>
                 {showOutline && <OutlinePass></OutlinePass>}
                 {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.enabled && character && <DepthOfField ref={setDof} {...dofConfig}></DepthOfField>}
                 {depthTexture && <TextureEffectComp texture={depthTexture} colorChannel={depthDebugColor} ></TextureEffectComp>}
-                
             </EffectComposer>
-            
         </>
     );
 }
