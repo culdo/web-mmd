@@ -7,12 +7,13 @@ import { useEffect } from "react";
 
 function EffectControls() {
     const setDpr = useThree(state => state.setDpr)
-    const size = useThree(state => state.size)
+    const setSize = useThree(state => state.setSize)
     const presetReady = useGlobalStore(state => state.presetReady)
     const pr1 = usePresetStore(state => state["set pixelratio 1.0"])
 
     useControls("Effects", {
         "set pixelratio 1": buildGuiItem("set pixelratio 1.0", (state) => {
+            setSize(window.innerWidth, window.innerHeight)
             setDpr(state ? 1.0 : window.devicePixelRatio)
         }),
         "enable PBR": buildGuiItem("enable PBR"),
