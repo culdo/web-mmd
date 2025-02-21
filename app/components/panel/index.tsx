@@ -6,11 +6,11 @@ import { useEffect, useState } from "react";
 
 function Panel() {
     const gui = useGlobalStore(state => state.gui)
-    usePreset()
     const presetReady = useGlobalStore(states => states.presetReady)
     const hidden = !presetReady || gui.hidden
     const [collapsed, setCollapsed] = useState(false)
-
+    
+    usePreset()
     useEffect(() => {
         if (window.innerWidth < 1000) {
             setCollapsed(true)

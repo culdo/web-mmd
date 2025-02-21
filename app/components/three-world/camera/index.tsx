@@ -1,10 +1,10 @@
-import { PerspectiveCamera } from "@react-three/drei";
 import CameraWorkHelper from "./helper";
 import { button, useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { buildGuiItem, buildLoadFileFn } from "@/app/utils/gui";
 import defaultConfig from '@/app/presets/Default_config.json';
 import usePresetStore from "@/app/stores/usePresetStore";
+import { PerspectiveCamera } from "@theatre/r3f";
 
 function Camera() {
     const cameraName = usePresetStore(state => state.camera)
@@ -43,11 +43,11 @@ function Camera() {
             })
             selectFile.click();
         }),
-    }), { order: 2, collapsed: true }, [presetReady])
+    }), { order: 201, collapsed: true }, [presetReady])
 
     return (
         <>
-            <PerspectiveCamera fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
+            <PerspectiveCamera theatreKey="Camera" fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
                 <object3D name="target" />
             </PerspectiveCamera>
             <CameraWorkHelper></CameraWorkHelper>

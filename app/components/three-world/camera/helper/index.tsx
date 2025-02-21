@@ -1,28 +1,28 @@
 import { CameraMode } from '@/app/types/camera';
 import usePresetStore from "@/app/stores/usePresetStore";
-import { buildGuiItem, buildLoadFileFn } from "@/app/utils/gui";
-import { button, useControls } from "leva";
+import { types } from "@theatre/core";
 import { useEffect } from "react";
 import CompositeMode from "./composite-mode";
 import FixFollowMode from "./fix-follow-mode";
 import MotionFileMode from "./motion-file-mode";
+import { useCurrentRafDriver, useCurrentSheet } from '@theatre/r3f';
 
 function CameraWorkHelper() {
     const cameraMode = usePresetStore(state => state["camera mode"])
 
     const getCameraMode = () => usePresetStore.getState()['camera mode']
 
-    const [, set] = useControls(() => ({
-        'camera mode': {
-            ...buildGuiItem("camera mode") as object,
-            options: {
-                "Motion File": CameraMode.MOTION_FILE,
-                "Composition": CameraMode.COMPOSITION,
-                "Fixed Follow": CameraMode.FIXED_FOLLOW
-            },
-            order: 0,
-        },
-    }), [cameraMode])
+    const sheet = useCurrentSheet()
+    useEffect(() => {
+        const cameraModeObj = sheet.object('Camera Mode', {
+            'mode': types.stringLiteral("Motion File", {
+                "Motion File": CameraMode.MOTION_FILE.toString(),
+                "Composition": CameraMode.COMPOSITION.toString(),
+                "Fixed Follow": CameraMode.FIXED_FOLLOW.toString()
+            })
+        })
+    }, [])
+
 
     useEffect(() => {
         // keyboard shortcuts
@@ -35,7 +35,7 @@ function CameraWorkHelper() {
                 } else {
                     targetMode = CameraMode.COMPOSITION
                 }
-                set({ "camera mode": targetMode })
+                // set({ "camera mode": targetMode })
 
             }
         })
