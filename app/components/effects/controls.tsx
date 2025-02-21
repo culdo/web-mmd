@@ -18,7 +18,7 @@ function EffectControls() {
         }),
         "enable PBR": buildGuiItem("enable PBR"),
         "show outline": buildGuiItem("show outline")
-    }, { order: 1, collapsed: true }, [presetReady])
+    }, { order: 100, collapsed: true }, [presetReady])
 
     // fix inconsistent when resize
     useEffect(() => {

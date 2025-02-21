@@ -20,7 +20,7 @@ function Lights() {
                 max: 10
             }
         }),
-    }, { order: 3, collapsed: true }, [presetReady])
+    }, { order: 300, collapsed: true }, [presetReady])
 
     const ambientLight = useControls('Light', {
         ambientLight: folder({

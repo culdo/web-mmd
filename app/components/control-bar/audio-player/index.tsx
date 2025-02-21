@@ -30,7 +30,7 @@ function AudioPlayer() {
             label: "YT URL",
             ...buildGuiItem("musicYtURL")
         },
-    }), { order: 2, collapsed: true }, [musicName])
+    }), { order: 200, collapsed: true }, [musicName])
 
     const ytPlayer = useRef<CustomVideoElement & { 
         api: YT.Player & {

@@ -32,7 +32,7 @@ function Stage() {
             selectFile.click();
             selectFile.webkitdirectory = false;
         }),
-    }), { collapsed: true, order: 2 }, [url])
+    }), { collapsed: true, order: 202 }, [url])
 
     return (
         <PmxModel

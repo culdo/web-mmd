@@ -13,8 +13,7 @@ function usePreset() {
     const loadPreset = useConfigStore(state => state.loadPreset)
 
     const getApi = usePresetStore.getState
-
-
+    
     const presetFn = {
         "New Preset": async () => {
             let newName = prompt("New preset name:");
@@ -92,7 +91,7 @@ function usePreset() {
             }
         },
         ...controllers
-    }), { order: 100, collapsed: true }, [controllers, presetsList])
+    }), { order: 900, collapsed: true }, [controllers, presetsList])
 
     useEffect(() => {
         setGui({ preset })

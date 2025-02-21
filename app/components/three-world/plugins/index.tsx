@@ -28,7 +28,7 @@ function Plugins() {
                 }
             }
         }]
-    })), { order: 4, collapsed: true })
+    })), { order: 400, collapsed: true })
 
     return (
         <>
