@@ -67,6 +67,9 @@ function Model() {
             onCreate={(mesh: THREE.SkinnedMesh) => useGlobalStore.setState({
                 character: mesh
             })}
+            onDispose={() => useGlobalStore.setState({
+                character: null
+            })}
             onDoubleClick={(e: ThreeEvent<MouseEvent>) => {
                 e.stopPropagation()
                 useGlobalStore.setState(({ selectedName: positionKey }))

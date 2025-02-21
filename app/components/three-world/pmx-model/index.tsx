@@ -13,9 +13,10 @@ type PMXModelProps = {
     children?: JSX.Element | JSX.Element[],
     onCreate?: (mesh: SkinnedMesh) => void,
     onCreatePromise?: (promise: Promise<SkinnedMesh>) => void
+    onDispose?: () => void
 } & Partial<SkinnedMeshProps>
 
-function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, children, onCreate, onCreatePromise, ...props }: PMXModelProps) {
+function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, children, onCreate, onCreatePromise, onDispose, ...props }: PMXModelProps) {
 
     const loader = useGlobalStore(state => state.loader)
     const [initProps, setProps] = useState<Awaited<ReturnType<MMDLoader["loadAsync"]>>>()
@@ -41,6 +42,9 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
             setProps(initProps)
         }
         init()
+
+        if(onDispose) 
+            return onDispose
     }, [url, modelTextures, enableSdef, enablePBR])
 
     const [mesh, setMesh] = useState<SkinnedMesh>()
