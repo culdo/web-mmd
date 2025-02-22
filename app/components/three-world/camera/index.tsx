@@ -1,8 +1,7 @@
 import CameraWorkHelper from "./helper";
 import { button, useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import { buildGuiItem, buildLoadFileFn } from "@/app/utils/gui";
-import defaultConfig from '@/app/presets/Default_config.json';
+import { buildLoadFileFn } from "@/app/utils/gui";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { PerspectiveCamera } from "@theatre/r3f";
 import { ISheetObject } from "@theatre/core";
@@ -12,27 +11,11 @@ function Camera() {
     const cameraName = usePresetStore(state => state.camera)
 
     const presetReady = useGlobalStore(state => state.presetReady)
+    const fov = usePresetStore(state => state.fov)
+    const near = usePresetStore(state => state.near)
+    const zoom = usePresetStore(state => state.zoom)
 
-    const [{ fov, near, zoom }, set] = useControls('Camera', () => ({
-        fov: {
-            ...buildGuiItem("fov"),
-            min: 0,
-            max: 100
-        },
-        near: {
-            ...buildGuiItem("near"),
-            min: 0,
-            max: 5
-        },
-        zoom: {
-            ...buildGuiItem("zoom"),
-            min: 0,
-            max: 100
-        },
-        reset: button(() => {
-            const { fov, near, zoom } = defaultConfig
-            set({ fov, near, zoom })
-        }),
+    const [_, set] = useControls('Camera', () => ({
         name: {
             value: cameraName,
             editable: false
