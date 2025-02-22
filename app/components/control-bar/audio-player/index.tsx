@@ -10,6 +10,7 @@ import 'media-chrome/react/menu';
 import { MediaTheme } from 'media-chrome/react/media-theme';
 import CustomVideoElement from "youtube-video-element";
 import { buildGuiItem } from "@/app/utils/gui";
+import studio from "@theatre/studio";
 
 function AudioPlayer() {
     const setCurrentTime = (currentTime: number) => usePresetStore.setState({ currentTime })
@@ -40,7 +41,10 @@ function AudioPlayer() {
 
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         if(!loadedRef.current) return
-        if (autoHideGui) setGui({ hidden: true });
+        if (autoHideGui) {
+            setGui({ hidden: true })
+            studio.ui.hide()
+        };
         useGlobalStore.setState({ enabledTransform: false })
     }
 
@@ -54,6 +58,7 @@ function AudioPlayer() {
             return
         }
         setGui({ hidden: false });
+        studio.ui.restore()
         setCurrentTime(ytPlayer.current.currentTime);
         useGlobalStore.setState({ enabledTransform: true })
     }
