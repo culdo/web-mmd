@@ -186,8 +186,8 @@
         0,
         0
     ],
-    "fov": 30.339199600077976,
-    "zoom": 0.8,
+    "fov": 30,
+    "zoom": 1.0,
     "near": 0.1,
     "tone mapping": 0,
     "exposure": 1,
