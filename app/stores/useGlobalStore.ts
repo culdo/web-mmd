@@ -6,6 +6,8 @@ import { create } from 'zustand';
 import { MMDLoader } from '../modules/MMDLoader';
 import CustomVideoElement from 'youtube-video-element';
 import { CCDIKSolver, GrantSolver, MMDPhysics } from 'three/examples/jsm/Addons.js';
+import { ISheetObject } from '@theatre/core';
+import { CameraObj } from '../types/camera';
 
 export type Gui = LevaRootProps & { _timeoutID?: NodeJS.Timeout }
 export type GlobalState = {
@@ -13,6 +15,7 @@ export type GlobalState = {
     player: CustomVideoElement,
     gui: Gui,
     camera: PerspectiveCamera,
+    cameraObj: ISheetObject<CameraObj>,
     runtimeCharacter: {
         mixer: AnimationMixer,
         ikSolver: CCDIKSolver,
@@ -44,6 +47,7 @@ const useGlobalStore = create<GlobalState>(
         stage: null,
         runtimeCharacter: null,
         camera: null,
+        cameraObj: null,
         controls: null,
         playDeltaRef: (() => {
             const ref: MutableRefObject<number> = createRef()

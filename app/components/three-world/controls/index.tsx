@@ -7,6 +7,8 @@ import { Event, PerspectiveCamera } from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { OrbitControls } from "./orbit-controls";
 import { setLevaValue } from '@/app/utils/gui';
+import { useCurrentSheet } from '@theatre/r3f';
+import studio from '@theatre/studio';
 
 function Controls() {
     const controlsRef = useRef<OrbitControlsImpl>()
@@ -17,6 +19,7 @@ function Controls() {
     const isTransformControl = useGlobalStore(state => state.isTransformControl)
     const selectedName = useGlobalStore(state => state.selectedName)
     const enabledTransform = useGlobalStore(state => state.enabledTransform)
+    const cameraObj = useGlobalStore(state => state.cameraObj)
 
     useEffect(() => {
         // keyboard shortcuts
@@ -67,6 +70,14 @@ function Controls() {
 
     const onEnd = () => {
         isOrbitControl.current = false
+        studio.transaction(({set}) => {
+            set(cameraObj.props.position.x, camera.position.x)
+            set(cameraObj.props.position.y, camera.position.y)
+            set(cameraObj.props.position.z, camera.position.z)
+            set(cameraObj.props.rotation.x, camera.rotation.x)
+            set(cameraObj.props.rotation.y, camera.rotation.y)
+            set(cameraObj.props.rotation.z, camera.rotation.z)
+        })
     }
 
     const onStartTc = () => {

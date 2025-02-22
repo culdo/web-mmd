@@ -5,6 +5,8 @@ import { buildGuiItem, buildLoadFileFn } from "@/app/utils/gui";
 import defaultConfig from '@/app/presets/Default_config.json';
 import usePresetStore from "@/app/stores/usePresetStore";
 import { PerspectiveCamera } from "@theatre/r3f";
+import { ISheetObject } from "@theatre/core";
+import { CameraObj } from "@/app/types/camera";
 
 function Camera() {
     const cameraName = usePresetStore(state => state.camera)
@@ -47,7 +49,7 @@ function Camera() {
 
     return (
         <>
-            <PerspectiveCamera theatreKey="Camera" fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
+            <PerspectiveCamera objRef={(obj: ISheetObject<CameraObj>) => useGlobalStore.setState({ "cameraObj": obj })} theatreKey="Camera" fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
                 <object3D name="target" />
             </PerspectiveCamera>
             <CameraWorkHelper></CameraWorkHelper>
