@@ -27,7 +27,7 @@ export default function Home() {
       <LoadingOverlay></LoadingOverlay>
       <SceneTimeline></SceneTimeline>
       <Canvas shadows>
-        <SheetProvider sheet={getProject('Demo Project').sheet('Demo Sheet')}>
+        <SheetProvider sheet={getProject('MMD').sheet('MMD UI')}>
           <ThreeWorld />
           <Effects></Effects>
         </SheetProvider>
