@@ -1,7 +1,6 @@
 "use client"
 
 import { Canvas } from "@react-three/fiber";
-import extension from '@theatre/r3f/dist/extension'
 import { editable as e, SheetProvider } from '@theatre/r3f'
 
 import { getProject } from '@theatre/core'
@@ -14,12 +13,13 @@ import ControlBar from "./components/control-bar";
 import FileSelector from "./components/file-selector";
 import Panel from "./components/panel";
 import { useEffect } from "react";
+import MMDState from "./presets/MMD.theatre-project-state.json"
 
 export default function Home() {
 
   useEffect(() => {
+    localStorage.setItem("theatre-0.4.persistent", JSON.stringify(MMDState))
     studio.initialize()
-    studio.extend(extension)
   }, [])
 
   return (
@@ -27,7 +27,7 @@ export default function Home() {
       <LoadingOverlay></LoadingOverlay>
       <SceneTimeline></SceneTimeline>
       <Canvas shadows>
-        <SheetProvider sheet={getProject('MMD').sheet('MMD UI')}>
+        <SheetProvider sheet={getProject('MMD').sheet("MMD UI")}>
           <ThreeWorld />
           <Effects></Effects>
         </SheetProvider>
