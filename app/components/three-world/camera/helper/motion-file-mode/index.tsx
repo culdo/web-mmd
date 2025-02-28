@@ -15,7 +15,10 @@ function MotionFileMode() {
         setTime();
         camera.up.set(0, 1, 0);
         camera.up.applyQuaternion(camera.quaternion);
-        camera.lookAt(camera.getObjectByName("target").position);
+        const target = camera.getObjectByName("target")
+        if(target) {
+            camera.lookAt(target.position);
+        }
         camera.updateProjectionMatrix();
     }, [camera, cameraMixer])
     useVMD(camera, cameraMixer, cameraFile, setTimeCb)

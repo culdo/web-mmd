@@ -3,14 +3,17 @@ import { button, useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { buildLoadFileFn } from "@/app/utils/gui";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { PerspectiveCamera } from "@theatre/r3f";
-import { ISheetObject } from "@theatre/core";
-import { CameraObj } from "@/app/types/camera";
+import { PerspectiveCamera as PerspectiveCameraTheaTre, SheetProvider } from "@theatre/r3f";
+import { getProject, ISheetObject } from "@theatre/core";
+import { editable as e } from "@theatre/r3f"
+import { CameraMode, CameraObj } from "@/app/types/camera";
+import { PerspectiveCamera } from "@react-three/drei";
 
 function Camera() {
     const cameraName = usePresetStore(state => state.camera)
 
     const presetReady = useGlobalStore(state => state.presetReady)
+    const cameraMode = usePresetStore(state => state["camera mode"])
     const fov = usePresetStore(state => state.fov)
     const near = usePresetStore(state => state.near)
     const zoom = usePresetStore(state => state.zoom)
@@ -30,11 +33,23 @@ function Camera() {
         }),
     }), { order: 201, collapsed: true }, [presetReady])
 
+    const setCameraObj = (obj: ISheetObject<CameraObj>) => {
+        useGlobalStore.setState({ "cameraObj": obj })
+    }
+
     return (
         <>
-            <PerspectiveCamera objRef={(obj: ISheetObject<CameraObj>) => useGlobalStore.setState({ "cameraObj": obj })} theatreKey="Camera" fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
-                <object3D name="target" />
-            </PerspectiveCamera>
+            {
+                cameraMode == CameraMode.EDITOR ?
+                    <SheetProvider sheet={getProject('MMD').sheet("MMD UI")}>
+                        <PerspectiveCameraTheaTre objRef={setCameraObj} theatreKey="Camera" fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
+                            <e.mesh theatreKey="Camera Target" name="target" />
+                        </PerspectiveCameraTheaTre>
+                    </SheetProvider> :
+                    <PerspectiveCamera fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
+                        <mesh name="target" />
+                    </PerspectiveCamera>
+            }
             <CameraWorkHelper></CameraWorkHelper>
         </>
     )

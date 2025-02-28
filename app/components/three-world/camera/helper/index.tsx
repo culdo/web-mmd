@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import CompositeMode from "./composite-mode";
 import FixFollowMode from "./fix-follow-mode";
 import MotionFileMode from "./motion-file-mode";
+import EditorMode from './editor-mode';
 
 function CameraWorkHelper() {
     const cameraMode = usePresetStore(state => state["camera mode"])
@@ -18,7 +19,8 @@ function CameraWorkHelper() {
             options: {
                 "Motion File": CameraMode.MOTION_FILE,
                 "Composition": CameraMode.COMPOSITION,
-                "Fixed Follow": CameraMode.FIXED_FOLLOW
+                "Fixed Follow": CameraMode.FIXED_FOLLOW,
+                "Editor": CameraMode.EDITOR
             },
             order: 0,
         },
@@ -51,6 +53,9 @@ function CameraWorkHelper() {
             }
             {
                 cameraMode == CameraMode.FIXED_FOLLOW && <FixFollowMode></FixFollowMode>
+            }
+            {
+                cameraMode == CameraMode.EDITOR && <EditorMode></EditorMode>
             }
         </>
     );
