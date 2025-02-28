@@ -3,7 +3,7 @@ import { Skeleton, SkinnedMesh } from "three"
 import { initBones, MMDLoader } from "@/app/modules/MMDLoader"
 import useGlobalStore from "@/app/stores/useGlobalStore"
 import { onProgress } from "@/app/utils/base"
-import { SkinnedMeshProps } from "@react-three/fiber"
+import { SkinnedMeshProps, useThree } from "@react-three/fiber"
 
 type PMXModelProps = {
     url: string,
@@ -20,8 +20,9 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
 
     const loader = useGlobalStore(state => state.loader)
     const [initProps, setProps] = useState<Awaited<ReturnType<MMDLoader["loadAsync"]>>>()
-
     const [resolve, setResolve] = useState<(mesh:SkinnedMesh)=>void>()
+    const camera = useThree(state => state.camera)
+
     useEffect(() => {
         const params = {
             enableSdef,
@@ -45,7 +46,7 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
 
         if(onDispose) 
             return onDispose
-    }, [url, modelTextures, enableSdef, enablePBR])
+    }, [url, modelTextures, enableSdef, enablePBR, camera])
 
     const [mesh, setMesh] = useState<SkinnedMesh>()
     useEffect(() => {

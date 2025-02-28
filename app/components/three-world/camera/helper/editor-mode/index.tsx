@@ -3,6 +3,7 @@ import { useCallback, useEffect } from "react";
 import WithReady from "@/app/stores/WithReady";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import MMDState from "@/app/presets/MMD.theatre-project-state.json"
+import { IStudio } from "@theatre/studio";
 
 function EditorMode() {
     const camera = useThree(state => state.camera)
@@ -10,12 +11,15 @@ function EditorMode() {
 
     useEffect(() => {
         localStorage.setItem("theatre-0.4.persistent", JSON.stringify(MMDState))
-
+        
+        let studio: IStudio
         const init = async () => {
-            const studio = (await import("@theatre/studio")).default
+            await import("@theatre/core")
+            studio = (await import("@theatre/studio")).default
             studio.initialize()
         }
         init()
+        return () => studio.ui.hide()
       }, [])
 
     const _onLoop = useCallback(() => {
