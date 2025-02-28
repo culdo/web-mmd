@@ -2,18 +2,19 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { RootState, useFrame } from "@react-three/fiber";
 import { useMemo } from "react";
 import { MMDPhysics } from "three/examples/jsm/animation/MMDPhysics.js";
-import { useModel } from "./ModelContext";
+import { useModel, useRuntimeHelper } from "./ModelContext";
 
 function Physics() {
-    const model = useModel()
+    const mesh = useModel()
     const playDeltaRef = useGlobalStore(state => state.playDeltaRef)
+    const runtimeHelper = useRuntimeHelper()
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
     const onUpdate = useMemo(() => {
 
         const physics = new MMDPhysics(
-            model,
-            model.geometry.userData.MMD.rigidBodies,
-            model.geometry.userData.MMD.constraints,
+            mesh,
+            mesh.geometry.userData.MMD.rigidBodies,
+            mesh.geometry.userData.MMD.constraints,
             {
                 unitStep: 1 / 60,
                 maxStepNum: 1,
@@ -23,8 +24,8 @@ function Physics() {
         const zeroVector = new Ammo.btVector3()
 
         const optimizeIK = (physicsEnabled: boolean) => {
-            const iks = model.geometry.userData.MMD.iks;
-            const bones = model.geometry.userData.MMD.bones;
+            const iks = mesh.geometry.userData.MMD.iks;
+            const bones = mesh.geometry.userData.MMD.bones;
             for (let i = 0, il = iks.length; i < il; i++) {
                 const ik = iks[i];
                 const links = ik.links;
@@ -43,7 +44,7 @@ function Physics() {
 
         const reset = () => {
             physics.reset();
-            for(const rigidBody of physics.bodies as any[]) {
+            for (const rigidBody of physics.bodies as any[]) {
                 rigidBody.body.clearForces()
                 rigidBody.body.setLinearVelocity(zeroVector)
                 rigidBody.body.setAngularVelocity(zeroVector)
@@ -52,17 +53,17 @@ function Physics() {
 
         physics.warmup(60);
         optimizeIK(true);
-        reset();
+        runtimeHelper.resetPhysic = reset
 
         return (_: RootState, delta: number) => {
             // reset physic when time seeking
-			if (Math.abs(playDeltaRef.current) > 1.0) {
-				reset();
-			}
-			physics.update(isMotionUpdating() ? playDeltaRef.current: delta);
+            if (Math.abs(playDeltaRef.current) > 1.0) {
+                reset();
+            }
+            physics.update(isMotionUpdating() ? playDeltaRef.current : delta);
         }
 
-    }, [model])
+    }, [mesh])
     // Physics need to be updated after the motion updating to make reset work
     // So the priority set to 2
     useFrame(onUpdate, 2)

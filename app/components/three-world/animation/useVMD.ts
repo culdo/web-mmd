@@ -5,7 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect } from "react";
 import { AnimationMixer, Camera, SkinnedMesh } from "three";
 
-function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: string, onLoop?: Function) {
+function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: string, onLoop?: Function, onInit?: Function) {
     const loader = useGlobalStore(state => state.loader)
     const player = useGlobalStore(state => state.player)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
@@ -25,6 +25,9 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
             const action = mixer.clipAction(clip)
             action.play()
             _onLoop(savedCurrentTime)
+            if(onInit) {
+                onInit()
+            }
         }
         init()
         return () => {

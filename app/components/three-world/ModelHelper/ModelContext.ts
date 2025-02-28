@@ -1,5 +1,14 @@
-import { createContext, useContext } from 'react';
+import { createContext, MutableRefObject, useContext } from 'react';
 import { SkinnedMesh } from 'three';
+import { MMDPhysics } from 'three/examples/jsm/Addons.js';
 
-export const ModelContext = createContext<SkinnedMesh>(null);
-export const useModel = () => useContext(ModelContext);
+type ModelContextProps = {
+    mesh: SkinnedMesh
+    runtimeHelper: MutableRefObject<{
+        resetPhysic?: () => void
+    }>
+}
+
+export const ModelContext = createContext<ModelContextProps>(null);
+export const useModel = () => useContext(ModelContext).mesh;
+export const useRuntimeHelper = () => useContext(ModelContext).runtimeHelper.current

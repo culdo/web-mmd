@@ -3,14 +3,14 @@ import useVMD from "../animation/useVMD";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { AnimationMixer } from "three";
 import { useEffect, useMemo } from "react";
-import { useModel } from "./ModelContext";
+import { useModel, useRuntimeHelper } from "./ModelContext";
 import buildUpdatePMX from "./buildUpdatePMX";
 
 function Animation() {
     const mesh = useModel()
     const player = useGlobalStore(state => state.player)
     const motionFile = usePresetStore(state => state.motionFile)
-    
+
     const mixer = useMemo(() => new AnimationMixer(mesh), [mesh]);
 
     const onLoop = useMemo(() => {
@@ -18,7 +18,7 @@ function Animation() {
         let backupBones = new Float32Array(mesh.skeleton.bones.length * 7);
         let init = false;
         const copyBones = (fromOrTo: "fromArray" | "toArray") => {
-            if(!init) {
+            if (!init) {
                 init = true
                 return
             }
@@ -38,13 +38,17 @@ function Animation() {
         return (setTime: () => void) => {
             restoreBones()
             setTime()
-			saveBones()
+            saveBones()
 
             updatePMX()
         }
 
     }, [mesh])
-    useVMD(mesh, mixer, motionFile, onLoop)
+    const runtimeHelper = useRuntimeHelper()
+    const onInit = () => {
+        runtimeHelper.resetPhysic?.()
+    }
+    useVMD(mesh, mixer, motionFile, onLoop, onInit)
 
     useEffect(() => {
         mixer.addEventListener('loop', () => {
