@@ -8,6 +8,7 @@ import { useEffect } from "react";
 function EffectControls() {
     const setDpr = useThree(state => state.setDpr)
     const setSize = useThree(state => state.setSize)
+    const size = useThree(state => state.size)
     const presetReady = useGlobalStore(state => state.presetReady)
     const pr1 = usePresetStore(state => state["set pixelratio 1.0"])
 
@@ -19,11 +20,10 @@ function EffectControls() {
         "enable PBR": buildGuiItem("enable PBR"),
         "show outline": buildGuiItem("show outline")
     }, { order: 100, collapsed: true }, [presetReady])
-
     // fix inconsistent when resize
     useEffect(() => {
         setDpr(pr1 ? 1.0 : window.devicePixelRatio)
-    })
+    }, [size])
     return <></>
 }
 
