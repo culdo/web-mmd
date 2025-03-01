@@ -254,7 +254,7 @@ class TheatreTrackBuilder {
 
 			const motion = cameras[i];
 
-			
+
 			const pos = motion.position;
 			const rot = motion.rotation;
 			const distance = motion.distance;
@@ -294,7 +294,7 @@ class TheatreTrackBuilder {
 
 		}
 
-		const idxMap = ["x", "y", "z", ] as const
+		const idxMap = ["x", "y", "z",] as const
 
 		type OnBuild = (idx: number, time: number, values: number[], interpolations: number[], type?: string) => void
 
@@ -313,7 +313,7 @@ class TheatreTrackBuilder {
 			}
 		}
 		this._createTrack(times, centers, cInterpolations, onCbuild)
-		
+
 		// positions
 		const onPbuild: OnBuild = (idx, time, values, interpolations, type) => {
 			for (let j = 0; j < 3; j++) {
@@ -324,7 +324,7 @@ class TheatreTrackBuilder {
 			}
 		}
 		this._createTrack(times, positions, pInterpolations, onPbuild)
-		
+
 		// rotations
 		const onRbuild: OnBuild = (idx, time, values, interpolations, type) => {
 			for (let j = 0; j < 3; j++) {
@@ -335,7 +335,7 @@ class TheatreTrackBuilder {
 			}
 		}
 		this._createTrack(times, rotations, qInterpolations, onRbuild)
-		
+
 		// fovs
 		const onFbuild: OnBuild = (idx, time, values, interpolations, type) => {
 			const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
@@ -343,7 +343,7 @@ class TheatreTrackBuilder {
 			fovKeyFrames.keyframes.push(createKeyFrame(time, values[idx], interpolation, type))
 		}
 		this._createTrack(times, fovs, fInterpolations, onFbuild)
-			
+
 		console.log(times[times.length - 1])
 
 		return {
@@ -410,11 +410,15 @@ class TheatreTrackBuilder {
 			}
 
 		}
+		// console.log(interpolations.slice(0, 4))
+		// console.log(interpolations.slice(interpolations.length - 4))
+		const lastItems = interpolations.splice(interpolations.length - 2, 2)
+		interpolations.splice(0, 0, ...lastItems)
 
 		for (const [idx, frameNum] of frameNums.entries()) {
 			const time = frameNum / 30;
 			let type: string
-			if(frameNums[idx] + 1 == frameNums[idx+1]) {
+			if (frameNums[idx] + 1 == frameNums[idx + 1]) {
 				type = "hold"
 			} else {
 				type = "bezier"
@@ -426,7 +430,7 @@ class TheatreTrackBuilder {
 
 }
 
-function createKeyFrame(frameNum: number, value: number, interpolation: number[], type="bezier") {
+function createKeyFrame(frameNum: number, value: number, interpolation: number[], type = "bezier") {
 	return {
 		id: nanoid(10),
 		position: frameNum,
