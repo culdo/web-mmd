@@ -1,6 +1,7 @@
 import {
 	AnimationClip,
 	Euler,
+	KeyframeTrack,
 	NumberKeyframeTrack,
 	Quaternion,
 	QuaternionKeyframeTrack,
@@ -52,7 +53,7 @@ class TheatreTrackBuilder {
 
 		}
 
-		const tracks = [];
+		const tracks: KeyframeTrack[] = [];
 
 		const motions: any = {};
 		const bones = mesh.skeleton.bones;
@@ -112,13 +113,6 @@ class TheatreTrackBuilder {
 
 			}
 
-			const targetName = '.bones[' + key + ']';
-			if (key == "センター") {
-				let smoothed = positions
-				tracks.push(this._createTrack('smoothCenter' + '.position', VectorKeyframeTrack, times, smoothed, pInterpolations));
-			}
-			tracks.push(this._createTrack(targetName + '.position', VectorKeyframeTrack, times, positions, pInterpolations));
-			tracks.push(this._createTrack(targetName + '.quaternion', QuaternionKeyframeTrack, times, rotations, rInterpolations));
 
 		}
 
@@ -302,30 +296,55 @@ class TheatreTrackBuilder {
 		}
 
 		const idxMap = ["x", "y", "z", ] as const
-		for (const [idx, time] of times.entries()) {
-			// centers
-			for (let j = 0; j < 3; j++) {
-				const prop = idxMap[j]
-				const interpolation = cInterpolations.slice(idx * 12 + (j * 4), idx * 12 + ((j + 1) * 4))
-				targetPosKeyFrames[prop].keyframes.push(createKeyFrame(time, centers[idx * 3 + j], interpolation))
-			}
-			// positions
-			for (let j = 0; j < 3; j++) {
-				const prop = idxMap[j]
-				const interpolation = pInterpolations.slice(idx * 4, (idx + 1) * 4)
-				positionKeyFrames[prop].keyframes.push(createKeyFrame(time, positions[idx * 3 + j], interpolation))
-			}
-			// rotations
-			for (let j = 0; j < 3; j++) {
-				const prop = idxMap[j]
-				const interpolation = qInterpolations.slice(idx * 4, (idx + 1) * 4)
-				rotationKeyFrames[prop].keyframes.push(createKeyFrame(time, rotations[idx * 3 + j], interpolation))
-			}
-			// fovs
-			const interpolation = fInterpolations.slice(idx * 4, (idx + 1) * 4)
-			fovKeyFrames.keyframes.push(createKeyFrame(time, fovs[idx], interpolation))
-		}
 
+		type OnBuild = (idx: number, time: number, values: number[], interpolations: number[]) => void
+
+		const swapInterpolation = (interpolation: number[]) => {
+			const temp = interpolation[1]
+			interpolation[1] = interpolation[2]
+			interpolation[2] = temp
+		}
+		// centers
+		const onCbuild: OnBuild = (idx, time, values, interpolations) => {
+			for (let j = 0; j < 3; j++) {
+				const prop = idxMap[j]
+				const interpolation = interpolations.slice(idx * 12 + (j * 4), idx * 12 + ((j + 1) * 4))
+				swapInterpolation(interpolation)
+				targetPosKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation))
+			}
+		}
+		this._createTrack(times, centers, cInterpolations, onCbuild)
+		
+		// positions
+		const onPbuild: OnBuild = (idx, time, values, interpolations) => {
+			for (let j = 0; j < 3; j++) {
+				const prop = idxMap[j]
+				const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
+				swapInterpolation(interpolation)
+				positionKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation))
+			}
+		}
+		this._createTrack(times, positions, pInterpolations, onPbuild)
+		
+		// rotations
+		const onRbuild: OnBuild = (idx, time, values, interpolations) => {
+			for (let j = 0; j < 3; j++) {
+				const prop = idxMap[j]
+				const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
+				swapInterpolation(interpolation)
+				rotationKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation))
+			}
+		}
+		this._createTrack(times, rotations, qInterpolations, onRbuild)
+		
+		// fovs
+		const onFbuild: OnBuild = (idx, time, values, interpolations) => {
+			const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
+			swapInterpolation(interpolation)
+			fovKeyFrames.keyframes.push(createKeyFrame(time, values[idx], interpolation))
+		}
+		this._createTrack(times, fovs, fInterpolations, onFbuild)
+			
 		console.log(times[times.length - 1])
 
 		return {
@@ -339,7 +358,7 @@ class TheatreTrackBuilder {
 
 	// private method
 
-	_createTrack(node: string, typedKeyframeTrack: typeof VectorKeyframeTrack, times: any[], values: any[], interpolations: any[], isCamera = false) {
+	_createTrack(times: any[], values: any[], interpolations: any[], onBuild: Function) {
 
 		/*
 			 * optimizes here not to let KeyframeTrackPrototype optimize
@@ -393,9 +412,9 @@ class TheatreTrackBuilder {
 
 		}
 
-		const track = new typedKeyframeTrack(node, times, values);
-
-		return track;
+		for (const [idx, time] of times.entries()) {
+			onBuild(idx, time, values, interpolations)
+		}
 
 	}
 
