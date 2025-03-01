@@ -8,6 +8,8 @@ import { getProject, ISheetObject } from "@theatre/core";
 import { editable as e } from "@theatre/r3f"
 import { CameraMode, CameraObj } from "@/app/types/camera";
 import { PerspectiveCamera } from "@react-three/drei";
+import { useRef } from "react";
+import { Mesh } from "three";
 
 function Camera() {
     const cameraName = usePresetStore(state => state.camera)
@@ -37,13 +39,16 @@ function Camera() {
         useGlobalStore.setState({ "cameraObj": obj })
     }
 
+    const isOrbitControl = useGlobalStore(state => state.isOrbitControl)
+    const targetRef = isOrbitControl ? null : useRef<Mesh>()
+
     return (
         <>
             {
                 cameraMode == CameraMode.EDITOR ?
                     <SheetProvider sheet={getProject('MMD').sheet("MMD UI")}>
-                        <PerspectiveCameraTheaTre objRef={setCameraObj} theatreKey="Camera" fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
-                            <e.mesh theatreKey="Camera Target" name="target" />
+                        <PerspectiveCameraTheaTre objRef={setCameraObj} theatreKey="Camera" fov={fov} near={near} zoom={zoom} lookAt={targetRef} position={[0, 10, 50]} makeDefault>
+                            <e.mesh ref={targetRef} theatreKey="Camera Target" name="target" />
                         </PerspectiveCameraTheaTre>
                     </SheetProvider> :
                     <PerspectiveCamera fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
