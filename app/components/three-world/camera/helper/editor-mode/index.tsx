@@ -39,14 +39,13 @@ function EditorMode() {
 
     const _onLoop = useCallback(() => {
         camera.up.set(0, 1, 0);
-        camera.up.applyQuaternion(camera.quaternion);
-        camera.lookAt(camera.getObjectByName("target").position);
+        camera.up.applyEuler(camera.rotation);
         camera.updateProjectionMatrix();
     }, [camera])
 
     useFrame(() => {
+        driver?.tick(performance.now())
         if (isMotionUpdating()) {
-            driver?.tick(performance.now())
             _onLoop()
         }
     }, 1)
