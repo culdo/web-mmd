@@ -254,15 +254,14 @@ class TheatreTrackBuilder {
 
 			const motion = cameras[i];
 
-			const time = motion.frameNum / 30;
+			
 			const pos = motion.position;
 			const rot = motion.rotation;
 			const distance = motion.distance;
 			const fov = motion.fov;
 			const interpolation = motion.interpolation;
 
-			times.push(time);
-			frameNums.push(motion.frameNum);
+			times.push(motion.frameNum);
 
 			position.set(0, 0, - distance);
 
@@ -297,7 +296,7 @@ class TheatreTrackBuilder {
 
 		const idxMap = ["x", "y", "z", ] as const
 
-		type OnBuild = (idx: number, time: number, values: number[], interpolations: number[]) => void
+		type OnBuild = (idx: number, time: number, values: number[], interpolations: number[], type?: string) => void
 
 		const swapInterpolation = (interpolation: number[]) => {
 			const temp = interpolation[1]
@@ -305,43 +304,43 @@ class TheatreTrackBuilder {
 			interpolation[2] = temp
 		}
 		// centers
-		const onCbuild: OnBuild = (idx, time, values, interpolations) => {
+		const onCbuild: OnBuild = (idx, time, values, interpolations, type) => {
 			for (let j = 0; j < 3; j++) {
 				const prop = idxMap[j]
 				const interpolation = interpolations.slice(idx * 12 + (j * 4), idx * 12 + ((j + 1) * 4))
 				swapInterpolation(interpolation)
-				targetPosKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation))
+				targetPosKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
 			}
 		}
 		this._createTrack(times, centers, cInterpolations, onCbuild)
 		
 		// positions
-		const onPbuild: OnBuild = (idx, time, values, interpolations) => {
+		const onPbuild: OnBuild = (idx, time, values, interpolations, type) => {
 			for (let j = 0; j < 3; j++) {
 				const prop = idxMap[j]
 				const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
 				swapInterpolation(interpolation)
-				positionKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation))
+				positionKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
 			}
 		}
 		this._createTrack(times, positions, pInterpolations, onPbuild)
 		
 		// rotations
-		const onRbuild: OnBuild = (idx, time, values, interpolations) => {
+		const onRbuild: OnBuild = (idx, time, values, interpolations, type) => {
 			for (let j = 0; j < 3; j++) {
 				const prop = idxMap[j]
 				const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
 				swapInterpolation(interpolation)
-				rotationKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation))
+				rotationKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
 			}
 		}
 		this._createTrack(times, rotations, qInterpolations, onRbuild)
 		
 		// fovs
-		const onFbuild: OnBuild = (idx, time, values, interpolations) => {
+		const onFbuild: OnBuild = (idx, time, values, interpolations, type) => {
 			const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
 			swapInterpolation(interpolation)
-			fovKeyFrames.keyframes.push(createKeyFrame(time, values[idx], interpolation))
+			fovKeyFrames.keyframes.push(createKeyFrame(time, values[idx], interpolation, type))
 		}
 		this._createTrack(times, fovs, fInterpolations, onFbuild)
 			
@@ -358,25 +357,25 @@ class TheatreTrackBuilder {
 
 	// private method
 
-	_createTrack(times: any[], values: any[], interpolations: any[], onBuild: Function) {
+	_createTrack(frameNums: any[], values: any[], interpolations: any[], onBuild: Function) {
 
 		/*
 			 * optimizes here not to let KeyframeTrackPrototype optimize
 			 * because KeyframeTrackPrototype optimizes times and values but
 			 * doesn't optimize interpolations.
 			 */
-		if (times.length > 2) {
+		if (frameNums.length > 2) {
 
-			times = times.slice();
+			frameNums = frameNums.slice();
 			values = values.slice();
 			interpolations = interpolations.slice();
 
-			const stride = values.length / times.length;
-			const interpolateStride = interpolations.length / times.length;
+			const stride = values.length / frameNums.length;
+			const interpolateStride = interpolations.length / frameNums.length;
 
 			let index = 1;
 
-			for (let aheadIndex = 2, endIndex = times.length; aheadIndex < endIndex; aheadIndex++) {
+			for (let aheadIndex = 2, endIndex = frameNums.length; aheadIndex < endIndex; aheadIndex++) {
 
 				for (let i = 0; i < stride; i++) {
 
@@ -392,7 +391,7 @@ class TheatreTrackBuilder {
 
 				if (aheadIndex > index) {
 
-					times[index] = times[aheadIndex];
+					frameNums[index] = frameNums[aheadIndex];
 
 					for (let i = 0; i < stride; i++) {
 
@@ -412,21 +411,28 @@ class TheatreTrackBuilder {
 
 		}
 
-		for (const [idx, time] of times.entries()) {
-			onBuild(idx, time, values, interpolations)
+		for (const [idx, frameNum] of frameNums.entries()) {
+			const time = frameNum / 30;
+			let type: string
+			if(frameNums[idx] + 1 == frameNums[idx+1]) {
+				type = "hold"
+			} else {
+				type = "bezier"
+			}
+			onBuild(idx, time, values, interpolations, type)
 		}
 
 	}
 
 }
 
-function createKeyFrame(frameNum: number, value: number, interpolation: number[]) {
+function createKeyFrame(frameNum: number, value: number, interpolation: number[], type="bezier") {
 	return {
 		id: nanoid(10),
 		position: frameNum,
 		connectedRight: true,
 		handles: interpolation,
-		type: "bezier",
+		type,
 		value
 	}
 }
