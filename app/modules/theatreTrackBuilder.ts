@@ -200,8 +200,8 @@ class TheatreTrackBuilder {
 		function pushInterpolation(array: any[], interpolation: number[], index: number) {
 
 			array.push(interpolation[index * 4 + 0] / 127); // x1
-			array.push(interpolation[index * 4 + 1] / 127); // x2
 			array.push(interpolation[index * 4 + 2] / 127); // y1
+			array.push(interpolation[index * 4 + 1] / 127); // x2
 			array.push(interpolation[index * 4 + 3] / 127); // y2
 
 		}
@@ -298,17 +298,11 @@ class TheatreTrackBuilder {
 
 		type OnBuild = (idx: number, time: number, values: number[], interpolations: number[], type?: string) => void
 
-		const swapInterpolation = (interpolation: number[]) => {
-			const temp = interpolation[1]
-			interpolation[1] = interpolation[2]
-			interpolation[2] = temp
-		}
 		// centers
 		const onCbuild: OnBuild = (idx, time, values, interpolations, type) => {
 			for (let j = 0; j < 3; j++) {
 				const prop = idxMap[j]
 				const interpolation = interpolations.slice(idx * 12 + (j * 4), idx * 12 + ((j + 1) * 4))
-				swapInterpolation(interpolation)
 				targetPosKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
 			}
 		}
@@ -319,7 +313,6 @@ class TheatreTrackBuilder {
 			for (let j = 0; j < 3; j++) {
 				const prop = idxMap[j]
 				const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
-				swapInterpolation(interpolation)
 				positionKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
 			}
 		}
@@ -330,7 +323,6 @@ class TheatreTrackBuilder {
 			for (let j = 0; j < 3; j++) {
 				const prop = idxMap[j]
 				const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
-				swapInterpolation(interpolation)
 				rotationKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
 			}
 		}
@@ -339,7 +331,6 @@ class TheatreTrackBuilder {
 		// fovs
 		const onFbuild: OnBuild = (idx, time, values, interpolations, type) => {
 			const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
-			swapInterpolation(interpolation)
 			fovKeyFrames.keyframes.push(createKeyFrame(time, values[idx], interpolation, type))
 		}
 		this._createTrack(times, fovs, fInterpolations, onFbuild)
@@ -412,8 +403,8 @@ class TheatreTrackBuilder {
 		}
 		// console.log(interpolations.slice(0, 4))
 		// console.log(interpolations.slice(interpolations.length - 4))
-		const lastItems = interpolations.splice(interpolations.length - 2, 2)
-		interpolations.splice(0, 0, ...lastItems)
+		const lastItems = interpolations.splice(0, 2)
+		interpolations.splice(interpolations.length - 2, 0, ...lastItems)
 
 		for (const [idx, frameNum] of frameNums.entries()) {
 			const time = frameNum / 30;
@@ -430,10 +421,10 @@ class TheatreTrackBuilder {
 
 }
 
-function createKeyFrame(frameNum: number, value: number, interpolation: number[], type = "bezier") {
+function createKeyFrame(time: number, value: number, interpolation: number[], type = "bezier") {
 	return {
 		id: nanoid(10),
-		position: frameNum,
+		position: time,
 		connectedRight: true,
 		handles: interpolation,
 		type,
