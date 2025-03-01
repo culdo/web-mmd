@@ -21,10 +21,11 @@ function Controls() {
 
     useEffect(() => {
         // keyboard shortcuts
-        document.addEventListener("keydown", (e) => {
+        document.addEventListener("keyup", (e) => {
             const player = useGlobalStore.getState().player
             if(!player) return
             if (e.key == " ") {
+                e.stopPropagation()
                 if (player.paused) {
                     player.play()
                 } else {
