@@ -10,7 +10,9 @@ import 'media-chrome/react/menu';
 import { MediaTheme } from 'media-chrome/react/media-theme';
 import CustomVideoElement from "youtube-video-element";
 import { buildGuiItem } from "@/app/utils/gui";
-// import studio from "@theatre/studio";
+import studio from "@theatre/studio";
+import { getProject } from "@theatre/core";
+import { CameraMode } from "@/app/types/camera";
 
 function AudioPlayer() {
     const setCurrentTime = (currentTime: number) => usePresetStore.setState({ currentTime })
@@ -19,6 +21,7 @@ function AudioPlayer() {
     const musicName = usePresetStore(state => state.musicName)
 
     const autoHideGui = usePresetStore(state => state["auto hide GUI"])
+    const cameraMode = usePresetStore(state => state["camera mode"])
     const setGui = (gui: Partial<Gui>) => useGlobalStore.setState({ gui })
     const presetReady = useGlobalStore(state => state.presetReady)
 
@@ -43,7 +46,12 @@ function AudioPlayer() {
         if(!loadedRef.current) return
         if (autoHideGui) {
             setGui({ hidden: true })
-            // studio.ui.hide()
+            
+            // editor mode
+            const sequence = getProject("MMD").sheet("MMD UI").sequence
+            sequence.position = ytPlayer.current.currentTime
+            sequence.play()
+            studio.ui.hide()
         };
         useGlobalStore.setState({ enabledTransform: false })
     }
@@ -58,9 +66,21 @@ function AudioPlayer() {
             return
         }
         setGui({ hidden: false });
-        // studio.ui.restore()
+        
+        // editor mode
+        getProject("MMD").sheet("MMD UI").sequence.pause()
+        if(cameraMode == CameraMode.EDITOR) {
+            studio.ui.restore()
+        }
+
         setCurrentTime(ytPlayer.current.currentTime);
         useGlobalStore.setState({ enabledTransform: true })
+    }
+
+    const onSeeked = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
+        if(!ytPlayer.current.paused) return
+        const sequence = getProject("MMD").sheet("MMD UI").sequence
+        sequence.position = ytPlayer.current.currentTime
     }
 
     const loadedRef = useRef(false)
@@ -128,6 +148,7 @@ function AudioPlayer() {
                     src={gui.ytUrl}
                     onPlay={onPlay}
                     onPause={onPause}
+                    onSeeked={onSeeked}
                     onLoadedMetadata={onLoadedMetadata}
                     muted
                 ></YoutubeVideo>
