@@ -2,9 +2,10 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useState } from "react";
 import WithReady from "@/app/stores/WithReady";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import MMDState from "@/app/presets/MMD.theatre-project-state.json"
 import studio from "@theatre/studio";
 import { createRafDriver, getProject, IRafDriver, onChange, val } from "@theatre/core";
+import usePresetStore from "@/app/stores/usePresetStore";
+import { cameraToTracks } from "@/app/modules/theatreTrackBuilder";
 
 function EditorMode() {
     const camera = useThree(state => state.camera)
@@ -12,9 +13,9 @@ function EditorMode() {
     const player = useGlobalStore(state => state.player)
 
     const [driver, setDriver] = useState<IRafDriver>()
+    const cameraFile = usePresetStore(state => state.cameraFile)
+    
     useEffect(() => {
-        localStorage.setItem("theatre-0.4.persistent", JSON.stringify(MMDState))
-
         const sequence = getProject("MMD").sheet("MMD UI").sequence
         // sync with audio player
         const clearOnChange = onChange(sequence.pointer.position, (pos) => {
@@ -22,6 +23,11 @@ function EditorMode() {
             player.currentTime = pos
         })
         const init = async () => {
+            const resp = await fetch(cameraFile)
+            const motionFileBuffer = await resp.arrayBuffer()
+            const MMDState = cameraToTracks(motionFileBuffer)
+            localStorage.setItem("theatre-0.4.persistent", JSON.stringify(MMDState))
+
             const driver = createRafDriver({ name: 'MMDRafDriver' })
             setDriver(driver)
             studio.initialize({ __experimental_rafDriver: driver })
