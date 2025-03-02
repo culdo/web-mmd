@@ -23,10 +23,12 @@ function EditorMode() {
             player.currentTime = pos
         })
         const init = async () => {
-            const resp = await fetch(cameraFile)
-            const motionFileBuffer = await resp.arrayBuffer()
-            const MMDState = cameraToTracks(motionFileBuffer)
-            localStorage.setItem("theatre-0.4.persistent", JSON.stringify(MMDState))
+            if(!localStorage.getItem("theatre-0.4.persistent")) {
+                const resp = await fetch(cameraFile)
+                const motionFileBuffer = await resp.arrayBuffer()
+                const MMDState = cameraToTracks(motionFileBuffer)
+                localStorage.setItem("theatre-0.4.persistent", JSON.stringify(MMDState))
+            }
 
             const driver = createRafDriver({ name: 'MMDRafDriver' })
             setDriver(driver)
