@@ -80,7 +80,7 @@ function Effects() {
     return (
         <>
             <EffectControls></EffectControls>
-            <EffectComposer renderPriority={1}>
+            <EffectComposer renderPriority={3}>
                 {showOutline && <OutlinePass></OutlinePass>}
                 {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.enabled && character && <DepthOfField ref={setDof} {...dofConfig}></DepthOfField>}

@@ -60,12 +60,12 @@ function Physics() {
             if (Math.abs(playDeltaRef.current) > 1.0) {
                 reset();
             }
-            physics.update(isMotionUpdating() ? playDeltaRef.current : delta);
+            physics.update(delta);
         }
 
     }, [mesh])
-    // Physics need to be updated after the motion updating to make reset work
-    // So the priority set to 2
+    // Physics need to be updated after the motion updating 
+    // and before EffectCompose rendering to make reset work
     useFrame(onUpdate, 2)
     return <></>
 }
