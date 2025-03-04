@@ -48,6 +48,7 @@ function EditorMode() {
     const _onLoop = useCallback(() => {
         camera.up.set(0, 1, 0);
         camera.up.applyEuler(camera.rotation);
+        camera.lookAt(camera.getObjectByName("target")?.position);
         camera.updateProjectionMatrix();
     }, [camera])
 

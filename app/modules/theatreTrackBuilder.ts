@@ -285,13 +285,13 @@ class TheatreTrackBuilder {
 
 				pushInterpolation(cInterpolations, interpolation, j);
 
+				pushInterpolation(qInterpolations, interpolation, 3);
+	
+				pushInterpolation(pInterpolations, interpolation, 4);
+	
+				pushInterpolation(fInterpolations, interpolation, 5);
 			}
 
-			pushInterpolation(qInterpolations, interpolation, 3);
-
-			pushInterpolation(pInterpolations, interpolation, 4);
-
-			pushInterpolation(fInterpolations, interpolation, 5);
 
 		}
 
@@ -302,9 +302,8 @@ class TheatreTrackBuilder {
 		// centers
 		const onCbuild: OnBuild = (idx, time, values, interpolations, type) => {
 			for (let j = 0; j < 3; j++) {
-				const prop = idxMap[j]
 				const interpolation = interpolations.slice(idx * 12 + (j * 4), idx * 12 + ((j + 1) * 4))
-				targetPosKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
+				targetPosKeyFrames[idxMap[j]].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
 			}
 		}
 		this._createTrack(times, centers, cInterpolations, onCbuild)
@@ -312,9 +311,8 @@ class TheatreTrackBuilder {
 		// positions
 		const onPbuild: OnBuild = (idx, time, values, interpolations, type) => {
 			for (let j = 0; j < 3; j++) {
-				const prop = idxMap[j]
-				const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
-				positionKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
+				const interpolation = interpolations.slice(idx * 12 + (j * 4), idx * 12 + ((j + 1) * 4))
+				positionKeyFrames[idxMap[j]].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
 			}
 		}
 		this._createTrack(times, positions, pInterpolations, onPbuild)
@@ -322,9 +320,8 @@ class TheatreTrackBuilder {
 		// rotations
 		const onRbuild: OnBuild = (idx, time, values, interpolations, type) => {
 			for (let j = 0; j < 3; j++) {
-				const prop = idxMap[j]
-				const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
-				rotationKeyFrames[prop].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
+				const interpolation = interpolations.slice(idx * 12 + (j * 4), idx * 12 + ((j + 1) * 4))
+				rotationKeyFrames[idxMap[j]].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
 			}
 		}
 		this._createTrack(times, rotations, qInterpolations, onRbuild)

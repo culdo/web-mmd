@@ -39,15 +39,14 @@ function Camera() {
         useGlobalStore.setState({ "cameraObj": obj })
     }
 
-    const isOrbitControl = useGlobalStore(state => state.isOrbitControl)
-    const targetRef = isOrbitControl ? null : useRef<Mesh>()
+    const targetRef = useRef<Mesh>()
 
     return (
         <>
             {
                 cameraMode == CameraMode.EDITOR ?
                     <SheetProvider sheet={getProject('MMD').sheet("MMD UI")}>
-                        <PerspectiveCameraTheaTre objRef={setCameraObj} theatreKey="Camera" fov={fov} near={near} zoom={zoom} lookAt={targetRef} position={[0, 10, 50]} makeDefault>
+                        <PerspectiveCameraTheaTre objRef={setCameraObj} theatreKey="Camera" fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
                             <e.mesh ref={targetRef} theatreKey="Camera Target" name="target" />
                         </PerspectiveCameraTheaTre>
                     </SheetProvider> :
