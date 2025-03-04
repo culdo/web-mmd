@@ -29,8 +29,8 @@ export type GlobalState = {
     playDeltaRef: MutableRefObject<number>
     isMotionUpdating: () => boolean,
     beatsBufferRef: MutableRefObject<HTMLDivElement[]>
-    isOrbitControl: MutableRefObject<boolean>
-    isTransformControl: MutableRefObject<boolean>
+    isOrbitControl: boolean
+    isTransformControlRef: MutableRefObject<boolean>
     bindParentCb: Function,
     presetReady: boolean,
     selectedName: string,
@@ -60,12 +60,8 @@ const useGlobalStore = create<GlobalState>(
             ref.current = []
             return ref
         })(),
-        isOrbitControl: (() => {
-            const ref: MutableRefObject<boolean> = createRef()
-            ref.current = false
-            return ref
-        })(),
-        isTransformControl: (() => {
+        isOrbitControl: false,
+        isTransformControlRef: (() => {
             const ref: MutableRefObject<boolean> = createRef()
             ref.current = false
             return ref

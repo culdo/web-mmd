@@ -28,7 +28,7 @@ function FixFollowMode() {
 
         controls.target.add(delta)
 
-        if (!isOrbitControl.current) {
+        if (!isOrbitControl) {
             camera.position.add(delta)
             camera.updateProjectionMatrix();
         }

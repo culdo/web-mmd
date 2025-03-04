@@ -14,7 +14,7 @@ function Controls() {
     const scene = useThree(state => state.scene)
     const gl = useThree(state => state.gl)
     const isOrbitControl = useGlobalStore(state => state.isOrbitControl)
-    const isTransformControl = useGlobalStore(state => state.isTransformControl)
+    const isTransformControl = useGlobalStore(state => state.isTransformControlRef)
     const selectedName = useGlobalStore(state => state.selectedName)
     const enabledTransform = useGlobalStore(state => state.enabledTransform)
     const cameraObj = useGlobalStore(state => state.cameraObj)
@@ -64,11 +64,12 @@ function Controls() {
     }
 
     const onStart = () => {
-        isOrbitControl.current = true
+        useGlobalStore.setState({isOrbitControl: true})
     }
 
     const onEnd = () => {
-        isOrbitControl.current = false
+        useGlobalStore.setState({isOrbitControl: false})
+
         // studio.transaction(({set}) => {
         //     set(cameraObj.props.position.x, camera.position.x)
         //     set(cameraObj.props.position.y, camera.position.y)

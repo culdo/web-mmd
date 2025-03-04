@@ -15,7 +15,7 @@ type MeshWithPhys = THREE.Mesh & {
 function Swing() {
     // Graphics variables
     const scene = useThree(state => state.scene);
-    const isTransformControl = useGlobalStore(state => state.isTransformControl)
+    const isTransformControl = useGlobalStore(state => state.isTransformControlRef)
     const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
     const character = useGlobalStore(state => state.character)
 
