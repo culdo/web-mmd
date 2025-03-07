@@ -48,9 +48,6 @@ function AudioPlayer() {
             setGui({ hidden: true })
             
             // editor mode
-            const sequence = getProject("MMD").sheet("MMD UI").sequence
-            sequence.position = ytPlayer.current.currentTime
-            sequence.play()
             studio.ui.hide()
         };
         useGlobalStore.setState({ enabledTransform: false })
@@ -68,7 +65,6 @@ function AudioPlayer() {
         setGui({ hidden: false });
         
         // editor mode
-        getProject("MMD").sheet("MMD UI").sequence.pause()
         if(cameraMode == CameraMode.EDITOR) {
             studio.ui.restore()
         }
