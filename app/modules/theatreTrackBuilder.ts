@@ -223,33 +223,20 @@ class TheatreTrackBuilder {
 		const positions: any = [];
 		const fovs = [];
 
-		const targetPosKeyFrames = {
-			x: new TheaKeyframeTrack(),
-			y: new TheaKeyframeTrack(),
-			z: new TheaKeyframeTrack(),
-		};
-		const positionKeyFrames = {
-			x: new TheaKeyframeTrack(),
-			y: new TheaKeyframeTrack(),
-			z: new TheaKeyframeTrack(),
-		};
-		const rotationKeyFrames = {
-			x: new TheaKeyframeTrack(),
-			y: new TheaKeyframeTrack(),
-			z: new TheaKeyframeTrack(),
-		};
-		const fovKeyFrames = new TheaKeyframeTrack();
-
+		const targetPosKeyFrames = [new TheaKeyframeTrack(), new TheaKeyframeTrack(), new TheaKeyframeTrack()];
+		const positionKeyFrames = [new TheaKeyframeTrack(), new TheaKeyframeTrack(), new TheaKeyframeTrack()];
+		const rotationKeyFrames = [new TheaKeyframeTrack(), new TheaKeyframeTrack(), new TheaKeyframeTrack()];
+		const fovKeyFrames = [new TheaKeyframeTrack()];
 
 		const quaternion = new Quaternion();
 		const rotation = new Euler();
 		const position = new Vector3();
 		const center = new Vector3();
 
-		const cInterpolations: any[] = [];
-		const qInterpolations: any[] = [];
-		const pInterpolations: any[] = [];
-		const fInterpolations: any[] = [];
+		const cInterpolations: any[] = [[], [], []];
+		const qInterpolations: any[] = [[], [], []];
+		const pInterpolations: any[] = [[], [], []];
+		const fInterpolations: any[] = [[]];
 
 		for (let i = 0, il = cameras.length; i < il; i++) {
 
@@ -283,55 +270,24 @@ class TheatreTrackBuilder {
 
 			for (let j = 0; j < 3; j++) {
 
-				pushInterpolation(cInterpolations, interpolation, j);
+				pushInterpolation(cInterpolations[j], interpolation, j);
 
-				pushInterpolation(qInterpolations, interpolation, 3);
-	
-				pushInterpolation(pInterpolations, interpolation, 4);
-	
-				pushInterpolation(fInterpolations, interpolation, 5);
+				pushInterpolation(qInterpolations[j], interpolation, 3);
+
+				pushInterpolation(pInterpolations[j], interpolation, 4);
+
 			}
 
+			pushInterpolation(fInterpolations[0], interpolation, 5);
+
 
 		}
 
-		const idxMap = ["x", "y", "z",] as const
 
-		type OnBuild = (idx: number, time: number, values: number[], interpolations: number[], type?: string) => void
-
-		// centers
-		const onCbuild: OnBuild = (idx, time, values, interpolations, type) => {
-			for (let j = 0; j < 3; j++) {
-				const interpolation = interpolations.slice(idx * 12 + (j * 4), idx * 12 + ((j + 1) * 4))
-				targetPosKeyFrames[idxMap[j]].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
-			}
-		}
-		this._createTrack(times, centers, cInterpolations, onCbuild)
-
-		// positions
-		const onPbuild: OnBuild = (idx, time, values, interpolations, type) => {
-			for (let j = 0; j < 3; j++) {
-				const interpolation = interpolations.slice(idx * 12 + (j * 4), idx * 12 + ((j + 1) * 4))
-				positionKeyFrames[idxMap[j]].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
-			}
-		}
-		this._createTrack(times, positions, pInterpolations, onPbuild)
-
-		// rotations
-		const onRbuild: OnBuild = (idx, time, values, interpolations, type) => {
-			for (let j = 0; j < 3; j++) {
-				const interpolation = interpolations.slice(idx * 12 + (j * 4), idx * 12 + ((j + 1) * 4))
-				rotationKeyFrames[idxMap[j]].keyframes.push(createKeyFrame(time, values[idx * 3 + j], interpolation, type))
-			}
-		}
-		this._createTrack(times, rotations, qInterpolations, onRbuild)
-
-		// fovs
-		const onFbuild: OnBuild = (idx, time, values, interpolations, type) => {
-			const interpolation = interpolations.slice(idx * 4, (idx + 1) * 4)
-			fovKeyFrames.keyframes.push(createKeyFrame(time, values[idx], interpolation, type))
-		}
-		this._createTrack(times, fovs, fInterpolations, onFbuild)
+		this._createTrack(times, centers, cInterpolations, targetPosKeyFrames)
+		this._createTrack(times, positions, qInterpolations, positionKeyFrames)
+		this._createTrack(times, rotations, pInterpolations, rotationKeyFrames)
+		this._createTrack(times, fovs, fInterpolations, fovKeyFrames)
 
 		console.log(times[times.length - 1])
 
@@ -346,7 +302,26 @@ class TheatreTrackBuilder {
 
 	// private method
 
-	_createTrack(frameNums: any[], values: any[], interpolations: any[], onBuild: Function) {
+	_createTrack(frameNums: any[], values: any[], interpolations: any[], tracks: TheaKeyframeTrack[]) {
+
+		// swap interpolations for Theatre
+		const interpolationsSwaped = []
+
+		for (const trackInterpolations of interpolations) {
+			const lastItems = trackInterpolations.splice(0, 2)
+			trackInterpolations.splice(trackInterpolations.length, 0, ...lastItems)
+		}
+
+		for (const [idx, _] of frameNums.entries()) {
+			for (const trackInterpolations of interpolations) {
+				interpolationsSwaped.push(trackInterpolations[idx * 4])
+				interpolationsSwaped.push(trackInterpolations[idx * 4 + 1])
+				interpolationsSwaped.push(trackInterpolations[idx * 4 + 2])
+				interpolationsSwaped.push(trackInterpolations[idx * 4 + 3])
+			}
+		}
+
+		interpolations = interpolationsSwaped
 
 		/*
 			 * optimizes here not to let KeyframeTrackPrototype optimize
@@ -398,12 +373,10 @@ class TheatreTrackBuilder {
 
 			}
 
+			frameNums = frameNums.slice(0, index + 1);
 		}
-		// console.log(interpolations.slice(0, 4))
-		// console.log(interpolations.slice(interpolations.length - 4))
-		const lastItems = interpolations.splice(0, 2)
-		interpolations.splice(interpolations.length - 2, 0, ...lastItems)
 
+		const k = tracks.length
 		for (const [idx, frameNum] of frameNums.entries()) {
 			const time = frameNum / 30;
 			let type: string
@@ -412,7 +385,13 @@ class TheatreTrackBuilder {
 			} else {
 				type = "bezier"
 			}
-			onBuild(idx, time, values, interpolations, type)
+
+			for (const [j, track] of tracks.entries()) {
+				const offset = idx * k + j
+				const interpolation = interpolations.slice(offset * 4, (offset + 1) * 4)
+				track.keyframes.push(createKeyFrame(time, values[idx * k + j], interpolation, type))
+
+			}
 		}
 
 	}
@@ -439,44 +418,41 @@ export class TheaKeyframeTrack {
 	}
 }
 
+const tracksByObject = MMDState.historic.innerState.coreByProject.MMD.sheetsById["MMD UI"].sequence.tracksByObject
+type CameraTrackId = keyof typeof tracksByObject.Camera.trackData
+type CameraTargetTrackId = keyof typeof tracksByObject["Camera Target"]["trackData"]
+
 export function cameraToTracks(vmdBuffer: ArrayBufferLike) {
 	const parser = new MMDParser.Parser()
 
 	const vmd = parser.parseVmd(vmdBuffer, true)
 	const animationBuilder = new TheatreTrackBuilder();
-	const result =  animationBuilder.buildCameraAnimation(vmd)
+	const result = animationBuilder.buildCameraAnimation(vmd)
 
-	result.positionKeyFrames.x.id = "ExqIB5_JPK",
-	result.positionKeyFrames.y.id = "6DwyEsX1Jq",
-	result.positionKeyFrames.z.id = "xB9b4VLejM",
-	result.rotationKeyFrames.x.id = "qqsgCZJ4Oq",
-	result.rotationKeyFrames.y.id = "DEMBj3cJ4O",
-	result.rotationKeyFrames.z.id = "q9e9PaHR76",
-	result.fovKeyFrames.id = "PJ2eUTHffE"
+	result.positionKeyFrames[0].id = "ExqIB5_JPK"
+	result.positionKeyFrames[1].id = "6DwyEsX1Jq"
+	result.positionKeyFrames[2].id = "xB9b4VLejM"
+	result.rotationKeyFrames[0].id = "qqsgCZJ4Oq"
+	result.rotationKeyFrames[1].id = "DEMBj3cJ4O"
+	result.rotationKeyFrames[2].id = "q9e9PaHR76"
+	result.fovKeyFrames[0].id = "PJ2eUTHffE"
 
-	const tracksByObject = MMDState.historic.innerState.coreByProject.MMD.sheetsById["MMD UI"].sequence.tracksByObject
+	result.targetPosKeyFrames[0].id = "XN5bra4VoB"
+	result.targetPosKeyFrames[1].id = "WggqUWPgWq"
+	result.targetPosKeyFrames[2].id = "cwuGmVbOy7"
+
 	MMDState.historic.innerState.coreByProject.MMD.sheetsById["MMD UI"].sequence.length = 220
 
-	for(const [key, tracks] of Object.entries(result)) {
-		if(key == "targetPosKeyFrames") {
-			continue
-		}
-		if(tracks instanceof TheaKeyframeTrack) {
-			tracksByObject.Camera.trackData[tracks.id as "ExqIB5_JPK"].keyframes = tracks.keyframes
-		} else {
-			for(const track of Object.values(tracks)) {
-				tracksByObject.Camera.trackData[track.id as "ExqIB5_JPK"].keyframes = track.keyframes
+	for (const [key, tracks] of Object.entries(result)) {
+		for (const track of tracks) {
+
+			if (key == "targetPosKeyFrames") {
+				tracksByObject["Camera Target"].trackData[track.id as CameraTargetTrackId].keyframes = track.keyframes
+			} else {
+				tracksByObject.Camera.trackData[track.id as CameraTrackId].keyframes = track.keyframes
 			}
+
 		}
-		
-	}
-
-	result.targetPosKeyFrames.x.id = "XN5bra4VoB",
-	result.targetPosKeyFrames.y.id = "WggqUWPgWq",
-	result.targetPosKeyFrames.z.id = "cwuGmVbOy7"
-
-	for(const track of Object.values(result.targetPosKeyFrames)) {
-		tracksByObject["Camera Target"].trackData[track.id as "XN5bra4VoB"].keyframes = track.keyframes
 	}
 	return MMDState
 }

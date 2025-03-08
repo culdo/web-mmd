@@ -28,14 +28,13 @@ function EditorMode() {
     useEffect(() => {
 
         const init = async () => {
-            if (!localStorage.getItem("theatre-0.4.persistent")) {
-                const resp = await fetch(cameraFile)
-                const motionFileBuffer = await resp.arrayBuffer()
-                const MMDState = cameraToTracks(motionFileBuffer)
-                localStorage.setItem("theatre-0.4.persistent", JSON.stringify(MMDState))
-                studio.initialize({ __experimental_rafDriver: driver })
-                studio.__experimental.__experimental_disblePlayPauseKeyboardShortcut()
-            }
+            const resp = await fetch(cameraFile)
+            const motionFileBuffer = await resp.arrayBuffer()
+            const MMDState = cameraToTracks(motionFileBuffer)
+            localStorage.setItem("theatre-0.4.persistent", JSON.stringify(MMDState))
+            
+            studio.initialize({ __experimental_rafDriver: driver })
+            studio.__experimental.__experimental_disblePlayPauseKeyboardShortcut()
             studio.ui.restore()
         }
         init()
