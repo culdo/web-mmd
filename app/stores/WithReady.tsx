@@ -5,7 +5,7 @@ function WithReady<T>(Component: React.ComponentType<T>) {
     return function WrappedComponent(props: T) {
         const presetReady = useGlobalStore(state => state.presetReady)
         const camera = useThree(state => state.camera)
-        if (!presetReady || !camera.getObjectByName("target")) return <></>
+        if (!presetReady) return <></>
         return (
             <Component {...props}></Component>
         )

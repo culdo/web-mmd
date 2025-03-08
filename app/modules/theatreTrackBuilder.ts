@@ -222,11 +222,12 @@ class TheatreTrackBuilder {
 		const rotations: any[] = [];
 		const positions: any = [];
 		const fovs = [];
+		const distances = [];
 
 		const targetPosKeyFrames = [new TheaKeyframeTrack(), new TheaKeyframeTrack(), new TheaKeyframeTrack()];
-		const positionKeyFrames = [new TheaKeyframeTrack(), new TheaKeyframeTrack(), new TheaKeyframeTrack()];
 		const rotationKeyFrames = [new TheaKeyframeTrack(), new TheaKeyframeTrack(), new TheaKeyframeTrack()];
 		const fovKeyFrames = [new TheaKeyframeTrack()];
+		const distanceKeyFrames = [new TheaKeyframeTrack()];
 
 		const quaternion = new Quaternion();
 		const rotation = new Euler();
@@ -235,7 +236,7 @@ class TheatreTrackBuilder {
 
 		const cInterpolations: any[] = [[], [], []];
 		const qInterpolations: any[] = [[], [], []];
-		const pInterpolations: any[] = [[], [], []];
+		const dInterpolations: any[] = [[]];
 		const fInterpolations: any[] = [[]];
 
 		for (let i = 0, il = cameras.length; i < il; i++) {
@@ -251,33 +252,27 @@ class TheatreTrackBuilder {
 
 			times.push(motion.frameNum);
 
-			position.set(0, 0, - distance);
-
+			
 			center.set(pos[0], pos[1], pos[2]);
-
+			
 			rotation.set(- rot[0], - rot[1], - rot[2]);
 			quaternion.setFromEuler(rotation);
 
-			position.applyQuaternion(quaternion);
-			position.add(center);
-
 			pushVector3(centers, center);
-			pushQuaternion(quaternions, quaternion);
-			pushVector3(positions, position);
 			pushVector3(rotations, rotation);
 
 			fovs.push(fov);
+			distances.push(distance);
 
 			for (let j = 0; j < 3; j++) {
 
 				pushInterpolation(cInterpolations[j], interpolation, j);
-
 				pushInterpolation(qInterpolations[j], interpolation, 3);
-
-				pushInterpolation(pInterpolations[j], interpolation, 4);
-
+				
 			}
-
+			
+			// distance interpolation
+			pushInterpolation(dInterpolations[0], interpolation, 4);
 			pushInterpolation(fInterpolations[0], interpolation, 5);
 
 
@@ -285,15 +280,15 @@ class TheatreTrackBuilder {
 
 
 		this._createTrack(times, centers, cInterpolations, targetPosKeyFrames)
-		this._createTrack(times, positions, qInterpolations, positionKeyFrames)
-		this._createTrack(times, rotations, pInterpolations, rotationKeyFrames)
+		this._createTrack(times, rotations, qInterpolations, rotationKeyFrames)
 		this._createTrack(times, fovs, fInterpolations, fovKeyFrames)
+		this._createTrack(times, distances, dInterpolations, distanceKeyFrames)
 
 		console.log(times[times.length - 1])
 
 		return {
 			targetPosKeyFrames,
-			positionKeyFrames,
+			distanceKeyFrames,
 			rotationKeyFrames,
 			fovKeyFrames
 		}
@@ -420,7 +415,6 @@ export class TheaKeyframeTrack {
 
 const tracksByObject = MMDState.historic.innerState.coreByProject.MMD.sheetsById["MMD UI"].sequence.tracksByObject
 type CameraTrackId = keyof typeof tracksByObject.Camera.trackData
-type CameraTargetTrackId = keyof typeof tracksByObject["Camera Target"]["trackData"]
 
 export function cameraToTracks(vmdBuffer: ArrayBufferLike) {
 	const parser = new MMDParser.Parser()
@@ -429,29 +423,21 @@ export function cameraToTracks(vmdBuffer: ArrayBufferLike) {
 	const animationBuilder = new TheatreTrackBuilder();
 	const result = animationBuilder.buildCameraAnimation(vmd)
 
-	result.positionKeyFrames[0].id = "ExqIB5_JPK"
-	result.positionKeyFrames[1].id = "6DwyEsX1Jq"
-	result.positionKeyFrames[2].id = "xB9b4VLejM"
 	result.rotationKeyFrames[0].id = "qqsgCZJ4Oq"
 	result.rotationKeyFrames[1].id = "DEMBj3cJ4O"
 	result.rotationKeyFrames[2].id = "q9e9PaHR76"
 	result.fovKeyFrames[0].id = "PJ2eUTHffE"
-
+	
 	result.targetPosKeyFrames[0].id = "XN5bra4VoB"
 	result.targetPosKeyFrames[1].id = "WggqUWPgWq"
 	result.targetPosKeyFrames[2].id = "cwuGmVbOy7"
+	result.distanceKeyFrames[0].id = "ZT23zFM1b9"
 
 	MMDState.historic.innerState.coreByProject.MMD.sheetsById["MMD UI"].sequence.length = 220
 
 	for (const [key, tracks] of Object.entries(result)) {
 		for (const track of tracks) {
-
-			if (key == "targetPosKeyFrames") {
-				tracksByObject["Camera Target"].trackData[track.id as CameraTargetTrackId].keyframes = track.keyframes
-			} else {
-				tracksByObject.Camera.trackData[track.id as CameraTrackId].keyframes = track.keyframes
-			}
-
+			tracksByObject.Camera.trackData[track.id as CameraTrackId].keyframes = track.keyframes
 		}
 	}
 	return MMDState

@@ -1,1 +1,166 @@
-{"historic":{"commitsByHash":{},"listOfCommitHashes":[],"innerState":{"projects":{"stateByProjectId":{"MMD":{"stateBySheetId":{"MMD UI":{"selectedInstanceId":"default","sequenceEditor":{"selectedPropsByObject":{}}}}}}},"autoKey":true,"coreByProject":{"MMD":{"sheetsById":{"MMD UI":{"staticOverrides":{"byObject":{}},"sequence":{"subUnitsPerUnit":30,"length":220,"type":"PositionalSequence","tracksByObject":{"Camera":{"trackData":{"ExqIB5_JPK":{"type":"BasicKeyframedTrack","__debugName":"Camera:[\"position\",\"x\"]","keyframes":[]},"6DwyEsX1Jq":{"type":"BasicKeyframedTrack","__debugName":"Camera:[\"position\",\"y\"]","keyframes":[]},"xB9b4VLejM":{"type":"BasicKeyframedTrack","__debugName":"Camera:[\"position\",\"z\"]","keyframes":[]},"qqsgCZJ4Oq":{"type":"BasicKeyframedTrack","__debugName":"Camera:[\"rotation\",\"x\"]","keyframes":[]},"DEMBj3cJ4O":{"type":"BasicKeyframedTrack","__debugName":"Camera:[\"rotation\",\"y\"]","keyframes":[]},"q9e9PaHR76":{"type":"BasicKeyframedTrack","__debugName":"Camera:[\"rotation\",\"z\"]","keyframes":[]},"PJ2eUTHffE":{"type":"BasicKeyframedTrack","__debugName":"Camera:[\"fov\"]","keyframes":[]}},"trackIdByPropPath":{"[\"position\",\"x\"]":"ExqIB5_JPK","[\"position\",\"y\"]":"6DwyEsX1Jq","[\"position\",\"z\"]":"xB9b4VLejM","[\"rotation\",\"x\"]":"qqsgCZJ4Oq","[\"rotation\",\"y\"]":"DEMBj3cJ4O","[\"rotation\",\"z\"]":"q9e9PaHR76","[\"fov\"]":"PJ2eUTHffE"}},"Camera Target":{"trackData":{"XN5bra4VoB":{"type":"BasicKeyframedTrack","__debugName":"Camera Target:[\"position\",\"x\"]","keyframes":[]},"WggqUWPgWq":{"type":"BasicKeyframedTrack","__debugName":"Camera Target:[\"position\",\"y\"]","keyframes":[]},"cwuGmVbOy7":{"type":"BasicKeyframedTrack","__debugName":"Camera Target:[\"position\",\"z\"]","keyframes":[]}},"trackIdByPropPath":{"[\"position\",\"x\"]":"XN5bra4VoB","[\"position\",\"y\"]":"WggqUWPgWq","[\"position\",\"z\"]":"cwuGmVbOy7"}}}}}},"definitionVersion":"0.4.0","revisionHistory":["n7sEcLij8d_B6yL-"]},"Studio":{"sheetsById":{},"definitionVersion":"0.4.0","revisionHistory":[]}},"panelInstanceDesceriptors":{},"panels":{"outlinePanel":{"selection":[{"type":"Sheet","projectId":"MMD","sheetId":"MMD UI"},{"type":"SheetObject","projectId":"MMD","sheetId":"MMD UI","objectKey":"Camera"}]}},"panelPositions":{"sequenceEditor":{"edges":{"left":{"from":"screenLeft","distance":0.13333333333333333},"right":{"from":"screenRight","distance":0.16666666666666663},"top":{"from":"screenBottom","distance":0.47107438016528924},"bottom":{"from":"screenBottom","distance":0.08057851239669422}}}}}},"ahistoric":{"visibilityState":"everythingIsVisible","theTrigger":{"position":{"closestCorner":"bottomLeft","distanceFromHorizontalEdge":0.02,"distanceFromVerticalEdge":0.02}},"coreByProject":{"MMD":{"ahistoricStuff":""},"Studio":{"ahistoricStuff":""}},"projects":{"stateByProjectId":{}},"updateChecker":null}}
+{
+    "historic": {
+        "commitsByHash": {},
+        "listOfCommitHashes": [],
+        "innerState": {
+            "projects": {
+                "stateByProjectId": {
+                    "MMD": {
+                        "stateBySheetId": {
+                            "MMD UI": {
+                                "selectedInstanceId": "default",
+                                "sequenceEditor": {
+                                    "selectedPropsByObject": {}
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "autoKey": true,
+            "coreByProject": {
+                "MMD": {
+                    "sheetsById": {
+                        "MMD UI": {
+                            "staticOverrides": {
+                                "byObject": {}
+                            },
+                            "sequence": {
+                                "subUnitsPerUnit": 30,
+                                "length": 220,
+                                "type": "PositionalSequence",
+                                "tracksByObject": {
+                                    "Camera": {
+                                        "trackData": {
+                                            "XN5bra4VoB": {
+                                                "type": "BasicKeyframedTrack",
+                                                "__debugName": "Camera:[\"position\",\"x\"]",
+                                                "keyframes": []
+                                            },
+                                            "WggqUWPgWq": {
+                                                "type": "BasicKeyframedTrack",
+                                                "__debugName": "Camera:[\"position\",\"y\"]",
+                                                "keyframes": []
+                                            },
+                                            "cwuGmVbOy7": {
+                                                "type": "BasicKeyframedTrack",
+                                                "__debugName": "Camera:[\"position\",\"z\"]",
+                                                "keyframes": []
+                                            },
+                                            "qqsgCZJ4Oq": {
+                                                "type": "BasicKeyframedTrack",
+                                                "__debugName": "Camera:[\"rotation\",\"x\"]",
+                                                "keyframes": []
+                                            },
+                                            "DEMBj3cJ4O": {
+                                                "type": "BasicKeyframedTrack",
+                                                "__debugName": "Camera:[\"rotation\",\"y\"]",
+                                                "keyframes": []
+                                            },
+                                            "q9e9PaHR76": {
+                                                "type": "BasicKeyframedTrack",
+                                                "__debugName": "Camera:[\"rotation\",\"z\"]",
+                                                "keyframes": []
+                                            },
+                                            "PJ2eUTHffE": {
+                                                "type": "BasicKeyframedTrack",
+                                                "__debugName": "Camera:[\"fov\"]",
+                                                "keyframes": []
+                                            },
+                                            "ZT23zFM1b9": {
+                                                "type": "BasicKeyframedTrack",
+                                                "__debugName": "Camera:[\"distance\"]",
+                                                "keyframes": []
+                                            }
+                                        },
+                                        "trackIdByPropPath": {
+                                            "[\"position\",\"x\"]": "XN5bra4VoB",
+                                            "[\"position\",\"y\"]": "WggqUWPgWq",
+                                            "[\"position\",\"z\"]": "cwuGmVbOy7",
+                                            "[\"rotation\",\"x\"]": "qqsgCZJ4Oq",
+                                            "[\"rotation\",\"y\"]": "DEMBj3cJ4O",
+                                            "[\"rotation\",\"z\"]": "q9e9PaHR76",
+                                            "[\"fov\"]": "PJ2eUTHffE",
+                                            "[\"distance\"]": "ZT23zFM1b9"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "definitionVersion": "0.4.0",
+                    "revisionHistory": [
+                        "n7sEcLij8d_B6yL-"
+                    ]
+                },
+                "Studio": {
+                    "sheetsById": {},
+                    "definitionVersion": "0.4.0",
+                    "revisionHistory": []
+                }
+            },
+            "panelInstanceDesceriptors": {},
+            "panels": {
+                "outlinePanel": {
+                    "selection": [
+                        {
+                            "type": "Sheet",
+                            "projectId": "MMD",
+                            "sheetId": "MMD UI"
+                        },
+                        {
+                            "type": "SheetObject",
+                            "projectId": "MMD",
+                            "sheetId": "MMD UI",
+                            "objectKey": "Camera"
+                        }
+                    ]
+                }
+            },
+            "panelPositions": {
+                "sequenceEditor": {
+                    "edges": {
+                        "left": {
+                            "from": "screenLeft",
+                            "distance": 0.13333333333333333
+                        },
+                        "right": {
+                            "from": "screenRight",
+                            "distance": 0.16666666666666663
+                        },
+                        "top": {
+                            "from": "screenBottom",
+                            "distance": 0.47107438016528924
+                        },
+                        "bottom": {
+                            "from": "screenBottom",
+                            "distance": 0.08057851239669422
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "ahistoric": {
+        "visibilityState": "everythingIsVisible",
+        "theTrigger": {
+            "position": {
+                "closestCorner": "bottomLeft",
+                "distanceFromHorizontalEdge": 0.02,
+                "distanceFromVerticalEdge": 0.02
+            }
+        },
+        "coreByProject": {
+            "MMD": {
+                "ahistoricStuff": ""
+            },
+            "Studio": {
+                "ahistoricStuff": ""
+            }
+        },
+        "projects": {
+            "stateByProjectId": {}
+        },
+        "updateChecker": null
+    }
+}
