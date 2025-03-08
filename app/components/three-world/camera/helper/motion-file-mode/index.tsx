@@ -1,10 +1,11 @@
 import usePresetStore from "@/app/stores/usePresetStore";
 import { useThree } from "@react-three/fiber";
-import { useCallback, useEffect, useMemo } from "react";
-import { AnimationMixer } from "three";
+import { useCallback, useMemo } from "react";
+import { AnimationMixer, PerspectiveCamera } from "three";
 import useVMD from "../../../animation/useVMD";
 import WithSuspense from "@/app/components/suspense";
 import WithReady from "@/app/stores/WithReady";
+import updateCamera from "../updateCamera";
 
 
 function MotionFileMode() {
@@ -13,13 +14,7 @@ function MotionFileMode() {
     const cameraFile = usePresetStore(state => state.cameraFile)
     const setTimeCb = useCallback((setTime: () => void) => {
         setTime();
-        camera.up.set(0, 1, 0);
-        camera.up.applyQuaternion(camera.quaternion);
-        const target = camera.getObjectByName("target")
-        if(target) {
-            camera.lookAt(target.position);
-        }
-        camera.updateProjectionMatrix();
+        updateCamera(camera as PerspectiveCamera)
     }, [camera, cameraMixer])
     useVMD(camera, cameraMixer, cameraFile, setTimeCb)
     return <></>;

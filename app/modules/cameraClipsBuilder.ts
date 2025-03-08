@@ -56,8 +56,8 @@ export class CameraClipsBuilder {
 		const times = [];
 		const centers: any[] = [];
 		const quaternions: any[] = [];
-		const positions: any[] = [];
 		const fovs = [];
+		const distances = [];
 
 		const cInterpolations: any[] = [];
 		const qInterpolations: any[] = [];
@@ -66,10 +66,9 @@ export class CameraClipsBuilder {
 
 		const quaternion = new Quaternion();
 		const euler = new Euler();
-		const position = new Vector3();
 		const center = new Vector3();
 
-		const clips: { clip: any; interpolations: { 'target.position': any; '.quaternion': any; '.position': any; '.fov': any; }; }[] = []
+		const clips: { clip: any; interpolations: { 'target.position': any; '.quaternion': any; 'target.userData[distance]': any; '.fov': any; }; }[] = []
 		const cutTimes: number[] = []
 		const jsonResult = { clips, cutTimes };
 
@@ -88,21 +87,17 @@ export class CameraClipsBuilder {
 			// push normalize time (start from 0s)
 			times.push(time - cutTimes[cutTimes.length - 1]);
 
-			position.set(0, 0, - distance);
-
+			
 			center.set(pos[0], pos[1], pos[2]);
-
+			
 			euler.set(- rot[0], - rot[1], - rot[2]);
 			quaternion.setFromEuler(euler);
 
-			position.applyQuaternion(quaternion);
-			position.add(center);
-
 			pushVector3(centers, center);
 			pushQuaternion(quaternions, quaternion);
-			pushVector3(positions, position);
 
 			fovs.push(fov);
+			distances.push(distance);
 
 			for (let j = 0; j < 3; j++) {
 
@@ -111,14 +106,7 @@ export class CameraClipsBuilder {
 			}
 
 			pushInterpolation(qInterpolations, interpolation, 3);
-
-			// use the same parameter for x, y, z axis.
-			for (let j = 0; j < 3; j++) {
-
-				pushInterpolation(pInterpolations, interpolation, 4);
-
-			}
-
+			pushInterpolation(pInterpolations, interpolation, 4);
 			pushInterpolation(fInterpolations, interpolation, 5);
 
 			if (i == cameras.length - 1 || (cameras[i + 1].frameNum - motion.frameNum) <= 1) {
@@ -130,8 +118,8 @@ export class CameraClipsBuilder {
 
 				// I expect an object whose name 'target' exists under THREE.Camera
 				const tTrack = this._createTrack('target.position', VectorKeyframeTrack, times, centers, cInterpolations)
+				const pTrack = this._createTrack('target.userData[distance]', NumberKeyframeTrack, times, distances,pInterpolations);
 				const qTrack = this._createTrack('.quaternion', QuaternionKeyframeTrack, times, quaternions, qInterpolations)
-				const pTrack = this._createTrack('.position', VectorKeyframeTrack, times, positions, pInterpolations)
 				const fTrack = this._createTrack('.fov', NumberKeyframeTrack, times, fovs, fInterpolations)
 
 				tracks.push(tTrack.track);
@@ -145,7 +133,7 @@ export class CameraClipsBuilder {
 					interpolations: {
 						'target.position': tTrack.interpolations.slice(),
 						'.quaternion': qTrack.interpolations.slice(),
-						'.position': pTrack.interpolations.slice(),
+						'target.userData[distance]': pTrack.interpolations.slice(),
 						'.fov': fTrack.interpolations.slice()
 					}
 				})
@@ -153,8 +141,8 @@ export class CameraClipsBuilder {
 				times.length = 0
 				centers.length = 0
 				quaternions.length = 0
-				positions.length = 0
 				fovs.length = 0
+				distances.length = 0
 
 				cInterpolations.length = 0
 				qInterpolations.length = 0

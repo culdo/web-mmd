@@ -35,9 +35,9 @@ function Camera() {
         <>
             {
                 cameraMode != CameraMode.EDITOR &&
-                    <PerspectiveCamera fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
-                        <mesh name="target" />
-                    </PerspectiveCamera>
+                <PerspectiveCamera fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
+                    <mesh name="target" userData={{ distance: 0 }} />
+                </PerspectiveCamera>
             }
             <CameraWorkHelper></CameraWorkHelper>
         </>

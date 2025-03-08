@@ -4,7 +4,8 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimationAction, AnimationClip, AnimationMixer, LoopOnce } from "three";
+import { AnimationAction, AnimationClip, AnimationMixer, LoopOnce, PerspectiveCamera } from "three";
+import updateCamera from "../updateCamera";
 
 export type CameraClip = {
     action?: AnimationAction;
@@ -14,7 +15,7 @@ export type CameraClip = {
     interpolations: {
         'target.position': any;
         '.quaternion': any;
-        '.position': any;
+        'target.userData[distance]': any;
         '.fov': any;
     };
 }
@@ -35,7 +36,7 @@ function CompositeMode({ motionFileBuffer }: { motionFileBuffer: ArrayBuffer }) 
     const savedCompositeClips = usePresetStore(state => state.compositeClips)
     
     // Setup functions
-    const restoreInterpolant = (clip: AnimationClip, interpolations: { [x: string]: any; "target.position"?: any; ".quaternion"?: any; ".position"?: any; ".fov"?: any }) => {
+    const restoreInterpolant = (clip: AnimationClip, interpolations: Record<string, any>) => {
         for (const track of clip.tracks) {
             createTrackInterpolant(track, interpolations[track.name], true)
         }
@@ -167,20 +168,12 @@ function CompositeMode({ motionFileBuffer }: { motionFileBuffer: ArrayBuffer }) 
         playComposite(time)
 
         if (!currentClipRef.current?.action.isRunning()) return
-        updateCamera(time)
-        updateScrollingBar(time)
-    }
-
-    const updateCamera = (time: number) => {
         // set clip time
         // condition to fix cutTime precision problem that cause action be disabled
         const targetTime = (time - currentClipRef.current.cutTime) < 0 ? 0 : (time - currentClipRef.current.cutTime)
         cameraMixer.setTime(targetTime)
-
-        camera.up.set(0, 1, 0);
-        camera.up.applyQuaternion(camera.quaternion);
-        camera.lookAt(camera.getObjectByName("target").position);
-        camera.updateProjectionMatrix();
+        updateCamera(camera as PerspectiveCamera)
+        updateScrollingBar(time)
     }
 
     const updateScrollingBar = (time: number) => {

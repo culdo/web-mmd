@@ -1688,8 +1688,8 @@ class AnimationBuilder {
 		const frameNums = [];
 		const centers: any[] = [];
 		const quaternions: any[] = [];
-		const positions: any[] = [];
 		const fovs = [];
+		const distances = [];
 
 		const cInterpolations: any[] = [];
 		const qInterpolations: any[] = [];
@@ -1698,7 +1698,6 @@ class AnimationBuilder {
 
 		const quaternion = new Quaternion();
 		const euler = new Euler();
-		const position = new Vector3();
 		const center = new Vector3();
 
 		for (let i = 0, il = cameras.length; i < il; i++) {
@@ -1715,21 +1714,17 @@ class AnimationBuilder {
 			times.push(time);
 			frameNums.push(motion.frameNum);
 
-			position.set(0, 0, - distance);
-
+			
 			center.set(pos[0], pos[1], pos[2]);
-
+			
 			euler.set(- rot[0], - rot[1], - rot[2]);
 			quaternion.setFromEuler(euler);
 
-			position.applyQuaternion(quaternion);
-			position.add(center);
-
 			pushVector3(centers, center);
 			pushQuaternion(quaternions, quaternion);
-			pushVector3(positions, position);
 
 			fovs.push(fov);
+			distances.push(distance);
 
 			for (let j = 0; j < 3; j++) {
 
@@ -1739,12 +1734,7 @@ class AnimationBuilder {
 
 			pushInterpolation(qInterpolations, interpolation, 3);
 
-			// use the same parameter for x, y, z axis.
-			for (let j = 0; j < 3; j++) {
-
-				pushInterpolation(pInterpolations, interpolation, 4);
-
-			}
+			pushInterpolation(pInterpolations, interpolation, 4);
 
 			pushInterpolation(fInterpolations, interpolation, 5);
 
@@ -1754,10 +1744,9 @@ class AnimationBuilder {
 
 		// I expect an object whose name 'target' exists under THREE.Camera
 		tracks.push(this._createTrack('target.position', VectorKeyframeTrack, times, centers, cInterpolations, true));
-		tracks.push(new NumberKeyframeTrack('target.userData[frameNum]', times, frameNums, InterpolateDiscrete));
+		tracks.push(this._createTrack('target.userData[distance]', NumberKeyframeTrack, times, distances,pInterpolations, true));
 
 		tracks.push(this._createTrack('.quaternion', QuaternionKeyframeTrack, times, quaternions, qInterpolations, true));
-		tracks.push(this._createTrack('.position', VectorKeyframeTrack, times, positions, pInterpolations, true));
 		tracks.push(this._createTrack('.fov', NumberKeyframeTrack, times, fovs, fInterpolations, true));
 
 		return new AnimationClip('', - 1, tracks);
