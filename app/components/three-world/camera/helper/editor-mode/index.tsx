@@ -79,15 +79,11 @@ function EditorMode() {
 
     useEffect(() => {
         const clearUpdate = target.onValuesChange((props) => {
-            _rotation.set(props.rotation.x, props.rotation.y, props.rotation.z)
+            camera.rotation.set(props.rotation.x, props.rotation.y, props.rotation.z)
 
             camera.position.set(0, 0, - props.distance);
-            camera.position.applyEuler(_rotation);
+            camera.position.applyEuler(camera.rotation);
             camera.position.add(props.position);
-            
-            camera.up.set(0, 1, 0);
-            camera.up.applyEuler(_rotation);
-            camera.lookAt(props.position.x, props.position.y, props.position.z);
             
             camera.fov = props.fov
             camera.updateProjectionMatrix()

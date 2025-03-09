@@ -7,10 +7,6 @@ function updateCamera(camera: PerspectiveCamera) {
     camera.position.applyQuaternion(camera.quaternion);
     camera.position.add(target.position);
 
-    camera.up.set(0, 1, 0);
-    camera.up.applyQuaternion(camera.quaternion);
-    camera.lookAt(target.position);
-
     camera.updateProjectionMatrix();
 }
 
