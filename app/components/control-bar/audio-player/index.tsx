@@ -92,6 +92,32 @@ function AudioPlayer() {
         setMusicGui({ name: musicName })
     }
 
+    // keyboard shortcuts
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            const player = ytPlayer.current
+            if(!player) return
+            if (e.key == " ") {
+                e.stopPropagation()
+                if (player.paused) {
+                    player.play()
+                } else {
+                    player.pause()
+                }
+            }
+            if (e.key == ".") {
+                e.stopPropagation()
+                player.currentTime += 1/30
+            }
+            if (e.key == ",") {
+                e.stopPropagation()
+                player.currentTime -= 1/30
+            }
+        }
+        document.addEventListener("keydown", handler)
+        return () => document.removeEventListener("keydown", handler)
+    }, [])
+
     // seek to saved time when change preset
     useEffect(() => {
         if(!presetReady || !loadedRef.current) return

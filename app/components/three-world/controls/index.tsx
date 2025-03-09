@@ -20,20 +20,6 @@ function Controls() {
     const cameraObj = useGlobalStore(state => state.cameraObj)
 
     useEffect(() => {
-        // keyboard shortcuts
-        document.addEventListener("keyup", (e) => {
-            const player = useGlobalStore.getState().player
-            if(!player) return
-            if (e.key == " ") {
-                e.stopPropagation()
-                if (player.paused) {
-                    player.play()
-                } else {
-                    player.pause()
-                }
-            }
-        })
-
         const controls = controlsRef.current
         useGlobalStore.setState({
             controls
