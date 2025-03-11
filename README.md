@@ -9,8 +9,7 @@
 
 For who wants to play MMD in the browser, now you can play it anywhere.
 
-It is improved version of [the three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio).\
-It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) for effects.
+This project is inspired by [the amazing three.js example](https://takahirox.github.io/three.js/examples/webgl_loader_mmd_audio.html) which by @takahirox.
 
 # Features
 * Play MMD with time control bar(time seeking, jump to time...etc)
@@ -21,7 +20,17 @@ It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) f
 * Presets (open/save-as/copy/export as `JSON` format)
 * Camera Composition mode (create/delete/jump forward/backward camera cuts)
 * Camera Fixed-Follow mode (can adjust using mouse)
+* Camera Editor mode (can edit on dope-sheet timeline)
 * Keyboard Shortcuts(play/pause, toggle camera mode, manipulate camera cuts...)
+
+# Keyboard shortcuts
+* **Space**: Play/Pause
+* **`** : Toggle Camera mode (between motion and composite mode)
+* **<** : Previous frame (under 30 fps) 
+* **\>** : Next frame (under 30 fps)
+* At camera composite mode
+  * **→** : Previous keyframe
+  * **←** : Next keyframe
 
 # Demo credits
 * music: GimmexGimme by 八王子P × Giga
@@ -40,6 +49,7 @@ It also use [the postprocessing lib](https://github.com/pmndrs/postprocessing) f
 ## Tech stacks
 * `three.js` (For MMD)
 * `postprocessing.js` (For effects)
+* `theatre.js` (For camera editor mode)
 * `Next.js` (For static site generating)
 * `media-chrome` (For audio from YT)
 * `playwright` (For testing)
@@ -66,9 +76,13 @@ It uses `Github Action` to deploy the demo site. Relative files located at `./.g
 - [x] refactor to Typescript
 - [x] refactor to @react-three eco-system
 - [x] Skybox rendering
+- [x] timeline editor
+    - [x] camera composition mode
+    - [x] camera editor mode (using Theatre.js)
 
 ## WIP
-- [ ] timeline editor
-    - [x] camera composition mode
+- [ ] Better bone animation
+
 ## Planning
 - [ ] In-APP Credits list
+- [ ] Efficient Bokeh effect
