@@ -1,12 +1,17 @@
-import Helper from "./Helper";
 import Model from "./Model";
+import Morph from "../ModelHelper/Morph";
+import Material from "../ModelHelper/Material";
+import Physics from "../ModelHelper/Physics";
+import Animation from "../ModelHelper/Animation";
 
 function Character() {
     return (
-        <>
-            <Model></Model>
-            <Helper></Helper>
-        </>
+        <Model>
+            <Morph></Morph>
+            <Material></Material>
+            <Physics></Physics>
+            <Animation></Animation>
+        </Model>
     );
 }
 

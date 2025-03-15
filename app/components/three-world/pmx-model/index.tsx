@@ -1,16 +1,17 @@
-import { useEffect, useState } from "react"
+import { ReactNode, useEffect, useRef, useState } from "react"
 import { Skeleton, SkinnedMesh } from "three"
 import { initBones, MMDLoader } from "@/app/modules/MMDLoader"
 import useGlobalStore from "@/app/stores/useGlobalStore"
 import { onProgress } from "@/app/utils/base"
 import { SkinnedMeshProps, useThree } from "@react-three/fiber"
+import { ModelContext } from "../ModelHelper/ModelContext"
 
 type PMXModelProps = {
     url: string,
     modelTextures: Record<string, string>,
     enableSdef: boolean,
     enablePBR: boolean,
-    children?: JSX.Element | JSX.Element[],
+    children?: ReactNode,
     onCreate?: (mesh: SkinnedMesh) => void,
     onDispose?: () => void
 } & Partial<SkinnedMeshProps>
@@ -40,7 +41,7 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
         }
         init()
 
-        if(onDispose) 
+        if (onDispose)
             return onDispose
     }, [url, modelTextures, enableSdef, enablePBR, camera])
 
@@ -49,26 +50,31 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
     useEffect(() => {
         if (!mesh) return
         const [bones, rootBones] = initBones(geometry)
-		for (const root of rootBones) {
-			mesh.add(root)
-		}
-		const skeleton = new Skeleton(bones);
-		mesh.bind(skeleton);
+        for (const root of rootBones) {
+            mesh.add(root)
+        }
+        const skeleton = new Skeleton(bones);
+        mesh.bind(skeleton);
         onCreate?.(mesh)
         setInited(true)
         return () => setInited(false)
     }, [mesh])
 
+    const runtimeHelper = useRef({})
+    
     if (!initProps) return
 
     const { data, geometry, material } = initProps
+
     return (
         <skinnedMesh
             name={data.metadata.modelName}
             args={[geometry, material]}
             ref={mesh => mesh && setMesh(mesh)}
             {...props}>
-            {inited && children}
+            <ModelContext.Provider value={{ mesh: mesh, runtimeHelper }}>
+                {inited && children}
+            </ModelContext.Provider>
         </skinnedMesh>
     )
 }
