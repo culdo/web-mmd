@@ -94,6 +94,14 @@ function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnCha
     }
 }
 
+function buildGuiObj<const T extends keyof PresetState>(key: T) {
+    return {
+        [key]: buildGuiItem(key)
+    } as {
+        [key in T]: ReturnType<typeof buildGuiItem<T>>
+    }
+}
+
 function buildFlexGuiItem<T>(path: string, handler?: OnChangeHandler) {
 
     const initialValue = _.get(usePresetStore.getState(), path)
@@ -186,4 +194,4 @@ function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userDa
 }
 
 
-export { buildMaterialGuiItem, buildFlexGuiItem, buildGuiItem, buildLoadFileFn, buildLoadModelFn, setLevaValue };
+export { buildMaterialGuiItem, buildFlexGuiItem, buildGuiItem, buildGuiObj, buildLoadFileFn, buildLoadModelFn, setLevaValue };
