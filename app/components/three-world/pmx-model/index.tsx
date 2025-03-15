@@ -41,8 +41,10 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
         }
         init()
 
-        if (onDispose)
-            return onDispose
+        return () => {
+            setInited(false)
+            onDispose?.()
+        }
     }, [url, modelTextures, enableSdef, enablePBR, camera])
 
     const [mesh, setMesh] = useState<SkinnedMesh>()
@@ -57,11 +59,10 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
         mesh.bind(skeleton);
         onCreate?.(mesh)
         setInited(true)
-        return () => setInited(false)
     }, [mesh])
 
     const runtimeHelper = useRef({})
-    
+
     if (!initProps) return
 
     const { data, geometry, material } = initProps

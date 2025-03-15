@@ -33,6 +33,8 @@ function Model({ children }: { children: ReactNode }) {
             onChange: (value, path, options) => {
                 if (!options.initial) {
                     usePresetStore.setState({ character: value })
+                } else {
+                    set({model: characterName})
                 }
             },
         },
