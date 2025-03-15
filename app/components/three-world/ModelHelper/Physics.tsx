@@ -1,14 +1,17 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { RootState, useFrame } from "@react-three/fiber";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MMDPhysics } from "three/examples/jsm/animation/MMDPhysics.js";
 import { useModel, useRuntimeHelper } from "./ModelContext";
+import { useControls } from "leva";
+import { buildGuiObj } from "@/app/utils/gui";
+import { MMDPhysicsHelper } from "three-stdlib";
 
 function Physics() {
     const mesh = useModel()
     const playDeltaRef = useGlobalStore(state => state.playDeltaRef)
     const runtimeHelper = useRuntimeHelper()
-    const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
+    const [physicsHelper, setPhysicsHelper] = useState<MMDPhysicsHelper>()
     const onUpdate = useMemo(() => {
 
         const physics = new MMDPhysics(
@@ -54,6 +57,7 @@ function Physics() {
         physics.warmup(60);
         optimizeIK(true);
         runtimeHelper.resetPhysic = reset
+        setPhysicsHelper(physics.createHelper())
 
         return (_: RootState, delta: number) => {
             // reset physic when time seeking
@@ -67,7 +71,16 @@ function Physics() {
     // Physics need to be updated after the motion updating 
     // and before EffectCompose rendering to make reset work
     useFrame(onUpdate, 2)
-    return <></>
+
+    const {
+        "show rigid bodies": showRigidBodies
+    } = useControls('Character.debug', {
+        ...buildGuiObj("show rigid bodies"),
+    }, { collapsed: true, order: 2 })
+
+    return (
+        <primitive object={physicsHelper} visible={showRigidBodies}></primitive>
+    )
 }
 
 export default Physics;
