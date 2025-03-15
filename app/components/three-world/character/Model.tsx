@@ -6,6 +6,8 @@ import * as THREE from 'three';
 import PmxModel from "../pmx-model";
 import { ThreeEvent } from "@react-three/fiber";
 import WithReady from "@/app/stores/WithReady";
+import { Helper } from "@react-three/drei";
+import { SkeletonHelper } from "three";
 
 function Model() {
     const characterName = usePresetStore(state => state.character)
@@ -14,6 +16,7 @@ function Model() {
     const enableSdef = usePresetStore(state => state["enable SDEF"])
     const enablePBR = usePresetStore(state => state["enable PBR"])
     const selfShadow = usePresetStore(state => state["self shadow"])
+    const showSkeleton = usePresetStore(state => state["show skeleton"])
 
     const positionKey = "Character.position"
     const position = usePresetStore(state => state[positionKey])
@@ -53,6 +56,7 @@ function Model() {
             })
             selectFile.click();
         }),
+        "show skeleton": buildGuiItem("show skeleton")
     }), { collapsed: true, order: 2 }, [pmxFiles.character, motionName])
 
     return (
@@ -79,6 +83,7 @@ function Model() {
             }}
         >
             <object3D name="smoothCenter"></object3D>
+            {showSkeleton && <Helper type={SkeletonHelper}></Helper>}
         </PmxModel>
     );
 }

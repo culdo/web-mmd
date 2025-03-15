@@ -12,15 +12,13 @@ type PMXModelProps = {
     enablePBR: boolean,
     children?: JSX.Element | JSX.Element[],
     onCreate?: (mesh: SkinnedMesh) => void,
-    onCreatePromise?: (promise: Promise<SkinnedMesh>) => void
     onDispose?: () => void
 } & Partial<SkinnedMeshProps>
 
-function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, children, onCreate, onCreatePromise, onDispose, ...props }: PMXModelProps) {
+function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, children, onCreate, onDispose, ...props }: PMXModelProps) {
 
     const loader = useGlobalStore(state => state.loader)
     const [initProps, setProps] = useState<Awaited<ReturnType<MMDLoader["loadAsync"]>>>()
-    const [resolve, setResolve] = useState<(mesh:SkinnedMesh)=>void>()
     const camera = useThree(state => state.camera)
 
     useEffect(() => {
@@ -33,8 +31,6 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
                 modelTextures: modelTextures
             });
         }
-
-        onCreatePromise?.(new Promise(res => setResolve(() => res)))
 
         const init = async () => {
             const initProps = await loader
@@ -49,6 +45,7 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
     }, [url, modelTextures, enableSdef, enablePBR, camera])
 
     const [mesh, setMesh] = useState<SkinnedMesh>()
+    const [inited, setInited] = useState<boolean>()
     useEffect(() => {
         if (!mesh) return
         const [bones, rootBones] = initBones(geometry)
@@ -58,7 +55,8 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
 		const skeleton = new Skeleton(bones);
 		mesh.bind(skeleton);
         onCreate?.(mesh)
-        resolve?.(mesh)
+        setInited(true)
+        return () => setInited(false)
     }, [mesh])
 
     if (!initProps) return
@@ -70,7 +68,7 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
             args={[geometry, material]}
             ref={mesh => mesh && setMesh(mesh)}
             {...props}>
-            {children}
+            {inited && children}
         </skinnedMesh>
     )
 }
