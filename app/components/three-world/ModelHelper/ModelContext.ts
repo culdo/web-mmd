@@ -1,6 +1,5 @@
 import { createContext, MutableRefObject, useContext } from 'react';
 import { SkinnedMesh } from 'three';
-import { MMDPhysics } from 'three/examples/jsm/Addons.js';
 
 type ModelContextProps = {
     mesh: SkinnedMesh
