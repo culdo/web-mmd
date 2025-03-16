@@ -6,6 +6,7 @@ import usePresetStore from "@/app/stores/usePresetStore";
 
 import { CameraMode } from "@/app/types/camera";
 import { PerspectiveCamera } from "@react-three/drei";
+import { Vector3 } from "three";
 
 function Camera() {
     const cameraName = usePresetStore(state => state.camera)
@@ -35,9 +36,19 @@ function Camera() {
         <>
             {
                 cameraMode != CameraMode.EDITOR &&
-                <PerspectiveCamera fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
-                    <mesh name="target" userData={{ distance: 0 }} />
-                </PerspectiveCamera>
+                <PerspectiveCamera
+                    fov={fov}
+                    near={near}
+                    zoom={zoom}
+                    position={[0, 10, 50]}
+                    userData={{
+                        target: {
+                            position: new Vector3(),
+                            distance: 0
+                        }
+                    }}
+                    makeDefault
+                />
             }
             <CameraWorkHelper></CameraWorkHelper>
         </>

@@ -68,7 +68,7 @@ export class CameraClipsBuilder {
 		const euler = new Euler();
 		const center = new Vector3();
 
-		const clips: { clip: any; interpolations: { 'target.position': any; '.quaternion': any; 'target.userData[distance]': any; '.fov': any; }; }[] = []
+		const clips: { clip: any; interpolations: { '.userData[target].position': any; '.quaternion': any; '.userData[target].distance': any; '.fov': any; }; }[] = []
 		const cutTimes: number[] = []
 		const jsonResult = { clips, cutTimes };
 
@@ -117,8 +117,8 @@ export class CameraClipsBuilder {
 				const tracks = [];
 
 				// I expect an object whose name 'target' exists under THREE.Camera
-				const tTrack = this._createTrack('target.position', VectorKeyframeTrack, times, centers, cInterpolations)
-				const pTrack = this._createTrack('target.userData[distance]', NumberKeyframeTrack, times, distances,pInterpolations);
+				const tTrack = this._createTrack('.userData[target].position', VectorKeyframeTrack, times, centers, cInterpolations)
+				const pTrack = this._createTrack('.userData[target].distance', NumberKeyframeTrack, times, distances,pInterpolations);
 				const qTrack = this._createTrack('.quaternion', QuaternionKeyframeTrack, times, quaternions, qInterpolations)
 				const fTrack = this._createTrack('.fov', NumberKeyframeTrack, times, fovs, fInterpolations)
 
@@ -131,9 +131,9 @@ export class CameraClipsBuilder {
 				clips.push({
 					clip: AnimationClip.toJSON(clip),
 					interpolations: {
-						'target.position': tTrack.interpolations.slice(),
+						'.userData[target].position': tTrack.interpolations.slice(),
 						'.quaternion': qTrack.interpolations.slice(),
-						'target.userData[distance]': pTrack.interpolations.slice(),
+						'.userData[target].distance': pTrack.interpolations.slice(),
 						'.fov': fTrack.interpolations.slice()
 					}
 				})
