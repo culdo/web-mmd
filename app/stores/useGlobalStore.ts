@@ -1,11 +1,11 @@
 import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
 import { MutableRefObject, createRef } from 'react';
 import { AnimationMixer, PerspectiveCamera, SkinnedMesh } from 'three';
-import { OrbitControls } from 'three-stdlib';
+import { GrantSolver, MMDPhysics, OrbitControls } from 'three-stdlib';
 import { create } from 'zustand';
 import { MMDLoader } from '../modules/MMDLoader';
 import CustomVideoElement from 'youtube-video-element';
-import { CCDIKSolver, GrantSolver, MMDPhysics } from 'three/examples/jsm/Addons.js';
+import { CCDIKSolver } from 'three/examples/jsm/Addons.js';
 import { ISheetObject } from '@theatre/core';
 import { CameraObj } from '../types/camera';
 

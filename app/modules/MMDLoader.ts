@@ -315,7 +315,7 @@ class MMDLoader extends Loader {
 		const parser = this._getParser();
 
 		const text = await this.loader
-			.setMimeType(isUnicode ? undefined : 'text/plain; charset=shift_jis' as unknown as MimeType)
+			.setMimeType(isUnicode ? undefined : 'text/plain; charset=shift_jis')
 			.setPath(this.animationPath)
 			.setResponseType('text')
 			.setRequestHeader(this.requestHeader)
@@ -1778,8 +1778,8 @@ class AnimationBuilder {
 		const tracks = [];
 
 		// I expect an object whose name 'target' exists under THREE.Camera
-		tracks.push(this._createTrack('target.position', VectorKeyframeTrack, times, centers, cInterpolations, true));
-		tracks.push(this._createTrack('target.userData[distance]', NumberKeyframeTrack, times, distances,pInterpolations, true));
+		tracks.push(this._createTrack('.userData[target].position', VectorKeyframeTrack, times, centers, cInterpolations, true));
+		tracks.push(this._createTrack('.userData[target].distance', NumberKeyframeTrack, times, distances,pInterpolations, true));
 
 		tracks.push(this._createTrack('.quaternion', QuaternionKeyframeTrack, times, quaternions, qInterpolations, true));
 		tracks.push(this._createTrack('.fov', NumberKeyframeTrack, times, fovs, fInterpolations, true));

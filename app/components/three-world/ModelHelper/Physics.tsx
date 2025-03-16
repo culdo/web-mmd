@@ -1,11 +1,10 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { RootState, useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useState } from "react";
-import { MMDPhysics } from "three/examples/jsm/animation/MMDPhysics.js";
 import { useModel, useRuntimeHelper } from "./ModelContext";
 import { useControls } from "leva";
 import { buildGuiObj } from "@/app/utils/gui";
-import { MMDPhysicsHelper } from "three-stdlib";
+import { MMDPhysics, MMDPhysicsHelper } from "three-stdlib";
 
 function Physics() {
     const mesh = useModel()
