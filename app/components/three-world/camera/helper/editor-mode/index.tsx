@@ -1,19 +1,14 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import studio from "@theatre/studio";
-import { createRafDriver, getProject, IRafDriver, ISheetObject, onChange, val } from "@theatre/core";
+import { createRafDriver, getProject, onChange } from "@theatre/core";
 
 const driver = createRafDriver({ name: 'MMDRafDriver' })
 
 import usePresetStore from "@/app/stores/usePresetStore";
 import { cameraToTracks } from "@/app/modules/theatreTrackBuilder";
-import { RafDriverProvider, SheetProvider } from "@theatre/r3f";
-import { editable as e } from "@theatre/r3f"
-import { Euler, Mesh, PerspectiveCamera as PerspectiveCameraImpl, Vector3 } from "three";
-import { CameraObj } from "@/app/types/camera";
-import MMDState from "@/app/presets/MMD.theatre-project-state.json"
-import { PerspectiveCamera } from "@react-three/drei";
+import { PerspectiveCamera as PerspectiveCameraImpl } from "three";
 
 const sheet = getProject("MMD").sheet("MMD UI")
 const sequence = sheet.sequence
@@ -33,19 +28,14 @@ const target = sheet.object('Camera', {
     fov: 0,
 })
 
-const _rotation = new Euler()
 
 function EditorMode() {
-    const fov = usePresetStore(state => state.fov)
-    const near = usePresetStore(state => state.near)
-    const zoom = usePresetStore(state => state.zoom)
 
     const camera = useThree(state => state.camera) as PerspectiveCameraImpl
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
     const player = useGlobalStore(state => state.player)
 
     const cameraFile = usePresetStore(state => state.cameraFile)
-    const positionRef = useRef(new Vector3())
 
     useEffect(() => {
 
@@ -99,10 +89,7 @@ function EditorMode() {
         }
     }, 1)
 
-    return (
-        <PerspectiveCamera fov={fov} near={near} zoom={zoom} position={[0, 10, 50]} makeDefault>
-        </PerspectiveCamera>
-    );
+    return <></>
 }
 
 export default EditorMode;

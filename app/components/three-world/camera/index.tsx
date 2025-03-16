@@ -4,18 +4,20 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { buildLoadFileFn } from "@/app/utils/gui";
 import usePresetStore from "@/app/stores/usePresetStore";
 
-import { CameraMode } from "@/app/types/camera";
 import { PerspectiveCamera } from "@react-three/drei";
-import { Vector3 } from "three";
+import { PerspectiveCamera as PerspectiveCameraImpl, Vector3 } from "three";
+import { useThree } from "@react-three/fiber";
+import { useRef } from "react";
 
 function Camera() {
     const cameraName = usePresetStore(state => state.camera)
 
     const presetReady = useGlobalStore(state => state.presetReady)
-    const cameraMode = usePresetStore(state => state["camera mode"])
     const fov = usePresetStore(state => state.fov)
     const near = usePresetStore(state => state.near)
     const zoom = usePresetStore(state => state.zoom)
+    const camera = useThree(state => state.camera)
+    const cameraRef = useRef<PerspectiveCameraImpl>()
 
     const [_, set] = useControls('Camera', () => ({
         name: {
@@ -33,25 +35,20 @@ function Camera() {
     }), { order: 201, collapsed: true }, [presetReady])
 
     return (
-        <>
+        <PerspectiveCamera
+            ref={cameraRef}
+            fov={fov}
+            near={near}
+            zoom={zoom}
+            position={[0, 10, 50]}
+            makeDefault
+        >
+            <object3D visible={false} name="target"></object3D>
             {
-                cameraMode != CameraMode.EDITOR &&
-                <PerspectiveCamera
-                    fov={fov}
-                    near={near}
-                    zoom={zoom}
-                    position={[0, 10, 50]}
-                    userData={{
-                        target: {
-                            position: new Vector3(),
-                            distance: 0
-                        }
-                    }}
-                    makeDefault
-                />
+                camera == cameraRef.current &&
+                <CameraWorkHelper></CameraWorkHelper>
             }
-            <CameraWorkHelper></CameraWorkHelper>
-        </>
+        </PerspectiveCamera>
     )
 }
 

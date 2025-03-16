@@ -20,7 +20,6 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
 
     const loader = useGlobalStore(state => state.loader)
     const [initProps, setProps] = useState<Awaited<ReturnType<MMDLoader["loadAsync"]>>>()
-    const camera = useThree(state => state.camera)
 
     useEffect(() => {
         const params = {
@@ -45,7 +44,7 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
             setInited(false)
             onDispose?.()
         }
-    }, [url, modelTextures, enableSdef, enablePBR, camera])
+    }, [url, modelTextures, enableSdef, enablePBR])
 
     const [mesh, setMesh] = useState<SkinnedMesh>()
     const [inited, setInited] = useState<boolean>()
