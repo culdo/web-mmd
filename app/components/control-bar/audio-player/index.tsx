@@ -13,6 +13,7 @@ import { buildGuiItem } from "@/app/utils/gui";
 import studio from "@theatre/studio";
 import { getProject } from "@theatre/core";
 import { CameraMode } from "@/app/types/camera";
+import { MediaControlBar, MediaController, MediaMuteButton, MediaPlayButton, MediaTimeDisplay, MediaTimeRange, MediaVolumeRange } from "media-chrome/react";
 
 function AudioPlayer() {
     const setCurrentTime = (currentTime: number) => usePresetStore.setState({ currentTime })
@@ -36,17 +37,17 @@ function AudioPlayer() {
         },
     }), { order: 200, collapsed: true }, [musicName])
 
-    const ytPlayer = useRef<CustomVideoElement & { 
+    const ytPlayer = useRef<CustomVideoElement & {
         api: YT.Player & {
             videoTitle: string
         }
     }>()
 
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        if(!loadedRef.current) return
+        if (!loadedRef.current) return
         if (autoHideGui) {
             setGui({ hidden: true })
-            
+
             // editor mode
             studio.ui.hide()
         };
@@ -54,8 +55,8 @@ function AudioPlayer() {
     }
 
     const onPause = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        if(!loadedRef.current) {
-            if(currentTime == 0.0) {
+        if (!loadedRef.current) {
+            if (currentTime == 0.0) {
                 ytPlayer.current.currentTime = 0.0
             }
             ytPlayer.current.api.unMute()
@@ -63,9 +64,9 @@ function AudioPlayer() {
             return
         }
         setGui({ hidden: false });
-        
+
         // editor mode
-        if(cameraMode == CameraMode.EDITOR) {
+        if (cameraMode == CameraMode.EDITOR) {
             studio.ui.restore()
         }
 
@@ -74,7 +75,7 @@ function AudioPlayer() {
     }
 
     const onSeeked = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        if(!ytPlayer.current.paused) return
+        if (!ytPlayer.current.paused) return
         const sequence = getProject("MMD").sheet("MMD UI").sequence
         sequence.position = ytPlayer.current.currentTime
     }
@@ -82,7 +83,7 @@ function AudioPlayer() {
     const loadedRef = useRef(false)
     const onLoadedMetadata = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         loadedRef.current = false
-        if(currentTime == 0.0) {
+        if (currentTime == 0.0) {
             ytPlayer.current.currentTime = 1.0
         } else {
             ytPlayer.current.currentTime = currentTime
@@ -96,7 +97,7 @@ function AudioPlayer() {
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             const player = ytPlayer.current
-            if(!player) return
+            if (!player) return
             if (e.key == " ") {
                 e.stopPropagation()
                 if (player.paused) {
@@ -107,11 +108,11 @@ function AudioPlayer() {
             }
             if (e.key == ".") {
                 e.stopPropagation()
-                player.currentTime += 1/30
+                player.currentTime += 1 / 30
             }
             if (e.key == ",") {
                 e.stopPropagation()
-                player.currentTime -= 1/30
+                player.currentTime -= 1 / 30
             }
         }
         document.addEventListener("keydown", handler)
@@ -120,50 +121,13 @@ function AudioPlayer() {
 
     // seek to saved time when change preset
     useEffect(() => {
-        if(!presetReady || !loadedRef.current) return
+        if (!presetReady || !loadedRef.current) return
         ytPlayer.current.currentTime = currentTime
     }, [presetReady])
 
     return (
         <>
-            <template
-                id="media-theme-audio"
-                dangerouslySetInnerHTML={{
-                    __html: `
-                        <media-controller audio>
-                            <slot name="media" slot="media"></slot>
-                            <media-control-bar style="width: 100%;">
-                                <media-play-button disabled></media-play-button>
-                                <style>
-                                    media-mute-button + media-volume-range {
-                                        width: 0;
-                                        overflow: hidden;
-                                        transition: width 0.2s ease-in;
-                                    }
-
-                                    /* Expand volume control in all relevant states */
-                                    media-mute-button:hover + media-volume-range,
-                                    media-mute-button:focus + media-volume-range,
-                                    media-mute-button:focus-within + media-volume-range,
-                                    media-volume-range:hover,
-                                    media-volume-range:focus,
-                                    media-volume-range:focus-within {
-                                        width: 70px;
-                                    }
-                                </style>
-                                <media-mute-button></media-mute-button>
-                                <media-volume-range></media-volume-range>
-                                <media-time-range></media-time-range>
-                                <media-time-display showduration></media-time-display>
-                            </media-control-bar>
-                        </media-controller>` }}
-            />
-
-            <MediaTheme
-                id="rawPlayer"
-                template="media-theme-audio"
-                className={`${styles.player} control-bar`}
-            >
+            <MediaController id="rawPlayer" className={`${styles.player} control-bar`} audio>
                 <YoutubeVideo
                     ref={ytPlayer}
                     slot="media"
@@ -174,7 +138,36 @@ function AudioPlayer() {
                     onLoadedMetadata={onLoadedMetadata}
                     muted
                 ></YoutubeVideo>
-            </MediaTheme>
+                <MediaControlBar style={{
+                    width: "100%"
+                }}>
+                    <MediaPlayButton disabled></MediaPlayButton>
+                    <style>
+                        {`
+
+                        media-mute-button + media-volume-range {
+                            width: 0;
+                        overflow: hidden;
+                        transition: width 0.2s ease-in;
+                        }
+
+                        /* Expand volume control in all relevant states */
+                        media-mute-button:hover + media-volume-range,
+                        media-mute-button:focus + media-volume-range,
+                        media-mute-button:focus-within + media-volume-range,
+                        media-volume-range:hover,
+                        media-volume-range:focus,
+                        media-volume-range:focus-within {
+                            width: 70px;
+                        }`
+                        }
+                    </style>
+                    <MediaMuteButton />
+                    <MediaVolumeRange />
+                    <MediaTimeRange />
+                    <MediaTimeDisplay showDuration />
+                </MediaControlBar>
+            </MediaController>
         </>
     );
 }
