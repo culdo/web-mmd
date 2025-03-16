@@ -1,14 +1,14 @@
 type PMXVertex = {
-    position: number[]
-    normal: number[]
-    uv: number[]
-    auvs: Array<number[]>
+    position: [number, number, number]
+    normal: [number, number, number]
+    uv: [number, number]
+    auvs: Array<[number, number, number, number]>
     type: number
     skinIndices: number[]
     skinWeights: number[]
-    skinC: number[]
-    skinR0: number[]
-    skinR1: number[]
+    skinC: [number, number, number]
+    skinR0: [number, number, number]
+    skinR1: [number, number, number]
     edgeRatio: number
 }
 type PMXFace = {

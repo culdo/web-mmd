@@ -9,7 +9,7 @@ function Character() {
     return (
         <Model>
             <Morph></Morph>
-            <Bone></Bone>
+            {/* <Bone></Bone> */}
             <Material></Material>
             <Physics></Physics>
             <Animation></Animation>

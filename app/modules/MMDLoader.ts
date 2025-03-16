@@ -46,7 +46,9 @@ import {
 	Material,
 	Texture,
 	CompressedTexture,
-	MeshPhongMaterial
+	MeshPhongMaterial,
+	WebGLProgramParametersWithUniforms,
+	WebGLRenderer
 } from 'three';
 import { MMDToonShader } from './shaders/MMDToonShader';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
@@ -54,6 +56,10 @@ import { MMDParser, Parser } from './mmdparser.module';
 import { MMDPhysicalMaterial } from './MMDPhysicalMaterial';
 import { initSdef } from './shaders/SdefVertexShader';
 
+type ShaderParams = {
+	enableSdef: boolean,
+	enablePBR: boolean
+}
 /**
  * Dependencies
  *  - mmd-parser https://github.com/takahirox/mmd-parser
@@ -401,7 +407,7 @@ class MeshBuilder {
 
 	}
 
-	build(data: PMXModel, resourcePath: any, onProgress: any, onError: any, params = {}) {
+	build(data: PMXModel, resourcePath: any, onProgress: any, onError: any, params: ShaderParams) {
 
 		const geometry = this.geometryBuilder.build(data);
 		const material = this.materialBuilder
@@ -499,7 +505,7 @@ class GeometryBuilder {
 
 		const bones: any = [];
 		const skinIndices = [];
-		const skinWeights = [];
+		const skinWeights: number[] = [];
 		const skinTypes = [];
 		const skinCs = [];
 		const skinR0s = [];
@@ -548,19 +554,42 @@ class GeometryBuilder {
 
 			}
 
+			skinTypes.push(v.type, v.type);
+
+			// SDEF
+			if (v.type == 3) {
+				const _transformVec = new Vector3(1, 1, -1)
+
+				const w0 = v.skinWeights[0]
+				const w1 = 1.0 - w0
+				v.skinWeights[1] = w1
+
+				const center = new Vector3(...v.skinC).multiply(_transformVec)
+				const r0 = new Vector3(...v.skinR0).multiply(_transformVec)
+				const r1 = new Vector3(...v.skinR1).multiply(_transformVec)
+				const rw = r0.clone().multiplyScalar(w0).add(r1.clone().multiplyScalar(w1));
+				r0.add(center).sub(rw)
+				r1.add(center).sub(rw)
+				const cr0 = r0.add(center).multiplyScalar(0.5)
+				const cr1 = r1.add(center).multiplyScalar(0.5)
+
+				v.skinC = center.toArray()
+				v.skinR0 = cr0.toArray()
+				v.skinR1 = cr1.toArray()
+
+			// Others
+			} else {
+				v.skinC = [0.0, 0.0, 0.0]
+				v.skinR0 = [0.0, 0.0, 0.0]
+				v.skinR1 = [0.0, 0.0, 0.0]
+			}
+
 			for (let j = 0; j < 4; j++) {
 
 				skinWeights.push(v.skinWeights.length - 1 >= j ? v.skinWeights[j] : 0.0);
 
 			}
 
-			skinTypes.push(v.type);
-
-			if (v.type != 3) {
-				v.skinC = [0.0, 0.0, 0.0]
-				v.skinR0 = [0.0, 0.0, 0.0]
-				v.skinR1 = [0.0, 0.0, 0.0]
-			}
 			for (let j = 0; j < 3; j++) {
 
 				skinCs.push(v.skinC[j]);
@@ -939,7 +968,7 @@ class GeometryBuilder {
 		geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2));
 		geometry.setAttribute('skinIndex', new Uint16BufferAttribute(skinIndices, 4));
 		geometry.setAttribute('skinWeight', new Float32BufferAttribute(skinWeights, 4));
-		geometry.setAttribute('skinType', new Int32BufferAttribute(skinTypes, 1));
+		geometry.setAttribute('skinType', new Uint16BufferAttribute(skinTypes, 2));
 		geometry.setAttribute('skinC', new Float32BufferAttribute(skinCs, 3));
 		geometry.setAttribute('skinR0', new Float32BufferAttribute(skinR0s, 3));
 		geometry.setAttribute('skinR1', new Float32BufferAttribute(skinR1s, 3));
@@ -1020,7 +1049,7 @@ class MaterialBuilder {
 
 	}
 
-	build(data: PMXModel, geometry: any, onProgress: any, onError: any, shaderParams: any = {}) {
+	build(data: PMXModel, geometry: any, onProgress: any, onError: any, shaderParams: ShaderParams) {
 		console.log(`[${data.metadata.modelName}] sdef: ${shaderParams.enableSdef}, PBR: ${shaderParams.enablePBR}`)
 
 		const materials = [];
@@ -1038,7 +1067,6 @@ class MaterialBuilder {
 			const params: any = {
 				userData: {
 					MMD: {},
-					enableSdef: shaderParams.enableSdef
 				}
 			};
 
@@ -1168,6 +1196,13 @@ class MaterialBuilder {
 			}
 
 			const newMaterial = shaderParams.enablePBR ? new MMDPhysicalMaterial(params) : new MMDToonMaterial(params)
+			newMaterial.onBeforeCompile = (params: WebGLProgramParametersWithUniforms, _: WebGLRenderer) => {
+				if(shaderParams.enableSdef) {
+					params.vertexShader = initSdef(params.vertexShader)
+				}
+				return params
+			}
+
 			materials.push(newMaterial);
 
 		}
@@ -2002,7 +2037,7 @@ class MMDToonMaterial extends ShaderMaterial {
 
 		this.lights = true;
 
-		this.vertexShader = initSdef(MMDToonShader.vertexShader, parameters.userData.enableSdef);
+		this.vertexShader = MMDToonShader.vertexShader;
 		this.fragmentShader = MMDToonShader.fragmentShader;
 
 		this.defines = Object.assign({}, MMDToonShader.defines);

@@ -141,7 +141,7 @@ class OutlinePass extends Pass {
 					UniformsLib['displacementmap'],
 					uniformsOutline
 				]),
-				vertexShader: initSdef(OutlineShader.vertexShader, parameters.enableSdef && !parameters.enablePBR),
+				vertexShader: parameters.enableSdef ? initSdef(OutlineShader.vertexShader) : OutlineShader.vertexShader,
 				fragmentShader: OutlineShader.fragmentShader,
 				side: BackSide
 			}) as OutlineMaterial

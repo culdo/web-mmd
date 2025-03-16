@@ -1,8 +1,14 @@
 import iconv from 'iconv-lite'
+import { Vector3 } from 'three';
 
 /**
  * @author takahiro / https://github.com/takahirox
  */
+
+type GrowToSize<T, N extends number, A extends T[]> = 
+  A['length'] extends N ? A : GrowToSize<T, N, [...A, T]>;
+
+export type FixedArray<T, N extends number> = GrowToSize<T, N, []>;
 
 class DataViewEx {
 	dv: DataView;
@@ -158,7 +164,7 @@ class DataViewEx {
 
 	}
 
-	getFloat32Array(size: number) {
+	getFloat32Array<const T extends number>(size: T) {
 
 		var a = [];
 
@@ -168,7 +174,7 @@ class DataViewEx {
 
 		}
 
-		return a;
+		return a as FixedArray<number, T>;
 
 	}
 
@@ -478,45 +484,10 @@ class Parser {
 
 					p.skinIndices = dv.getIndexArray(indexSize, 2);
 					p.skinWeights = dv.getFloat32Array(1);
-					p.skinWeights.push(1.0 - p.skinWeights[0]);
-
+					
 					p.skinC = dv.getFloat32Array(3);
-					const origR0 = dv.getFloat32Array(3);
-					const origR1 = dv.getFloat32Array(3);
-
-					// calculate rw0 and rw1
-					let r0X = origR0[0];
-					let r0Y = origR0[1];
-					let r0Z = origR0[2];
-
-					let r1X = origR1[0];
-					let r1Y = origR1[1];
-					let r1Z = origR1[2];
-
-					const rwX = r0X * p.skinWeights[0] + r1X * p.skinWeights[1];
-					const rwY = r0Y * p.skinWeights[0] + r1Y * p.skinWeights[1];
-					const rwZ = r0Z * p.skinWeights[0] + r1Z * p.skinWeights[1];
-
-					r0X = p.skinC[0] + r0X - rwX;
-					r0Y = p.skinC[1] + r0Y - rwY;
-					r0Z = p.skinC[2] + r0Z - rwZ;
-
-					r1X = p.skinC[0] + r1X - rwX;
-					r1Y = p.skinC[1] + r1Y - rwY;
-					r1Z = p.skinC[2] + r1Z - rwZ;
-
-					const cr0X = (p.skinC[0] + r0X) * 0.5;
-					const cr0Y = (p.skinC[1] + r0Y) * 0.5;
-					const cr0Z = (p.skinC[2] + r0Z) * 0.5;
-
-					const cr1X = (p.skinC[0] + r1X) * 0.5;
-					const cr1Y = (p.skinC[1] + r1Y) * 0.5;
-					const cr1Z = (p.skinC[2] + r1Z) * 0.5;
-
-					p.skinR0 = [cr0X, cr0Y, cr0Z]
-					p.skinR1 = [cr1X, cr1Y, cr1Z]
-
-
+					p.skinR0 = dv.getFloat32Array(3);
+					p.skinR1 = dv.getFloat32Array(3);
 				} else {
 
 					throw 'unsupport bone type ' + p.type + ' exception.';
