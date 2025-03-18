@@ -6,7 +6,8 @@ import { useEffect } from "react";
 import CompositeMode from "./composite-mode";
 import FixFollowMode from "./fix-follow-mode";
 import MotionFileMode from "./motion-file-mode";
-import EditorMode from './editor-mode';
+import dynamic from 'next/dynamic';
+const EditorMode = dynamic(() => import('./editor-mode'), { ssr: false })
 
 const cameraModeMap = [
     MotionFileMode,

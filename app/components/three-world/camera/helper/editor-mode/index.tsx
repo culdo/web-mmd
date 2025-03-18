@@ -5,8 +5,6 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { createRafDriver, getProject, onChange } from "@theatre/core";
 const driver = createRafDriver({ name: 'MMDRafDriver' })
 import studio from "@theatre/studio";
-studio.initialize({ __experimental_rafDriver: driver })
-
 import usePresetStore from "@/app/stores/usePresetStore";
 import { cameraToTracks } from "@/app/modules/theatreTrackBuilder";
 import { PerspectiveCamera as PerspectiveCameraImpl } from "three";
@@ -46,6 +44,7 @@ function EditorMode() {
             const MMDState = cameraToTracks(motionFileBuffer)
             localStorage.setItem("theatre-0.4.persistent", JSON.stringify(MMDState))
 
+            studio.initialize({ __experimental_rafDriver: driver })
             studio.__experimental.__experimental_disblePlayPauseKeyboardShortcut()
             studio.ui.restore()
             useGlobalStore.setState({theatreStudio: studio})

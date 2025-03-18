@@ -75,8 +75,10 @@ function AudioPlayer() {
 
     const onSeeked = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         if (!ytPlayer.current.paused) return
-        const sequence = getProject("MMD").sheet("MMD UI").sequence
-        sequence.position = ytPlayer.current.currentTime
+        if(cameraMode == CameraMode.EDITOR) {
+            const sequence = getProject("MMD").sheet("MMD UI").sequence
+            sequence.position = ytPlayer.current.currentTime
+        }
     }
 
     const loadedRef = useRef(false)
