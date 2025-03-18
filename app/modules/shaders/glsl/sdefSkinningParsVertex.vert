@@ -91,13 +91,9 @@ vec4 q_slerp(vec4 a, vec4 b, float t) {
 	return QUATERNION_IDENTITY;
 }
 
-mat4 getGlobalTransform(mat4 m) {
-	return bindMatrixInverse * m;
-}
-
 mat3 getRotMat() {
-	vec4 q0 = m2q(getGlobalTransform(getBoneMatrix( skinIndex.x )));
-	vec4 q1 = m2q(getGlobalTransform(getBoneMatrix( skinIndex.y )));
+	vec4 q0 = m2q(getBoneMatrix( skinIndex.x ));
+	vec4 q1 = m2q(getBoneMatrix( skinIndex.y ));
 
 	return q2m(q_slerp(q0, q1, skinWeight.y));
 }
