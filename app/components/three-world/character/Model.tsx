@@ -72,6 +72,7 @@ function Model({ children }: { children: ReactNode }) {
 
     return (
         <PmxModel
+            name={positionKey}
             position={position}
             url={url}
             modelTextures={pmxFiles.modelTextures.character[characterName]}
