@@ -8,6 +8,7 @@ import CustomVideoElement from 'youtube-video-element';
 import { CCDIKSolver } from 'three/examples/jsm/Addons.js';
 import { ISheetObject } from '@theatre/core';
 import { CameraObj } from '../types/camera';
+import { IStudio } from '@theatre/studio';
 
 export type Gui = LevaRootProps & { _timeoutID?: NodeJS.Timeout }
 export type GlobalState = {
@@ -36,6 +37,7 @@ export type GlobalState = {
     selectedName: string,
     enabledTransform: boolean,
     presetReadyPromise: Promise<void>
+    theatreStudio: IStudio
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -71,6 +73,7 @@ const useGlobalStore = create<GlobalState>(
         selectedName: null,
         enabledTransform: true,
         presetReadyPromise: new Promise(() => { }),
+        theatreStudio: null
     })
 )
 

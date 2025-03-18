@@ -5,9 +5,10 @@ import LoadingOverlay from "./components/loading-overlay";
 import SceneTimeline from "./components/scene-timeline";
 import ThreeWorld from "./components/three-world";
 import Effects from "./components/effects";
-import ControlBar from "./components/control-bar";
 import FileSelector from "./components/file-selector";
 import Panel from "./components/panel";
+import dynamic from "next/dynamic";
+const ControlBar = dynamic(() => import('./components/control-bar'), { ssr: false })
 
 export default function Home() {
   return (

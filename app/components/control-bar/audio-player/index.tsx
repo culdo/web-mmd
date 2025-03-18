@@ -7,10 +7,8 @@ import { useControls } from "leva";
 import YoutubeVideo from 'youtube-video-element/react';
 import 'media-chrome/react';
 import 'media-chrome/react/menu';
-import { MediaTheme } from 'media-chrome/react/media-theme';
 import CustomVideoElement from "youtube-video-element";
 import { buildGuiItem } from "@/app/utils/gui";
-import studio from "@theatre/studio";
 import { getProject } from "@theatre/core";
 import { CameraMode } from "@/app/types/camera";
 import { MediaControlBar, MediaController, MediaMuteButton, MediaPlayButton, MediaTimeDisplay, MediaTimeRange, MediaVolumeRange } from "media-chrome/react";
@@ -25,6 +23,7 @@ function AudioPlayer() {
     const cameraMode = usePresetStore(state => state["camera mode"])
     const setGui = (gui: Partial<Gui>) => useGlobalStore.setState({ gui })
     const presetReady = useGlobalStore(state => state.presetReady)
+    const studio = useGlobalStore(state => state.theatreStudio)
 
     const [gui, setMusicGui] = useControls('Music', () => ({
         name: {
@@ -49,7 +48,7 @@ function AudioPlayer() {
             setGui({ hidden: true })
 
             // editor mode
-            studio.ui.hide()
+            studio?.ui.hide()
         };
         useGlobalStore.setState({ enabledTransform: false })
     }
