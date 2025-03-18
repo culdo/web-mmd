@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useRef, useState } from "react"
-import { Skeleton, SkinnedMesh } from "three"
+import { Skeleton, SkinnedMesh, Vector3 } from "three"
 import { initBones, MMDLoader } from "@/app/modules/MMDLoader"
 import useGlobalStore from "@/app/stores/useGlobalStore"
 import { onProgress } from "@/app/utils/base"
@@ -11,12 +11,13 @@ type PMXModelProps = {
     modelTextures: Record<string, string>,
     enableSdef: boolean,
     enablePBR: boolean,
+    position?: [number, number, number],
     children?: ReactNode,
     onCreate?: (mesh: SkinnedMesh) => void,
     onDispose?: () => void
 } & Partial<SkinnedMeshProps>
 
-function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, children, onCreate, onDispose, ...props }: PMXModelProps) {
+function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, position = null, children, onCreate, onDispose, ...props }: PMXModelProps) {
 
     const loader = useGlobalStore(state => state.loader)
     const [initProps, setProps] = useState<Awaited<ReturnType<MMDLoader["loadAsync"]>>>()
@@ -56,6 +57,9 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
         }
         const skeleton = new Skeleton(bones);
         mesh.bind(skeleton);
+        if(position) {
+            mesh.position.fromArray(position)
+        }
         onCreate?.(mesh)
         setInited(true)
     }, [mesh])
