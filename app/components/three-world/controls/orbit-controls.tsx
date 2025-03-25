@@ -1,5 +1,5 @@
-import { ForwardRefComponent } from '@react-three/drei/helpers/ts-utils'
-import { EventManager, ReactThreeFiber, useThree } from '@react-three/fiber'
+import { ForwardRefComponent, Overwrite } from '@react-three/drei/helpers/ts-utils'
+import { EventManager, ReactThreeFiber, ThreeElement, useThree } from '@react-three/fiber'
 import * as React from 'react'
 import type { Camera, Event, OrthographicCamera, PerspectiveCamera } from 'three'
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
@@ -8,24 +8,18 @@ export type OrbitControlsChangeEvent = Event & {
   target: EventTarget & { object: Camera }
 }
 
-export type OrbitControlsProps = Omit<
-  ReactThreeFiber.Overwrite<
-    ReactThreeFiber.Object3DNode<OrbitControlsImpl, typeof OrbitControlsImpl>,
-    {
-      camera?: Camera
-      domElement?: HTMLElement
-      enableDamping?: boolean
-      makeDefault?: boolean
-      onChange?: (e?: Event) => void
-      onEnd?: (e?: Event) => void
-      onStart?: (e?: Event) => void
-      regress?: boolean
-      target?: ReactThreeFiber.Vector3
-      keyEvents?: boolean | HTMLElement
-    }
-  >,
-  'ref'
->
+export type OrbitControlsProps = Omit<Overwrite<ThreeElement<typeof OrbitControlsImpl>, {
+    camera?: Camera;
+    domElement?: HTMLElement;
+    enableDamping?: boolean;
+    makeDefault?: boolean;
+    onChange?: (e?: OrbitControlsChangeEvent) => void;
+    onEnd?: (e?: Event) => void;
+    onStart?: (e?: Event) => void;
+    regress?: boolean;
+    target?: ReactThreeFiber.Vector3;
+    keyEvents?: boolean | HTMLElement;
+}>, 'ref' | 'args'>;
 
 export const OrbitControls: ForwardRefComponent<OrbitControlsProps, OrbitControlsImpl> =
   /* @__PURE__ */ React.forwardRef<OrbitControlsImpl, OrbitControlsProps>(function OrbitControls
@@ -40,7 +34,6 @@ export const OrbitControls: ForwardRefComponent<OrbitControlsProps, OrbitControl
         onChange,
         onStart,
         onEnd,
-        onPointerDown,
         ...restProps
       },
       ref
@@ -58,7 +51,6 @@ export const OrbitControls: ForwardRefComponent<OrbitControlsProps, OrbitControl
       const controls = React.useMemo(() => new OrbitControlsImpl(explCamera), [explCamera])
 
       React.useEffect(() => {
-        explDomElement.addEventListener("pointerdown", onPointerDown as unknown as (event: PointerEvent) => void)
         if (keyEvents) {
           controls.connect(keyEvents === true ? explDomElement : keyEvents)
         }
@@ -68,7 +60,7 @@ export const OrbitControls: ForwardRefComponent<OrbitControlsProps, OrbitControl
       }, [keyEvents, explDomElement, regress, controls, invalidate])
 
       React.useEffect(() => {
-        const callback = (e: Event) => {
+        const callback = (e: OrbitControlsChangeEvent) => {
           invalidate()
           if (regress) performance.regress()
           if (onChange) onChange(e)

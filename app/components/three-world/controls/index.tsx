@@ -5,8 +5,8 @@ import { levaStore } from 'leva';
 import { useEffect, useRef } from "react";
 import { Event, PerspectiveCamera } from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-import { OrbitControls } from "./orbit-controls";
 import { setLevaValue } from '@/app/utils/gui';
+import { OrbitControls } from './orbit-controls';
 
 function Controls() {
     const controlsRef = useRef<OrbitControlsImpl>()
@@ -44,7 +44,7 @@ function Controls() {
         return () => gl.domElement.removeEventListener('wheel', onWheel)
     }, [camera])
 
-    const onPointerDown = () => {
+    const onChange = () => {
         camera.up.set(0, 1, 0);
         camera.updateProjectionMatrix();
     }
@@ -93,7 +93,7 @@ function Controls() {
     return (
         <>
             <OrbitControls
-                onPointerDown={onPointerDown}
+                onChange={onChange}
                 onStart={onStart} onEnd={onEnd}
                 enableDamping={false}
                 ref={controlsRef}
