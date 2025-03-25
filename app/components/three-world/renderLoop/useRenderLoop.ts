@@ -8,10 +8,12 @@ function useRenderLoop() {
     const player = useGlobalStore(state => state.player)
     const controls = useGlobalStore(state => state.controls)
     const playDeltaRef = useGlobalStore(state => state.playDeltaRef)
+    const isWebGPU = usePresetStore(state => state.isWebGPU)
+
 
     const prevTimeRef = useRef(0.0)
     
-    useFrame(() => {
+    useFrame(({gl, scene, camera}) => {
         if (!player) return
 
         const currTime = player.currentTime
@@ -32,6 +34,10 @@ function useRenderLoop() {
             if (controls.autoRotate) {
                 controls.update();
             }
+        }
+        
+        if(isWebGPU) {
+            gl.render(scene, camera)
         }
     }, 1)
 }

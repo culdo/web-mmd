@@ -3,7 +3,7 @@ import { useLoader, useThree } from "@react-three/fiber";
 import { useControls } from "leva";
 import { useEffect } from "react";
 import * as THREE from "three";
-import { RGBELoader } from "three-stdlib";
+import { RGBELoader } from "three/examples/jsm/Addons.js";
 
 function Skybox({ hdrUrl }: { hdrUrl: string }) {
     const { gl, scene } = useThree();
