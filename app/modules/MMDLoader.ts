@@ -48,12 +48,12 @@ import {
 	CompressedTexture,
 	MeshPhongMaterial,
 	WebGLProgramParametersWithUniforms,
-	WebGLRenderer
+	WebGLRenderer,
+	MeshPhysicalMaterial
 } from 'three';
 import { MMDToonShader } from './shaders/MMDToonShader';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
 import { MMDParser, Parser } from './mmdparser.module';
-import { MMDPhysicalMaterial } from './MMDPhysicalMaterial';
 import { initSdef } from './shaders/SdefVertexShader';
 
 type ShaderParams = {
@@ -107,7 +107,7 @@ class MMDLoader extends Loader {
 		data: PMXModel
 		mesh: SkinnedMesh
 		geometry: MMDGeometry
-		material: (MMDPhysicalMaterial | MMDToonMaterial)[]
+		material: (MeshPhysicalMaterial | MMDToonMaterial)[]
 		skeleton: Skeleton
 		rootBones: Bone[]
 	}>;
@@ -1195,7 +1195,7 @@ class MaterialBuilder {
 
 			}
 
-			const newMaterial = shaderParams.enablePBR ? new MMDPhysicalMaterial(params) : new MMDToonMaterial(params)
+			const newMaterial = shaderParams.enablePBR ? new MeshPhysicalMaterial(params) : new MMDToonMaterial(params)
 			newMaterial.onBeforeCompile = (params: WebGLProgramParametersWithUniforms, _: WebGLRenderer) => {
 				if(shaderParams.enableSdef) {
 					params.vertexShader = initSdef(params.vertexShader)
@@ -1211,7 +1211,7 @@ class MaterialBuilder {
 
 			// set transparent true if alpha morph is defined.
 
-			function checkAlphaMorph(elements: any[], materials: (MMDPhysicalMaterial | MMDToonMaterial)[]) {
+			function checkAlphaMorph(elements: any[], materials: (MeshPhysicalMaterial | MMDToonMaterial)[]) {
 
 				for (let i = 0, il = elements.length; i < il; i++) {
 
