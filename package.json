@@ -14,9 +14,9 @@
     "@react-three/drei": "^10.0.5",
     "@react-three/fiber": "^9.1.0",
     "@react-three/postprocessing": "^3.0.4",
-    "@theatre/core": "https://github.com/culdo/theatre/releases/download/0.7.13/core.tgz",
-    "@theatre/r3f": "file:../theatre/packages/r3f/r3f.tgz",
-    "@theatre/studio": "https://github.com/culdo/theatre/releases/download/0.7.13/studio.tgz",
+    "@theatre/core": "https://github.com/culdo/theatre/releases/download/0.7.15/core.tgz",
+    "@theatre/r3f": "https://github.com/culdo/theatre/releases/download/0.7.15/r3f.tgz",
+    "@theatre/studio": "https://github.com/culdo/theatre/releases/download/0.7.15/studio.tgz",
     "@types/youtube": "^0.1.0",
     "ammojs-typed": "^1.0.6",
     "iconv-lite": "^0.6.3",
@@ -63,5 +63,5 @@
   "overrides": {
     "sharp": "0.33.1"
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "packageManager": "yarn@4.7.0"
 }
