@@ -13,7 +13,6 @@ import { DepthOfField } from "./DepthOfField";
 import { Texture, Vector3 } from "three";
 import { TextureEffectComp } from "./TextureEffectComp";
 import { ColorChannel } from "postprocessing";
-import Skybox from "./skybox/Skybox";
 
 function Effects() {
     const showOutline = usePresetStore(state => state["show outline"])
@@ -80,14 +79,12 @@ function Effects() {
     
     return (
         <>
-            <EffectControls></EffectControls>
             <EffectComposer renderPriority={3}>
                 {showOutline && <OutlinePass></OutlinePass>}
                 {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.enabled && character && <DepthOfField ref={setDof} {...dofConfig}></DepthOfField>}
                 {depthTexture && <TextureEffectComp texture={depthTexture} colorChannel={depthDebugColor} ></TextureEffectComp>}
             </EffectComposer>
-            <Skybox hdrUrl='BRDF.hdr'></Skybox>
         </>
     );
 }

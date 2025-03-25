@@ -16,7 +16,6 @@ const ControlBar = dynamic(() => import('./components/control-bar'), { ssr: fals
 
 export default function Home() {
   const isWebGPU = usePresetStore(state => state.isWebGPU)
-  useControls("Debug", buildGuiObj("isWebGPU"))
 
   return (
     <>
