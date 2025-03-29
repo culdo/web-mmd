@@ -17,7 +17,7 @@ function Lights() {
             density: {
                 ...buildGuiItem("fog density"),
                 min: 0,
-                max: 10
+                max: 0.01
             }
         }),
     }, { order: 300, collapsed: true }, [presetReady])

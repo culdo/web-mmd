@@ -1,13 +1,11 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import usePresetStore from "@/app/stores/usePresetStore";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { useControls } from "leva";
 import { useEffect, useState } from "react";
 import OutlinePass from "./OutlinePass";
-import EffectControls from "./controls";
 
 import { DepthOfFieldEffect } from "@/app/modules/effects/DepthOfFieldEffect";
-import { buildGuiItem } from "@/app/utils/gui";
+import { buildGuiItem, buildGuiObj } from "@/app/utils/gui";
 import { useFrame } from "@react-three/fiber";
 import { DepthOfField } from "./DepthOfField";
 import { Texture, Vector3 } from "three";
@@ -15,13 +13,14 @@ import { TextureEffectComp } from "./TextureEffectComp";
 import { ColorChannel } from "postprocessing";
 
 function Effects() {
-    const showOutline = usePresetStore(state => state["show outline"])
-
     const [dof, setDof] = useState<DepthOfFieldEffect>()
     const [depthDebugColor, setDepthDebugColor] = useState<[number, number?, number?, number?]>()
     const [depthTexture, setDepthTexture] = useState<Texture>()
     const character = useGlobalStore(state => state.character)
 
+    const effectConfig = useControls('Effects', {
+        ...buildGuiObj("show outline")
+    }, {order: 2})
     const dofConfig = useControls('Effects.DepthOfField', {
         enabled: buildGuiItem("bokeh enabled"),
         distance: {
@@ -80,7 +79,7 @@ function Effects() {
     return (
         <>
             <EffectComposer renderPriority={3}>
-                {showOutline && <OutlinePass></OutlinePass>}
+                {effectConfig["show outline"] && <OutlinePass></OutlinePass>}
                 {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.enabled && character && <DepthOfField ref={setDof} {...dofConfig}></DepthOfField>}
                 {depthTexture && <TextureEffectComp texture={depthTexture} colorChannel={depthDebugColor} ></TextureEffectComp>}

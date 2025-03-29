@@ -2,18 +2,17 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { useFrame } from '@react-three/fiber';
 import { useRef } from "react";
+import { WebGPURenderer } from "three/webgpu";
 
 function useRenderLoop() {
 
     const player = useGlobalStore(state => state.player)
     const controls = useGlobalStore(state => state.controls)
     const playDeltaRef = useGlobalStore(state => state.playDeltaRef)
-    const isWebGPU = usePresetStore(state => state.isWebGPU)
 
 
     const prevTimeRef = useRef(0.0)
-    
-    useFrame(({gl, scene, camera}) => {
+    useFrame(({ gl, scene, camera }) => {
         if (!player) return
 
         const currTime = player.currentTime
@@ -27,7 +26,7 @@ function useRenderLoop() {
 
             // save seeked time
             if (absDelta > 1.0) {
-                usePresetStore.setState({currentTime: currTime})
+                usePresetStore.setState({ currentTime: currTime })
             }
 
         } else {
@@ -35,8 +34,8 @@ function useRenderLoop() {
                 controls.update();
             }
         }
-        
-        if(isWebGPU) {
+
+        if (gl instanceof WebGPURenderer) {
             gl.render(scene, camera)
         }
     }, 1)

@@ -8,8 +8,7 @@ function Debug() {
     const showFPS = usePresetStore(state => state['show FPS'])
     const character = useGlobalStore(state => state.character)
     useControls("Debug", {
-        ...buildGuiObj("show FPS"),
-        ...buildGuiObj("isWebGPU")
+        ...buildGuiObj("show FPS")
     }, { collapsed: true, order: 90 })
     return ( 
         <>
