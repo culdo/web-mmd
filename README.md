@@ -5,7 +5,7 @@
   </a>
 </p>
 
-[> Try it now ! <](https://culdo.github.io/web-mmd/)
+[🚀 Try it now ! 🚀](https://culdo.github.io/web-mmd/)
 
 For who wants to play MMD in the browser, now you can play it anywhere.
 
@@ -43,7 +43,7 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
 # Development
 1. Install deps via `npm install`
 2. Run `npm run dev`
-* Modules which mainly come from [the three.js example](https://threejs.org/examples/#webgl_loader_mmd_audio) is refactored to Classes and Async/Await styles.
+* Modules which mainly come from [the three.js example](https://takahirox.github.io/three.js/examples/webgl_loader_mmd_audio.html) is refactored to Classes and Async/Await styles.
 * This projects is refactored to using `Next.js`(TypeScript).
 
 ## Tech stacks
@@ -58,7 +58,7 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
 Run `npm test`
 
 ## CI/CD
-It uses `Github Action` to deploy the demo site. Relative files located at `./.github/workflows`.
+It uses `Github Action` to deploy the demo site. Related files located at `./.github/workflows`.
 
 # To-do list
 ## Done
@@ -71,6 +71,7 @@ It uses `Github Action` to deploy the demo site. Relative files located at `./.g
 - [x] Auto-save all gui settings in browser
 - [x] Open/Save-As/Copy/Export MMD presets
 - [x] SDEF rendering
+  - [x] enable on PBR rendering
 - [x] camera Fixed-Follow mode
 - [x] PBR rendering
 - [x] refactor to Typescript
@@ -79,9 +80,9 @@ It uses `Github Action` to deploy the demo site. Relative files located at `./.g
 - [x] timeline editor
     - [x] camera composition mode
     - [x] camera editor mode (using Theatre.js)
+- [x] Experimental WebGPU support
 
 ## WIP
-- [ ] Better bone animation
 
 ## Planning
 - [ ] In-APP Credits list
