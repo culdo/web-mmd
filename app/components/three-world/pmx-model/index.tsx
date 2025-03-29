@@ -11,13 +11,12 @@ type PMXModelProps = {
     modelTextures: Record<string, string>,
     enableSdef: boolean,
     enablePBR: boolean,
-    position?: [number, number, number],
     children?: ReactNode,
     onCreate?: (mesh: SkinnedMesh) => void,
     onDispose?: () => void
 } & Partial<ThreeElement<typeof SkinnedMesh>>
 
-function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, position = null, children, onCreate, onDispose, ...props }: PMXModelProps) {
+function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, children, onCreate, onDispose, ...props }: PMXModelProps) {
 
     const loader = useGlobalStore(state => state.loader)
     const [initProps, setProps] = useState<Awaited<ReturnType<MMDLoader["loadAsync"]>>>()
@@ -51,15 +50,16 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, po
     const [inited, setInited] = useState<boolean>()
     useEffect(() => {
         if (!mesh) return
+        const origPos = mesh.position.clone()
+        mesh.position.set(0, 0, 0)
         const [bones, rootBones] = initBones(geometry)
         for (const root of rootBones) {
             mesh.add(root)
         }
         const skeleton = new Skeleton(bones);
         mesh.bind(skeleton);
-        if(position) {
-            mesh.position.fromArray(position)
-        }
+        mesh.position.copy(origPos)
+
         onCreate?.(mesh)
         setInited(true)
     }, [mesh])
