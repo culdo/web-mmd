@@ -49,7 +49,8 @@ import {
 	MeshPhongMaterial,
 	WebGLProgramParametersWithUniforms,
 	WebGLRenderer,
-	MeshPhysicalMaterial
+	MeshPhysicalMaterial,
+	TypedArray
 } from 'three';
 import { MMDToonShader } from './shaders/MMDToonShader';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
@@ -577,7 +578,7 @@ class GeometryBuilder {
 				v.skinR0 = cr0.toArray()
 				v.skinR1 = cr1.toArray()
 
-			// Others
+				// Others
 			} else {
 				v.skinC = [0.0, 0.0, 0.0]
 				v.skinR0 = [0.0, 0.0, 0.0]
@@ -1054,8 +1055,6 @@ class MaterialBuilder {
 
 		const materials = [];
 
-		const textures = {};
-
 		this.textureLoader.setCrossOrigin(this.crossOrigin);
 
 		// materials
@@ -1122,7 +1121,19 @@ class MaterialBuilder {
 
 			if (material.textureIndex !== - 1 && data.textures[material.textureIndex]) {
 
-				params.map = this._loadTexture(data.textures[material.textureIndex], textures);
+				const onLoad = () => {
+					if (params.map && !params.transparent) {
+
+						this._checkImageTransparency(newMaterial, geometry, i);
+		
+					}
+				}
+				params.map = this._loadTexture(data.textures[material.textureIndex], null, onLoad);
+
+				params.map.flipY = false;
+				params.map.wrapS = RepeatWrapping;
+				params.map.wrapT = RepeatWrapping;
+
 				params.map.colorSpace = SRGBColorSpace
 
 				// Since PMX spec don't have standard to list map files except color map and env map,
@@ -1138,8 +1149,7 @@ class MaterialBuilder {
 				if (material.envTextureIndex !== - 1 && (material.envFlag === 1 || material.envFlag == 2)) {
 
 					params.matcap = this._loadTexture(
-						data.textures[material.envTextureIndex],
-						textures
+						data.textures[material.envTextureIndex]
 					);
 
 					// Same as color map above, keep file name in userData for further usage.
@@ -1169,7 +1179,6 @@ class MaterialBuilder {
 
 				params.gradientMap = this._loadTexture(
 					toonFileName,
-					textures,
 					{
 						isToonTexture: true,
 						isDefaultToonTexture: isDefaultToon
@@ -1185,26 +1194,15 @@ class MaterialBuilder {
 				visible: (material.flag & 0x10) !== 0 && material.edgeSize > 0.0
 			};
 
-			if (params.map !== undefined) {
-
-				if (!params.transparent) {
-
-					this._checkImageTransparency(params.map, geometry, i);
-
-				}
-
-			}
-
 			const newMaterial = shaderParams.enablePBR ? new MeshPhysicalMaterial(params) : new MMDToonMaterial(params)
 			newMaterial.onBeforeCompile = (params: WebGLProgramParametersWithUniforms, _: WebGLRenderer) => {
-				if(shaderParams.enableSdef) {
+				if (shaderParams.enableSdef) {
 					params.vertexShader = initSdef(params.vertexShader)
 				}
 				return params
 			}
 
 			materials.push(newMaterial);
-
 		}
 
 		if (data.metadata.format === 'pmx') {
@@ -1290,7 +1288,7 @@ class MaterialBuilder {
 
 	}
 
-	_loadTexture(filePath: string, textures: { [x: string]: any; }, params?: { isToonTexture?: any; isDefaultToonTexture?: any; }, onProgress?: undefined, onError?: undefined) {
+	_loadTexture(filePath: string, params?: { isToonTexture?: any; isDefaultToonTexture?: any; }, onLoad?: (data: Texture) => void, onProgress?: undefined, onError?: undefined) {
 
 		params = params || {};
 
@@ -1323,9 +1321,7 @@ class MaterialBuilder {
 
 		}
 
-		if (textures[fullPath] !== undefined) return textures[fullPath];
-
-		let loader = this.manager.getHandler(fullPath);
+		let loader: TextureLoader = this.manager.getHandler(fullPath);
 
 		if (loader === null) {
 
@@ -1335,37 +1331,7 @@ class MaterialBuilder {
 
 		}
 
-		const texture = loader.load(fullPath, function (t: { image: ImageData; magFilter: number; minFilter: number; flipY: boolean; wrapS: number; wrapT: number; }) {
-
-			// MMD toon texture is Axis-Y oriented
-			// but Three.js gradient map is Axis-X oriented.
-			// So here replaces the toon texture image with the rotated one.
-			if (params.isToonTexture === true) {
-
-				t.image = scope._getRotatedImage(t.image);
-
-				t.magFilter = NearestFilter;
-				t.minFilter = NearestFilter;
-
-			}
-
-			t.flipY = false;
-			t.wrapS = RepeatWrapping;
-			t.wrapT = RepeatWrapping;
-
-			for (let i = 0; i < texture.readyCallbacks.length; i++) {
-
-				texture.readyCallbacks[i](texture);
-
-			}
-
-			delete texture.readyCallbacks;
-
-		}, onProgress, onError);
-
-		texture.readyCallbacks = [];
-
-		textures[fullPath] = texture;
+		const texture = loader.load(fullPath, onLoad, onProgress, onError);
 
 		return texture;
 
@@ -1393,117 +1359,114 @@ class MaterialBuilder {
 	}
 
 	// Check if the partial image area used by the texture is transparent.
-	_checkImageTransparency(map: { readyCallbacks: ((texture: any) => void)[]; transparent: boolean; }, geometry: { groups: { [x: string]: any; }; attributes: { uv: { array: any; }; }; index: { array: any[]; }; }, groupIndex: number) {
+	_checkImageTransparency(material: MeshPhysicalMaterial | MMDToonMaterial, geometry: BufferGeometry, groupIndex: number) {
 
-		map.readyCallbacks.push(function (texture: Texture) {
+		const map = material.map
+		// Is there any efficient ways?
+		function createImageData(image: any) {
 
-			// Is there any efficient ways?
-			function createImageData(image: any) {
+			const canvas = document.createElement('canvas');
+			canvas.width = image.width;
+			canvas.height = image.height;
 
-				const canvas = document.createElement('canvas');
-				canvas.width = image.width;
-				canvas.height = image.height;
+			const context = canvas.getContext('2d');
+			context.drawImage(image, 0, 0);
 
-				const context = canvas.getContext('2d');
-				context.drawImage(image, 0, 0);
+			return context.getImageData(0, 0, canvas.width, canvas.height);
 
-				return context.getImageData(0, 0, canvas.width, canvas.height);
+		}
 
-			}
+		function detectImageTransparency(image: ImageData, uvs: TypedArray, indices: TypedArray) {
 
-			function detectImageTransparency(image: { width: any; height: any; data: any; }, uvs: any[], indices: any[]) {
+			const width = image.width;
+			const height = image.height;
+			const data = image.data;
+			const threshold = 253;
 
-				const width = image.width;
-				const height = image.height;
-				const data = image.data;
-				const threshold = 253;
+			if (data.length / (width * height) !== 4) return false;
 
-				if (data.length / (width * height) !== 4) return false;
+			for (let i = 0; i < indices.length; i += 3) {
 
-				for (let i = 0; i < indices.length; i += 3) {
+				const centerUV = { x: 0.0, y: 0.0 };
 
-					const centerUV = { x: 0.0, y: 0.0 };
+				for (let j = 0; j < 3; j++) {
 
-					for (let j = 0; j < 3; j++) {
+					const index = indices[i * 3 + j];
+					const uv = { x: uvs[index * 2 + 0], y: uvs[index * 2 + 1] };
 
-						const index = indices[i * 3 + j];
-						const uv = { x: uvs[index * 2 + 0], y: uvs[index * 2 + 1] };
+					if (getAlphaByUv(image, uv) < threshold) return true;
 
-						if (getAlphaByUv(image, uv) < threshold) return true;
-
-						centerUV.x += uv.x;
-						centerUV.y += uv.y;
-
-					}
-
-					centerUV.x /= 3;
-					centerUV.y /= 3;
-
-					if (getAlphaByUv(image, centerUV) < threshold) return true;
+					centerUV.x += uv.x;
+					centerUV.y += uv.y;
 
 				}
 
-				return false;
+				centerUV.x /= 3;
+				centerUV.y /= 3;
+
+				if (getAlphaByUv(image, centerUV) < threshold) return true;
 
 			}
 
-			/*
-				 * This method expects
-				 *   texture.flipY = false
-				 *   texture.wrapS = RepeatWrapping
-				 *   texture.wrapT = RepeatWrapping
-				 * TODO: more precise
-				 */
-			function getAlphaByUv(image: { width: any; height: any; data: any[]; }, uv: { x: any; y: any; }) {
+			return false;
 
-				const width = image.width;
-				const height = image.height;
+		}
 
-				let x = Math.round(uv.x * width) % width;
-				let y = Math.round(uv.y * height) % height;
+		/*
+			 * This method expects
+			 *   texture.flipY = false
+			 *   texture.wrapS = RepeatWrapping
+			 *   texture.wrapT = RepeatWrapping
+			 * TODO: more precise
+			 */
+		function getAlphaByUv(image: ImageData, uv: { x: any; y: any; }) {
 
-				if (x < 0) x += width;
-				if (y < 0) y += height;
+			const width = image.width;
+			const height = image.height;
 
-				const index = y * width + x;
+			let x = Math.round(uv.x * width) % width;
+			let y = Math.round(uv.y * height) % height;
 
-				return image.data[index * 4 + 3];
+			if (x < 0) x += width;
+			if (y < 0) y += height;
 
-			}
+			const index = y * width + x;
 
-			if ((texture as CompressedTexture).isCompressedTexture === true) {
+			return image.data[index * 4 + 3];
 
-				if ((texture as CompressedTexture).format in NON_ALPHA_CHANNEL_FORMATS) {
+		}
 
-					map.transparent = false;
+		if ((map as CompressedTexture).isCompressedTexture === true) {
 
-				} else {
+			if ((map as CompressedTexture).format in NON_ALPHA_CHANNEL_FORMATS) {
 
-					// any other way to check transparency of CompressedTexture?
-					map.transparent = true;
+				material.transparent = false;
 
-				}
+			} else {
 
-				return;
-
-			}
-
-			const imageData = texture.image.data !== undefined
-				? texture.image
-				: createImageData(texture.image);
-
-			const group = geometry.groups[groupIndex];
-
-			if (detectImageTransparency(
-				imageData,
-				geometry.attributes.uv.array,
-				geometry.index.array.slice(group.start, group.start + group.count))) {
-
-				map.transparent = true;
+				// any other way to check transparency of CompressedTexture?
+				material.transparent = true;
 
 			}
 
-		});
+			return;
+
+		}
+
+		const imageData = map.image.data !== undefined
+			? map.image
+			: createImageData(map.image);
+
+		const group = geometry.groups[groupIndex];
+
+		if (detectImageTransparency(
+			imageData,
+			geometry.attributes.uv.array,
+			geometry.index.array.slice(group.start, group.start + group.count))) {
+
+			material.transparent = true;
+
+		}
 
 	}
 
@@ -1749,9 +1712,9 @@ class AnimationBuilder {
 			times.push(time);
 			frameNums.push(motion.frameNum);
 
-			
+
 			center.set(pos[0], pos[1], pos[2]);
-			
+
 			euler.set(- rot[0], - rot[1], - rot[2]);
 			quaternion.setFromEuler(euler);
 
@@ -2017,6 +1980,7 @@ class MMDToonMaterial extends ShaderMaterial {
 	flatShading: boolean;
 	_shininess: number;
 	matcapCombine: any;
+	map: Texture
 
 	constructor(parameters: ShaderMaterialParameters) {
 
