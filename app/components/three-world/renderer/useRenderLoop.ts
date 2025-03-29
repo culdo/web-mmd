@@ -2,7 +2,6 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { useFrame } from '@react-three/fiber';
 import { useRef } from "react";
-import { WebGPURenderer } from "three/webgpu";
 
 function useRenderLoop() {
 
@@ -12,7 +11,7 @@ function useRenderLoop() {
 
 
     const prevTimeRef = useRef(0.0)
-    useFrame(({ gl, scene, camera }) => {
+    useFrame(() => {
         if (!player) return
 
         const currTime = player.currentTime
@@ -33,10 +32,6 @@ function useRenderLoop() {
             if (controls.autoRotate) {
                 controls.update();
             }
-        }
-
-        if (gl instanceof WebGPURenderer) {
-            gl.render(scene, camera)
         }
     }, 1)
 }
