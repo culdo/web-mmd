@@ -56,10 +56,14 @@ import { MMDToonShader } from './shaders/MMDToonShader';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
 import { MMDParser, Parser } from './mmdparser.module';
 import { initSdef } from './shaders/SdefVertexShader';
+import MMDMaterial from './effects/webgpu/MMDMaterial';
+import { nodeObject } from 'three/tsl';
+import SdefSkinningNode from './effects/webgpu/SdefSkinningNode';
 
 type ShaderParams = {
 	enableSdef: boolean,
-	enablePBR: boolean
+	enablePBR: boolean,
+	isWebGPU: boolean
 }
 /**
  * Dependencies
@@ -188,13 +192,9 @@ class MMDLoader extends Loader {
 				data.textures[index] = params.modelTextures[texturePath];
 			});
 		}
-		const shaderParams = {
-			enableSdef: params?.enableSdef ?? false,
-			enablePBR: params?.enablePBR ?? false
-		};
 
 		this.params = null
-		onLoad(builder.build(data, resourcePath, onProgress, onError, shaderParams));
+		onLoad(builder.build(data, resourcePath, onProgress, onError, params));
 
 	}
 
@@ -1194,15 +1194,23 @@ class MaterialBuilder {
 				visible: (material.flag & 0x10) !== 0 && material.edgeSize > 0.0
 			};
 
-			const newMaterial = shaderParams.enablePBR ? new MeshPhysicalMaterial(params) : new MMDToonMaterial(params)
-			newMaterial.onBeforeCompile = (params: WebGLProgramParametersWithUniforms, _: WebGLRenderer) => {
-				if (shaderParams.enableSdef) {
-					params.vertexShader = initSdef(params.vertexShader)
+			let newMaterial: MMDMaterial;
+			
+			if(shaderParams.isWebGPU && shaderParams.enableSdef) {
+				newMaterial = new MMDMaterial(params)
+				newMaterial.buildSkinningNode = (mesh) => nodeObject(new SdefSkinningNode(mesh))
+			} else {
+				newMaterial = (shaderParams.enablePBR ? new MeshPhysicalMaterial(params) : new MMDToonMaterial(params)) as MMDMaterial
+				newMaterial.onBeforeCompile = (params: WebGLProgramParametersWithUniforms, _: WebGLRenderer) => {
+					if (shaderParams.enableSdef) {
+						params.vertexShader = initSdef(params.vertexShader)
+					}
+					return params
 				}
-				return params
 			}
 
 			materials.push(newMaterial);
+
 		}
 
 		if (data.metadata.format === 'pmx') {

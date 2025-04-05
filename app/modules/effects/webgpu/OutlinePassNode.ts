@@ -1,7 +1,8 @@
-import { BackSide, Camera, Color, MeshToonMaterial, Scene } from "three";
-import { normalLocal, cameraProjectionMatrix, modelViewMatrix, float, vec4, positionLocal, nodeObject, normalize } from "three/tsl";
-import { PassNode, NodeFrame, MeshToonNodeMaterial } from "three/webgpu";
-import OutlineMaterial from "./OutlineMaterial";
+import { BackSide, Camera, Color, MeshToonMaterial, Scene, SkinnedMesh } from "three";
+import { normalLocal, cameraProjectionMatrix, modelViewMatrix, float, vec4, positionLocal, nodeObject, normalize, getCurrentStack } from "three/tsl";
+import { PassNode, NodeFrame, MeshToonNodeMaterial, NodeBuilder, MeshPhysicalNodeMaterial } from "three/webgpu";
+import MMDMaterial from "./MMDMaterial";
+import SdefSkinningNode from "./SdefSkinningNode";
 
 /**
  * Represents a render pass for producing a toon outline effect on compatible objects.
@@ -57,7 +58,7 @@ class OutlinePassNode extends PassNode {
 			// only render outline for supported materials
 
 			if (material.isMeshPhysicalMaterial || material.isMeshToonMaterial || material.isMeshToonNodeMaterial) {
-				
+
 				if (material.wireframe === false && material.userData.outlineParameters?.visible) {
 					
 					const outlineMaterial = this._getOutlineMaterial(material);
@@ -85,7 +86,7 @@ class OutlinePassNode extends PassNode {
 	 * @private
 	 * @return {NodeMaterial} The outline material.
 	 */
-	_createMaterial(originalMaterial: MeshToonMaterial | MeshToonNodeMaterial) {
+	_createMaterial(originalMaterial: MMDMaterial) {
 
 		const outlineParameters = originalMaterial.userData.outlineParameters;
 
@@ -93,12 +94,11 @@ class OutlinePassNode extends PassNode {
 		const thickness = nodeObject(outlineParameters.thickness)
 		const color = nodeObject((new Color().fromArray(outlineParameters.color)) as any)
 
-		const material = new OutlineMaterial();
-		material.name = 'Toon_Outline';
+		const material = new MMDMaterial();
+		material.name = 'MMD_Outline';
 		material.side = BackSide;
 
 		// vertex node
-
 		const outlineNormal = normalLocal.negate();
 		const mvp = cameraProjectionMatrix.mul(modelViewMatrix);
 
@@ -107,7 +107,10 @@ class OutlinePassNode extends PassNode {
 		const pos2 = mvp.mul(vec4(positionLocal.add(outlineNormal), 1.0));
 		const norm = normalize(pos.sub(pos2)); // NOTE: subtract pos2 from pos because BackSide objectNormal is negative
 
-		material.updatedVertexNode = pos.add(norm.mul(thickness).mul(pos.w).mul(ratio));
+		material.vertexOutput = pos.add(norm.mul(thickness).mul(pos.w).mul(ratio));
+		if(originalMaterial.buildSkinningNode) {
+			material.buildSkinningNode = originalMaterial.buildSkinningNode
+		}
 
 		// color node
 
@@ -125,7 +128,7 @@ class OutlinePassNode extends PassNode {
 	 * @param {(MeshToonMaterial|MeshToonNodeMaterial)} originalMaterial - The toon material.
 	 * @return {NodeMaterial} The outline material.
 	 */
-	_getOutlineMaterial(originalMaterial: MeshToonMaterial | MeshToonNodeMaterial) {
+	_getOutlineMaterial(originalMaterial: MMDMaterial) {
 
 		let outlineMaterial = this._materialCache.get(originalMaterial);
 

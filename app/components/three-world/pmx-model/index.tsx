@@ -5,26 +5,29 @@ import useGlobalStore from "@/app/stores/useGlobalStore"
 import { buildOnProgress } from "@/app/utils/base"
 import { ThreeElement } from "@react-three/fiber"
 import { ModelContext } from "../ModelHelper/ModelContext"
+import usePresetStore from "@/app/stores/usePresetStore"
 
 type PMXModelProps = {
     url: string,
     modelTextures: Record<string, string>,
-    enableSdef: boolean,
-    enablePBR: boolean,
+    enableSdef?: boolean,
+    enablePBR?: boolean,
     children?: ReactNode,
     onCreate?: (mesh: SkinnedMesh) => void,
     onDispose?: () => void
 } & Partial<ThreeElement<typeof SkinnedMesh>>
 
-function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, children, onCreate, onDispose, ...props }: PMXModelProps) {
+function PMXModel({ url, modelTextures, enableSdef = true, enablePBR = true, children, onCreate, onDispose, ...props }: PMXModelProps) {
 
     const loader = useGlobalStore(state => state.loader)
+    const isWebGPU = usePresetStore(state => state.isWebGPU)
     const [initProps, setProps] = useState<Awaited<ReturnType<MMDLoader["loadAsync"]>>>()
 
     useEffect(() => {
         const params = {
             enableSdef,
-            enablePBR
+            enablePBR,
+            isWebGPU
         }
         if (url.startsWith("data:")) {
             Object.assign(params, {
