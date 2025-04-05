@@ -1,38 +1,38 @@
 import { Material, SkinnedMesh } from 'three';
-import videojs from 'video.js';
-import "video.js/dist/video-js.css";
-import 'videojs-youtube';
 
 
-function onProgress(xhr: { lengthComputable: any; loaded: number; total: number; }) {
+let progressMap: Record<string, number> = {};
+function buildOnProgress(url: string) {
+    if(url.startsWith("data:")) return null
+    const loading = document.getElementById("loading")
 
-    const loading = document.getElementById("loading")!
-    let progressMap: Record<number, number> = {};
-    window.onload = () => {
-        progressMap = {};
-    }
+    return function onProgress(xhr: ProgressEvent<EventTarget>) {
+        if (xhr.lengthComputable) {
+            let percentComplete = xhr.loaded / xhr.total;
+            progressMap[url] = percentComplete;
+    
+            let percentCompleteAll = 0;
+            const loadingFileNum = progressMap.length
+            for (const progress of Object.values(progressMap)) {
+                percentCompleteAll += progress;
+            }
+            percentCompleteAll /= loadingFileNum
 
-    if (xhr.lengthComputable) {
-        // load 3 files
-        let percentComplete = xhr.loaded / xhr.total * 33.3;
-        progressMap[xhr.total] = percentComplete;
-
-        let percentCompleteAll = 0;
-        for (const progress of Object.values(progressMap)) {
-            percentCompleteAll += progress;
+            if (loading) {
+                loading.textContent = "Loading " + Math.round(percentCompleteAll) + "%..." 
+            }
+    
+            if (percentCompleteAll > 100) {
+                progressMap = {};
+            }
         }
-        loading.textContent = "Loading " + Math.round(percentCompleteAll) + "%...";
-
-        if (percentCompleteAll > 100) {
-            progressMap = {};
-        }
+    
     }
-
 }
 
 function withProgress(resp: Response, totalSize: number) {
 
-    const loading = document.getElementById("loading")!
+    const loading = document.getElementById("loading")
     if (!totalSize) {
         totalSize = parseInt(resp.headers.get('content-length') as string, 10);
     }
@@ -45,7 +45,7 @@ function withProgress(resp: Response, totalSize: number) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 loaded += value.length;
-                if (totalSize) {
+                if (totalSize && loading) {
                     loading.textContent = "Loading " + Math.round((loaded / totalSize) * 100) + "%...";
                 }
                 controller.enqueue(value);
@@ -133,4 +133,4 @@ function debugWait(ms = 2000) {
     return new Promise((res) => setTimeout(() => res(true), ms))
 }
 
-export { blobToBase64, dataURItoBlobUrl, debugWait, disposeMesh, onProgress, saveCurrTime, startFileDownload, withProgress, withTimeElapse };
+export { blobToBase64, dataURItoBlobUrl, debugWait, disposeMesh, buildOnProgress, saveCurrTime, startFileDownload, withProgress, withTimeElapse };

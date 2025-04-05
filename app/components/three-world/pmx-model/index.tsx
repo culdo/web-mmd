@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useRef, useState } from "react"
 import { Skeleton, SkinnedMesh } from "three"
 import { initBones, MMDLoader } from "@/app/modules/MMDLoader"
 import useGlobalStore from "@/app/stores/useGlobalStore"
-import { onProgress } from "@/app/utils/base"
+import { buildOnProgress } from "@/app/utils/base"
 import { ThreeElement } from "@react-three/fiber"
 import { ModelContext } from "../ModelHelper/ModelContext"
 
@@ -35,7 +35,7 @@ function PMXModel({ url, modelTextures, enableSdef = false, enablePBR = true, ch
         const init = async () => {
             const initProps = await loader
                 .setModelParams(params)
-                .loadAsync(url, onProgress);
+                .loadAsync(url, buildOnProgress(url));
             setProps(initProps)
         }
         init()

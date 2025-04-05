@@ -1,6 +1,6 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { onProgress } from "@/app/utils/base";
+import { buildOnProgress } from "@/app/utils/base";
 import { useFrame } from "@react-three/fiber";
 import { useEffect } from "react";
 import { AnimationMixer, Camera, SkinnedMesh } from "three";
@@ -20,7 +20,7 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
 
     useEffect(() => {
         const init = async () => {
-            const clip = await loader.loadAnimation(vmdFile, target, onProgress)
+            const clip = await loader.loadAnimation(vmdFile, target, buildOnProgress(vmdFile))
             const savedCurrentTime = usePresetStore.getState().currentTime
             const action = mixer.clipAction(clip)
             action.play()
