@@ -1,3 +1,5 @@
+import { outlinePass } from "@/app/modules/effects/webgpu/OutlinePassNode"
+import usePresetStore from "@/app/stores/usePresetStore"
 import { useFrame, useThree } from "@react-three/fiber"
 import { useEffect, useState } from "react"
 import { pass } from "three/tsl"
@@ -7,11 +9,13 @@ function WebGPUEffectComposer() {
     const renderer = useThree(state => state.gl) as unknown as WebGPURenderer
     const scene = useThree(state => state.scene)
     const camera = useThree(state => state.camera)
+    const showOutline = usePresetStore(state => state["show outline"])
 
     const [postProcessing, setPostProcessing] = useState<PostProcessing>()
     useEffect(() => {
         const postProcessing = new PostProcessing(renderer);
-        const scenePass = pass(scene, camera);
+        const scenePass = showOutline ? outlinePass( scene, camera ) : pass(scene, camera);
+
         postProcessing.outputNode = scenePass
 
         setPostProcessing(postProcessing)
@@ -20,7 +24,7 @@ function WebGPUEffectComposer() {
             scenePass.dispose()
             postProcessing.dispose()
         }
-    }, [camera])
+    }, [camera, showOutline])
     useFrame(() => {
         if (postProcessing) {
             postProcessing.render()
