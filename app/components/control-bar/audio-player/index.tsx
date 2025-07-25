@@ -8,7 +8,7 @@ import YoutubeVideo from 'youtube-video-element/react';
 import 'media-chrome/react';
 import 'media-chrome/react/menu';
 import CustomVideoElement from "youtube-video-element";
-import { buildGuiItem } from "@/app/utils/gui";
+import { buildGuiItem, buildGuiObj } from "@/app/utils/gui";
 import { getProject } from "@theatre/core";
 import { CameraMode } from "@/app/types/camera";
 import { MediaControlBar, MediaController, MediaMuteButton, MediaPlayButton, MediaTimeDisplay, MediaTimeRange, MediaVolumeRange } from "media-chrome/react";
@@ -24,6 +24,10 @@ function AudioPlayer() {
     const setGui = (gui: Partial<Gui>) => useGlobalStore.setState({ gui })
     const presetReady = useGlobalStore(state => state.presetReady)
     const studio = useGlobalStore(state => state.theatreStudio)
+
+    useControls(() => ({
+        ...buildGuiObj("auto hide GUI", 1)
+    }))
 
     const [gui, setMusicGui] = useControls('Music', () => ({
         name: {
