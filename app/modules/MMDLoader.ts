@@ -983,9 +983,11 @@ class GeometryBuilder {
 
 		geometry.bones = bones;
 
-		geometry.morphTargets = morphTargets;
-		geometry.morphAttributes.position = morphPositions;
-		geometry.morphTargetsRelative = false;
+		if(morphTargets.length > 0) {
+			geometry.morphTargets = morphTargets;
+			geometry.morphAttributes.position = morphPositions;
+			geometry.morphTargetsRelative = false;
+		}
 
 		geometry.userData.MMD = {
 			bones: bones,
