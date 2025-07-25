@@ -1,7 +1,7 @@
 import CameraWorkHelper from "./helper";
 import { button, useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import { buildLoadFileFn } from "@/app/utils/gui";
+import { loadFile } from "@/app/utils/gui";
 import usePresetStore from "@/app/stores/usePresetStore";
 
 import { PerspectiveCamera } from "@react-three/drei";
@@ -25,12 +25,10 @@ function Camera() {
             editable: false
         },
         "select camera file": button(() => {
-            const selectFile = document.getElementById("selectFile") as HTMLInputElement
-            selectFile.onchange = buildLoadFileFn((cameraFile, name) => {
+            loadFile((cameraFile, name) => {
                 usePresetStore.setState({ cameraFile, camera: name })
                 set({ name })
             })
-            selectFile.click();
         }),
     }), { order: 201, collapsed: true }, [presetReady])
 

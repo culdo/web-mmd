@@ -1,6 +1,6 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { buildGuiItem, buildLoadModelFn } from "@/app/utils/gui";
+import { buildGuiItem, loadModel } from "@/app/utils/gui";
 import { button, useControls } from "leva";
 import PmxModel from "../pmx-model";
 import * as THREE from 'three';
@@ -26,10 +26,7 @@ function Stage() {
         },
         "ground shadow": buildGuiItem("ground shadow"),
         "select stage folder": button(() => {
-            const selectFile = document.getElementById("selectFile") as HTMLInputElement
-            selectFile.webkitdirectory = true;
-            selectFile.onchange = buildLoadModelFn("stage")
-            selectFile.click();
+            loadModel("stage")
         }),
     }), { collapsed: true, order: 202 }, [url])
 

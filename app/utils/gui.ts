@@ -6,9 +6,10 @@ import { blobToBase64 } from "./base";
 import useGlobalStore from "../stores/useGlobalStore";
 import * as THREE from "three";
 
-function buildLoadModelFn(itemType: "character" | "stage") {
-
-    return async function (event: Event) {
+function loadModel(itemType: "character" | "stage") {
+    const selectFile = document.getElementById("selectFile") as HTMLInputElement
+    selectFile.webkitdirectory = true;
+    selectFile.onchange = async function (event: Event) {
         const pmxFiles = usePresetStore.getState().pmxFiles;
         const modelTextures = pmxFiles.modelTextures
 
@@ -41,21 +42,24 @@ function buildLoadModelFn(itemType: "character" | "stage") {
         usePresetStore.setState({ pmxFiles });
 
         if (itemType == "character") {
-            usePresetStore.setState({ character: firstKey });
+            usePresetStore.setState({ [itemType]: firstKey });
         } else if (itemType == "stage") {
             usePresetStore.setState({ stage: firstKey });
         }
         // clear
         input.webkitdirectory = false
     }
+    selectFile.click();
 }
 
-function buildLoadFileFn(cb: (file: string, name: string) => void) {
-    return async function (event: Event) {
+function loadFile(cb: (file: string, name: string) => void) {
+    const selectFile = document.getElementById("selectFile") as HTMLInputElement
+    selectFile.onchange = async function (event: Event) {
         const input = event.target as HTMLInputElement
         if (input.files.length < 1) return;
         cb(await blobToBase64(input.files[0]), input.files[0].name);
     }
+    selectFile.click();
 }
 
 function setLevaValue<T>(path: string, value: T) {
@@ -203,4 +207,4 @@ function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userDa
 }
 
 
-export { buildMaterialGuiItem, buildFlexGuiItem, buildGuiItem, buildGuiObj, buildLoadFileFn, buildLoadModelFn, setLevaValue };
+export { buildMaterialGuiItem, buildFlexGuiItem, buildGuiItem, buildGuiObj, loadFile, loadModel, setLevaValue };

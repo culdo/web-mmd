@@ -1,6 +1,6 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { buildGuiItem, buildGuiObj, buildLoadFileFn, buildLoadModelFn } from "@/app/utils/gui";
+import { buildGuiItem, buildGuiObj, loadFile, loadModel } from "@/app/utils/gui";
 import { button, folder, useControls } from "leva";
 import * as THREE from 'three';
 import PmxModel from "../pmx-model";
@@ -39,10 +39,7 @@ function Model({ children }: { children: ReactNode }) {
             },
         },
         "select character folder": button(() => {
-            const selectFile = document.getElementById("selectFile") as HTMLInputElement
-            selectFile.webkitdirectory = true;
-            selectFile.onchange = buildLoadModelFn("character")
-            selectFile.click();
+            loadModel("character")
         }),
         "position": buildGuiItem(positionKey),
         "reset": button(() => {
@@ -53,12 +50,10 @@ function Model({ children }: { children: ReactNode }) {
             editable: false
         },
         "select motion file": button(() => {
-            const selectFile = document.getElementById("selectFile") as HTMLInputElement
-            selectFile.onchange = buildLoadFileFn((motionFile, motion) => {
+            loadFile((motionFile, motion) => {
                 usePresetStore.setState({ motionFile, motion })
                 set({ "motion name": motion })
             })
-            selectFile.click();
         }),
         "debug": folder({
             ...buildGuiObj("enable SDEF"),
