@@ -5,8 +5,8 @@ import FullScreenButton from "./fullscreen-button";
 
 function ControlBar() {
     const getPlayer = () => useGlobalStore.getState().player
-    const gui = useGlobalStore(state => state.gui)
     const isHoverRef = useRef(false)
+    const timeoutIdRef = useRef(null)
 
     useEffect(() => {
         const fullScreenBt = document.getElementById("fsBtn")
@@ -19,12 +19,12 @@ function ControlBar() {
             rawPlayer.style.opacity = "0.5";
             fullScreenBt.style.opacity = "0.5";
             document.body.style.cursor = "default"
-            if (gui._timeoutID !== undefined) {
-                clearTimeout(gui._timeoutID);
-                gui._timeoutID = undefined
+            if (timeoutIdRef.current !== null) {
+                clearTimeout(timeoutIdRef.current);
+                timeoutIdRef.current = undefined
             }
 
-            gui._timeoutID = setTimeout(function () {
+            timeoutIdRef.current = setTimeout(function () {
                 if(isHoverRef.current) return
                 rawPlayer.style.opacity = "0";
                 fullScreenBt.style.opacity = "0";
