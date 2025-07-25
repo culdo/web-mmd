@@ -68,17 +68,23 @@ function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnCha
     const initialValue = usePresetStore.getState()[key]
 
     const onChange: OnChangeHandler = (value, path, options) => {
+
         if (!options.initial) {
             usePresetStore.setState({ [key]: value })
         } else {
             value = initialValue
-            setLevaValue(path, initialValue)
+
+            const init = () => {
+                const initialValue = usePresetStore.getState()[key]
+                setLevaValue(path, initialValue)
+            }
+            usePresetStore.persist.onFinishHydration(init)
         }
         if (handler) {
             handler(value, path, options)
         }
     }
-    if(typeof initialValue == "number") {
+    if (typeof initialValue == "number") {
         return {
             value: initialValue as GuiValue<PresetState[T]>,
             min,
@@ -86,7 +92,7 @@ function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnCha
             onChange,
             transient: false as const
         }
-    } 
+    }
     return {
         value: initialValue as GuiValue<PresetState[T]>,
         onChange,
@@ -145,9 +151,9 @@ function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userDa
 
     let handler: OnChangeHandler;
     let options: Record<string, any>;
-    if(Array.isArray(handlerOrArgs)) {
+    if (Array.isArray(handlerOrArgs)) {
         [handler, options] = handlerOrArgs
-    } else if(typeof handlerOrArgs == "function") {
+    } else if (typeof handlerOrArgs == "function") {
         handler = handlerOrArgs
     }
 
@@ -170,7 +176,7 @@ function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userDa
             handler(value, path, context)
         }
     }
-    if(typeof initialValue == "number") {
+    if (typeof initialValue == "number") {
         return {
             value: initialValue as T,
             min,
@@ -179,7 +185,7 @@ function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userDa
             transient: false as const
         }
     }
-    if(options) {
+    if (options) {
         return {
             value: initialValue as T,
             onChange,
