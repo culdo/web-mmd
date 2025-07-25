@@ -11,7 +11,7 @@
     "update-snapshot": "playwright test --update-snapshots"
   },
   "dependencies": {
-    "@react-three/drei": "^10.0.5",
+    "@react-three/drei": "^10.6.0",
     "@react-three/fiber": "^9.1.0",
     "@react-three/postprocessing": "^3.0.4",
     "@theatre/core": "https://github.com/culdo/theatre/releases/download/0.7.15/core.tgz",
