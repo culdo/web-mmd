@@ -54,7 +54,11 @@ function usePreset() {
         "Load Preset": () => {
             const selectFile = document.getElementById("selectFile")
             selectFile.onchange = async function (e: any) {
-                const presetFile = e.target.files
+                const files = e.target.files
+                if(files.length < 1) {
+                    return
+                }
+                const presetFile = files[0]
                 const newName = path.parse(presetFile.name).name
                 
                 let reader = new FileReader();
