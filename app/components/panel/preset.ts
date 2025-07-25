@@ -90,7 +90,11 @@ function usePreset() {
                 }
             }
         },
-        ...controllers
+        ...controllers,
+        version: {
+            value: process.env.COMMIT,
+            editable: false
+        },
     }), { order: 900, collapsed: true }, [controllers, presetsList])
 
     useEffect(() => {
