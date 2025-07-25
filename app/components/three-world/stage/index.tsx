@@ -30,7 +30,6 @@ function Stage() {
             selectFile.webkitdirectory = true;
             selectFile.onchange = buildLoadModelFn("stage")
             selectFile.click();
-            selectFile.webkitdirectory = false;
         }),
     }), { collapsed: true, order: 202 }, [url])
 

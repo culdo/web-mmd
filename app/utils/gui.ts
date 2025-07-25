@@ -45,6 +45,8 @@ function buildLoadModelFn(itemType: "character" | "stage") {
         } else if (itemType == "stage") {
             usePresetStore.setState({ stage: firstKey });
         }
+        // clear
+        input.webkitdirectory = false
     }
 }
 

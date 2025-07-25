@@ -43,7 +43,6 @@ function Model({ children }: { children: ReactNode }) {
             selectFile.webkitdirectory = true;
             selectFile.onchange = buildLoadModelFn("character")
             selectFile.click();
-            selectFile.webkitdirectory = false;
         }),
         "position": buildGuiItem(positionKey),
         "reset": button(() => {
