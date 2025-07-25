@@ -92,7 +92,7 @@ function usePreset() {
         },
         ...controllers,
         version: {
-            value: process.env.COMMIT,
+            value: process.env.COMMIT.slice(0, 7),
             editable: false
         },
     }), { order: 900, collapsed: true }, [controllers, presetsList])
