@@ -258,7 +258,7 @@ export class DepthOfFieldEffect extends Effect {
 		 */
 
 		this.bokehFarBasePass = new ShaderPass(new BokehMaterial(false, false)) as BokehPass;
-		this.bokehFarBasePass.fullscreenMaterial.cocBuffer = this.renderTargetCoC.texture;
+		this.bokehFarBasePass.fullscreenMaterial.cocBuffer = this.renderTargetCoCBlurred.texture;
 
 		/**
 		 * A bokeh fill pass for the background colors.
@@ -268,7 +268,7 @@ export class DepthOfFieldEffect extends Effect {
 		 */
 
 		this.bokehFarFillPass = new ShaderPass(new BokehMaterial(true, false)) as BokehPass;
-		this.bokehFarFillPass.fullscreenMaterial.cocBuffer = this.renderTargetCoC.texture;
+		this.bokehFarFillPass.fullscreenMaterial.cocBuffer = this.renderTargetCoCBlurred.texture;
 
 		/**
 		 * A target position that should be kept in focus. Set to `null` to disable auto focus.
