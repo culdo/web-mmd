@@ -24,6 +24,7 @@ vec4 BlurTexture(in sampler2D source, vec2 coord, vec2 offset)
 	for (int i = 0; i < DOF_BLUR_RADIUS; ++i, coord += offset)
 	{
 		vec4 color = texture(source, coord);
+		// TODO: COC應該不在color.a裡
 		color.a = max(0.0, color.a);
 		color.rgb *= color.a;
 

@@ -40,7 +40,8 @@ function Effects() {
             min: 0,
             max: 50
         },
-        depthDebug: buildGuiItem("texture enabled")
+        depthDebug: buildGuiItem("texture enabled"),
+        hexDof: true
     }, { collapsed: true });
 
     const bloomConfig = useControls('Effects.Bloom', {
@@ -73,7 +74,7 @@ function Effects() {
 
     useEffect(() => {
         if (!dof || !dofConfig.depthDebug) return
-        setDepthTexture(dof.renderTargetDepth.texture)
+        setDepthTexture(dof.renderTargetFar.texture)
         setDepthDebugColor([ColorChannel.RED])
         return () => setDepthTexture(null)
     }, [dof, dofConfig.depthDebug])

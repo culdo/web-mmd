@@ -4,6 +4,7 @@ import { ReactThreeFiber } from '@react-three/fiber'
 import { type DepthPackingStrategies, PerspectiveCamera, type Texture, Vector3 } from 'three'
 import { EffectComposerContext } from '@react-three/postprocessing'
 import { DepthOfFieldEffect } from '@/app/modules/effects/DepthOfFieldEffect'
+import { HexDofEffect } from '@/app/modules/effects/HexDofEffect'
 
 type DOFProps = ConstructorParameters<typeof DepthOfFieldEffect>[2] &
   Partial<{
@@ -15,6 +16,7 @@ type DOFProps = ConstructorParameters<typeof DepthOfFieldEffect>[2] &
     }
     // TODO: not used
     blur: number
+    hexDof: boolean
   }>
 
 export const DepthOfField = forwardRef(function DepthOfField(
@@ -33,6 +35,7 @@ export const DepthOfField = forwardRef(function DepthOfField(
     height,
     target,
     depthTexture,
+    hexDof,
     ...props
   }: DOFProps,
   ref: Ref<DepthOfFieldEffect>
@@ -40,7 +43,8 @@ export const DepthOfField = forwardRef(function DepthOfField(
   const { camera, scene } = useContext(EffectComposerContext)
   const autoFocus = target != null
   const effect = useMemo(() => {
-    const effect = new DepthOfFieldEffect(scene, camera as PerspectiveCamera, {
+    const dofMethod = hexDof ? HexDofEffect : DepthOfFieldEffect;
+    const effect = new dofMethod(scene, camera as PerspectiveCamera, {
       blendFunction,
       worldFocusDistance,
       worldFocusRange,
@@ -78,6 +82,7 @@ export const DepthOfField = forwardRef(function DepthOfField(
     height,
     autoFocus,
     depthTexture,
+    hexDof
   ])
 
   useEffect(() => {

@@ -20,13 +20,13 @@ varying vec2 vUv;
 
 void main() {
 
-	float linearDepth = texture2D(depthBuffer, vUv).r;
+	float nonLinearDepth = texture2D(depthBuffer, vUv).r;
 
-	float signedDistance = linearDepth - focusDistance;
+	float signedDistance = nonLinearDepth - focusDistance;
 	const float CIRCLE_OF_CONFUSION = 0.03; // 35mm film = 0.03mm CoC.
 
 	float focalPlaneMM = focusDistance * 1000.0;
-	float depthMM = linearDepth * 1000.0;
+	float depthMM = nonLinearDepth * 1000.0;
 
 	float focalPlane = (depthMM * focusRange) / (depthMM - focusRange);
 	float farDoF = (focalPlaneMM * focusRange) / (focalPlaneMM - focusRange);

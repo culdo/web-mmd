@@ -9,13 +9,15 @@ import {
 	RenderPass,
 	Resolution,
 	ShaderPass,
-	OverrideMaterialManager,
-	BokehMaterial
+	OverrideMaterialManager
 } from "postprocessing";
 import { BasicDepthPacking, Camera, Color, DepthPackingStrategies, PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureDataType, Uniform, UnsignedByteType, Vector3, WebGLRenderer, WebGLRenderTarget } from "three";
 
-import { CircleOfConfusionMaterial } from "./CircleOfConfusionMaterial";
+import { HexCoCMaterial } from "./HexCoCMaterial";
 import { RealisiticDepthMaterial } from "./RealisiticDepthMaterial";
+import { HexBokehPass1Material } from "./HexBokehPass1Material";
+import { HexBokehPass2Material } from "./HexBokehPass2Material";
+
 import fragmentShader from "./shaders/dof.frag";
 import { getOutputColorSpace, setTextureColorSpace, viewZToOrthographicDepth } from "./utils/all";
 
@@ -28,11 +30,12 @@ OverrideMaterialManager.workaroundEnabled = true;
  * https://pixelmischiefblog.wordpress.com/2016/11/25/bokeh-depth-of-field/
  */
 
-type BokehPass = ShaderPass & {fullscreenMaterial: BokehMaterial}
-type CocPass = ShaderPass & {fullscreenMaterial: CircleOfConfusionMaterial}
+type HexBokehPass1 = ShaderPass & {fullscreenMaterial: HexBokehPass1Material}
+type HexBokehPass2 = ShaderPass & {fullscreenMaterial: HexBokehPass2Material}
+type CocPass = ShaderPass & {fullscreenMaterial: HexCoCMaterial}
 type MaskPass = ShaderPass & {fullscreenMaterial: MaskMaterial}
 
-export class DepthOfFieldEffect extends Effect {
+export class HexDofEffect extends Effect {
 	camera: PerspectiveCamera;
 	renderTarget: WebGLRenderTarget;
 	renderTargetMasked: WebGLRenderTarget;
@@ -45,13 +48,14 @@ export class DepthOfFieldEffect extends Effect {
 	cocPass: CocPass;
 	blurPass: KawaseBlurPass;
 	maskPass: MaskPass;
-	bokehNearBasePass: BokehPass;
-	bokehNearFillPass: BokehPass;
-	bokehFarBasePass: BokehPass;
-	bokehFarFillPass: BokehPass;
+	bokehNearBasePass: HexBokehPass1;
+	bokehNearFillPass: HexBokehPass2;
+	bokehFarBasePass: HexBokehPass1;
+	bokehFarFillPass: HexBokehPass2;
 	target: Vector3;
 	resolution: Resolution;
 	scene: Scene;
+	renderTargetHexBlurred: WebGLRenderTarget<Texture>;
 
 	/**
 	 * Constructs a new depth of field effect.
@@ -131,6 +135,14 @@ export class DepthOfFieldEffect extends Effect {
 		this.renderTargetMasked = this.renderTarget.clone();
 		this.renderTargetMasked.texture.name = "DoF.Masked.Far";
 
+
+		this.renderTargetHexBlurred = new WebGLRenderTarget(1, 1, { depthBuffer: false, count: 2 });
+		this.renderTargetHexBlurred.texture.name = "DoF.HexBlured";
+
+		this.renderTargetHexBlurred.textures[0].name = "vertical"
+		this.renderTargetHexBlurred.textures[1].name = "diagonal"
+
+
 		/**
 		 * A render target for the blurred foreground colors.
 		 *
@@ -192,7 +204,7 @@ export class DepthOfFieldEffect extends Effect {
 		 * @private
 		 */
 
-		this.cocPass = new ShaderPass(new CircleOfConfusionMaterial(this.renderTargetDepth.texture, camera)) as CocPass;
+		this.cocPass = new ShaderPass(new HexCoCMaterial(this.renderTargetDepth.texture, camera)) as CocPass;
 		const cocMaterial = this.cocMaterial;
 		cocMaterial.focusDistance = focusDistance;
 		cocMaterial.focusRange = focusRange;
@@ -237,7 +249,7 @@ export class DepthOfFieldEffect extends Effect {
 		 * @private
 		 */
 
-		this.bokehNearBasePass = new ShaderPass(new BokehMaterial(false, true)) as BokehPass;
+		this.bokehNearBasePass = new ShaderPass(new HexBokehPass1Material(true)) as HexBokehPass1;
 		this.bokehNearBasePass.fullscreenMaterial.cocBuffer = this.renderTargetCoCBlurred.texture;
 
 		/**
@@ -247,8 +259,10 @@ export class DepthOfFieldEffect extends Effect {
 		 * @private
 		 */
 
-		this.bokehNearFillPass = new ShaderPass(new BokehMaterial(true, true)) as BokehPass;
+		this.bokehNearFillPass = new ShaderPass(new HexBokehPass2Material(true)) as HexBokehPass2;
 		this.bokehNearFillPass.fullscreenMaterial.cocBuffer = this.renderTargetCoCBlurred.texture;
+		this.bokehNearFillPass.fullscreenMaterial.vertical = this.renderTargetHexBlurred.textures[0];
+		this.bokehNearFillPass.fullscreenMaterial.diagonal = this.renderTargetHexBlurred.textures[1];
 
 		/**
 		 * A bokeh blur pass for the background colors.
@@ -257,7 +271,7 @@ export class DepthOfFieldEffect extends Effect {
 		 * @private
 		 */
 
-		this.bokehFarBasePass = new ShaderPass(new BokehMaterial(false, false)) as BokehPass;
+		this.bokehFarBasePass = new ShaderPass(new HexBokehPass1Material(false)) as HexBokehPass1;
 		this.bokehFarBasePass.fullscreenMaterial.cocBuffer = this.renderTargetCoC.texture;
 
 		/**
@@ -267,8 +281,10 @@ export class DepthOfFieldEffect extends Effect {
 		 * @private
 		 */
 
-		this.bokehFarFillPass = new ShaderPass(new BokehMaterial(true, false)) as BokehPass;
+		this.bokehFarFillPass = new ShaderPass(new HexBokehPass2Material(false)) as HexBokehPass2;
 		this.bokehFarFillPass.fullscreenMaterial.cocBuffer = this.renderTargetCoC.texture;
+		this.bokehFarFillPass.fullscreenMaterial.vertical = this.renderTargetHexBlurred.textures[0];
+		this.bokehFarFillPass.fullscreenMaterial.diagonal = this.renderTargetHexBlurred.textures[1];
 
 		/**
 		 * A target position that should be kept in focus. Set to `null` to disable auto focus.
@@ -330,7 +346,7 @@ export class DepthOfFieldEffect extends Effect {
 	/**
 	 * The circle of confusion material.
 	 *
-	 * @type {CircleOfConfusionMaterial}
+	 * @type {HexCoCMaterial}
 	 */
 
 	get cocMaterial() {
@@ -343,7 +359,7 @@ export class DepthOfFieldEffect extends Effect {
 	 * The circle of confusion material.
 	 *
 	 * @deprecated Use cocMaterial instead.
-	 * @type {CircleOfConfusionMaterial}
+	 * @type {HexCoCMaterial}
 	 */
 
 	get circleOfConfusionMaterial() {
@@ -356,7 +372,7 @@ export class DepthOfFieldEffect extends Effect {
 	 * Returns the circle of confusion material.
 	 *
 	 * @deprecated Use cocMaterial instead.
-	 * @return {CircleOfConfusionMaterial} The material.
+	 * @return {HexCoCMaterial} The material.
 	 */
 
 	getCircleOfConfusionMaterial() {
@@ -508,6 +524,7 @@ export class DepthOfFieldEffect extends Effect {
 		const renderTarget = this.renderTarget;
 		const renderTargetCoC = this.renderTargetCoC;
 		const renderTargetCoCBlurred = this.renderTargetCoCBlurred;
+		const renderTargetHexBlurred = this.renderTargetHexBlurred;
 		const renderTargetMasked = this.renderTargetMasked;
 
 		// Auto focus.
@@ -528,12 +545,12 @@ export class DepthOfFieldEffect extends Effect {
 		this.maskPass.render(renderer, inputBuffer, renderTargetMasked);
 
 		// Use the sharp CoC buffer and render the background bokeh.
-		this.bokehFarBasePass.render(renderer, renderTargetMasked, renderTarget);
-		this.bokehFarFillPass.render(renderer, renderTarget, this.renderTargetFar);
+		this.bokehFarBasePass.render(renderer, renderTargetMasked, renderTargetHexBlurred);
+		this.bokehFarFillPass.render(renderer, null, this.renderTargetFar);
 
 		// Use the blurred CoC buffer and render the foreground bokeh.
-		this.bokehNearBasePass.render(renderer, inputBuffer, renderTarget);
-		this.bokehNearFillPass.render(renderer, renderTarget, this.renderTargetNear);
+		this.bokehNearBasePass.render(renderer, inputBuffer, renderTargetHexBlurred);
+		this.bokehNearFillPass.render(renderer, null, this.renderTargetNear);
 
 	}
 
@@ -563,6 +580,7 @@ export class DepthOfFieldEffect extends Effect {
 		this.renderTarget.setSize(w, h);
 		this.renderTargetNear.setSize(w, h);
 		this.renderTargetCoCBlurred.setSize(w, h);
+		this.renderTargetHexBlurred.setSize(w, h);
 
 		// Optimization: 1 / (TexelSize * ResolutionScale) = FullResolution
 		this.bokehNearBasePass.fullscreenMaterial.setSize(width, height);
@@ -602,6 +620,7 @@ export class DepthOfFieldEffect extends Effect {
 		if(frameBufferType !== undefined) {
 
 			this.renderTarget.texture.type = frameBufferType;
+			this.renderTargetHexBlurred.texture.type = frameBufferType;
 			this.renderTargetDepth.texture.type = frameBufferType;
 			this.renderTargetNear.texture.type = frameBufferType;
 			this.renderTargetFar.texture.type = frameBufferType;
@@ -610,6 +629,7 @@ export class DepthOfFieldEffect extends Effect {
 			if(getOutputColorSpace(renderer) === SRGBColorSpace) {
 
 				setTextureColorSpace(this.renderTarget.texture, SRGBColorSpace);
+				setTextureColorSpace(this.renderTargetHexBlurred.texture, SRGBColorSpace);
 				setTextureColorSpace(this.renderTargetNear.texture, SRGBColorSpace);
 				setTextureColorSpace(this.renderTargetFar.texture, SRGBColorSpace);
 				setTextureColorSpace(this.renderTargetMasked.texture, SRGBColorSpace);
