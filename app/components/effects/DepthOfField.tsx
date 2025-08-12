@@ -62,9 +62,6 @@ export const DepthOfField = forwardRef(function DepthOfField(
     if (autoFocus) effect.target = new Vector3()
     // Depth texture for depth picking with optional packing strategy
     if (depthTexture) effect.setDepthTexture(depthTexture.texture, depthTexture.packing as DepthPackingStrategies)
-    // Temporary fix that restores DOF 6.21.3 behavior, everything since then lets shapes leak through the blur
-    const maskPass = (effect as any).maskPass
-    maskPass.maskFunction = MaskFunction.MULTIPLY_RGB_SET_ALPHA
     return effect
   }, [
     camera,

@@ -1,15 +1,15 @@
-import { BasicDepthPacking, NoBlending, PerspectiveCamera, ShaderMaterial, Uniform, Matrix4 } from "three";
+import { BasicDepthPacking, NoBlending, PerspectiveCamera, ShaderMaterial, Uniform, Matrix4, Texture, DepthPackingStrategies } from "three";
 
 import { orthographicDepthToViewZ, viewZToOrthographicDepth } from "./utils/all";
 
-import fragmentShader from "./shaders/hexCoC.frag";
+import fragmentShader from "./shaders/circle-of-confusion.frag";
 import vertexShader from "./shaders/common.vert";
 
 /**
  * A Circle of Confusion shader material.
  */
 
-export class HexCoCMaterial extends ShaderMaterial {
+export class CircleOfConfusionMaterial extends ShaderMaterial {
 
 	/**
 	 * Constructs a new CoC material.
@@ -17,7 +17,7 @@ export class HexCoCMaterial extends ShaderMaterial {
 	 * @param {Camera} camera - A camera.
 	 */
 
-	constructor(depthTexture, camera) {
+	constructor(depthTexture: Texture, camera: PerspectiveCamera) {
 
 		super({
 			name: "CircleOfConfusionMaterial",
@@ -79,7 +79,7 @@ export class HexCoCMaterial extends ShaderMaterial {
 	 * @type {Texture}
 	 */
 
-	set depthBuffer(value) {
+	set depthBuffer(value: Texture) {
 
 		this.uniforms.depthBuffer.value = value;
 
@@ -91,7 +91,7 @@ export class HexCoCMaterial extends ShaderMaterial {
 	 * @type {DepthPackingStrategies}
 	 */
 
-	set depthPacking(value) {
+	set depthPacking(value: DepthPackingStrategies) {
 
 		this.defines.DEPTH_PACKING = value.toFixed(0);
 		this.needsUpdate = true;
@@ -106,7 +106,7 @@ export class HexCoCMaterial extends ShaderMaterial {
 	 * @param {DepthPackingStrategies} [depthPacking=BasicDepthPacking] - The depth packing strategy.
 	 */
 
-	setDepthBuffer(buffer, depthPacking = BasicDepthPacking) {
+	setDepthBuffer(buffer: Texture, depthPacking = BasicDepthPacking) {
 
 		this.depthBuffer = buffer;
 		this.depthPacking = depthPacking;
@@ -156,7 +156,7 @@ export class HexCoCMaterial extends ShaderMaterial {
 	 * @return {Number} The focus distance.
 	 */
 
-	getFocusDistance(value) {
+	getFocusDistance(value: number) {
 
 		this.uniforms.focusDistance.value = value;
 
@@ -169,7 +169,7 @@ export class HexCoCMaterial extends ShaderMaterial {
 	 * @param {Number} value - The focus distance.
 	 */
 
-	setFocusDistance(value) {
+	setFocusDistance(value: number) {
 
 		this.uniforms.focusDistance.value = value;
 
@@ -237,7 +237,7 @@ export class HexCoCMaterial extends ShaderMaterial {
 	 * @return {Number} The focal length.
 	 */
 
-	getFocalLength(value) {
+	getFocalLength(value: number) {
 
 		return this.focusRange;
 
@@ -250,7 +250,7 @@ export class HexCoCMaterial extends ShaderMaterial {
 	 * @param {Number} value - The focal length.
 	 */
 
-	setFocalLength(value) {
+	setFocalLength(value: number) {
 
 		this.focusRange = value;
 
@@ -263,7 +263,7 @@ export class HexCoCMaterial extends ShaderMaterial {
 	 * @param {Camera} camera - A camera.
 	 */
 
-	adoptCameraSettings(camera) {
+	adoptCameraSettings(camera: PerspectiveCamera) {
 
 		this.copyCameraSettings(camera);
 
@@ -275,7 +275,7 @@ export class HexCoCMaterial extends ShaderMaterial {
 	 * @param {Camera} camera - A camera.
 	 */
 
-	copyCameraSettings(camera) {
+	copyCameraSettings(camera: PerspectiveCamera) {
 
 		if(camera) {
 

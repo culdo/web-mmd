@@ -228,7 +228,8 @@ export class DepthOfFieldEffect extends Effect {
 		this.maskPass = new ShaderPass(new MaskMaterial(this.renderTargetCoC.texture)) as MaskPass;
 		const maskMaterial = this.maskPass.fullscreenMaterial;
 		maskMaterial.colorChannel = ColorChannel.GREEN;
-		this.maskFunction = MaskFunction.MULTIPLY_RGB;
+		// Temporary fix that restores DOF 6.21.3 behavior, everything since then lets shapes leak through the blur
+		this.maskFunction = MaskFunction.MULTIPLY_RGB_SET_ALPHA;
 
 		/**
 		 * A bokeh blur pass for the foreground colors.

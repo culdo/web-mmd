@@ -10,14 +10,13 @@ layout(location = 0) out vec4 pc_FragColor;
 
 uniform lowp sampler2D cocBuffer;
 uniform vec2 texelSize;
-uniform float scale;
 
 in vec2 vUv;
 
 #define PI 3.1415926535897932384626433832795
 #define DOF_BLUR_RADIUS 10
 
-vec4 BlurTexture(in sampler2D source, vec2 coord, vec2 offset)
+vec4 ComputeHexagonalFarBlur(in sampler2D source, vec2 coord, vec2 offset)
 {
 	vec4 colors = vec4(0.0f);
 
@@ -35,27 +34,8 @@ vec4 BlurTexture(in sampler2D source, vec2 coord, vec2 offset)
 
 void main() {
 
-	#ifdef FOREGROUND
-
-		vec2 cocNearFar = texture(cocBuffer, vUv).rg * scale;
-		float coc = cocNearFar.x;
-
-	#else
-
-		float coc = texture(cocBuffer, vUv).g * scale;
-
-	#endif
-
-	#ifdef FOREGROUND
-
-		// Use far CoC to avoid weak blurring around foreground objects.
-		vec2 step = texelSize * max(cocNearFar.x, cocNearFar.y);
-
-	#else
-
-		vec2 step = texelSize * coc;
-
-	#endif
+	float coc = texture(cocBuffer, vUv).a;
+	vec2 step = texelSize * coc;
 
 	//---- Step 2 – Rhomboid Blur
 	vec2 blur1 = vec2(cos(-PI/6.0), sin(-PI/6.0));
@@ -69,8 +49,8 @@ void main() {
 	vec2 coord2 = vUv + blurDirection2 * 0.5;
 
 	//---- Step 2 – Rhomboid Blur
-	vec4 color1 = BlurTexture(vertical, coord1, blurDirection1);
-	vec4 color2 = BlurTexture(diagonal, coord2, blurDirection2);
+	vec4 color1 = ComputeHexagonalFarBlur(vertical, coord1, blurDirection1);
+	vec4 color2 = ComputeHexagonalFarBlur(diagonal, coord2, blurDirection2);
 	//--------------------------------
 
 	pc_FragColor = vec4((color1.rgb + color2.rgb) * (1.0f / 3.0f), coc);

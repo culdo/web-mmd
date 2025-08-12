@@ -10,21 +10,19 @@ layout(location = 1) out vec4 diagonal;
 
 uniform lowp sampler2D cocBuffer;
 uniform vec2 texelSize;
-uniform float scale;
 
 in vec2 vUv;
 
 #define PI 3.1415926535897932384626433832795
 #define DOF_BLUR_RADIUS 10
 
-vec4 BlurTexture(in sampler2D source, vec2 coord, vec2 offset)
+vec4 ComputeHexagonalFarBlur(in sampler2D source, vec2 coord, vec2 offset)
 {
 	vec4 colors = vec4(0.0f);
 
 	for (int i = 0; i < DOF_BLUR_RADIUS; ++i, coord += offset)
 	{
 		vec4 color = texture(source, coord);
-		// TODO: COC應該不在color.a裡
 		color.a = max(0.0, color.a);
 		color.rgb *= color.a;
 
@@ -36,27 +34,8 @@ vec4 BlurTexture(in sampler2D source, vec2 coord, vec2 offset)
 
 void main() {
 
-	#ifdef FOREGROUND
-
-		vec2 cocNearFar = texture(cocBuffer, vUv).rg * scale;
-		float coc = cocNearFar.x;
-
-	#else
-
-		float coc = texture(cocBuffer, vUv).g * scale;
-
-	#endif
-
-	#ifdef FOREGROUND
-
-		// Use far CoC to avoid weak blurring around foreground objects.
-		vec2 step = texelSize * max(cocNearFar.x, cocNearFar.y);
-
-	#else
-
-		vec2 step = texelSize * coc;
-
-	#endif
+	float coc = texture(inputBuffer, vUv).a;
+	vec2 step = texelSize * coc;
 	
 	//----  Step 1 - Combined Vertical & Diagonal Blur
 	vec2 blur1 = vec2(cos(PI/2.0), sin(PI/2.0));
@@ -70,8 +49,8 @@ void main() {
 	vec2 coord2 = vUv + blurDirection2 * 0.5;
 
 	//----  Step 1 - Combined Vertical & Diagonal Blur
-	vec4 color0 = BlurTexture(inputBuffer, coord1, blurDirection1);
-	vec4 color1 = BlurTexture(inputBuffer, coord2, blurDirection2);
+	vec4 color0 = ComputeHexagonalFarBlur(inputBuffer, coord1, blurDirection1);
+	vec4 color1 = ComputeHexagonalFarBlur(inputBuffer, coord2, blurDirection2);
 
 	vertical = vec4(color0.rgb, coc);
 	diagonal = vec4(color0.rgb + color1.rgb, coc);

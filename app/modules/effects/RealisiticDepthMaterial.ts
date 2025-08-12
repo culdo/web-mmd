@@ -8,6 +8,7 @@ import vertexShader from "./shaders/realisitic-depth.vert";
  */
 
 export class RealisiticDepthMaterial extends ShaderMaterial {
+	color: Color;
 
 	/**
 	 * Constructs a new depth comparison material.
@@ -15,7 +16,7 @@ export class RealisiticDepthMaterial extends ShaderMaterial {
 	 * @param {PerspectiveCamera} [camera] - A camera.
 	 */
 
-	constructor(camera) {
+	constructor(camera: PerspectiveCamera) {
 
 		super({
 			name: "RealisiticDepthMaterial",
@@ -44,7 +45,7 @@ export class RealisiticDepthMaterial extends ShaderMaterial {
 	 * @param {Camera} camera - A camera.
 	 */
 
-	adoptCameraSettings(camera) {
+	adoptCameraSettings(camera: PerspectiveCamera) {
 
 		this.copyCameraSettings(camera);
 
@@ -56,7 +57,7 @@ export class RealisiticDepthMaterial extends ShaderMaterial {
 	 * @param {Camera} camera - A camera.
 	 */
 
-	copyCameraSettings(camera) {
+	copyCameraSettings(camera: PerspectiveCamera) {
 
 		if(camera) {
 			this.uniforms.cameraNear.value = camera.near;
