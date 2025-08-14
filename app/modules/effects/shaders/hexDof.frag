@@ -1,11 +1,7 @@
-#include <common>
-#include <packing>
-
 uniform highp sampler2D depthBuffer;
 uniform highp sampler2D bokehBuffer;
 uniform highp sampler2D inputBuffer;
 
-varying vec2 vUv;
 uniform vec2 offset;
 
 // [focalDistance, focalLength, focalAperture, 1]
@@ -51,29 +47,29 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 		vec2(-2.0,  2.0), vec2(-1.0,  2.0), vec2( 0.0,  2.0), vec2(1.0,  2.0), vec2(2.0,  2.0),
 		vec2(-2.0, -2.0), vec2(-1.0, -2.0), vec2( 0.0, -2.0), vec2(1.0, -2.0), vec2(2.0, -2.0),
 		vec2(-1.0,  3.0), vec2( 0.0,  3.0), vec2( 1.0,  3.0),
-		vec2(-1.0, -3.0), vec2( 0.0, -3.0), vec2( 1.0, -3.0),
+		vec2(-1.0, -3.0), vec2( 0.0, -3.0), vec2( 1.0, -3.0)
 	);
 
-	vec4 CoC = texture2D(bokehBuffer, vUv);
-	vec4 colors = vec4(texture2D(inputBuffer, vUv).rgb, 1);
+	vec4 CoC = texture2D(bokehBuffer, uv);
+	vec4 colors = vec4(texture2D(inputBuffer, uv).rgb, 1);
 
 
-	offset *= (saturate(-CoC.a) * 2 + 1);
+	vec2 calcedOffset = (saturate(-CoC.a) * 2.0 + 1.0) * offset;
 
 	for(int i = 0; i < DOF_POSSION_SAMPLES; i++)
 	{
-		vec4 color = texture2D(inputBuffer, vUv + poisson[i] * offset);
+		vec4 color = texture2D(inputBuffer, uv + poisson[i] * calcedOffset);
 		colors += color;
 	}
 
-	CoC.a = ComputeDepthCoC(texture2D(depthBuffer, coord.zw).r);
+	CoC.a = ComputeDepthCoC(texture2D(depthBuffer, uv).r);
 
-	float SDF = GetSampleCircleSDF(vUv * viewportSize, viewportSize * vec2(0.5, 0/5), viewportSize.y * 0.2) * 0.5;
+	float SDF = GetSampleCircleSDF(uv * viewportSize, viewportSize * vec2(0.5, 0/5), viewportSize.y * 0.2) * 0.5;
 
 	colors.rgb /= float(DOF_POSSION_SAMPLES + 1);
-	colors.rgb = mix(colors.rgb, ((CoC.a > 0) ? vec3(0,0.05,0.1) : vec3(0.1,0.05,0)) * abs(CoC.a), mTestMode);
-	colors.rgb = mix(colors.rgb, vec3(0.01, 0.4, 0.09), SDF * mTestMode * (1 - step(0.5, mMeasureMode)));
-	colors.a = mix(saturate(pow2(CoC.a * 2)), 1, mTestMode);
+	colors.rgb = mix(colors.rgb, ((CoC.a > 0.0) ? vec3(0,0.05,0.1) : vec3(0.1,0.05,0)) * abs(CoC.a), mTestMode);
+	colors.rgb = mix(colors.rgb, vec3(0.01, 0.4, 0.09), SDF * mTestMode * (1.0 - step(0.5, mMeasureMode)));
+	colors.a = mix(saturate(pow2(CoC.a * 2.0)), 1.0, mTestMode);
 
 	outputColor = colors;
 }
