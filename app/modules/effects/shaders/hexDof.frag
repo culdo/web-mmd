@@ -57,13 +57,11 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 
 	vec2 calcedOffset = (saturate(-CoC.a) * 2.0 + 1.0) * offset;
 
-	#pragma unroll_loop_start 
 	for(int i = 0; i < DOF_POSSION_SAMPLES; i++)
 	{
 		vec4 color = texture2D(inputBuffer, uv + poisson[i] * calcedOffset);
 		colors += color;
 	}
-	#pragma unroll_loop_end
 
 	CoC.a = ComputeDepthCoC(texture2D(depthBuffer, uv).r);
 

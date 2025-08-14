@@ -18,7 +18,7 @@ uniform float viewportAspect;
 varying vec2 vUv;
 
 // 先寫死，方便debug
-#define distToTarget 1.0;
+#define distToTarget 1.0
 
 // mMeasureMode=0.25 -> 為跟隨骨骼平面X偏移值，否則為0.5(正中間)
 void main() {
@@ -40,23 +40,19 @@ void main() {
 	// 先寫死，方便debug
 	vec2 samplePoint = vec2(0.5);
 
-	#pragma unroll_loop_start
 	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
 	{
 		float depth = texture2D(depthBuffer, samplePoint + poisson[i] * sampleRadius).r;
 		minDepth = min(minDepth, depth);
 	}
-	#pragma unroll_loop_end
 
 	vec2 avgDepth = vec2(0);
 
-	#pragma unroll_loop_start 
 	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
 	{
 		float depth = texture2D(depthBuffer, samplePoint + poisson[i] * sampleRadius).r;
 		avgDepth += vec2(depth, 1.0) * exp2(-abs(depth - minDepth));
 	}
-	#pragma unroll_loop_end
 
 	float distance = avgDepth.x / avgDepth.y;
 	gl_FragColor.r = mix(distance + mFocalDistance - 1.0, distToTarget, step(0.5, mMeasureMode));

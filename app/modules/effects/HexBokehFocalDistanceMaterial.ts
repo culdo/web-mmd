@@ -32,7 +32,7 @@ export class HexBokehFocalDistanceMaterial extends ShaderMaterial {
 	}
 
 	setSize(width: number, height: number) {
-		this.uniforms.viewportAspect.value.set(width / height);
+		this.uniforms.viewportAspect.value = width / height;
 	}
 
 }

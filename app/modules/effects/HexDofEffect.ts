@@ -432,11 +432,13 @@ export class HexDofEffect extends Effect {
 		this.renderTargetBokehTemp.setSize(width, height);
 		
 		this.renderTargetDepth.setSize(w, h);
+		this.renderTargetFocusDistance.setSize(w, h);
 		this.renderTarget.setSize(w, h);
 		this.renderTargetCoCBlurred.setSize(w, h);
 		this.renderTargetFocalBlurred.setSize(w, h);
 
 		// Optimization: 1 / (TexelSize * ResolutionScale) = FullResolution
+		this.hexBokehFocalDistancePass.fullscreenMaterial.setSize(width, height);
 		this.depthBokeh4XPass.fullscreenMaterial.setSize(width, height);
 		this.hexBokehNearDownPass.fullscreenMaterial.setSize(width, height);
 		this.hexBokehNearSmallBlurPass.fullscreenMaterial.setSize(width, height);

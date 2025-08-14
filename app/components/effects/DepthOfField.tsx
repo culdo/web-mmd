@@ -38,7 +38,7 @@ export const DepthOfField = forwardRef(function DepthOfField(
     hexDof,
     ...props
   }: DOFProps,
-  ref: Ref<DepthOfFieldEffect>
+  ref: Ref<DepthOfFieldEffect|HexDofEffect>
 ) {
   const { camera, scene } = useContext(EffectComposerContext)
   const autoFocus = target != null

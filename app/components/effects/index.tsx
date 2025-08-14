@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import OutlinePass from "./OutlinePass";
 
 import { DepthOfFieldEffect } from "@/app/modules/effects/DepthOfFieldEffect";
+import { HexDofEffect } from "@/app/modules/effects/HexDofEffect";
 import { buildGuiItem, buildGuiObj } from "@/app/utils/gui";
 import { useFrame, useThree } from "@react-three/fiber";
 import { DepthOfField } from "./DepthOfField";
@@ -15,7 +16,7 @@ import { WebGPURenderer } from "three/webgpu";
 import WebGPUEffectComposer from "./WebGPUEffectComposer";
 
 function Effects() {
-    const [dof, setDof] = useState<DepthOfFieldEffect>()
+    const [dof, setDof] = useState<DepthOfFieldEffect|HexDofEffect>()
     const [depthDebugColor, setDepthDebugColor] = useState<[number, number?, number?, number?]>()
     const [depthTexture, setDepthTexture] = useState<Texture>()
     const character = useGlobalStore(state => state.character)
@@ -74,7 +75,11 @@ function Effects() {
 
     useEffect(() => {
         if (!dof || !dofConfig.depthDebug) return
-        setDepthTexture(dof.renderTargetFar.texture)
+        if(dof instanceof HexDofEffect) {
+            setDepthTexture(dof.renderTargetFocusDistance.texture)
+        } else {
+            setDepthTexture(dof.renderTargetFar.texture)
+        }
         setDepthDebugColor([ColorChannel.RED])
         return () => setDepthTexture(null)
     }, [dof, dofConfig.depthDebug])
