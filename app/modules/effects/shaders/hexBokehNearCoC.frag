@@ -17,10 +17,9 @@ varying vec2 vUv;
 
 
 void main() {
-	vec4 shrunk = texture2D(inputBuffer, vec4(vUv, 0, 0));
-	vec4 blured = texture2D(bokehBuffer, vec4(vUv, 0, 0));
-	float weight = 2 * max(saturate(shrunk.a), saturate(blured.a));
-	vec4 color = mix(shrunk, blured, saturate(weight));
-	return color;
+	vec4 shrunk = texture2D(inputBuffer, vUv);
+	vec4 blured = texture2D(bokehBuffer, vUv);
+	float weight = 2.0 * max(saturate(shrunk.a), saturate(blured.a));
+	gl_FragColor = mix(shrunk, blured, saturate(weight));
 }
 

@@ -16,11 +16,11 @@ varying vec2 vUv;
 
 
 void main() {
-	vec4 sum = 0;
-	sum += texture2D(inputBuffer, vec4(vUv + vec2( 0.5, -1.5) * offset, 0, 0));
-	sum += texture2D(inputBuffer, vec4(vUv + vec2(-1.5, -0.5) * offset, 0, 0));
-	sum += texture2D(inputBuffer, vec4(vUv + vec2(-0.5,  1.5) * offset, 0, 0));
-	sum += texture2D(inputBuffer, vec4(vUv + vec2( 1.5,  0.5) * offset, 0, 0));
-	return sum / 4;
+	vec4 sum = vec4(0);
+	sum += texture2D(inputBuffer, vUv + vec2( 0.5, -1.5) * offset);
+	sum += texture2D(inputBuffer, vUv + vec2(-1.5, -0.5) * offset);
+	sum += texture2D(inputBuffer, vUv + vec2(-0.5,  1.5) * offset);
+	sum += texture2D(inputBuffer, vUv + vec2( 1.5,  0.5) * offset);
+	gl_FragColor = sum / 4.0;
 }
 

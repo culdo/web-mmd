@@ -35,7 +35,7 @@ float ComputeDepthCoC(float depth) {
 
 	float CoC = aspect * F * (D - P) / (D * (P - F));
  	CoC = clamp(CoC, -2.0, 4.0);
- 	CoC = pow(abs(CoC) / 4.0) * sign(CoC) * 4.0;
+ 	CoC = pow(abs(CoC) / 4.0, 1.0) * sign(CoC) * 4.0;
 
 	return CoC;
 
@@ -44,11 +44,11 @@ float ComputeDepthCoC(float depth) {
 void main() {
 	vec4 offset = texelSize.xyxy * vec4(-1.0, -1.0, 1.0, 1.0);
 
-	vec4 coords[4];
-	coords[0] = vec4(coord + offset.xy, 0, 0);
-	coords[1] = vec4(coord + offset.zy, 0, 0);
-	coords[2] = vec4(coord + offset.xw, 0, 0);
-	coords[3] = vec4(coord + offset.zw, 0, 0);
+	vec2 coords[4];
+	coords[0] = vUv + offset.xy;
+	coords[1] = vUv + offset.zy;
+	coords[2] = vUv + offset.xw;
+	coords[3] = vUv + offset.zw;
 
 	vec4 linearDepths;
 	linearDepths.x = texture2D(depthBuffer, coords[0]).r;
@@ -63,18 +63,18 @@ void main() {
 	colors[3] = texture2D(inputBuffer, coords[3]).rgb;
 
 	// anti-flicker
-	vec4 weights = 0;
+	vec4 weights = vec4(0.0);
  	weights.x = 1.0 / (max3(colors[0]) + 1.0);
  	weights.y = 1.0 / (max3(colors[1]) + 1.0);
  	weights.z = 1.0 / (max3(colors[2]) + 1.0);
  	weights.w = 1.0 / (max3(colors[3]) + 1.0);
 
-	vec4 color = 0;
+	vec4 color = vec4(0.0);
 	color.rgb += colors[0] * weights.x;
 	color.rgb += colors[1] * weights.y;
 	color.rgb += colors[2] * weights.z;
 	color.rgb += colors[3] * weights.w;
-	color.rgb /= dot(weights, 1.0f);
+	color.rgb /= dot(weights, vec4(1.0));
 
 	vec4 CoC;
 	CoC.x = ComputeDepthCoC(linearDepths.x);
@@ -86,8 +86,8 @@ void main() {
 	if(abs(color.a) < CoC.y) color.a = CoC.y;
 	if(abs(color.a) < CoC.z) color.a = CoC.z;
 	if(abs(color.a) < CoC.w) color.a = CoC.w;
-	if(color.a > 0) color.a = dot(0.25f, max(0, CoC));
+	if(color.a > 0.0) color.a = dot(vec4(0.25), max(vec4(0.0), CoC));
 
-	return min(color, vec4(65535, 65535, 65535, 65535));
+	gl_FragColor = min(color, vec4(65535, 65535, 65535, 65535));
 }
 
