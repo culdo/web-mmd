@@ -25,11 +25,10 @@ export class HexDepthBokeh4XMaterial extends ShaderMaterial {
 			uniforms: {
 				depthBuffer: new Uniform(depthTexture),
 				focusDistance: new Uniform(0.0),
-				focusRange: new Uniform(0.0),
-				cameraNear: new Uniform(0.3),
-				cameraFar: new Uniform(1000),
+				mFocalRegion: new Uniform(1.0),
+				mFstop: new Uniform(1.8),
+				mFocalLength: new Uniform(35),
 				autoFocusBuffer: new Uniform(autoFocusBuffer),
-				projectionMatrix: new Uniform(new Matrix4()),
 				texelSize: new Uniform(new Vector2())
 			},
 			blending: NoBlending,

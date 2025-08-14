@@ -9,7 +9,7 @@ import {
 import { Camera, Color, PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureDataType, Uniform, UnsignedByteType, Vector2, Vector3, Vector4, WebGLRenderer, WebGLRenderTarget } from "three";
 
 import { HexDepthBokeh4XMaterial } from "./HexDepthBokeh4XMaterial";
-import { RealisiticDepthMaterial } from "./RealisiticDepthMaterial";
+import { WorldScaledDepthMaterial } from "./WorldScaledDepthMaterial";
 import { HexBlurFarXMaterial } from "./HexBlurFarXMaterial";
 import { HexBlurFarYMaterial } from "./HexBlurFarYMaterial";
 import { HexBokehFarGatherMaterial } from "./HexBokehFarGatherMaterial";
@@ -112,8 +112,7 @@ export class HexDofEffect extends Effect {
 				["focalCameraParams", new Uniform(new Vector4())],
 				["viewportSize", new Uniform(new Vector2())],
 				["mFocalRegion", new Uniform(1.0)],
-				["mTestMode", new Uniform(1.0)],
-				["scale", new Uniform(1.0)]
+				["mTestMode", new Uniform(1.0)]
 			])
 		});
 
@@ -209,7 +208,7 @@ export class HexDofEffect extends Effect {
 		this.renderTargetCoCBlurred.texture.name = "DoF.CoC.Blurred";
 
 		// Depth pass
-		this.depthPass = new RenderPass(scene, camera, new RealisiticDepthMaterial(camera));
+		this.depthPass = new RenderPass(scene, camera, new WorldScaledDepthMaterial());
 
 		const clearPass = this.depthPass.clearPass;
 		clearPass.overrideClearColor = new Color(0xffffff);

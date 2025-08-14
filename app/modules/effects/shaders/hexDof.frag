@@ -7,6 +7,7 @@ uniform vec2 offset;
 // [focalDistance, focalLength, focalAperture, 1]
 uniform vec4 focalCameraParams;
 uniform vec2 viewportSize;
+uniform float mFocalRegion;
 
 float ComputeDepthCoC(float depth) {
 
@@ -24,7 +25,7 @@ float ComputeDepthCoC(float depth) {
 
 	float CoC = aspect * F * (D - P) / (D * (P - F));
  	CoC = clamp(CoC, -2.0, 4.0);
- 	CoC = pow(abs(CoC) / 4.0, 1.0) * sign(CoC) * 4.0;
+ 	CoC = pow(abs(CoC) / 4.0, mFocalRegion) * sign(CoC) * 4.0;
 
 	return CoC;
 
@@ -56,11 +57,13 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 
 	vec2 calcedOffset = (saturate(-CoC.a) * 2.0 + 1.0) * offset;
 
+	#pragma unroll_loop_start 
 	for(int i = 0; i < DOF_POSSION_SAMPLES; i++)
 	{
 		vec4 color = texture2D(inputBuffer, uv + poisson[i] * calcedOffset);
 		colors += color;
 	}
+	#pragma unroll_loop_end
 
 	CoC.a = ComputeDepthCoC(texture2D(depthBuffer, uv).r);
 

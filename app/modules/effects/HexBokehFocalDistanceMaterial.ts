@@ -1,7 +1,7 @@
 import { NoBlending, ShaderMaterial, Texture, Uniform, Vector2 } from "three";
 
 import fragmentShader from "./shaders/hexBokehFocalDistance.frag";
-import vertexShader from "./shaders/hexBokehFocalDistance.vert";
+import vertexShader from "./shaders/common.vert";
 
 export class HexBokehFocalDistanceMaterial extends ShaderMaterial {
 

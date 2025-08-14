@@ -14,8 +14,9 @@
 #endif
 
 // [focalDistance, focalLength, focalAperture, 1]
-uniform vec4 focalCameraParams;
+varying vec4 focalCameraParams;
 uniform vec2 texelSize;
+uniform float mFocalRegion;
 
 varying vec2 vUv;
 
@@ -35,7 +36,7 @@ float ComputeDepthCoC(float depth) {
 
 	float CoC = aspect * F * (D - P) / (D * (P - F));
  	CoC = clamp(CoC, -2.0, 4.0);
- 	CoC = pow(abs(CoC) / 4.0, 1.0) * sign(CoC) * 4.0;
+ 	CoC = pow(abs(CoC) / 4.0, mFocalRegion) * sign(CoC) * 4.0;
 
 	return CoC;
 
