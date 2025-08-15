@@ -1,7 +1,7 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { useControls } from "leva";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import OutlinePass from "./OutlinePass";
 
 import { DepthOfFieldEffect } from "@/app/modules/effects/DepthOfFieldEffect";
@@ -9,21 +9,51 @@ import { HexDofEffect } from "@/app/modules/effects/HexDofEffect";
 import { buildGuiItem, buildGuiObj } from "@/app/utils/gui";
 import { useFrame, useThree } from "@react-three/fiber";
 import { DepthOfField } from "./DepthOfField";
-import { Texture, Vector3 } from "three";
+import { Texture, Vector3, WebGLRenderTarget } from "three";
 import { TextureEffectComp } from "./TextureEffectComp";
 import { ColorChannel } from "postprocessing";
 import { WebGPURenderer } from "three/webgpu";
 import WebGPUEffectComposer from "./WebGPUEffectComposer";
 
 function Effects() {
-    const [dof, setDof] = useState<DepthOfFieldEffect|HexDofEffect>()
+    const [dof, setDof] = useState<DepthOfFieldEffect | HexDofEffect>()
     const [depthDebugColor, setDepthDebugColor] = useState<[number, number?, number?, number?]>()
-    const [depthTexture, setDepthTexture] = useState<Texture>()
     const character = useGlobalStore(state => state.character)
 
     const effectConfig = useControls('Effects', {
         ...buildGuiObj("show outline")
     }, { order: 2 })
+
+    const debugTextures = useMemo(() => {
+        if (!dof) return { None: null }
+        let textures: WebGLRenderTarget[];
+        if (dof instanceof DepthOfFieldEffect) {
+            textures = [
+                dof.renderTarget,
+                dof.renderTargetCoC,
+                dof.renderTargetCoCBlurred,
+                dof.renderTargetDepth,
+                dof.renderTargetFar,
+                dof.renderTargetMasked,
+                dof.renderTargetNear,
+            ]
+        } else {
+            textures = [
+                dof.renderTarget,
+                dof.renderTargetBokehTemp,
+                dof.renderTargetCoC,
+                dof.renderTargetCoCBlurred,
+                dof.renderTargetDepth,
+                dof.renderTargetFar,
+                dof.renderTargetFocusDistance,
+                dof.renderTargetCoCNear,
+            ]
+        }
+        const obj = Object.fromEntries(textures.map((t) => [t.texture.name, t.texture]))
+        obj["None"] = null
+        return obj
+    }, [dof])
+
     const dofConfig = useControls('Effects.DepthOfField', {
         enabled: buildGuiItem("bokeh enabled"),
         distance: {
@@ -41,9 +71,12 @@ function Effects() {
             min: 0,
             max: 50
         },
-        depthDebug: buildGuiItem("texture enabled"),
-        hexDof: true
-    }, { collapsed: true });
+        hexDof: true,
+        debugTexture: {
+            value: debugTextures["None"],
+            options: debugTextures
+        }
+    }, { collapsed: true }, [debugTextures]);
 
     const bloomConfig = useControls('Effects.Bloom', {
         enabled: buildGuiItem("bloom enabled"),
@@ -74,20 +107,14 @@ function Effects() {
     })
 
     useEffect(() => {
-        if (!dof || !dofConfig.depthDebug) return
-        if(dof instanceof HexDofEffect) {
-            setDepthTexture(dof.renderTargetFocusDistance.texture)
-        } else {
-            setDepthTexture(dof.renderTargetDepth.texture)
-        }
+        if (!dof) return
         setDepthDebugColor([ColorChannel.RED])
-        return () => setDepthTexture(null)
-    }, [dof, dofConfig.depthDebug])
+    }, [dof])
 
     const renderer = useThree(state => state.gl)
     const isWebGPU = renderer instanceof WebGPURenderer
 
-    if(isWebGPU) {
+    if (isWebGPU) {
         return <WebGPUEffectComposer></WebGPUEffectComposer>
     } else {
         return (
@@ -95,7 +122,7 @@ function Effects() {
                 {effectConfig["show outline"] && <OutlinePass></OutlinePass>}
                 {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.enabled && character && <DepthOfField ref={setDof} {...dofConfig}></DepthOfField>}
-                {depthTexture && <TextureEffectComp texture={depthTexture} colorChannel={depthDebugColor} ></TextureEffectComp>}
+                {dofConfig.debugTexture && <TextureEffectComp texture={dofConfig.debugTexture} colorChannel={depthDebugColor} ></TextureEffectComp>}
             </EffectComposer>
         );
     }

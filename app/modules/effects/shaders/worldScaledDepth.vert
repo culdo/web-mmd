@@ -3,7 +3,7 @@
 #include <skinning_pars_vertex>
 #include <clipping_planes_pars_vertex>
 
-varying vec4 vPos;
+varying float vPos;
 
 void main() {
 
@@ -14,7 +14,7 @@ void main() {
 	#include <skinning_vertex>
 	#include <project_vertex>
 
-	vPos = gl_Position;
+	vPos = gl_Position.w;
 
 	#include <clipping_planes_vertex>
 	

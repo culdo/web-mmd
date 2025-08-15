@@ -229,6 +229,7 @@ export class HexDofEffect extends Effect {
 
 		this.depthBokeh4XPass = new ShaderPass(
 			new HexDepthBokeh4XMaterial(
+				camera,
 				this.renderTargetDepth.texture, 
 				this.renderTargetFocusDistance.texture
 			)
@@ -367,6 +368,14 @@ export class HexDofEffect extends Effect {
 
 	}
 
+	debugRenderTarget(renderer: WebGLRenderer, renderTarget: WebGLRenderTarget) {
+		renderer.readRenderTargetPixels(
+			renderTarget, 0, 0, this.resolution.baseWidth, this.resolution.baseHeight, this.pixels
+		);
+		const debugResult = this.pixels.filter((_, i) => i % 4 == 0)
+		return debugResult
+	}
+
 	/**
 	 * Updates this effect.
 	 *
@@ -394,11 +403,7 @@ export class HexDofEffect extends Effect {
 		// Render Auto focaus distance
 		this.hexBokehFocalDistancePass.render(renderer, null, this.renderTargetFocusDistance)
 
-		renderer.readRenderTargetPixels(
-			this.renderTargetFocusDistance, 0, 0, this.resolution.baseWidth, this.resolution.baseHeight, this.pixels
-		);
-		const debugResult = this.pixels.filter((_, i) => i % 4 == 0)
-		debugResult
+		const debugResult = this.debugRenderTarget(renderer, this.renderTargetFocusDistance)
 
 		// Render the CoC and create a blurred version for soft near field blending.
 		this.depthBokeh4XPass.render(renderer, inputBuffer, renderTargetCoC);

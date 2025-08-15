@@ -46,7 +46,7 @@ void main() {
 		minDepth = min(minDepth, depth);
 	}
 
-	vec2 avgDepth = vec2(0);
+	vec2 avgDepth = vec2(0.0);
 
 	for (int i = 0; i < DOF_POSSION_SAMPLES; i++)
 	{
@@ -55,6 +55,6 @@ void main() {
 	}
 
 	float distance = avgDepth.x / avgDepth.y;
-	gl_FragColor.r = 10.0;
+	gl_FragColor.r = mix(distance + mFocalDistance - 1.0, distToTarget, step(0.5, mMeasureMode));
 }
 
