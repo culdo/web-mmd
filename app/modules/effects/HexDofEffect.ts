@@ -217,7 +217,7 @@ export class HexDofEffect extends Effect {
 		clearPass.overrideClearAlpha = 1;
 
 		this.hexBokehFocalDistancePass = new ShaderPass(new HexBokehFocalDistanceMaterial(
-			this.renderTargetCoCBlurred.texture
+			this.renderTargetDepth.texture
 		)) as HexBokehFocalDistancePass;
 		
 		/**
@@ -399,7 +399,7 @@ export class HexDofEffect extends Effect {
 		);
 		const debugResult = this.pixels.filter((_, i) => i % 4 == 0)
 		debugResult
-		
+
 		// Render the CoC and create a blurred version for soft near field blending.
 		this.depthBokeh4XPass.render(renderer, inputBuffer, renderTargetCoC);
 		
