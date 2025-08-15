@@ -6,10 +6,11 @@ import {
 	ShaderPass,
 	OverrideMaterialManager
 } from "postprocessing";
-import { Camera, Color, PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureDataType, Uniform, UnsignedByteType, Vector2, Vector3, Vector4, WebGLRenderer, WebGLRenderTarget } from "three";
+import { Camera, Color, DepthTexture, FloatType, PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureDataType, Uniform, UnsignedByteType, Vector2, Vector3, Vector4, WebGLRenderer, WebGLRenderTarget } from "three";
 
 import { HexDepthBokeh4XMaterial } from "./HexDepthBokeh4XMaterial";
 import { WorldScaledDepthMaterial } from "./WorldScaledDepthMaterial";
+import { RealisiticDepthMaterial } from "./RealisiticDepthMaterial";
 import { HexBlurFarXMaterial } from "./HexBlurFarXMaterial";
 import { HexBlurFarYMaterial } from "./HexBlurFarYMaterial";
 import { HexBokehFarGatherMaterial } from "./HexBokehFarGatherMaterial";
@@ -61,6 +62,7 @@ export class HexDofEffect extends Effect {
 	renderTargetFocusDistance: WebGLRenderTarget<Texture>;
 	renderTargetCoCNear: WebGLRenderTarget<Texture>;
 	hexBokehFocalDistancePass: HexBokehFocalDistancePass;
+	pixels: Float32Array<ArrayBuffer>;
 
 	/**
 	 * Constructs a new depth of field effect.
@@ -295,6 +297,7 @@ export class HexDofEffect extends Effect {
 
 		this.resolution = new Resolution(this, resolutionX, resolutionY, resolutionScale);
 
+		this.pixels = new Float32Array(this.resolution.baseWidth * this.resolution.baseHeight * 4);
 	}
 
 	/**
@@ -391,6 +394,11 @@ export class HexDofEffect extends Effect {
 		// Render Auto focaus distance
 		this.hexBokehFocalDistancePass.render(renderer, null, this.renderTargetFocusDistance)
 
+		renderer.readRenderTargetPixels(
+			this.renderTargetFocusDistance, 0, 0, this.resolution.baseWidth, this.resolution.baseHeight, this.pixels
+		);
+		console.log(this.pixels.filter((_, i) => i % 4 == 0))
+
 		// Render the CoC and create a blurred version for soft near field blending.
 		this.depthBokeh4XPass.render(renderer, inputBuffer, renderTargetCoC);
 		
@@ -408,6 +416,7 @@ export class HexDofEffect extends Effect {
 
 		this.hexBokehNearCoCPass.render(renderer, renderTargetCoC, renderTargetBokehTemp);
 		this.hexBokehNearSmallBlurPass.render(renderer, renderTargetBokehTemp, this.renderTargetCoCNear);
+
 	}
 
 	/**
@@ -425,20 +434,20 @@ export class HexDofEffect extends Effect {
 
 		this.depthBokeh4XPass.setSize(width, height);
 		this.hexBokehFarGatherPass.setSize(width, height);
+		this.hexBokehFocalDistancePass.setSize(width, height)
 
 		// These buffers require full resolution to prevent color bleeding.
 		this.renderTargetFar.setSize(width, height);
 		this.renderTargetCoC.setSize(width, height);
 		this.renderTargetBokehTemp.setSize(width, height);
+		this.renderTargetFocusDistance.setSize(width, height);
 		
 		this.renderTargetDepth.setSize(w, h);
-		this.renderTargetFocusDistance.setSize(w, h);
 		this.renderTarget.setSize(w, h);
 		this.renderTargetCoCBlurred.setSize(w, h);
 		this.renderTargetFocalBlurred.setSize(w, h);
 
 		// Optimization: 1 / (TexelSize * ResolutionScale) = FullResolution
-		this.hexBokehFocalDistancePass.fullscreenMaterial.setSize(width, height);
 		this.depthBokeh4XPass.fullscreenMaterial.setSize(width, height);
 		this.hexBokehNearDownPass.fullscreenMaterial.setSize(width, height);
 		this.hexBokehNearSmallBlurPass.fullscreenMaterial.setSize(width, height);
@@ -448,6 +457,7 @@ export class HexDofEffect extends Effect {
 		this.hexBlurFarXPass.fullscreenMaterial.setSize(width, height);
 		this.hexBlurFarYPass.fullscreenMaterial.setSize(width, height);
 
+		this.pixels = new Float32Array(this.resolution.baseWidth * this.resolution.baseHeight * 4);
 	}
 
 	/**
@@ -461,6 +471,7 @@ export class HexDofEffect extends Effect {
 	initialize(renderer: WebGLRenderer, alpha: boolean, frameBufferType: TextureDataType) {
 
 		this.depthPass.initialize(renderer, alpha, frameBufferType);
+		this.hexBokehFocalDistancePass.initialize(renderer, alpha, frameBufferType);
 		this.depthBokeh4XPass.initialize(renderer, alpha, frameBufferType);
 		this.hexBlurFarXPass.initialize(renderer, alpha, frameBufferType);
 		this.hexBlurFarYPass.initialize(renderer, alpha, frameBufferType);
@@ -481,6 +492,7 @@ export class HexDofEffect extends Effect {
 
 		if(frameBufferType !== undefined) {
 
+			this.renderTargetFocusDistance.texture.type = FloatType;
 			this.renderTarget.texture.type = frameBufferType;
 			this.renderTargetFocalBlurred.texture.type = frameBufferType;
 			this.renderTargetDepth.texture.type = frameBufferType;

@@ -1,8 +1,21 @@
+#include <common>
+#include <morphtarget_pars_vertex>
+#include <skinning_pars_vertex>
+#include <clipping_planes_pars_vertex>
+
 varying vec4 vPos;
 
 void main() {
 
-	vPos = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-	gl_Position = vPos;
+	#include <skinbase_vertex>
 
+	#include <begin_vertex>
+	#include <morphtarget_vertex>
+	#include <skinning_vertex>
+	#include <project_vertex>
+
+	vPos = gl_Position;
+
+	#include <clipping_planes_vertex>
+	
 }

@@ -78,7 +78,7 @@ function Effects() {
         if(dof instanceof HexDofEffect) {
             setDepthTexture(dof.renderTargetFocusDistance.texture)
         } else {
-            setDepthTexture(dof.renderTargetFar.texture)
+            setDepthTexture(dof.renderTargetDepth.texture)
         }
         setDepthDebugColor([ColorChannel.RED])
         return () => setDepthTexture(null)
