@@ -397,8 +397,9 @@ export class HexDofEffect extends Effect {
 		renderer.readRenderTargetPixels(
 			this.renderTargetFocusDistance, 0, 0, this.resolution.baseWidth, this.resolution.baseHeight, this.pixels
 		);
-		console.log(this.pixels.filter((_, i) => i % 4 == 0))
-
+		const debugResult = this.pixels.filter((_, i) => i % 4 == 0)
+		debugResult
+		
 		// Render the CoC and create a blurred version for soft near field blending.
 		this.depthBokeh4XPass.render(renderer, inputBuffer, renderTargetCoC);
 		
