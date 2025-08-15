@@ -17,7 +17,6 @@ import WebGPUEffectComposer from "./WebGPUEffectComposer";
 
 function Effects() {
     const [dof, setDof] = useState<DepthOfFieldEffect | HexDofEffect>()
-    const [depthDebugColor, setDepthDebugColor] = useState<[number, number?, number?, number?]>()
     const character = useGlobalStore(state => state.character)
 
     const effectConfig = useControls('Effects', {
@@ -54,6 +53,14 @@ function Effects() {
         return obj
     }, [dof])
 
+    const debugChannels = {
+        r: [ColorChannel.RED],
+        g: [ColorChannel.GREEN],
+        b: [ColorChannel.BLUE],
+        a: [ColorChannel.ALPHA],
+        rgba: [ColorChannel.RED, ColorChannel.GREEN, ColorChannel.BLUE, ColorChannel.ALPHA]
+    } as {[k: string]: [number, number?, number?, number?]}
+
     const dofConfig = useControls('Effects.DepthOfField', {
         enabled: buildGuiItem("bokeh enabled"),
         distance: {
@@ -75,6 +82,10 @@ function Effects() {
         debugTexture: {
             value: debugTextures["None"],
             options: debugTextures
+        },
+        debugChannel: {
+            value: debugChannels.r,
+            options: debugChannels
         }
     }, { collapsed: true }, [debugTextures]);
 
@@ -106,11 +117,6 @@ function Effects() {
         character.skeleton.getBoneByName("センター").getWorldPosition(dof.target)
     })
 
-    useEffect(() => {
-        if (!dof) return
-        setDepthDebugColor([ColorChannel.RED])
-    }, [dof])
-
     const renderer = useThree(state => state.gl)
     const isWebGPU = renderer instanceof WebGPURenderer
 
@@ -122,7 +128,7 @@ function Effects() {
                 {effectConfig["show outline"] && <OutlinePass></OutlinePass>}
                 {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.enabled && character && <DepthOfField ref={setDof} {...dofConfig}></DepthOfField>}
-                {dofConfig.debugTexture && <TextureEffectComp texture={dofConfig.debugTexture} colorChannel={depthDebugColor} ></TextureEffectComp>}
+                {dofConfig.debugTexture && <TextureEffectComp texture={dofConfig.debugTexture} colorChannel={dofConfig.debugChannel} ></TextureEffectComp>}
             </EffectComposer>
         );
     }
