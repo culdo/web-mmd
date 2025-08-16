@@ -6,11 +6,10 @@ import {
 	ShaderPass,
 	OverrideMaterialManager
 } from "postprocessing";
-import { Camera, Color, DepthTexture, FloatType, PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureDataType, Uniform, UnsignedByteType, Vector2, Vector3, Vector4, WebGLRenderer, WebGLRenderTarget } from "three";
+import { Camera, Color, PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureDataType, Uniform, UnsignedByteType, Vector2, Vector3, WebGLRenderer, WebGLRenderTarget } from "three";
 
 import { HexDepthBokeh4XMaterial } from "./HexDepthBokeh4XMaterial";
 import { WorldScaledDepthMaterial } from "./WorldScaledDepthMaterial";
-import { RealisiticDepthMaterial } from "./RealisiticDepthMaterial";
 import { HexBlurFarXMaterial } from "./HexBlurFarXMaterial";
 import { HexBlurFarYMaterial } from "./HexBlurFarYMaterial";
 import { HexBokehFarGatherMaterial } from "./HexBokehFarGatherMaterial";
@@ -21,6 +20,7 @@ import { HexBokehSmoothingNearMaterial } from "./HexBokehSmoothingNearMaterial";
 import { HexBokehFocalDistanceMaterial } from "./HexBokehFocalDistanceMaterial";
 
 import fragmentShader from "./shaders/hexDof.frag";
+import vertexShader from "./shaders/hexDof.vert";
 import { getOutputColorSpace, setTextureColorSpace } from "./utils/all";
 
 OverrideMaterialManager.workaroundEnabled = true;
@@ -99,6 +99,7 @@ export class HexDofEffect extends Effect {
 	}: { blendFunction?: BlendFunction; worldFocusDistance?: number; worldFocusRange?: number; focusDistance?: number; focusRange?: number; focalLength?: number; bokehScale?: number; resolutionScale?: number; resolutionX?: number; resolutionY?: number; width?: number; height?: number; } = {}) {
 
 		super("HexDofEffect", fragmentShader, {
+			vertexShader,
 			blendFunction,
 			defines: new Map([
 				// mMeasureMode: 当数值在0.0是使用自动测距，数值在0.25时可以跟随骨骼并且自动测距，数值0.5时使用固定的焦长，数值1.0时使用相机到骨骼的距离
@@ -108,13 +109,14 @@ export class HexDofEffect extends Effect {
 				["DOF_POSSION_SAMPLES", "36"]
 			]),
 			uniforms: new Map([
-				["inputBuffer", new Uniform(null)],
-				["depthBuffer", new Uniform(null)],
+				["wDepthBuffer", new Uniform(null)],
 				["bokehBuffer", new Uniform(null)],
-				["focalCameraParams", new Uniform(new Vector4())],
+				["autoFocusBuffer", new Uniform(null)],
+				["mFstop", new Uniform(1.8)],
+				["mFocalLength", new Uniform(camera.getFocalLength())],
 				["viewportSize", new Uniform(new Vector2())],
-				["mFocalRegion", new Uniform(1.0)],
-				["mTestMode", new Uniform(1.0)]
+				["offset", new Uniform(new Vector2())],
+				["mFocalRegion", new Uniform(1.0)]
 			])
 		});
 
@@ -140,10 +142,11 @@ export class HexDofEffect extends Effect {
 
 		this.renderTargetDepth = new WebGLRenderTarget(1, 1);
 		this.renderTargetDepth.texture.name = "DoF.Depth";
-		this.uniforms.get("depthBuffer").value = this.renderTargetDepth.texture;
+		this.uniforms.get("wDepthBuffer").value = this.renderTargetDepth.texture;
 
 		this.renderTargetFocusDistance = this.renderTarget.clone();
 		this.renderTargetFocusDistance.texture.name = "DoF.FocalDistance";
+		this.uniforms.get("autoFocusBuffer").value = this.renderTargetFocusDistance.texture;
 
 		/**
 		 * A render target for masked background colors (premultiplied with CoC).
@@ -405,7 +408,7 @@ export class HexDofEffect extends Effect {
 		// Render the CoC and create a blurred version for soft near field blending.
 		this.depthBokeh4XPass.render(renderer, inputBuffer, renderTargetCoC);
 		
-		const debugResult = this.debugRenderTarget(renderer, renderTargetCoC)
+		// const debugResult = this.debugRenderTarget(renderer, renderTargetCoC)
 		
 		// Use the sharp CoC buffer and render the background bokeh.
 		this.hexBlurFarXPass.render(renderer, renderTargetCoC, renderTargetHexBlurred);
@@ -451,18 +454,26 @@ export class HexDofEffect extends Effect {
 		this.renderTarget.setSize(w, h);
 		this.renderTargetCoCBlurred.setSize(w, h);
 		this.renderTargetFocalBlurred.setSize(w, h);
+		
+		const offsetX = 1 / (1024 * width / height)
+		const offsetY = 1 / 1024
 
 		// Optimization: 1 / (TexelSize * ResolutionScale) = FullResolution
 		this.depthBokeh4XPass.fullscreenMaterial.setSize(width, height);
 		this.hexBokehNearDownPass.fullscreenMaterial.setSize(width, height);
-		this.hexBokehNearSmallBlurPass.fullscreenMaterial.setSize(width, height);
-		this.hexBokehSmoothingNearXPass.fullscreenMaterial.setSize(width, height);
-		this.hexBokehSmoothingNearYPass.fullscreenMaterial.setSize(width, height);
+
+		this.hexBokehSmoothingNearXPass.fullscreenMaterial.offset = new Vector2(offsetX, 0.0);
+		this.hexBokehSmoothingNearYPass.fullscreenMaterial.offset = new Vector2(0.0, offsetY);
+		
+		this.hexBokehNearSmallBlurPass.fullscreenMaterial.offset = new Vector2(0.0, offsetY);
 
 		this.hexBlurFarXPass.fullscreenMaterial.setSize(width, height);
 		this.hexBlurFarYPass.fullscreenMaterial.setSize(width, height);
 
 		this.pixels = new Float32Array(this.resolution.baseWidth * this.resolution.baseHeight * 4);
+
+		this.uniforms.get("viewportSize").value.set(width, height)
+		this.uniforms.get("offset").value.set(offsetX, offsetY)
 	}
 
 	/**

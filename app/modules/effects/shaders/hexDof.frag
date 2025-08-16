@@ -1,11 +1,10 @@
-uniform highp sampler2D depthBuffer;
+uniform highp sampler2D wDepthBuffer;
 uniform highp sampler2D bokehBuffer;
-uniform highp sampler2D inputBuffer;
 
 uniform vec2 offset;
 
 // [focalDistance, focalLength, focalAperture, 1]
-uniform vec4 focalCameraParams;
+varying vec4 focalCameraParams;
 uniform vec2 viewportSize;
 uniform float mFocalRegion;
 
@@ -52,8 +51,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 	);
 
 	vec4 CoC = texture2D(bokehBuffer, uv);
-	vec4 colors = vec4(texture2D(inputBuffer, uv).rgb, 1);
-
+	vec4 colors = vec4(texture2D(inputBuffer, uv).rgb, 1.0);
 
 	vec2 calcedOffset = (saturate(-CoC.a) * 2.0 + 1.0) * offset;
 
@@ -63,9 +61,9 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 		colors += color;
 	}
 
-	CoC.a = ComputeDepthCoC(texture2D(depthBuffer, uv).r);
+	CoC.a = ComputeDepthCoC(texture2D(wDepthBuffer, uv).r);
 
-	float SDF = GetSampleCircleSDF(uv * viewportSize, viewportSize * vec2(0.5, 0/5), viewportSize.y * 0.2) * 0.5;
+	float SDF = GetSampleCircleSDF(uv * viewportSize, viewportSize * vec2(0.5, 0.5), viewportSize.y * 0.2) * 0.5;
 
 	colors.rgb /= float(DOF_POSSION_SAMPLES + 1);
 	colors.rgb = mix(colors.rgb, ((CoC.a > 0.0) ? vec3(0,0.05,0.1) : vec3(0.1,0.05,0)) * abs(CoC.a), mTestMode);

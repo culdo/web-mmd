@@ -1,7 +1,7 @@
 import { NoBlending, ShaderMaterial, Uniform, Texture, Vector2, PerspectiveCamera } from "three";
 
 import fragmentShader from "./shaders/hexDepthBokeh4X.frag";
-import vertexShader from "./shaders/hexBokehFocalParams.vert";
+import vertexShader from "./shaders/hexDepthBokeh4X.vert";
 
 export class HexDepthBokeh4XMaterial extends ShaderMaterial {
 
