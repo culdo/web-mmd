@@ -1,7 +1,7 @@
 import { NoBlending, RawShaderMaterial, Uniform, Vector2, GLSL3, Texture } from "three";
 
 import fragmentShader from "./shaders/hexBlurFarX.frag";
-import vertexShader from "./shaders/hexBokeh.vert";
+import vertexShader from "./shaders/common3.vert";
 
 /**
  * A hex bokeh blur material.
