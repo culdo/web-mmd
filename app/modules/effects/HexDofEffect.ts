@@ -156,10 +156,9 @@ export class HexDofEffect extends Effect {
 		this.renderTargetBokehTemp.texture.name = "DoF.Bokeh.Temp";
 
 		this.renderTargetFocalBlurred = new WebGLRenderTarget(1, 1, { depthBuffer: false, count: 2 });
-		this.renderTargetFocalBlurred.texture.name = "DoF.FocalBlured";
 
-		this.renderTargetFocalBlurred.textures[0].name = "vertical"
-		this.renderTargetFocalBlurred.textures[1].name = "diagonal"
+		this.renderTargetFocalBlurred.textures[0].name = "DoF.vertical"
+		this.renderTargetFocalBlurred.textures[1].name = "DoF.diagonal"
 
 
 		/**
@@ -368,11 +367,11 @@ export class HexDofEffect extends Effect {
 
 	}
 
-	debugRenderTarget(renderer: WebGLRenderer, renderTarget: WebGLRenderTarget) {
+	debugRenderTarget(renderer: WebGLRenderer, renderTarget: WebGLRenderTarget, redChannel=false) {
 		renderer.readRenderTargetPixels(
 			renderTarget, 0, 0, this.resolution.baseWidth, this.resolution.baseHeight, this.pixels
 		);
-		const debugResult = this.pixels.filter((_, i) => i % 4 == 0)
+		const debugResult = redChannel ? this.pixels.filter((_, i) => i % 4 == 0) : this.pixels
 		return debugResult
 	}
 
@@ -403,10 +402,10 @@ export class HexDofEffect extends Effect {
 		// Render Auto focaus distance
 		this.hexBokehFocalDistancePass.render(renderer, null, this.renderTargetFocusDistance)
 
-		const debugResult = this.debugRenderTarget(renderer, this.renderTargetFocusDistance)
-
 		// Render the CoC and create a blurred version for soft near field blending.
 		this.depthBokeh4XPass.render(renderer, inputBuffer, renderTargetCoC);
+		
+		const debugResult = this.debugRenderTarget(renderer, renderTargetCoC)
 		
 		// Use the sharp CoC buffer and render the background bokeh.
 		this.hexBlurFarXPass.render(renderer, renderTargetCoC, renderTargetHexBlurred);
@@ -498,7 +497,10 @@ export class HexDofEffect extends Effect {
 
 		if(frameBufferType !== undefined) {
 
-			this.renderTargetFocusDistance.texture.type = FloatType;
+			this.renderTargetFocusDistance.texture.type = frameBufferType;
+			this.renderTargetCoC.texture.type = frameBufferType;
+			this.renderTargetCoCBlurred.texture.type = frameBufferType;
+			this.renderTargetCoCNear.texture.type = frameBufferType;
 			this.renderTarget.texture.type = frameBufferType;
 			this.renderTargetFocalBlurred.texture.type = frameBufferType;
 			this.renderTargetDepth.texture.type = frameBufferType;

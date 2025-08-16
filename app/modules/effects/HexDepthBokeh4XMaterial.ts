@@ -10,6 +10,7 @@ export class HexDepthBokeh4XMaterial extends ShaderMaterial {
 		super({
 			name: "HexDepthBokeh4XMaterial",
 			uniforms: {
+				inputBuffer: new Uniform(null),
 				depthBuffer: new Uniform(depthTexture),
 				mFocalRegion: new Uniform(1.0),
 				mFstop: new Uniform(1.8),

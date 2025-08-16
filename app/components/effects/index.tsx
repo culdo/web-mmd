@@ -9,7 +9,7 @@ import { HexDofEffect } from "@/app/modules/effects/HexDofEffect";
 import { buildGuiItem, buildGuiObj } from "@/app/utils/gui";
 import { useFrame, useThree } from "@react-three/fiber";
 import { DepthOfField } from "./DepthOfField";
-import { Texture, Vector3, WebGLRenderTarget } from "three";
+import { FloatType, Texture, Vector3, WebGLRenderTarget } from "three";
 import { TextureEffectComp } from "./TextureEffectComp";
 import { ColorChannel } from "postprocessing";
 import { WebGPURenderer } from "three/webgpu";
@@ -25,9 +25,9 @@ function Effects() {
 
     const debugTextures = useMemo(() => {
         if (!dof) return { None: null }
-        let textures: WebGLRenderTarget[];
+        let rts: WebGLRenderTarget[];
         if (dof instanceof DepthOfFieldEffect) {
-            textures = [
+            rts = [
                 dof.renderTarget,
                 dof.renderTargetCoC,
                 dof.renderTargetCoCBlurred,
@@ -37,7 +37,7 @@ function Effects() {
                 dof.renderTargetNear,
             ]
         } else {
-            textures = [
+            rts = [
                 dof.renderTarget,
                 dof.renderTargetBokehTemp,
                 dof.renderTargetCoC,
@@ -45,11 +45,19 @@ function Effects() {
                 dof.renderTargetDepth,
                 dof.renderTargetFar,
                 dof.renderTargetFocusDistance,
+                dof.renderTargetFocalBlurred,
                 dof.renderTargetCoCNear,
             ]
         }
-        const obj = Object.fromEntries(textures.map((t) => [t.texture.name, t.texture]))
-        obj["None"] = null
+
+        const obj: Record<string, Texture> = {
+            None: null
+        }
+        for(const rt of rts) {
+            for(const t of rt.textures) {
+                obj[t.name] = t
+            }
+        }
         return obj
     }, [dof])
 
@@ -124,7 +132,7 @@ function Effects() {
         return <WebGPUEffectComposer></WebGPUEffectComposer>
     } else {
         return (
-            <EffectComposer renderPriority={3}>
+            <EffectComposer renderPriority={3} frameBufferType={FloatType}>
                 {effectConfig["show outline"] && <OutlinePass></OutlinePass>}
                 {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.enabled && character && <DepthOfField ref={setDof} {...dofConfig}></DepthOfField>}
