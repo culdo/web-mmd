@@ -460,7 +460,7 @@ export class HexDofEffect extends Effect {
 
 		// Optimization: 1 / (TexelSize * ResolutionScale) = FullResolution
 		this.depthBokeh4XPass.fullscreenMaterial.setSize(width, height);
-		this.hexBokehNearDownPass.fullscreenMaterial.setSize(width, height);
+		this.hexBokehNearDownPass.fullscreenMaterial.offset = new Vector2(offsetX, offsetY);
 
 		this.hexBokehSmoothingNearXPass.fullscreenMaterial.offset = new Vector2(offsetX, 0.0);
 		this.hexBokehSmoothingNearYPass.fullscreenMaterial.offset = new Vector2(0.0, offsetY);

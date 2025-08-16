@@ -26,7 +26,7 @@ export class HexBokehNearDownMaterial extends ShaderMaterial {
 
 	}
 
-	setSize(width: number, height: number) {
-		this.uniforms.offset.value.set(1.0 / width, 1.0 / height);
+	set offset(value: Vector2) {
+		this.uniforms.offset.value = value
 	}
 }
