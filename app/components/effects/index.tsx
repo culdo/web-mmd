@@ -152,8 +152,8 @@ function Effects() {
         return (
             <EffectComposer renderPriority={3} frameBufferType={FloatType}>
                 {effectConfig["show outline"] && <OutlinePass></OutlinePass>}
-                {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.enabled && character && <DepthOfField ref={setDof} {...dofConfig}></DepthOfField>}
+                {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.debugTexture && <TextureEffectComp texture={dofConfig.debugTexture} colorChannel={dofConfig.debugChannel} ></TextureEffectComp>}
             </EffectComposer>
         );
