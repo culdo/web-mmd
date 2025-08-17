@@ -1,13 +1,16 @@
 # Web-MMD
-<p align="center">
+<div align="center">
   <a href="https://culdo.github.io/web-mmd/">
     <img alt="Web-MMD" src="tests/index.spec.ts-snapshots/changing-camera-mode-with-saving-config-3-Google-Chrome-darwin.png" width="80%"/>
   </a>
-</p>
+  <h2>
+   <a href="https://culdo.github.io/web-mmd/">
+   🚀 Try it now ! 🚀
+   </a>
+  </h2>
+</div>
 
-[🚀 Try it now ! 🚀](https://culdo.github.io/web-mmd/)
-
-For who wants to play MMD in the browser, now you can play it anywhere.
+For who wants to play MMD in the browser, now you can play it in **real-time** anywhere.
 
 This project is inspired by [the amazing three.js example](https://takahirox.github.io/three.js/examples/webgl_loader_mmd_audio.html) which by @takahirox.
 
@@ -32,13 +35,19 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
   * **→** : Previous keyframe
   * **←** : Next keyframe
 
+# Model & Lights
+Move these object on `transform control` through below ways: 
+* Directly click on a `Model`
+* Select a `Light` from `Lights > [Choose a light] > Select` gui menu
+
 # Demo credits
-* music: GimmexGimme by 八王子P × Giga
-* model: つみ式みくさんv4 by つみだんご
-* motion: ぎみぎみ（みっちゃん）_原曲音源 by シガー
-* emotion: GimmeGimmeリップ表情v07 by ノン
-* camera: Gimme x Gimme镜头 by 冬菇
-* stage: RedialC_EpRoomDS by RedialC
+The demo presets is from [this excellent MMD video](https://www.youtube.com/watch?v=ix9nEjSxgeo) :
+* Music: GimmexGimme by 八王子P × Giga
+* Model: つみ式みくさんv4 by つみだんご
+* Motion: ぎみぎみ（みっちゃん）_原曲音源 by シガー
+* Emotion: GimmeGimmeリップ表情v07 by ノン
+* Camera: Gimme x Gimme镜头 by 冬菇
+* Stage: RedialC_EpRoomDS by RedialC
 
 # Development
 1. Install deps via `npm install`
@@ -46,11 +55,13 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
 * Modules which mainly come from [the three.js example](https://takahirox.github.io/three.js/examples/webgl_loader_mmd_audio.html) is refactored to Classes and Async/Await styles.
 * This projects is refactored to using `Next.js`(TypeScript).
 
-## Tech stacks
-* `three.js` (For MMD)
+## Tech stack
+* `three.js` forked by @takahirox (For MMD)
 * `postprocessing.js` (For effects)
+  * HexDoF effect is ported from [Ray-MMD](https://github.com/ray-cast/ray-mmd) HLSL shaders
+* `Next.js` (For framework and static site generation)
+* `@react-three/*` (For r3f eco-system tools)
 * `theatre.js` (For camera editor mode)
-* `Next.js` (For static site generating)
 * `media-chrome` (For audio from YT)
 * `playwright` (For testing)
 
@@ -81,9 +92,13 @@ It uses `Github Action` to deploy the demo site. Related files located at `./.gi
     - [x] camera composition mode
     - [x] camera editor mode (using Theatre.js)
 - [x] Experimental WebGPU support
+- [x] Efficient Hex DoF effect
 
 ## WIP
-
-## Planning
 - [ ] In-APP Credits list
-- [ ] Efficient Bokeh effect
+- [ ] Allow multiple models
+
+## Planning 
+- [ ] Camera movement templates
+- [ ] Auto turn-off some effects on the first time for real-time performance
+- [ ] A little camera game(?)
