@@ -90,7 +90,7 @@ export class HexDofEffect extends Effect {
 		focalLength = 0.1,
 		focusRange = focalLength,
 		bokehScale = 1.0,
-		resolutionScale = 1.0,
+		resolutionScale = 0.5,
 		width = Resolution.AUTO_SIZE,
 		height = Resolution.AUTO_SIZE,
 		resolutionX = width,
@@ -285,7 +285,7 @@ export class HexDofEffect extends Effect {
 
 		this.resolution = new Resolution(this, resolutionX, resolutionY, resolutionScale);
 
-		this.pixels = new Float32Array(this.resolution.baseWidth * this.resolution.baseHeight * 4);
+		this.pixels = new Float32Array(this.resolution.width * this.resolution.height * 4);
 	}
 
 	/**
@@ -357,7 +357,7 @@ export class HexDofEffect extends Effect {
 
 	debugRenderTarget(renderer: WebGLRenderer, renderTarget: WebGLRenderTarget, redChannel=false) {
 		renderer.readRenderTargetPixels(
-			renderTarget, 0, 0, this.resolution.baseWidth, this.resolution.baseHeight, this.pixels
+			renderTarget, 0, 0, this.resolution.width, this.resolution.height, this.pixels
 		);
 		const debugResult = redChannel ? this.pixels.filter((_, i) => i % 4 == 0) : this.pixels
 		return debugResult
@@ -418,20 +418,23 @@ export class HexDofEffect extends Effect {
 		const w = resolution.width, h = resolution.height;
 
 		// These buffers require full resolution to prevent color bleeding.
-		this.renderTargetFar.setSize(width, height);
-		this.renderTargetCoC.setSize(width, height);
-		this.renderTargetCoCNear.setSize(width, height);
-		this.renderTargetBokehTemp.setSize(width, height);
+		this.renderTargetFar.setSize(w, h);
+		this.renderTargetCoC.setSize(w, h);
+		this.renderTargetCoCNear.setSize(w, h);
+		this.renderTargetBokehTemp.setSize(w, h);
+		this.renderTargetFocalBlurred.setSize(w, h);
 		
 		this.renderTargetDepth.setSize(w, h);
 		this.renderTarget.setSize(w, h);
-		this.renderTargetFocalBlurred.setSize(w, h);
 		
-		const offsetX = 1 / (1024 * width / height)
-		const offsetY = 1 / 1024
+		const offsetX = 1 / (1024 * width / height);
+		const offsetY = 1 / 1024;
 
 		// Optimization: 1 / (TexelSize * ResolutionScale) = FullResolution
-		this.depthBokeh4XPass.fullscreenMaterial.setSize(width, height);
+		this.depthBokeh4XPass.fullscreenMaterial.setSize(w, h);
+		this.hexBlurFarXPass.fullscreenMaterial.setSize(w, h);
+		this.hexBlurFarYPass.fullscreenMaterial.setSize(w, h);
+
 		this.hexBokehNearDownPass.fullscreenMaterial.offset = new Vector2(offsetX, offsetY);
 
 		this.hexBokehSmoothingNearXPass.fullscreenMaterial.offset = new Vector2(offsetX, 0.0);
@@ -439,10 +442,7 @@ export class HexDofEffect extends Effect {
 		
 		this.hexBokehNearSmallBlurPass.fullscreenMaterial.offset = new Vector2(0.0, offsetY);
 
-		this.hexBlurFarXPass.fullscreenMaterial.setSize(width, height);
-		this.hexBlurFarYPass.fullscreenMaterial.setSize(width, height);
-
-		this.pixels = new Float32Array(this.resolution.baseWidth * this.resolution.baseHeight * 4);
+		this.pixels = new Float32Array(this.resolution.width * this.resolution.height * 4);
 
 		this.uniforms.get("viewportSize").value.set(width, height)
 		this.uniforms.get("offset").value.set(offsetX, offsetY)
