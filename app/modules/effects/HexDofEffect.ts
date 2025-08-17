@@ -9,7 +9,7 @@ import {
 import { Camera, Color, PerspectiveCamera, Scene, SRGBColorSpace, Texture, TextureDataType, Uniform, UnsignedByteType, Vector2, Vector3, WebGLRenderer, WebGLRenderTarget } from "three";
 
 import { HexDepthBokeh4XMaterial } from "./HexDepthBokeh4XMaterial";
-import { WorldScaledDepthMaterial } from "./WorldScaledDepthMaterial";
+import { RealisiticDepthMaterial } from "./RealisiticDepthMaterial";
 import { HexBlurFarXMaterial } from "./HexBlurFarXMaterial";
 import { HexBlurFarYMaterial } from "./HexBlurFarYMaterial";
 import { HexBokehFarGatherMaterial } from "./HexBokehFarGatherMaterial";
@@ -84,18 +84,12 @@ export class HexDofEffect extends Effect {
 
 	constructor(scene: Scene, camera: PerspectiveCamera, {
 		blendFunction,
-		worldFocusDistance,
-		worldFocusRange,
-		focusDistance = 0.0,
-		focalLength = 0.1,
-		focusRange = focalLength,
-		bokehScale = 1.0,
 		resolutionScale = 0.5,
 		width = Resolution.AUTO_SIZE,
 		height = Resolution.AUTO_SIZE,
 		resolutionX = width,
 		resolutionY = height
-	}: { blendFunction?: BlendFunction; worldFocusDistance?: number; worldFocusRange?: number; focusDistance?: number; focusRange?: number; focalLength?: number; bokehScale?: number; resolutionScale?: number; resolutionX?: number; resolutionY?: number; width?: number; height?: number; } = {}) {
+	}: { blendFunction?: BlendFunction; resolutionScale?: number; resolutionX?: number; resolutionY?: number; width?: number; height?: number; } = {}) {
 
 		super("HexDofEffect", fragmentShader, {
 			vertexShader,
@@ -197,7 +191,7 @@ export class HexDofEffect extends Effect {
 
 
 		// Depth pass
-		this.depthPass = new RenderPass(scene, camera, new WorldScaledDepthMaterial());
+		this.depthPass = new RenderPass(scene, camera, new RealisiticDepthMaterial());
 
 		const clearPass = this.depthPass.clearPass;
 		clearPass.overrideClearColor = new Color(0xffffff);

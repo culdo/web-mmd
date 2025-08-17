@@ -1,12 +1,10 @@
-import { MaskFunction } from 'postprocessing'
 import { Ref, forwardRef, useMemo, useEffect, useContext } from 'react'
 import { ReactThreeFiber } from '@react-three/fiber'
 import { type DepthPackingStrategies, PerspectiveCamera, type Texture, Vector3 } from 'three'
 import { EffectComposerContext } from '@react-three/postprocessing'
-import { DepthOfFieldEffect } from '@/app/modules/effects/DepthOfFieldEffect'
 import { HexDofEffect } from '@/app/modules/effects/HexDofEffect'
 
-type DOFProps = ConstructorParameters<typeof DepthOfFieldEffect>[2] &
+type DOFProps = ConstructorParameters<typeof HexDofEffect>[2] &
   Partial<{
     target: ReactThreeFiber.Vector3
     depthTexture: {
@@ -22,12 +20,6 @@ type DOFProps = ConstructorParameters<typeof DepthOfFieldEffect>[2] &
 export const DepthOfField = forwardRef(function DepthOfField(
   {
     blendFunction,
-    worldFocusDistance,
-    worldFocusRange,
-    focusDistance,
-    focusRange,
-    focalLength,
-    bokehScale,
     resolutionScale,
     resolutionX,
     resolutionY,
@@ -38,20 +30,13 @@ export const DepthOfField = forwardRef(function DepthOfField(
     hexDof,
     ...props
   }: DOFProps,
-  ref: Ref<DepthOfFieldEffect|HexDofEffect>
+  ref: Ref<HexDofEffect>
 ) {
   const { camera, scene } = useContext(EffectComposerContext)
   const autoFocus = target != null
   const effect = useMemo(() => {
-    const dofMethod = hexDof ? HexDofEffect : DepthOfFieldEffect;
-    const effect = new dofMethod(scene, camera as PerspectiveCamera, {
+    const effect = new HexDofEffect(scene, camera as PerspectiveCamera, {
       blendFunction,
-      worldFocusDistance,
-      worldFocusRange,
-      focusDistance,
-      focusRange,
-      focalLength,
-      bokehScale,
       resolutionScale,
       resolutionX,
       resolutionY,
@@ -66,12 +51,6 @@ export const DepthOfField = forwardRef(function DepthOfField(
   }, [
     camera,
     blendFunction,
-    worldFocusDistance,
-    worldFocusRange,
-    focusDistance,
-    focusRange,
-    focalLength,
-    bokehScale,
     resolutionScale,
     resolutionX,
     resolutionY,

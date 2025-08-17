@@ -1,22 +1,21 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { useControls } from "leva";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import OutlinePass from "./OutlinePass";
 
-import { DepthOfFieldEffect } from "@/app/modules/effects/DepthOfFieldEffect";
 import { HexDofEffect } from "@/app/modules/effects/HexDofEffect";
 import { buildGuiItem, buildGuiObj } from "@/app/utils/gui";
 import { useFrame, useThree } from "@react-three/fiber";
 import { DepthOfField } from "./DepthOfField";
-import { FloatType, Texture, Vector3, WebGLRenderTarget } from "three";
+import { FloatType, Texture, Vector3 } from "three";
 import { TextureEffectComp } from "./TextureEffectComp";
 import { ColorChannel } from "postprocessing";
 import { WebGPURenderer } from "three/webgpu";
 import WebGPUEffectComposer from "./WebGPUEffectComposer";
 
 function Effects() {
-    const [dof, setDof] = useState<DepthOfFieldEffect | HexDofEffect>()
+    const [dof, setDof] = useState<HexDofEffect>()
     const character = useGlobalStore(state => state.character)
 
     const effectConfig = useControls('Effects', {
@@ -25,29 +24,16 @@ function Effects() {
 
     const debugTextures = useMemo(() => {
         if (!dof) return { None: null }
-        let rts: WebGLRenderTarget[];
-        if (dof instanceof DepthOfFieldEffect) {
-            rts = [
-                dof.renderTarget,
-                dof.renderTargetCoC,
-                dof.renderTargetCoCBlurred,
-                dof.renderTargetDepth,
-                dof.renderTargetFar,
-                dof.renderTargetMasked,
-                dof.renderTargetNear,
-            ]
-        } else {
-            rts = [
-                dof.renderTarget,
-                dof.renderTargetBokehTemp,
-                dof.renderTargetCoC,
-                dof.renderTargetDepth,
-                dof.renderTargetFar,
-                dof.renderTargetFocusDistance,
-                dof.renderTargetFocalBlurred,
-                dof.renderTargetCoCNear,
-            ]
-        }
+        const rts = [
+            dof.renderTarget,
+            dof.renderTargetBokehTemp,
+            dof.renderTargetCoC,
+            dof.renderTargetDepth,
+            dof.renderTargetFar,
+            dof.renderTargetFocusDistance,
+            dof.renderTargetFocalBlurred,
+            dof.renderTargetCoCNear,
+        ]
 
         const obj: Record<string, Texture> = {
             None: null
@@ -169,7 +155,7 @@ function Effects() {
         return (
             <EffectComposer renderPriority={3} frameBufferType={FloatType}>
                 {effectConfig["show outline"] && <OutlinePass></OutlinePass>}
-                {dofConfig.enabled && character && <DepthOfField ref={setDof} {...dofConfig}></DepthOfField>}
+                {dofConfig.enabled && character && <DepthOfField ref={setDof}></DepthOfField>}
                 {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.debugTexture && <TextureEffectComp texture={dofConfig.debugTexture} colorChannel={dofConfig.debugChannel} ></TextureEffectComp>}
             </EffectComposer>
