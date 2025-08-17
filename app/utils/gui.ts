@@ -112,7 +112,11 @@ function buildGuiObj<const T extends keyof PresetState>(key: T, order: number = 
             ...buildGuiItem(key),
             order
         }
-    } as Schema
+    } as {
+        [key in T]: ReturnType<typeof buildGuiItem<T>> & {
+            order: number
+        }
+    }
 }
 
 function buildFlexGuiItem<T>(path: string, handler?: OnChangeHandler) {

@@ -61,7 +61,7 @@ export class HexDofEffect extends Effect {
 	renderTargetFocusDistance: WebGLRenderTarget<Texture>;
 	renderTargetCoCNear: WebGLRenderTarget<Texture>;
 	hexBokehFocalDistancePass: HexBokehFocalDistancePass;
-	pixels: Float32Array<ArrayBuffer>;
+	pixels: Float32Array;
 
 	/**
 	 * Constructs a new depth of field effect.
