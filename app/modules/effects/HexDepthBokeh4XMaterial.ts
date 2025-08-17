@@ -14,7 +14,7 @@ export class HexDepthBokeh4XMaterial extends ShaderMaterial {
 				depthBuffer: new Uniform(depthTexture),
 				mFocalRegion: new Uniform(1.0),
 				mFstop: new Uniform(1.8),
-				mFocalLength: new Uniform(camera.getFocalLength()),
+				mFocalLength: new Uniform(35.0),
 				autoFocusBuffer: new Uniform(autoFocusBuffer),
 				texelSize: new Uniform(new Vector2())
 			},

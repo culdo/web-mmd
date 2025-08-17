@@ -110,7 +110,7 @@ export class HexDofEffect extends Effect {
 				["nearBuffer", new Uniform(null)],
 				["autoFocusBuffer", new Uniform(null)],
 				["mFstop", new Uniform(1.8)],
-				["mFocalLength", new Uniform(camera.getFocalLength())],
+				["mFocalLength", new Uniform(35.0)],
 				["viewportSize", new Uniform(new Vector2())],
 				["offset", new Uniform(new Vector2())],
 				["mFocalRegion", new Uniform(1.0)]
