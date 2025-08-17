@@ -1,7 +1,7 @@
-varying float vPos;
+varying vec4 vPos;
 
 void main() {
 
-	gl_FragColor.r = vPos;
+	gl_FragColor.r = length(vPos);
 
 }

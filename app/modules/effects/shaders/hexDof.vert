@@ -1,7 +1,7 @@
-varying vec4 focalCameraParams;
 uniform float mFocalLength;
 uniform float mFstop;
 uniform sampler2D autoFocusBuffer;
+varying vec4 focalCameraParams;
 
 void mainSupport(const in vec2 uv) {
 

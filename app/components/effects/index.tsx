@@ -87,6 +87,24 @@ function Effects() {
             max: 50
         },
         hexDof: true,
+        TestMode: {
+            value: 0.0,
+            min: 0.0,
+            max: 1.0,
+            onChange: (val) => {
+                if(!dof) return
+                dof.uniforms.get("mTestMode").value = val
+            }
+        },
+        MeasureMode: {
+            value: 0.0,
+            min: 0.0,
+            max: 1.0,
+            onChange: (val) => {
+                if(!dof) return
+                dof.uniforms.get("mMeasureMode").value = val
+            }
+        },
         debugTexture: {
             value: debugTextures["None"],
             options: debugTextures

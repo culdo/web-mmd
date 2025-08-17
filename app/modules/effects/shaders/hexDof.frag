@@ -7,14 +7,18 @@ uniform vec2 offset;
 varying vec4 focalCameraParams;
 uniform vec2 viewportSize;
 uniform float mFocalRegion;
+uniform float mMeasureMode;
+uniform float mTestMode;
+
+#define DOF_POSSION_SAMPLES 36
 
 float ComputeDepthCoC(float depth) {
 
 	float D = depth;
 	// focalDistance
 	float P = focalCameraParams.x;
-	// focalLength
-	float F = focalCameraParams.y;
+	// focalLength by magic normalization
+	float F = 1.0 / (1.0 / focalCameraParams.y + 1.0 / P);
 	// focalAperture
 	float aspect = focalCameraParams.z;
 

@@ -26,7 +26,7 @@ float ComputeDepthCoC(float depth) {
 	// focalDistance
 	float P = focalCameraParams.x;
 	// focalLength
-	float F = focalCameraParams.y;
+	float F = 1.0 / (1.0 / focalCameraParams.y + 1.0 / P);
 	// focalAperture
 	float aspect = focalCameraParams.z;
 

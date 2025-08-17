@@ -101,14 +101,11 @@ export class HexDofEffect extends Effect {
 		super("HexDofEffect", fragmentShader, {
 			vertexShader,
 			blendFunction,
-			defines: new Map([
-				// mMeasureMode: 当数值在0.0是使用自动测距，数值在0.25时可以跟随骨骼并且自动测距，数值0.5时使用固定的焦长，数值1.0时使用相机到骨骼的距离
-				["mTestMode", "0.0"],
-				["mMeasureMode", "0.0"],
-				["mFocalDistance", "1.0"],
-				["DOF_POSSION_SAMPLES", "36"]
-			]),
 			uniforms: new Map([
+				// mMeasureMode: 当数值在0.0是使用自动测距，数值在0.25时可以跟随骨骼并且自动测距，数值0.5时使用固定的焦长，数值1.0时使用相机到骨骼的距离
+				["mMeasureMode", new Uniform(0.0)],
+				["mTestMode", new Uniform(0.0)],
+				["mFocalDistance", new Uniform(1.0)],
 				["wDepthBuffer", new Uniform(null)],
 				["bokehBuffer", new Uniform(null)],
 				["autoFocusBuffer", new Uniform(null)],
@@ -394,11 +391,6 @@ export class HexDofEffect extends Effect {
 		const renderTargetHexBlurred = this.renderTargetFocalBlurred;
 		const renderTargetBokehTemp = this.renderTargetBokehTemp;
 
-		// Auto follow bone.
-		if(this.target !== null) {
-			const distance = this.calculateFocusDistance(this.target);
-		}
-
 		// Render Depth
 		this.depthPass.render(renderer, this.renderTargetDepth, null);
 
@@ -408,7 +400,7 @@ export class HexDofEffect extends Effect {
 		// Render the CoC and create a blurred version for soft near field blending.
 		this.depthBokeh4XPass.render(renderer, inputBuffer, renderTargetCoC);
 		
-		// const debugResult = this.debugRenderTarget(renderer, renderTargetCoC)
+		const debugResult = this.debugRenderTarget(renderer, this.renderTargetFocusDistance)
 		
 		// Use the sharp CoC buffer and render the background bokeh.
 		this.hexBlurFarXPass.render(renderer, renderTargetCoC, renderTargetHexBlurred);
