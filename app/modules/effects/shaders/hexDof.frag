@@ -75,6 +75,6 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 	colors.rgb = mix(colors.rgb, vec3(0.01, 0.4, 0.09), SDF * mTestMode * (1.0 - step(0.5, mMeasureMode)));
 	colors.a = mix(saturate(pow2(CoC.a * 2.0)), 1.0, mTestMode);
 
-	outputColor = colors;
+	outputColor = inputColor * (1.0 - colors.a) + colors * colors.a;
 }
 

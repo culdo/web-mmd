@@ -65,6 +65,7 @@ function Effects() {
         g: [ColorChannel.GREEN],
         b: [ColorChannel.BLUE],
         a: [ColorChannel.ALPHA],
+        rgb: [ColorChannel.RED, ColorChannel.GREEN, ColorChannel.BLUE],
         rgba: [ColorChannel.RED, ColorChannel.GREEN, ColorChannel.BLUE, ColorChannel.ALPHA]
     } as {[k: string]: [number, number?, number?, number?]}
 

@@ -422,7 +422,6 @@ export class HexDofEffect extends Effect {
 		this.renderTargetCoC.setSize(width, height);
 		this.renderTargetCoCNear.setSize(width, height);
 		this.renderTargetBokehTemp.setSize(width, height);
-		this.renderTargetFocusDistance.setSize(width, height);
 		
 		this.renderTargetDepth.setSize(w, h);
 		this.renderTarget.setSize(w, h);
