@@ -1,7 +1,7 @@
 import CameraWorkHelper from "./helper";
 import { button, useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import { loadFile } from "@/app/utils/gui";
+import { buildGuiItem, loadFile } from "@/app/utils/gui";
 import usePresetStore from "@/app/stores/usePresetStore";
 
 import { PerspectiveCamera } from "@react-three/drei";
@@ -30,6 +30,11 @@ function Camera() {
                 set({ name })
             })
         }),
+        "fov": {
+            ...buildGuiItem("fov"),
+            min: 0.0,
+            max: 100.0
+        }
     }), { order: 201, collapsed: true }, [presetReady])
 
     return (

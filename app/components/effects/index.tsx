@@ -76,15 +76,32 @@ function Effects() {
             min: 0,
             max: 1
         },
-        focusRange: {
-            ...buildGuiItem("bokeh focus range"),
-            min: 0,
-            max: 1
+        focalLength: {
+            ...buildGuiItem("bokeh focal length", (value) => {
+                if(!(dof instanceof HexDofEffect)) return
+                dof.uniforms.get("mFocalLength").value = value
+                dof.depthBokeh4XPass.fullscreenMaterial.uniforms.mFocalLength.value = value
+            }),
+            min: 1.0,
+            max: 70.0
         },
-        bokehScale: {
-            ...buildGuiItem("bokeh scale"),
-            min: 0,
-            max: 50
+        focusRange: {
+            ...buildGuiItem("bokeh focus range", (value) => {
+                if(!(dof instanceof HexDofEffect)) return
+                dof.uniforms.get("mFocalRegion").value = value
+                dof.depthBokeh4XPass.fullscreenMaterial.uniforms.mFocalRegion.value = value
+            }),
+            min: 0.5,
+            max: 5.0
+        },
+        fStop: {
+            ...buildGuiItem("bokeh fStop", (value) => {
+                if(!(dof instanceof HexDofEffect)) return
+                dof.uniforms.get("mFstop").value = value
+                dof.depthBokeh4XPass.fullscreenMaterial.uniforms.mFstop.value = value
+            }),
+            min: 1.0,
+            max: 8.0
         },
         hexDof: true,
         TestMode: {
