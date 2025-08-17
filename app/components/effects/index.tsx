@@ -41,7 +41,6 @@ function Effects() {
                 dof.renderTarget,
                 dof.renderTargetBokehTemp,
                 dof.renderTargetCoC,
-                dof.renderTargetCoCBlurred,
                 dof.renderTargetDepth,
                 dof.renderTargetFar,
                 dof.renderTargetFocusDistance,
@@ -110,7 +109,7 @@ function Effects() {
             options: debugTextures
         },
         debugChannel: {
-            value: debugChannels.r,
+            value: debugChannels.rgba,
             options: debugChannels
         }
     }, { collapsed: true }, [debugTextures]);

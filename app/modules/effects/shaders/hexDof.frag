@@ -1,5 +1,6 @@
 uniform highp sampler2D wDepthBuffer;
 uniform highp sampler2D bokehBuffer;
+uniform highp sampler2D nearBuffer;
 
 uniform vec2 offset;
 
@@ -55,13 +56,13 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 	);
 
 	vec4 CoC = texture2D(bokehBuffer, uv);
-	vec4 colors = vec4(texture2D(inputBuffer, uv).rgb, 1.0);
+	vec4 colors = vec4(texture2D(nearBuffer, uv).rgb, 1.0);
 
 	vec2 calcedOffset = (saturate(-CoC.a) * 2.0 + 1.0) * offset;
 
 	for(int i = 0; i < DOF_POSSION_SAMPLES; i++)
 	{
-		vec4 color = texture2D(inputBuffer, uv + poisson[i] * calcedOffset);
+		vec4 color = texture2D(nearBuffer, uv + poisson[i] * calcedOffset);
 		colors += color;
 	}
 
