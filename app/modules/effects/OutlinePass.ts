@@ -184,12 +184,12 @@ class OutlinePass extends Pass {
 
 		}
 
-		function isCompatible(object: { geometry: any; isMesh: boolean; material: any; }) {
+		function isCompatible(object: { geometry: any; isMesh: boolean; material: any; isSkinnedMesh?: any }) {
 
 			const geometry = object.geometry;
 			const hasNormals = (geometry !== undefined) && (geometry.attributes.normal !== undefined);
 
-			return (object.isMesh === true && object.material !== undefined && hasNormals === true);
+			return (object.isSkinnedMesh === true && object.material !== undefined && hasNormals === true);
 
 		}
 
