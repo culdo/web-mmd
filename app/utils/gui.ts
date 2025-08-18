@@ -1,5 +1,5 @@
 import { levaStore } from "leva";
-import { OnChangeHandler, Schema } from "leva/dist/declarations/src/types";
+import { InputOptions, OnChangeHandler, Schema } from "leva/dist/declarations/src/types";
 import _ from "lodash";
 import usePresetStore, { PresetState } from "../stores/usePresetStore";
 import { blobToBase64 } from "./base";
@@ -106,16 +106,14 @@ function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnCha
     }
 }
 
-function buildGuiObj<const T extends keyof PresetState>(key: T, order: number = null) {
+function buildGuiObj<const T extends keyof PresetState>(key: T, options?: InputOptions) {
     return {
         [key]: {
             ...buildGuiItem(key),
-            order
+            ...options
         }
     } as {
-        [key in T]: ReturnType<typeof buildGuiItem<T>> & {
-            order: number
-        }
+        [key in T]: ReturnType<typeof buildGuiItem<T>> & InputOptions
     }
 }
 

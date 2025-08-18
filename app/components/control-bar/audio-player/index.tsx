@@ -26,7 +26,7 @@ function AudioPlayer() {
     const studio = useGlobalStore(state => state.theatreStudio)
 
     useControls(() => ({
-        ...buildGuiObj("auto hide GUI", 1)
+        ...buildGuiObj("auto hide GUI", { order: 1 })
     }))
 
     const [gui, setMusicGui] = useControls('Music', () => ({
@@ -79,7 +79,7 @@ function AudioPlayer() {
 
     const onSeeked = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         if (!ytPlayer.current.paused) return
-        if(cameraMode == CameraMode.EDITOR) {
+        if (cameraMode == CameraMode.EDITOR) {
             const sequence = getProject("MMD").sheet("MMD UI").sequence
             sequence.position = ytPlayer.current.currentTime
         }
