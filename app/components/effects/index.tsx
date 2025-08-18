@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import OutlinePass from "./OutlinePass";
 
 import { HexDofEffect } from "@/app/modules/effects/HexDofEffect";
-import { buildGuiItem, buildGuiObj } from "@/app/utils/gui";
+import { buildGuiItem, buildGuiObj, buildGuiFunc } from "@/app/utils/gui";
 import { useFrame, useThree } from "@react-three/fiber";
 import { DepthOfField } from "./DepthOfField";
 import { FloatType, Texture, Vector3 } from "three";
@@ -39,8 +39,8 @@ function Effects() {
         const obj: Record<string, Texture> = {
             None: null
         }
-        for(const rt of rts) {
-            for(const t of rt.textures) {
+        for (const rt of rts) {
+            for (const t of rt.textures) {
                 obj[t.name] = t
             }
         }
@@ -54,24 +54,29 @@ function Effects() {
         a: [ColorChannel.ALPHA],
         rgb: [ColorChannel.RED, ColorChannel.GREEN, ColorChannel.BLUE],
         rgba: [ColorChannel.RED, ColorChannel.GREEN, ColorChannel.BLUE, ColorChannel.ALPHA]
-    } as {[k: string]: [number, number?, number?, number?]}
+    } as { [k: string]: [number, number?, number?, number?] }
 
     const preset = usePresetStore()
+
+    const buildDofGui = buildGuiFunc({
+        disabled: !preset["bokeh enabled"]
+    })
 
     const dofConfig = useControls('Effects.DepthOfField', {
         enabled: buildGuiItem("bokeh enabled"),
         "fix focalDistance": {
-            ...buildGuiItem("bokeh focal distance", (value) => {
-                if(!dof) return
+            ...buildDofGui("bokeh focal distance", (value) => {
+                if (!dof) return
                 dof.hexBokehFocalDistancePass.fullscreenMaterial.uniforms.fixDistance.value = value
+            }, {
+                disabled: preset["bokeh measureMode"] != 0.5
             }),
             min: 0.0,
-            max: 100.0,
-            disabled: preset["bokeh measureMode"] != 0.5
+            max: 100.0
         },
         focalLength: {
-            ...buildGuiItem("bokeh focal length", (value) => {
-                if(!dof) return
+            ...buildDofGui("bokeh focal length", (value) => {
+                if (!dof) return
                 dof.uniforms.get("mFocalLength").value = value
                 dof.depthBokeh4XPass.fullscreenMaterial.uniforms.mFocalLength.value = value
             }),
@@ -79,8 +84,8 @@ function Effects() {
             max: 70.0
         },
         focusRange: {
-            ...buildGuiItem("bokeh focus range", (value) => {
-                if(!dof) return
+            ...buildDofGui("bokeh focus range", (value) => {
+                if (!dof) return
                 dof.uniforms.get("mFocalRegion").value = value
                 dof.depthBokeh4XPass.fullscreenMaterial.uniforms.mFocalRegion.value = value
             }),
@@ -88,8 +93,8 @@ function Effects() {
             max: 5.0
         },
         fStop: {
-            ...buildGuiItem("bokeh fStop", (value) => {
-                if(!(dof instanceof HexDofEffect)) return
+            ...buildDofGui("bokeh fStop", (value) => {
+                if (!(dof instanceof HexDofEffect)) return
                 dof.uniforms.get("mFstop").value = value
                 dof.depthBokeh4XPass.fullscreenMaterial.uniforms.mFstop.value = value
             }),
@@ -97,16 +102,16 @@ function Effects() {
             max: 8.0
         },
         TestMode: {
-            ...buildGuiItem("bokeh testMode", (value) => {
-                if(!dof) return
+            ...buildDofGui("bokeh testMode", (value) => {
+                if (!dof) return
                 dof.uniforms.get("mTestMode").value = value
             }),
             min: 0.0,
             max: 1.0,
         },
         MeasureMode: {
-            ...buildGuiItem("bokeh measureMode", (value) => {
-                if(!dof) return
+            ...buildDofGui("bokeh measureMode", (value) => {
+                if (!dof) return
                 dof.uniforms.get("mMeasureMode").value = value
                 dof.hexBokehFocalDistancePass.fullscreenMaterial.uniforms.mMeasureMode.value = value
             }),
@@ -119,11 +124,13 @@ function Effects() {
         },
         debugTexture: {
             value: debugTextures["None"],
-            options: debugTextures
+            options: debugTextures,
+            disabled: !preset["bokeh enabled"]
         },
         debugChannel: {
             value: debugChannels.rgba,
-            options: debugChannels
+            options: debugChannels,
+            disabled: !preset["bokeh enabled"]
         }
     }, { collapsed: true }, [debugTextures, preset]);
 

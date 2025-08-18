@@ -69,53 +69,51 @@ function setLevaValue<T>(path: string, value: T) {
 // extract type from array type
 type GuiValue<T> = T extends number[] ? [number, number, number] : T;
 
-function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnChangeHandler, min = 0, max = 1) {
+function buildGuiFunc(defaultOptions?: InputOptions) {
+    return function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnChangeHandler, options?: InputOptions) {
 
-    const initialValue = usePresetStore.getState()[key]
+        const initialValue = usePresetStore.getState()[key]
 
-    const onChange: OnChangeHandler = (value, path, options) => {
+        const onChange: OnChangeHandler = (value, path, options) => {
 
-        if (!options.initial) {
-            usePresetStore.setState({ [key]: value })
-        } else {
-            value = initialValue
+            if (!options.initial) {
+                usePresetStore.setState({ [key]: value })
+            } else {
+                value = initialValue
 
-            const init = () => {
-                const initialValue = usePresetStore.getState()[key]
-                setLevaValue(path, initialValue)
+                const init = () => {
+                    const initialValue = usePresetStore.getState()[key]
+                    setLevaValue(path, initialValue)
+                }
+                usePresetStore.persist.onFinishHydration(init)
             }
-            usePresetStore.persist.onFinishHydration(init)
+            if (handler) {
+                handler(value, path, options)
+            }
         }
-        if (handler) {
-            handler(value, path, options)
-        }
-    }
-    if (typeof initialValue == "number") {
         return {
-            value: initialValue as GuiValue<PresetState[T]>,
-            min,
-            max,
+            value: initialValue,
             onChange,
-            transient: false as const
-        }
-    }
-    return {
-        value: initialValue as GuiValue<PresetState[T]>,
-        onChange,
-        transient: false as const
+            transient: false,
+            ...defaultOptions,
+            ...options,
+            disabled: defaultOptions?.disabled || options?.disabled
+        } as { value: GuiValue<PresetState[T]> } & InputOptions
     }
 }
+
+const buildGuiItem = buildGuiFunc()
 
 function buildGuiObj<const T extends keyof PresetState>(key: T, options?: InputOptions) {
     return {
         [key]: {
-            ...buildGuiItem(key),
-            ...options
+            ...buildGuiItem(key, options?.onChange, options)
         }
     } as {
-        [key in T]: ReturnType<typeof buildGuiItem<T>> & InputOptions
-    }
+            [key in T]: ReturnType<typeof buildGuiItem<T>>
+        }
 }
+
 
 function buildFlexGuiItem<T>(path: string, handler?: OnChangeHandler) {
 
@@ -209,4 +207,4 @@ function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userDa
 }
 
 
-export { buildMaterialGuiItem, buildFlexGuiItem, buildGuiItem, buildGuiObj, loadFile, loadModel, setLevaValue };
+export { buildMaterialGuiItem, buildFlexGuiItem, buildGuiFunc, buildGuiItem, buildGuiObj, loadFile, loadModel, setLevaValue };
