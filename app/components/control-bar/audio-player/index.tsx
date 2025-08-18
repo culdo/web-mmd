@@ -54,6 +54,7 @@ function AudioPlayer() {
             // editor mode
             studio?.ui.hide()
         };
+        useGlobalStore.setState({ showCredits: false })
         useGlobalStore.setState({ enabledTransform: false })
     }
 

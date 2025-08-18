@@ -93,9 +93,9 @@ It uses `Github Action` to deploy the demo site. Related files located at `./.gi
     - [x] camera editor mode (using Theatre.js)
 - [x] Experimental WebGPU support
 - [x] Efficient Hex DoF effect
+- [x] In-APP Credits list
 
 ## WIP
-- [ ] In-APP Credits list
 - [ ] Allow multiple models
 
 ## Planning 
