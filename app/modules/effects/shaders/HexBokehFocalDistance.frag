@@ -17,8 +17,8 @@ uniform float viewportAspect;
 
 varying vec2 vUv;
 
-// 先寫死，方便debug
-#define distToTarget 1.0
+uniform float fixDistance;
+uniform float mMeasureMode;
 
 // mMeasureMode=0.25 -> 為跟隨骨骼平面X偏移值，否則為0.5(正中間)
 void main() {
@@ -55,6 +55,6 @@ void main() {
 	}
 
 	float distance = avgDepth.x / avgDepth.y;
-	gl_FragColor.r = mix(distance + mFocalDistance - 1.0, distToTarget, step(0.5, mMeasureMode));
+	gl_FragColor.r = mix(distance + mFocalDistance - 1.0, fixDistance, step(0.5, mMeasureMode));
 }
 

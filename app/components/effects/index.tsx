@@ -13,6 +13,7 @@ import { TextureEffectComp } from "./TextureEffectComp";
 import { ColorChannel } from "postprocessing";
 import { WebGPURenderer } from "three/webgpu";
 import WebGPUEffectComposer from "./WebGPUEffectComposer";
+import usePresetStore from "@/app/stores/usePresetStore";
 
 function Effects() {
     const [dof, setDof] = useState<HexDofEffect>()
@@ -55,16 +56,22 @@ function Effects() {
         rgba: [ColorChannel.RED, ColorChannel.GREEN, ColorChannel.BLUE, ColorChannel.ALPHA]
     } as {[k: string]: [number, number?, number?, number?]}
 
+    const preset = usePresetStore()
+
     const dofConfig = useControls('Effects.DepthOfField', {
         enabled: buildGuiItem("bokeh enabled"),
-        distance: {
-            value: 0,
-            min: 0,
-            max: 1
+        "fix focalDistance": {
+            ...buildGuiItem("bokeh focal distance", (value) => {
+                if(!dof) return
+                dof.hexBokehFocalDistancePass.fullscreenMaterial.uniforms.fixDistance.value = value
+            }),
+            min: 0.0,
+            max: 100.0,
+            disabled: preset["bokeh measureMode"] != 0.5
         },
         focalLength: {
             ...buildGuiItem("bokeh focal length", (value) => {
-                if(!(dof instanceof HexDofEffect)) return
+                if(!dof) return
                 dof.uniforms.get("mFocalLength").value = value
                 dof.depthBokeh4XPass.fullscreenMaterial.uniforms.mFocalLength.value = value
             }),
@@ -73,7 +80,7 @@ function Effects() {
         },
         focusRange: {
             ...buildGuiItem("bokeh focus range", (value) => {
-                if(!(dof instanceof HexDofEffect)) return
+                if(!dof) return
                 dof.uniforms.get("mFocalRegion").value = value
                 dof.depthBokeh4XPass.fullscreenMaterial.uniforms.mFocalRegion.value = value
             }),
@@ -89,24 +96,26 @@ function Effects() {
             min: 1.0,
             max: 8.0
         },
-        hexDof: true,
         TestMode: {
-            value: 0.0,
+            ...buildGuiItem("bokeh testMode", (value) => {
+                if(!dof) return
+                dof.uniforms.get("mTestMode").value = value
+            }),
             min: 0.0,
             max: 1.0,
-            onChange: (val) => {
-                if(!dof) return
-                dof.uniforms.get("mTestMode").value = val
-            }
         },
         MeasureMode: {
-            value: 0.0,
-            min: 0.0,
-            max: 1.0,
-            onChange: (val) => {
+            ...buildGuiItem("bokeh measureMode", (value) => {
                 if(!dof) return
-                dof.uniforms.get("mMeasureMode").value = val
-            }
+                dof.uniforms.get("mMeasureMode").value = value
+                dof.hexBokehFocalDistancePass.fullscreenMaterial.uniforms.mMeasureMode.value = value
+            }),
+            options: {
+                "Auto center distance": 0.0,
+                "Auto bone distance": 0.25,
+                "Fix distance": 0.5,
+                "Camera-to-Bone distance": 1.0
+            },
         },
         debugTexture: {
             value: debugTextures["None"],
@@ -116,7 +125,7 @@ function Effects() {
             value: debugChannels.rgba,
             options: debugChannels
         }
-    }, { collapsed: true }, [debugTextures]);
+    }, { collapsed: true }, [debugTextures, preset]);
 
     const bloomConfig = useControls('Effects.Bloom', {
         enabled: buildGuiItem("bloom enabled"),
