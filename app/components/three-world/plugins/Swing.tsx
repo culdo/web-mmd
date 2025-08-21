@@ -4,7 +4,8 @@ import AmmoCls from "ammojs-typed";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
-import WithModel from "../ModelHelper/WithModel";
+import WithModel from "../model/helper/WithModel";
+import usePresetStore from "@/app/stores/usePresetStore";
 
 type MeshWithPhys = THREE.Mesh & {
     userData: {
@@ -17,7 +18,8 @@ function Swing() {
     const scene = useThree(state => state.scene);
     const isTransformControl = useGlobalStore(state => state.isTransformControlRef)
     const runtimeCharacter = useGlobalStore(state => state.runtimeCharacter)
-    const character = useGlobalStore(state => state.character)
+    const targetModelId = usePresetStore(state => state.targetModelId)
+    const targetModel = useGlobalStore(state => state.models)[targetModelId]
 
     // Physics variables
     const rigidBodiesRef = useRef<MeshWithPhys[]>([]);
@@ -167,9 +169,9 @@ function Swing() {
         setGrip(threeObject)
         useGlobalStore.setState({
             bindParentCb: () => {
-                threeObject.add(character.skeleton.bones[0])
-                character.skeleton.bones[0].position.x = -sitLength * 0.5 - 1
-                character.skeleton.bones[0].position.y = -gripHeight - 1.0
+                threeObject.add(targetModel.skeleton.bones[0])
+                targetModel.skeleton.bones[0].position.x = -sitLength * 0.5 - 1
+                targetModel.skeleton.bones[0].position.y = -gripHeight - 1.0
                 runtimeCharacter.physics.reset()
             }
         })

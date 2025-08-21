@@ -9,15 +9,11 @@ import { withProgress } from '../utils/base';
 import { PersistStorage, StorageValue, persist } from '../middleware/persist';
 
 export type PresetState = typeof defaultConfig & {
-    motionFile: string,
+    motionFiles: Record<string, string>,
     cameraFile: string,
     pmxFiles: {
-        character: Record<string, string>,
-        stage: Record<string, string>,
-        modelTextures: {
-            character: Record<string, Record<string, string>>,
-            stage: Record<string, Record<string, string>>
-        }
+        models: Record<string, string>,
+        modelTextures: Record<string, Record<string, string>>
     }
 } & {
     compositeClips?: CameraClip[]
@@ -29,7 +25,15 @@ export type PresetState = typeof defaultConfig & {
     [key: `${string}.position`]: [number, number, number]
 } & {
     Light: Record<string, any>,
-    material: Record<string, any>
+    materials: Record<string, Record<string, any>>
+} & {
+    models: Record<string, {
+        fileName: string,
+        motionName: string,
+        enableMorph: boolean,
+        enablePhysics: boolean,
+        enableMaterial: boolean
+    }>,
 }
 
 let db = localforage.createInstance({ name: useConfigStore.getState().preset })
@@ -40,7 +44,7 @@ const storage: PersistStorage<PresetState> = {
         const preset = Object.fromEntries(await Promise.all(
             keys.map(async (key) =>
                 [key, await db.getItem(key)]
-        )
+            )
         ))
         console.log(name, 'has been retrieved', preset)
         return {
@@ -63,7 +67,7 @@ const storage: PersistStorage<PresetState> = {
 }
 
 const getDefaultDataWithProgress = async () => {
-        const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
+    const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
     return await dataResp.json()
 }
 

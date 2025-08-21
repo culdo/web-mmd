@@ -25,8 +25,7 @@ export type GlobalState = {
         looped: boolean
     },
     controls: OrbitControls
-    character: SkinnedMesh,
-    stage: SkinnedMesh,
+    models: Record<string, SkinnedMesh>,
     playDeltaRef: MutableRefObject<number>
     isMotionUpdating: () => boolean,
     beatsBufferRef: MutableRefObject<HTMLDivElement[]>
@@ -46,8 +45,7 @@ const useGlobalStore = create<GlobalState>(
         loader: new MMDLoader(),
         player: null,
         gui: {},
-        character: null,
-        stage: null,
+        models: {},
         runtimeCharacter: null,
         camera: null,
         cameraObj: null,

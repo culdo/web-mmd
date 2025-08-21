@@ -3,49 +3,68 @@ import { InputOptions, OnChangeHandler, Schema } from "leva/dist/declarations/sr
 import _ from "lodash";
 import usePresetStore, { PresetState } from "../stores/usePresetStore";
 import { blobToBase64 } from "./base";
-import useGlobalStore from "../stores/useGlobalStore";
 import * as THREE from "three";
+import { randomBytes } from "crypto";
 
-function loadModel(itemType: "character" | "stage") {
+function loadModel(add=false) {
     const selectFile = document.getElementById("selectFile") as HTMLInputElement
     selectFile.webkitdirectory = true;
     selectFile.onchange = async function (event: Event) {
-        const pmxFiles = usePresetStore.getState().pmxFiles;
+        const { pmxFiles, targetModelId, motionFiles } = usePresetStore.getState();
         const modelTextures = pmxFiles.modelTextures
 
         const input = event.target as HTMLInputElement
         if (input.files.length < 1) return;
-        let pmxFilesByType: any = pmxFiles[itemType] = {};
-        let texFilesByType: any = modelTextures[itemType] = {};
 
         // load model and textures from unzipped folder
-        let firstKey;
-        const resourceMap: any = {};
-        for (const f of input.files) {
-            let relativePath = f.webkitRelativePath;
-            const resourcePath = relativePath.split("/").slice(1).join("/").normalize()
+        let firstId: string;
+        let firstModelname: string;
 
-            let url = await blobToBase64(f);
+        for (const f of input.files) {
+            const base64data = await blobToBase64(f);
 
             // save model file
             if (f.name.includes(".pmx") || f.name.includes(".pmd")) {
-                const modelName = f.name
-                texFilesByType[modelName] = resourceMap;
+                const modelName = f.webkitRelativePath
+                if (!firstId) {
+                    firstId = `${f.name.split(".")[0]}-${randomBytes(3).toString('base64')}`
+                    firstModelname = modelName
+                }
+                pmxFiles.models[modelName] = base64data;
 
-                if (!firstKey) firstKey = modelName
-                pmxFilesByType[modelName] = url;
                 // save model textures
             } else {
-                resourceMap[resourcePath] = url;
+                const pathArr = f.webkitRelativePath.split("/")
+                const folderName = pathArr[0]
+                const resourcePath = pathArr.slice(1).join("/").normalize()
+                if (!modelTextures[folderName]) {
+                    modelTextures[folderName] = {}
+                }
+                modelTextures[folderName][resourcePath] = base64data;
             }
         }
-        usePresetStore.setState({ pmxFiles });
+        usePresetStore.setState({ pmxFiles: { ...pmxFiles } });
 
-        if (itemType == "character") {
-            usePresetStore.setState({ [itemType]: firstKey });
-        } else if (itemType == "stage") {
-            usePresetStore.setState({ stage: firstKey });
+        if (add) {
+            usePresetStore.setState({ targetModelId: firstId })
         }
+
+        usePresetStore.setState(({ models }) => {
+            const newModels = { ...models }
+            if(add) {
+                newModels[firstId] = {
+                    fileName: firstModelname,
+                    motionName: Object.entries(motionFiles)[0][0],
+                    enableMaterial: true,
+                    enableMorph: true,
+                    enablePhysics: true
+                }
+            } else {
+                newModels[targetModelId].fileName = firstModelname
+            }
+            return { models: newModels }
+        })
+
         // clear
         input.webkitdirectory = false
     }
@@ -140,71 +159,71 @@ function buildFlexGuiItem<T>(path: string, handler?: OnChangeHandler) {
     }
 }
 
-function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userData.${string}`, handlerOrArgs?: OnChangeHandler | readonly [OnChangeHandler, Record<string, any>], min = 0, max = 1) {
-    const character = useGlobalStore.getState()["character"]
-    const targetMaterialIdx = usePresetStore.getState()["targetMaterialIdx"]
+function buildMaterialGuiFunc(targetModel: THREE.SkinnedMesh, targetMaterialIdx: number) {
+    return function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userData.${string}`, handlerOrArgs?: OnChangeHandler | readonly [OnChangeHandler, Record<string, any>], min = 0, max = 1) {
 
-    const materials = character.material as any[]
+        const materials = targetModel.material as any[]
 
-    const targetMaterial = materials[targetMaterialIdx]
+        const targetMaterial = materials[targetMaterialIdx]
 
-    const configPath = `material.${targetMaterial.name}.${key}`
+        const configPath = `materials.${targetModel.name}.${targetMaterial.name}.${key}`
 
-    const targetProp = _.get(targetMaterial, key)
+        const targetProp = _.get(targetMaterial, key)
 
-    const initValFromMaterial = targetProp instanceof THREE.Color ? `#${targetProp.getHexString()}` : targetProp
-    const initialValue = _.get(usePresetStore.getState(), configPath) ?? initValFromMaterial
+        const initValFromMaterial = targetProp instanceof THREE.Color ? `#${targetProp.getHexString()}` : targetProp
+        const initialValue = _.get(usePresetStore.getState(), configPath) ?? initValFromMaterial
 
-    let handler: OnChangeHandler;
-    let options: Record<string, any>;
-    if (Array.isArray(handlerOrArgs)) {
-        [handler, options] = handlerOrArgs
-    } else if (typeof handlerOrArgs == "function") {
-        handler = handlerOrArgs
-    }
-
-    const onChange: OnChangeHandler = (value, path, context) => {
-        if (!context.initial) {
-            usePresetStore.setState((prevState) => {
-                _.set(prevState, configPath, value)
-                return { ...prevState }
-            })
-        } else {
-            value = initialValue
-            setLevaValue(path, initialValue)
+        let handler: OnChangeHandler;
+        let options: Record<string, any>;
+        if (Array.isArray(handlerOrArgs)) {
+            [handler, options] = handlerOrArgs
+        } else if (typeof handlerOrArgs == "function") {
+            handler = handlerOrArgs
         }
-        if (targetProp instanceof THREE.Color) {
-            targetProp.set(value)
-        } else {
-            _.set(targetMaterial, key, value)
+
+        const onChange: OnChangeHandler = (value, path, context) => {
+            if (!context.initial) {
+                usePresetStore.setState((prevState) => {
+                    _.set(prevState, configPath, value)
+                    return { ...prevState }
+                })
+            } else {
+                value = initialValue
+                setLevaValue(path, initialValue)
+            }
+            if (targetProp instanceof THREE.Color) {
+                targetProp.set(value)
+            } else {
+                _.set(targetMaterial, key, value)
+            }
+            if (handler) {
+                handler(value, path, context)
+            }
         }
-        if (handler) {
-            handler(value, path, context)
+        if (typeof initialValue == "number") {
+            return {
+                value: initialValue as T,
+                min,
+                max,
+                onChange,
+                transient: false as const
+            }
         }
-    }
-    if (typeof initialValue == "number") {
+        if (options) {
+            return {
+                value: initialValue as T,
+                onChange,
+                transient: false as const,
+                options
+            }
+        }
         return {
             value: initialValue as T,
-            min,
-            max,
             onChange,
             transient: false as const
         }
     }
-    if (options) {
-        return {
-            value: initialValue as T,
-            onChange,
-            transient: false as const,
-            options
-        }
-    }
-    return {
-        value: initialValue as T,
-        onChange,
-        transient: false as const
-    }
 }
 
 
-export { buildMaterialGuiItem, buildFlexGuiItem, buildGuiFunc, buildGuiItem, buildGuiObj, loadFile, loadModel, setLevaValue };
+export { buildMaterialGuiFunc, buildFlexGuiItem, buildGuiFunc, buildGuiItem, buildGuiObj, loadFile, loadModel, setLevaValue };

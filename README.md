@@ -94,9 +94,9 @@ It uses `Github Action` to deploy the demo site. Related files located at `./.gi
 - [x] Experimental WebGPU support
 - [x] Efficient Hex DoF effect
 - [x] In-APP Credits list
+- [x] Allow multiple models
 
 ## WIP
-- [ ] Allow multiple models
 
 ## Planning 
 - [ ] Camera movement templates

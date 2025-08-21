@@ -1,4 +1,3 @@
-import useGlobalStore from "@/app/stores/useGlobalStore";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { useControls } from "leva";
 import { useMemo, useState } from "react";
@@ -17,7 +16,6 @@ import usePresetStore from "@/app/stores/usePresetStore";
 
 function Effects() {
     const [dof, setDof] = useState<HexDofEffect>()
-    const character = useGlobalStore(state => state.character)
 
     const effectConfig = useControls('Effects', {
         ...buildGuiObj("show outline")
@@ -159,7 +157,6 @@ function Effects() {
         if (!dof.target) {
             dof.target = new Vector3()
         }
-        character.skeleton.getBoneByName("センター").getWorldPosition(dof.target)
     })
 
     const renderer = useThree(state => state.gl)
@@ -171,8 +168,8 @@ function Effects() {
         return (
             <EffectComposer renderPriority={3} frameBufferType={FloatType}>
                 {effectConfig["show outline"] && <OutlinePass></OutlinePass>}
-                {dofConfig.enabled && character && <DepthOfField ref={setDof}></DepthOfField>}
-                {bloomConfig.enabled && character && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
+                {dofConfig.enabled && <DepthOfField ref={setDof}></DepthOfField>}
+                {bloomConfig.enabled && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.debugTexture && <TextureEffectComp texture={dofConfig.debugTexture} colorChannel={dofConfig.debugChannel} ></TextureEffectComp>}
             </EffectComposer>
         );

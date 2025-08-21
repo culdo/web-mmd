@@ -2,15 +2,17 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { Vector3 } from "three";
-import WithModel from "../../../ModelHelper/WithModel";
+import WithModel from "../../../model/helper/WithModel";
+import usePresetStore from "@/app/stores/usePresetStore";
 
 function FixFollowMode() {
     const controls = useGlobalStore(state => state.controls)
-    const character = useGlobalStore(state => state.character)
+    const targetModelId = usePresetStore(state => state.targetModelId)
+    const targetModel = useGlobalStore(state => state.models)[targetModelId]
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
     const camera = useThree(state => state.camera)
 
-    const getSmoothCenter = () => character.getObjectByName("smoothCenter").position
+    const getSmoothCenter = () => targetModel.getObjectByName("smoothCenter").position
 
     const prevCenterPos = useRef(null)
     const isOrbitControl = useGlobalStore(state => state.isOrbitControl)
@@ -34,10 +36,10 @@ function FixFollowMode() {
         }
     }
     useEffect(() => {
-        if (!character || !controls) return
+        if (!targetModel || !controls) return
         controls.target = getSmoothCenter().clone()
         setTime()
-    }, [character, controls])
+    }, [targetModel, controls])
 
     useFrame(() => {
         if (isMotionUpdating()) setTime()

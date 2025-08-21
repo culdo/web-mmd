@@ -6,13 +6,15 @@ import useGlobalStore from '@/app/stores/useGlobalStore';
 
 function Debug() {
     const showFPS = usePresetStore(state => state['show FPS'])
-    const character = useGlobalStore(state => state.character)
+    const targetModelId = usePresetStore(state => state.targetModelId)
+    const targetModel = useGlobalStore(state => state.models)[targetModelId]
+    
     useControls("Debug", {
         ...buildGuiObj("show FPS")
     }, { collapsed: true, order: 90 })
     return ( 
         <>
-            {character && showFPS && <Perf position='top-left' />}
+            {targetModel && showFPS && <Perf position='top-left' />}
         </>
      );
 }
