@@ -100,7 +100,7 @@ useGlobalStore.setState({
 usePresetStore.persist.onFinishHydration(async (state) => {
     if (!state.pmxFiles || !state.models) {
         const defaultData = await getDefaultDataWithProgress()
-        usePresetStore.setState({ ...defaultData })
+        usePresetStore.setState({ ...defaultData, ...defaultConfig })
     }
     presetReadySolve()
     useGlobalStore.setState({ presetReady: true })
