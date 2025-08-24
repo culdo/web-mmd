@@ -98,8 +98,7 @@
                     "faceForward": 0.5
                 }
             }
-        },
-        "stage": {}
+        }
     },
     "targetMaterialIdx": 0,
     "Hemisphere intensity": 0,

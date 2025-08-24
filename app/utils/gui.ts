@@ -34,7 +34,7 @@ function loadModel(add=false) {
                 pmxFiles.models[modelName] = base64data;
 
                 // save model textures
-            } else {
+            } else if(f.type.startsWith("image/")) {
                 const pathArr = f.webkitRelativePath.split("/")
                 const folderName = pathArr[0]
                 const resourcePath = pathArr.slice(1).join("/").normalize()
