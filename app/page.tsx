@@ -13,15 +13,20 @@ const ControlBar = dynamic(() => import('./components/control-bar'), { ssr: fals
 
 export default function Home() {
   const isWebGPU = usePresetStore(state => state.isWebGPU)
+  const pr1 = usePresetStore(state => state["set pixelratio 1.0"])
+
   return (
     <>
       <LoadingOverlay></LoadingOverlay>
       <SceneTimeline></SceneTimeline>
-      <Canvas key={isWebGPU ? "webgpu" : "webgl"} gl={isWebGPU ? (async (props) => {
-        const renderer = new WebGPURenderer(props as any)
-        await renderer.init()
-        return renderer
-      }) : null} shadows>
+      <Canvas
+        dpr={pr1 ? 1.0 : undefined}
+        key={isWebGPU ? "webgpu" : "webgl"}
+        gl={isWebGPU ? (async (props) => {
+          const renderer = new WebGPURenderer(props as any)
+          await renderer.init()
+          return renderer
+        }) : null} shadows>
         <ThreeWorld />
       </Canvas>
       <ControlBar></ControlBar>
