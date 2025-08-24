@@ -5,6 +5,7 @@ import usePresetStore, { PresetState } from "../stores/usePresetStore";
 import { blobToBase64 } from "./base";
 import * as THREE from "three";
 import { randomBytes } from "crypto";
+import { nanoid } from "nanoid";
 
 function loadModel(add=false) {
     const selectFile = document.getElementById("selectFile") as HTMLInputElement
@@ -27,7 +28,7 @@ function loadModel(add=false) {
             if (f.name.includes(".pmx") || f.name.includes(".pmd")) {
                 const modelName = f.webkitRelativePath
                 if (!firstId) {
-                    firstId = `${f.name.split(".")[0]}-${randomBytes(3).toString('base64')}`
+                    firstId = `${f.name.split(".")[0]}-${nanoid(5)}`
                     firstModelname = modelName
                 }
                 pmxFiles.models[modelName] = base64data;
@@ -160,7 +161,7 @@ function buildFlexGuiItem<T>(path: string, handler?: OnChangeHandler) {
 }
 
 function buildMaterialGuiFunc(targetModel: THREE.SkinnedMesh, targetMaterialIdx: number) {
-    return function buildMaterialGuiItem<T>(key: keyof THREE.MeshPhysicalMaterial | `userData.${string}`, handlerOrArgs?: OnChangeHandler | readonly [OnChangeHandler, Record<string, any>], min = 0, max = 1) {
+    return function buildMaterialGuiItem<const T extends keyof THREE.MeshPhysicalMaterial | `userData.${string}`>(key: T, handlerOrArgs?: OnChangeHandler | readonly [OnChangeHandler, Record<string, any>], min = 0, max = 1) {
 
         const materials = targetModel.material as any[]
 
@@ -202,7 +203,7 @@ function buildMaterialGuiFunc(targetModel: THREE.SkinnedMesh, targetMaterialIdx:
         }
         if (typeof initialValue == "number") {
             return {
-                value: initialValue as T,
+                value: initialValue,
                 min,
                 max,
                 onChange,
@@ -211,14 +212,14 @@ function buildMaterialGuiFunc(targetModel: THREE.SkinnedMesh, targetMaterialIdx:
         }
         if (options) {
             return {
-                value: initialValue as T,
+                value: initialValue,
                 onChange,
                 transient: false as const,
                 options
             }
         }
         return {
-            value: initialValue as T,
+            value: initialValue,
             onChange,
             transient: false as const
         }
