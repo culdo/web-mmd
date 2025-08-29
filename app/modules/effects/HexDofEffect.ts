@@ -20,7 +20,6 @@ import { HexBokehSmoothingNearMaterial } from "./HexBokehSmoothingNearMaterial";
 import { HexBokehFocalDistanceMaterial } from "./HexBokehFocalDistanceMaterial";
 
 import fragmentShader from "./shaders/hexDof.frag";
-import vertexShader from "./shaders/hexDof.vert";
 import { getOutputColorSpace, setTextureColorSpace } from "./utils/all";
 
 OverrideMaterialManager.workaroundEnabled = true;
@@ -92,7 +91,6 @@ export class HexDofEffect extends Effect {
 	}: { blendFunction?: BlendFunction; resolutionScale?: number; resolutionX?: number; resolutionY?: number; width?: number; height?: number; } = {}) {
 
 		super("HexDofEffect", fragmentShader, {
-			vertexShader,
 			blendFunction,
 			uniforms: new Map([
 				// mMeasureMode: 当数值在0.0是使用自动测距，数值在0.25时可以跟随骨骼并且自动测距，数值0.5时使用固定的焦长，数值1.0时使用相机到骨骼的距离
@@ -103,8 +101,6 @@ export class HexDofEffect extends Effect {
 				["bokehBuffer", new Uniform(null)],
 				["nearBuffer", new Uniform(null)],
 				["autoFocusBuffer", new Uniform(null)],
-				["mFstop", new Uniform(1.8)],
-				["mFocalLength", new Uniform(35.0)],
 				["viewportSize", new Uniform(new Vector2())],
 				["offset", new Uniform(new Vector2())],
 				["mFocalRegion", new Uniform(1.0)]
@@ -210,7 +206,6 @@ export class HexDofEffect extends Effect {
 
 		this.depthBokeh4XPass = new ShaderPass(
 			new HexDepthBokeh4XMaterial(
-				camera,
 				this.renderTargetDepth.texture, 
 				this.renderTargetFocusDistance.texture
 			)
@@ -375,6 +370,7 @@ export class HexDofEffect extends Effect {
 		this.depthPass.render(renderer, this.renderTargetDepth, null);
 
 		// Render Auto focaus distance
+		this.hexBokehFocalDistancePass.fullscreenMaterial.vFov = this.camera.projectionMatrix.elements[5]
 		this.hexBokehFocalDistancePass.render(renderer, null, this.renderTargetFocusDistance)
 
 		this.depthBokeh4XPass.render(renderer, inputBuffer, renderTargetCoC);

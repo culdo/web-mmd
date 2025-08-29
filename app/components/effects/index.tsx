@@ -62,12 +62,10 @@ function Effects() {
 
     const dofConfig = useControls('Effects.DepthOfField', {
         enabled: buildGuiItem("bokeh enabled"),
-        "fix focalDistance": {
+        "focalDistance": {
             ...buildDofGui("bokeh focal distance", (value) => {
                 if (!dof) return
-                dof.hexBokehFocalDistancePass.fullscreenMaterial.uniforms.fixDistance.value = value
-            }, {
-                disabled: preset["bokeh measureMode"] != 0.5
+                dof.hexBokehFocalDistancePass.fullscreenMaterial.uniforms.mFocalDistance.value = value
             }),
             min: 0.0,
             max: 100.0
@@ -75,8 +73,7 @@ function Effects() {
         focalLength: {
             ...buildDofGui("bokeh focal length", (value) => {
                 if (!dof) return
-                dof.uniforms.get("mFocalLength").value = value
-                dof.depthBokeh4XPass.fullscreenMaterial.uniforms.mFocalLength.value = value
+                dof.hexBokehFocalDistancePass.fullscreenMaterial.uniforms.mFocalLength.value = value
             }),
             min: 1.0,
             max: 70.0
@@ -92,9 +89,8 @@ function Effects() {
         },
         fStop: {
             ...buildDofGui("bokeh fStop", (value) => {
-                if (!(dof instanceof HexDofEffect)) return
-                dof.uniforms.get("mFstop").value = value
-                dof.depthBokeh4XPass.fullscreenMaterial.uniforms.mFstop.value = value
+                if (!dof) return
+                dof.hexBokehFocalDistancePass.fullscreenMaterial.uniforms.mFstop.value = value
             }),
             min: 1.0,
             max: 8.0

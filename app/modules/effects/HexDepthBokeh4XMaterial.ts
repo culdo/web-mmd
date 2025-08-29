@@ -1,11 +1,11 @@
-import { NoBlending, ShaderMaterial, Uniform, Texture, Vector2, PerspectiveCamera } from "three";
+import { NoBlending, ShaderMaterial, Uniform, Texture, Vector2 } from "three";
 
 import fragmentShader from "./shaders/hexDepthBokeh4X.frag";
-import vertexShader from "./shaders/hexDepthBokeh4X.vert";
+import vertexShader from "./shaders/common.vert";
 
 export class HexDepthBokeh4XMaterial extends ShaderMaterial {
 
-	constructor(camera: PerspectiveCamera, depthTexture: Texture, autoFocusBuffer: Texture) {
+	constructor(depthTexture: Texture, autoFocusBuffer: Texture) {
 
 		super({
 			name: "HexDepthBokeh4XMaterial",
@@ -13,8 +13,6 @@ export class HexDepthBokeh4XMaterial extends ShaderMaterial {
 				inputBuffer: new Uniform(null),
 				depthBuffer: new Uniform(depthTexture),
 				mFocalRegion: new Uniform(1.0),
-				mFstop: new Uniform(1.8),
-				mFocalLength: new Uniform(35.0),
 				autoFocusBuffer: new Uniform(autoFocusBuffer),
 				texelSize: new Uniform(new Vector2())
 			},

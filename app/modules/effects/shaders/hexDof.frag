@@ -5,7 +5,8 @@ uniform highp sampler2D nearBuffer;
 uniform vec2 offset;
 
 // [focalDistance, focalLength, focalAperture, 1]
-varying vec4 focalCameraParams;
+uniform mediump sampler2D autoFocusBuffer;
+
 uniform vec2 viewportSize;
 uniform float mFocalRegion;
 uniform float mMeasureMode;
@@ -14,6 +15,7 @@ uniform float mTestMode;
 #define DOF_POSSION_SAMPLES 36
 
 float ComputeDepthCoC(float depth) {
+	vec3 focalCameraParams = texture2D(autoFocusBuffer, vec2(0.5, 0.5)).rgb;
 
 	float D = depth;
 	// focalDistance

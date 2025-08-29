@@ -15,10 +15,17 @@
 
 uniform float viewportAspect;
 
-varying vec2 vUv;
+uniform float mFocalLength;
+uniform float vFov;
 
-uniform float fixDistance;
+uniform float mFocalDistance;
 uniform float mMeasureMode;
+uniform float mFstop;
+
+float GetFocalLength(float focalDistance)
+{
+	return 1.0 / (1.0 / (0.5 * mFocalLength * vFov) + 1.0 / focalDistance);
+}
 
 // mMeasureMode=0.25 -> 為跟隨骨骼平面X偏移值，否則為0.5(正中間)
 void main() {
@@ -55,6 +62,11 @@ void main() {
 	}
 
 	float distance = avgDepth.x / avgDepth.y;
-	gl_FragColor.r = mix(distance + mFocalDistance - 1.0, fixDistance, step(0.5, mMeasureMode));
+	float focalDistance = mix(distance + mFocalDistance - 1.0, mFocalDistance, step(0.5, mMeasureMode));
+	
+	float focalLength = GetFocalLength(focalDistance);
+	float focalAperture = 1.0 / mFstop;
+	gl_FragColor.rgb = vec3(focalDistance, focalLength, focalAperture);
+
 }
 

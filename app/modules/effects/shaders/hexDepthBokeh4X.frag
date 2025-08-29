@@ -5,11 +5,13 @@
 
 	uniform highp sampler2D depthBuffer;
 	uniform highp sampler2D inputBuffer;
+	uniform highp sampler2D autoFocusBuffer;
 
 #else
 
 	uniform mediump sampler2D depthBuffer;
 	uniform mediump sampler2D inputBuffer;
+	uniform mediump sampler2D autoFocusBuffer;
 
 #endif
 
@@ -21,6 +23,7 @@ uniform float mFocalRegion;
 varying vec2 vUv;
 
 float ComputeDepthCoC(float depth) {
+	vec3 focalCameraParams = texture2D(autoFocusBuffer, vec2(0.5, 0.5)).rgb;
 
 	float D = depth;
 	// focalDistance
