@@ -13,17 +13,22 @@ import { ColorChannel } from "postprocessing";
 import { WebGPURenderer } from "three/webgpu";
 import WebGPUEffectComposer from "./WebGPUEffectComposer";
 import usePresetStore from "@/app/stores/usePresetStore";
+import { NormalBlending } from "./NormalBlending";
+import usePngTex from "../three-world/model/helper/usePngTex";
+import { NormalBlendingPass } from "@/app/modules/effects/NormalBlendingPass";
+import WithReady from "@/app/stores/WithReady";
 
 function Effects() {
     const [dof, setDof] = useState<HexDofEffect>()
+    const [normal, setNormal] = useState<NormalBlendingPass>()
 
     const effectConfig = useControls('Effects', {
         ...buildGuiObj("show outline")
     }, { order: 2 })
 
     const debugTextures = useMemo(() => {
-        if (!dof) return { None: null }
-        const rts = [
+        if (!normal) return { None: null }
+        const rts = dof ? [
             dof.renderTarget,
             dof.renderTargetBokehTemp,
             dof.renderTargetCoC,
@@ -31,7 +36,9 @@ function Effects() {
             dof.renderTargetFar,
             dof.renderTargetFocusDistance,
             dof.renderTargetFocalBlurred,
-            dof.renderTargetCoCNear,
+            dof.renderTargetCoCNear
+        ] : [
+            normal.outputBuffer
         ]
 
         const obj: Record<string, Texture> = {
@@ -43,7 +50,7 @@ function Effects() {
             }
         }
         return obj
-    }, [dof])
+    }, [dof, normal])
 
     const debugChannels = {
         r: [ColorChannel.RED],
@@ -118,13 +125,11 @@ function Effects() {
         },
         debugTexture: {
             value: debugTextures["None"],
-            options: debugTextures,
-            disabled: !preset["bokeh enabled"]
+            options: debugTextures
         },
         debugChannel: {
             value: debugChannels.rgba,
-            options: debugChannels,
-            disabled: !preset["bokeh enabled"]
+            options: debugChannels
         }
     }, { collapsed: true }, [debugTextures, preset]);
 
@@ -155,6 +160,19 @@ function Effects() {
         }
     })
 
+    const pngTexs = usePngTex()
+
+    const { normalMap, subNormalMap } = useControls(`Effects.NormalBlending`, {
+        normalMap: {
+            value: pngTexs['none'],
+            options: pngTexs
+        },
+        subNormalMap: {
+            value: pngTexs['none'],
+            options: pngTexs
+        }
+    }, [pngTexs])
+
     const renderer = useThree(state => state.gl)
     const isWebGPU = renderer instanceof WebGPURenderer
 
@@ -164,6 +182,7 @@ function Effects() {
         return (
             <EffectComposer renderPriority={3} frameBufferType={FloatType}>
                 {effectConfig["show outline"] && <OutlinePass></OutlinePass>}
+                {normalMap && subNormalMap && <NormalBlending ref={setNormal} normalMap={normalMap} subNormalMap={subNormalMap}></NormalBlending>}
                 {dofConfig.enabled && <DepthOfField ref={setDof}></DepthOfField>}
                 {bloomConfig.enabled && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.debugTexture && <TextureEffectComp texture={dofConfig.debugTexture} colorChannel={dofConfig.debugChannel} ></TextureEffectComp>}
@@ -172,4 +191,4 @@ function Effects() {
     }
 }
 
-export default Effects;
+export default WithReady(Effects);

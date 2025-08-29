@@ -1,6 +1,6 @@
 import defaultConfig from '@/app/presets/Default_config.json';
 import usePresetStore from "@/app/stores/usePresetStore";
-import { buildMaterialGuiFunc } from "@/app/utils/gui";
+import { buildGuiItem, buildMaterialGuiFunc } from "@/app/utils/gui";
 import { button, folder, useControls } from "leva";
 import { OnChangeHandler, Schema } from "leva/dist/declarations/src/types";
 import _ from "lodash";
@@ -8,14 +8,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useModel } from './ModelContext';
 import isRenderGui from './useRenderGui';
+import usePngTex from './usePngTex';
 
 function Material() {
-    const textureLoader = new THREE.TextureLoader()
     const model = useModel()
     const materials = model.material as THREE.MeshPhysicalMaterial[]
     const geometry = model.geometry
 
-    const [targetMaterialIdx, setTargetMaterialIdx] = useState(0)
+    const targetMaterialIdx = usePresetStore(states => states.targetMaterialIdx)
     const savedMaterials = usePresetStore(states => states.materials)[model.name] ?? {}
 
     const normals = useRef<THREE.BufferAttribute>()
@@ -24,22 +24,14 @@ function Material() {
     const [controllers, setContollers] = useState<Schema>()
 
     function updateTexture(material: { [x: string]: any; needsUpdate: boolean; }, materialKey: string, textures: Record<string, any>) {
-        const handler: OnChangeHandler = (key: string) => {
-            material[materialKey] = textures[key];
+        const handler: OnChangeHandler = (texture: THREE.Texture) => {
+            material[materialKey] = texture;
             material.needsUpdate = true;
         }
         return [handler, textures] as const;
     }
 
-    const skin = textureLoader.load("https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Materials/_MaterialMap/skin.png");
-    skin.wrapS = THREE.RepeatWrapping;
-    skin.wrapT = THREE.RepeatWrapping;
-    skin.repeat.set(80, 80);
-
-    const normalMaps = {
-        none: null as null,
-        skin
-    };
+    const mapOptions = usePngTex()
 
     const needsUpdate = (material: THREE.Material) => {
         return () => {
@@ -73,48 +65,56 @@ function Material() {
         }
     }
 
-    const buildMaterialGuiItem = buildMaterialGuiFunc(model, targetMaterialIdx)
+    const buildMGuiItem = buildMaterialGuiFunc(model, targetMaterialIdx)
 
     const updateControls = (idx: number) => {
         const material = materials[idx]
+        const buildMapItem = (key: Parameters<typeof buildMGuiItem>[0]) => {
+            return buildMGuiItem(key, updateTexture(material, key, { ...mapOptions }))
+        }
 
         setContollers({
-            "faceForward": buildMaterialGuiItem("userData.faceForward", buildFaceForwardFn(idx), 0, 1),
-            'visible': buildMaterialGuiItem("visible"),
-            'color': buildMaterialGuiItem("color"),
-            'emissive': buildMaterialGuiItem("emissive"),
-            'emissiveIntensity': buildMaterialGuiItem("emissiveIntensity"),
-            'roughness': buildMaterialGuiItem("roughness"),
-            'metalness': buildMaterialGuiItem("metalness"),
-            'ior': buildMaterialGuiItem("ior", null, 1, 2.333),
-            'reflectivity': buildMaterialGuiItem("reflectivity"),
-            'iridescence': buildMaterialGuiItem("iridescence"),
-            'iridescenceIOR': buildMaterialGuiItem("iridescenceIOR", null, 1, 2.333),
-            'sheen': buildMaterialGuiItem("sheen"),
-            'sheenRoughness': buildMaterialGuiItem("sheenRoughness"),
-            'sheenColor': buildMaterialGuiItem("sheenColor"),
-            'clearcoat': buildMaterialGuiItem("clearcoat"),
-            'clearcoatRoughness': buildMaterialGuiItem("clearcoatRoughness"),
-            'specularIntensity': buildMaterialGuiItem("specularIntensity"),
-            'specularColor': buildMaterialGuiItem("specularColor"),
-            'fog': buildMaterialGuiItem("fog", needsUpdate(material)),
-            'normalMap': buildMaterialGuiItem("normalMap", updateTexture(material, 'normalMap', normalMaps)),
-            'envMap': buildMaterialGuiItem("envMap", updateTexture(material, 'envMap', normalMaps)),
-            'envMapIntensity': buildMaterialGuiItem("envMapIntensity"),
+            "faceForward": buildMGuiItem("userData.faceForward", buildFaceForwardFn(idx), 0, 1),
+            'visible': buildMGuiItem("visible"),
+            'color': buildMGuiItem("color"),
+            'map': buildMapItem("map"),
+            'emissive': buildMGuiItem("emissive"),
+            'emissiveMap': buildMapItem("emissiveMap"),
+            'emissiveIntensity': buildMGuiItem("emissiveIntensity"),
+            'roughness': buildMGuiItem("roughness"),
+            'roughnessMap': buildMapItem("roughnessMap"),
+            'metalness': buildMGuiItem("metalness"),
+            'metalnessMap': buildMapItem("metalnessMap"),
+            'ior': buildMGuiItem("ior", null, 1, 2.333),
+            'reflectivity': buildMGuiItem("reflectivity"),
+            'iridescence': buildMGuiItem("iridescence"),
+            'iridescenceIOR': buildMGuiItem("iridescenceIOR", null, 1, 2.333),
+            'sheen': buildMGuiItem("sheen"),
+            'sheenRoughness': buildMGuiItem("sheenRoughness"),
+            'sheenColor': buildMGuiItem("sheenColor"),
+            'clearcoat': buildMGuiItem("clearcoat"),
+            'clearcoatRoughness': buildMGuiItem("clearcoatRoughness"),
+            'specularIntensity': buildMGuiItem("specularIntensity"),
+            'specularColor': buildMGuiItem("specularColor"),
+            'fog': buildMGuiItem("fog", needsUpdate(material)),
+            'normalMap': buildMapItem("normalMap"),
+            'normalScale': buildMGuiItem("normalScale"),
+            'envMap': buildMapItem("envMap"),
+            'envMapIntensity': buildMGuiItem("envMapIntensity"),
             "reset All": button(() => {
                 usePresetStore.setState({ materials: defaultConfig.materials })
             }),
             "debug": folder({
-                'transparent': buildMaterialGuiItem("transparent"),
-                'opacity': buildMaterialGuiItem("opacity"),
-                'depthTest': buildMaterialGuiItem("depthTest"),
-                'depthWrite': buildMaterialGuiItem("depthWrite"),
-                'alphaTest': buildMaterialGuiItem("alphaTest"),
-                'alphaHash': buildMaterialGuiItem("alphaHash"),
-                'side': buildMaterialGuiItem("side"),
-                'flatShading': buildMaterialGuiItem("flatShading", needsUpdate(material)),
-                'wireframe': buildMaterialGuiItem("wireframe"),
-                'vertexColors': buildMaterialGuiItem("vertexColors", needsUpdate(material)),
+                'transparent': buildMGuiItem("transparent"),
+                'opacity': buildMGuiItem("opacity"),
+                'depthTest': buildMGuiItem("depthTest"),
+                'depthWrite': buildMGuiItem("depthWrite"),
+                'alphaTest': buildMGuiItem("alphaTest"),
+                'alphaHash': buildMGuiItem("alphaHash"),
+                'side': buildMGuiItem("side"),
+                'flatShading': buildMGuiItem("flatShading", needsUpdate(material)),
+                'wireframe': buildMGuiItem("wireframe"),
+                'vertexColors': buildMGuiItem("vertexColors", needsUpdate(material)),
             }, { collapsed: true })
         })
 
@@ -156,9 +156,8 @@ function Material() {
 
     useControls(`Model-${model.name}.Material`, {
         "targetMaterial": {
-            value: targetMaterialIdx,
+            ...buildGuiItem("targetMaterialIdx"),
             options: materialMap,
-            onChange: (val) => setTargetMaterialIdx(val)
         },
         ...controllers
     }, { collapsed: true, render: () => isRenderGui(model.name) }, [controllers, materialMap])

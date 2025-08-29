@@ -184,10 +184,13 @@ function buildMaterialGuiFunc(targetModel: THREE.SkinnedMesh, targetMaterialIdx:
 
         const onChange: OnChangeHandler = (value, path, context) => {
             if (!context.initial) {
-                usePresetStore.setState((prevState) => {
-                    _.set(prevState, configPath, value)
-                    return { ...prevState }
-                })
+                const isTexture = value instanceof THREE.Texture
+                if(!isTexture) {
+                    usePresetStore.setState((prevState) => {
+                        _.set(prevState, configPath, value)
+                        return { ...prevState }
+                    })
+                }
             } else {
                 value = initialValue
                 setLevaValue(path, initialValue)
