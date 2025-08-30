@@ -324,4 +324,4 @@ function Swing() {
     );
 }
 
-export default WithModel(Swing, "character");
+export default WithModel(Swing);

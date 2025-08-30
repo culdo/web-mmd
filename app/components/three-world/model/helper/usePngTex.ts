@@ -2,9 +2,8 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three"
 
-function usePngTex() {
-    const modelId = usePresetStore(state => state.targetModelId)
-    const { fileName: modelFilename } = usePresetStore(state => state.models)[modelId]
+function usePngTex(model: THREE.SkinnedMesh) {
+    const { fileName: modelFilename } = usePresetStore(state => state.models)[model.name]
     const modelFoldername = modelFilename.split("/")[0]
 
     const modelTextures = usePresetStore(state => state.pmxFiles).modelTextures[modelFoldername] ?? {}

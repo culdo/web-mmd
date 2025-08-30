@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { randomBytes } from "crypto";
 import { nanoid } from "nanoid";
 
-function loadModel(add=false) {
+function loadModel(add = false) {
     const selectFile = document.getElementById("selectFile") as HTMLInputElement
     selectFile.webkitdirectory = true;
     selectFile.onchange = async function (event: Event) {
@@ -34,7 +34,7 @@ function loadModel(add=false) {
                 pmxFiles.models[modelName] = base64data;
 
                 // save model textures
-            } else if(f.type.startsWith("image/")) {
+            } else if (f.type.startsWith("image/")) {
                 const pathArr = f.webkitRelativePath.split("/")
                 const folderName = pathArr[0]
                 const resourcePath = pathArr.slice(1).join("/").normalize()
@@ -52,7 +52,7 @@ function loadModel(add=false) {
 
         usePresetStore.setState(({ models }) => {
             const newModels = { ...models }
-            if(add) {
+            if (add) {
                 newModels[firstId] = {
                     fileName: firstModelname,
                     motionName: Object.entries(motionFiles)[0][0],
@@ -184,13 +184,13 @@ function buildMaterialGuiFunc(targetModel: THREE.SkinnedMesh, targetMaterialIdx:
 
         const onChange: OnChangeHandler = (value, path, context) => {
             if (!context.initial) {
-                const isTexture = value instanceof THREE.Texture
-                if(!isTexture) {
-                    usePresetStore.setState((prevState) => {
+                usePresetStore.setState((prevState) => {
+                    if (!(value instanceof THREE.Texture)) {
                         _.set(prevState, configPath, value)
-                        return { ...prevState }
-                    })
-                }
+                    }
+                    const { materials } = prevState
+                    return { materials: { ...materials } }
+                })
             } else {
                 value = initialValue
                 setLevaValue(path, initialValue)

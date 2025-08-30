@@ -1,10 +1,12 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { ModelContext, useModel } from "./ModelContext";
 import { useRef } from "react";
+import usePresetStore from "@/app/stores/usePresetStore";
 
-function WithModel<T>(Component: React.ComponentType<T>, key: string) {
+function WithModel<T>(Component: React.ComponentType<T>) {
     return function WrappedComponent(props: T) {
-        const mesh = useGlobalStore(state => state.models)[key]
+        const targetModelId = usePresetStore(state => state.targetModelId)
+        const mesh = useGlobalStore(state => state.models)[targetModelId]
         const runtimeHelper = useRef({})
         if (!mesh) return <></>
         return (

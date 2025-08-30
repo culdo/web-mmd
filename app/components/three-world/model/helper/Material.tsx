@@ -31,7 +31,7 @@ function Material() {
         return [handler, textures] as const;
     }
 
-    const mapOptions = usePngTex()
+    const mapOptions = usePngTex(model)
 
     const needsUpdate = (material: THREE.Material) => {
         return () => {
@@ -98,6 +98,7 @@ function Material() {
             'specularColor': buildMGuiItem("specularColor"),
             'fog': buildMGuiItem("fog", needsUpdate(material)),
             'normalMap': buildMapItem("normalMap"),
+            'subNormalMap': buildMapItem("userData.subNormalMap"),
             'normalScale': buildMGuiItem("normalScale"),
             'envMap': buildMapItem("envMap"),
             'envMapIntensity': buildMGuiItem("envMapIntensity"),

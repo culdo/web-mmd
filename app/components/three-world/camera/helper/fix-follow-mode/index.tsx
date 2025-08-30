@@ -47,4 +47,4 @@ function FixFollowMode() {
     return <></>;
 }
 
-export default WithModel(FixFollowMode, "character");
+export default WithModel(FixFollowMode);
