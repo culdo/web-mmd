@@ -166,7 +166,7 @@ function Effects() {
         return <WebGPUEffectComposer></WebGPUEffectComposer>
     } else {
         return (
-            <EffectComposer renderPriority={3} frameBufferType={FloatType}>
+            <EffectComposer renderPriority={3} frameBufferType={dofConfig.debugTexture ? FloatType : undefined}>
                 {effectConfig["show outline"] && <OutlinePass></OutlinePass>}
                 <NormalBlending ref={setNormal}></NormalBlending>
                 {dofConfig.enabled && <DepthOfField ref={setDof}></DepthOfField>}
