@@ -35,7 +35,7 @@ jobs:
           cache: 'npm'
       - run: npm install
       - name: Build
-        run: COMMIT=${{ github.sha }} npx next build
+        run: COMMIT=$(date +'%Y/%m/%d')-${GITHUB_SHA::7} npx next build
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

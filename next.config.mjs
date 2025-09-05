@@ -18,9 +18,6 @@ export default (phase) => {
             })
             config.resolve.fallback = { fs: false };
             return config
-        },
-        env: {
-            COMMIT: process.env.COMMIT ?? "local"
         }
     };
     return nextConfig

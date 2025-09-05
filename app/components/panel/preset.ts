@@ -97,7 +97,7 @@ function usePreset() {
         ...controllers,
         version: {
             type: LevaInputs.STRING,
-            value: process.env.COMMIT.slice(0, 7),
+            value: process.env.COMMIT ?? "dev",
             editable: false
         },
     }), { order: 900, collapsed: true }, [controllers, presetsList])
