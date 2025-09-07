@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useRef } from "react";
+import { SyntheticEvent, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css"
 import useGlobalStore, { Gui } from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
@@ -24,6 +24,8 @@ function AudioPlayer() {
     const setGui = (gui: Partial<Gui>) => useGlobalStore.setState({ gui })
     const presetReady = useGlobalStore(state => state.presetReady)
     const studio = useGlobalStore(state => state.theatreStudio)
+
+    const [mute, setMute] = useState(true)
 
     useControls(() => ({
         ...buildGuiObj("auto hide GUI", { order: 1 })
@@ -63,7 +65,7 @@ function AudioPlayer() {
             if (currentTime == 0.0) {
                 ytPlayer.current.currentTime = 0.0
             }
-            ytPlayer.current.api.unMute()
+            setMute(false)
             loadedRef.current = true
             return
         }
@@ -90,7 +92,8 @@ function AudioPlayer() {
     const onLoadedMetadata = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         loadedRef.current = false
         if (currentTime == 0.0) {
-            ytPlayer.current.currentTime = 1.0
+            // Weird bug, which need to jump out of buffered range to avoid initial volume too loud
+            ytPlayer.current.currentTime = ytPlayer.current.duration
         } else {
             ytPlayer.current.currentTime = currentTime
         }
@@ -142,7 +145,7 @@ function AudioPlayer() {
                     onPause={onPause}
                     onSeeked={onSeeked}
                     onLoadedMetadata={onLoadedMetadata}
-                    muted
+                    muted={mute}
                 ></YoutubeVideo>
                 <MediaControlBar style={{
                     width: "100%"
