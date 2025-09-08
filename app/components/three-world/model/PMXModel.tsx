@@ -63,6 +63,12 @@ function PMXModel({ url, modelTextures, enableSdef = true, enablePBR = true, chi
         mesh.bind(skeleton);
         mesh.position.copy(origPos)
 
+        const boneBasePos: Record<string, [number, number, number]> = {}
+        for(const bone of bones) {
+            boneBasePos[bone.name] = bone.position.toArray()
+        }
+        mesh.userData["boneBasePos"] = boneBasePos
+
         onCreate?.(mesh)
         setInited(true)
     }, [mesh])

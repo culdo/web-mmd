@@ -6,6 +6,7 @@ import { useEffect } from "react";
 function Gui() {
     const models = usePresetStore(state => state.models)
     const pmxFiles = usePresetStore(state => state.pmxFiles)
+    const motionFiles = usePresetStore(state => state.motionFiles)
     const targetModelId = usePresetStore(state => state.targetModelId)
 
     const targetOptions = Object.keys(models)
@@ -24,9 +25,10 @@ function Gui() {
         setTargetId({ targetModelId })
     }, [targetModelId])
 
-    const { fileName, motionName } = models[targetModelId]
+    const { fileName, motionNames } = models[targetModelId]
     const modelsOption = Object.keys(pmxFiles.models)
 
+    const blendOptions = Object.keys(motionFiles).filter(val => !motionNames.includes(val))
     const [, set] = useControls(`Model-${targetModelId}`, () => ({
         "model": {
             value: fileName,
@@ -52,27 +54,38 @@ function Gui() {
                 return { models: { ...models }, targetModelId: newTargetModelId }
             })
         }),
-        "motion name": {
-            value: motionName,
-            editable: false
-        },
-        "select motion file": button(() => {
+        "add motion file": button(() => {
             loadFile((motionFile, motionName) => {
                 usePresetStore.setState(({ models, motionFiles }) => {
-                    models[targetModelId].motionName = motionName
                     motionFiles[motionName] = motionFile
+                    models[targetModelId].motionNames[0] = motionName
                     return {
-                        models: { ...models },
-                        motionFiles: { ...motionFiles }
+                        motionFiles: { ...motionFiles },
+                        models: { ...models }
                     }
                 })
-                set({ "motion name": motionName })
             })
         }),
+        "blend motion": {
+            value: "Select...",
+            options: blendOptions,
+            onChange: (val, path, options) => {
+                if (options.initial || val == "Select...") return
+                usePresetStore.setState(({ models }) => {
+                    const motionNames = models[targetModelId].motionNames
+                    if(motionNames.includes(val)) return {}
+                    motionNames.push(val)
+                    return {
+                        models: { ...models }
+                    }
+                })
+                set({"blend motion": "Select..."})
+            }
+        },
         "enable physics": {
             value: true
         }
-    }), { order: 2 }, [modelsOption, motionName, targetModelId])
+    }), { order: 2 }, [modelsOption, blendOptions, targetModelId])
 
     return <></>;
 }

@@ -69,7 +69,7 @@ The demo presets is from [this excellent MMD video](https://www.youtube.com/watc
 Run `npm test`
 
 ## CI/CD
-It uses `Github Action` to deploy the demo site. Related files located at `./.github/workflows`.
+It uses `Github Action` to deploy the demo site. Related files are located at `./.github/workflows`.
 
 # To-do list
 ## Done
@@ -95,6 +95,7 @@ It uses `Github Action` to deploy the demo site. Related files located at `./.gi
 - [x] Efficient Hex DoF effect
 - [x] In-APP Credits list
 - [x] Allow multiple models
+- [x] Multiple motions blending
 
 ## WIP
 

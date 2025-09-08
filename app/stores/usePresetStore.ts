@@ -29,7 +29,7 @@ export type PresetState = typeof defaultConfig & {
 } & {
     models: Record<string, {
         fileName: string,
-        motionName: string,
+        motionNames: string[],
         enableMorph: boolean,
         enablePhysics: boolean,
         enableMaterial: boolean
@@ -98,7 +98,7 @@ useGlobalStore.setState({
     })
 })
 usePresetStore.persist.onFinishHydration(async (state) => {
-    if (!state.pmxFiles?.models || !state.models) {
+    if (!state.pmxFiles?.models || !state.models?.character?.motionNames) {
         const defaultData = await getDefaultDataWithProgress()
         usePresetStore.setState({ ...defaultData, ...defaultConfig })
     }

@@ -2,15 +2,18 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import useVMD from "../../animation/useVMD";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { AnimationMixer } from "three";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useModel, useRuntimeHelper } from "./ModelContext";
 import buildUpdatePMX from "./buildUpdatePMX";
 import { CheckModel } from "./WithModel";
+import VMDMotion from "./VMDMotion";
+import { useFrame } from "@react-three/fiber";
 
-function Animation({ motionName }: { motionName: string }) {
+function Animation({ motionNames }: { motionNames: string[] }) {
     const mesh = useModel()
     const player = useGlobalStore(state => state.player)
-    const motionFile = usePresetStore(state => state.motionFiles)[motionName]
+    const motionFiles = usePresetStore(state => state.motionFiles)
+    const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
 
     const mixer = useMemo(() => new AnimationMixer(mesh), [mesh]);
 
@@ -36,9 +39,13 @@ function Animation({ motionName }: { motionName: string }) {
 
         const updatePMX = buildUpdatePMX(mesh)
 
-        return (setTime: () => void) => {
-            restoreBones()
-            setTime()
+        return (reset = false) => {
+            if (reset) {
+                mesh.skeleton.pose()
+            } else {
+                restoreBones()
+            }
+            mixer.setTime(player.currentTime)
             saveBones()
 
             updatePMX()
@@ -46,18 +53,38 @@ function Animation({ motionName }: { motionName: string }) {
 
     }, [mesh])
     const runtimeHelper = useRuntimeHelper()
-    const onInit = () => {
+    const onInit = (reset = false) => {
+        onLoop(reset)
         runtimeHelper.resetPhysic?.()
     }
-    useVMD(mesh, mixer, motionFile, onLoop, onInit)
 
     useEffect(() => {
-        mixer.addEventListener('loop', () => {
+        mixer.addEventListener('finished', () => {
             player.currentTime = 0.0
             player.pause()
         });
+        return () => {
+            mixer.stopAllAction()
+            mixer.uncacheRoot(mesh)
+        }
     }, [mixer])
-    return <></>
+
+    useFrame(() => {
+        if (!isMotionUpdating()) return
+        onLoop()
+    }, 1)
+
+    return (
+        <>
+            {
+                motionNames.map((motionName, idx) =>
+                    <VMDMotion
+                        key={motionName}
+                        args={[mesh, mixer, motionFiles[motionName], onInit, motionName]} />
+                )
+            }
+        </>
+    )
 }
 
 export default CheckModel(Animation);

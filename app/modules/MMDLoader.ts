@@ -983,7 +983,7 @@ class GeometryBuilder {
 
 		geometry.bones = bones;
 
-		if(morphTargets.length > 0) {
+		if (morphTargets.length > 0) {
 			geometry.morphTargets = morphTargets;
 			geometry.morphAttributes.position = morphPositions;
 			geometry.morphTargetsRelative = false;
@@ -1127,7 +1127,7 @@ class MaterialBuilder {
 					if (params.map && !params.transparent) {
 
 						this._checkImageTransparency(newMaterial, geometry, i);
-		
+
 					}
 				}
 				params.map = this._loadTexture(data.textures[material.textureIndex], null, onLoad);
@@ -1197,8 +1197,8 @@ class MaterialBuilder {
 			};
 
 			let newMaterial: MMDMaterial;
-			
-			if(shaderParams.isWebGPU && shaderParams.enableSdef) {
+
+			if (shaderParams.isWebGPU && shaderParams.enableSdef) {
 				newMaterial = new MMDMaterial(params)
 				newMaterial.buildSkinningNode = (mesh) => nodeObject(new SdefSkinningNode(mesh))
 			} else {
@@ -1513,7 +1513,7 @@ class AnimationBuilder {
 	 * @param {SkinnedMesh} mesh - tracks will be fitting to mesh
 	 * @return {AnimationClip}
 	 */
-	buildSkeletalAnimation(vmd: { metadata: { motionCount: number; }; motions: any[]; }, mesh: { skeleton: { bones: any; getBoneByName: (arg0: string) => { (): any; new(): any; position: { (): any; new(): any; toArray: { (): any; new(): any; }; }; }; }; animationBones: string[]; }) {
+	buildSkeletalAnimation(vmd: { metadata: { motionCount: number; }; motions: any[]; }, mesh: SkinnedMesh & { animationBones: string[]; }) {
 
 		function pushInterpolation(array: any[], interpolation: { [x: string]: number; }, index: number) {
 
@@ -1565,7 +1565,7 @@ class AnimationBuilder {
 			const pInterpolations: any[] = [];
 			const rInterpolations: any[] = [];
 
-			const basePosition = mesh.skeleton.getBoneByName(key).position.toArray();
+			const basePosition = mesh.userData["boneBasePos"][key];
 
 			for (let i = 0, il = array.length; i < il; i++) {
 

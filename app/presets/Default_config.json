@@ -13,14 +13,16 @@
     "models": {
         "character": {
             "fileName": "つみ式ミクさんv4/つみ式ミクさんv4.pmx",
-            "motionName": "GimmeGimme_with_emotion.vmd",
+            "motionNames": [
+                "GimmeGimme_with_emotion.vmd"
+            ],
             "enableMorph": true,
             "enablePhysics": true,
             "enableMaterial": true
         },
         "stage": {
             "fileName": "RedialC_EpRoomDS/EPDS.pmx",
-            "motionName": null,
+            "motionNames": null,
             "enableMaterial": true,
             "enableMorph": true,
             "enablePhysics": true

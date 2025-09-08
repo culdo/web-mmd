@@ -6,6 +6,8 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimationAction, AnimationClip, AnimationMixer, LoopOnce, PerspectiveCamera } from "three";
 import updateCamera from "../updateCamera";
+import useCameraMixer from "../useCameraMixer";
+import useClearMixer from "../useCameraMixer";
 
 export type CameraClip = {
     action?: AnimationAction;
@@ -26,7 +28,7 @@ function CompositeMode({ motionFileBuffer }: { motionFileBuffer: ArrayBuffer }) 
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
     const beatsBufferRef = useGlobalStore(state => state.beatsBufferRef)
 
-    const camera = useThree(state => state.camera)
+    const camera = useThree(state => state.camera) as PerspectiveCamera
     const cameraMixer = useMemo(() => new AnimationMixer(camera), [camera])
 
     const cameraName = usePresetStore(state => state.camera)
@@ -34,7 +36,7 @@ function CompositeMode({ motionFileBuffer }: { motionFileBuffer: ArrayBuffer }) 
     const collectionKeys = usePresetStore(state => state.collectionKeys)
     const cutKeys = usePresetStore(state => state.cutKeys)
     const savedCompositeClips = usePresetStore(state => state.compositeClips)
-    
+
     // Setup functions
     const restoreInterpolant = (clip: AnimationClip, interpolations: Record<string, any>) => {
         for (const track of clip.tracks) {
@@ -276,12 +278,13 @@ function CompositeMode({ motionFileBuffer }: { motionFileBuffer: ArrayBuffer }) 
         document.addEventListener("keydown", onKeydown)
         return () => document.removeEventListener("keydown", onKeydown)
     })
-    console.log("render CM")
+
     useEffect(() => {
-        const savedCurrentTime = usePresetStore.getState().currentTime
-        setTime(savedCurrentTime)
-        return () => cameraMixer.stopAllAction() && cameraMixer.uncacheRoot(camera)
+        const { currentTime } = usePresetStore.getState()
+        setTime(currentTime)
     }, [camera, cameraName])
+
+    useClearMixer(cameraMixer)
 
     useFrame(() => {
         if (isMotionUpdating()) setTime(player.currentTime)
@@ -301,7 +304,7 @@ function SetupCompsite() {
         getMotionFile()
     }, [cameraFile])
 
-    if(!motion) return <></>
+    if (!motion) return <></>
     return <CompositeMode motionFileBuffer={motion}></CompositeMode>
 }
 

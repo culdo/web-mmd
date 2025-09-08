@@ -10,7 +10,7 @@ function WithModel<T>(Component: React.ComponentType<T>) {
         const runtimeHelper = useRef({})
         if (!mesh) return <></>
         return (
-            <ModelContext.Provider value={{ mesh: mesh, runtimeHelper }}>
+            <ModelContext.Provider value={{ mesh, runtimeHelper }}>
                 <Component {...props}></Component>
             </ModelContext.Provider>
         )

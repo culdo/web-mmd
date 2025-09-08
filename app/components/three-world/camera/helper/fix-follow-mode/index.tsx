@@ -1,16 +1,18 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
-import { Vector3 } from "three";
-import WithModel from "../../../model/helper/WithModel";
+import { PerspectiveCamera, Vector3 } from "three";
 import usePresetStore from "@/app/stores/usePresetStore";
+import updateCamera from "../updateCamera";
 
 function FixFollowMode() {
+    const camera = useThree(state => state.camera) as PerspectiveCamera
     const controls = useGlobalStore(state => state.controls)
+    
     const targetModelId = usePresetStore(state => state.targetModelId)
     const targetModel = useGlobalStore(state => state.models)[targetModelId]
+
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
-    const camera = useThree(state => state.camera)
 
     const getSmoothCenter = () => targetModel.getObjectByName("smoothCenter").position
 
@@ -19,7 +21,7 @@ function FixFollowMode() {
 
     const setTime = () => {
         const position = getSmoothCenter().clone()
-        if(!prevCenterPos.current) {
+        if (!prevCenterPos.current) {
             prevCenterPos.current = position.clone()
         }
 
@@ -32,7 +34,7 @@ function FixFollowMode() {
 
         if (!isOrbitControl) {
             camera.position.add(delta)
-            camera.updateProjectionMatrix();
+            camera.updateProjectionMatrix()
         }
     }
     useEffect(() => {
@@ -47,4 +49,4 @@ function FixFollowMode() {
     return <></>;
 }
 
-export default WithModel(FixFollowMode);
+export default FixFollowMode;

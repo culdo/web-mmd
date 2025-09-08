@@ -88,18 +88,15 @@ function buildUpdatePMX(mesh: SkinnedMesh) {
         return _quaternions[_quaternionIndex++];
     }
 
-    const sortBoneDataArray = () => {
-        const boneDataArray = mesh.geometry.userData.MMD.bones.slice()
-        return boneDataArray.sort(function (a: { transformationClass: number; index: number; }, b: { transformationClass: number; index: number; }) {
-            if (a.transformationClass !== b.transformationClass) {
-                return a.transformationClass - b.transformationClass;
-            } else {
-                return a.index - b.index;
-            }
-        });
-    }
+    const boneDataArray = mesh.geometry.userData.MMD.bones.slice()
+    const sortedBonesData = boneDataArray.sort(function (a: { transformationClass: number; index: number; }, b: { transformationClass: number; index: number; }) {
+        if (a.transformationClass !== b.transformationClass) {
+            return a.transformationClass - b.transformationClass;
+        } else {
+            return a.index - b.index;
+        }
+    });
 
-    const sortedBonesData = sortBoneDataArray();
 
     return () => {
         _quaternionIndex = 0

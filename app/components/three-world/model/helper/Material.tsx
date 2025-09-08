@@ -99,7 +99,7 @@ function Material() {
             'fog': buildMGuiItem("fog", needsUpdate(material)),
             'normalMap': buildMapItem("normalMap"),
             'subNormalMap': buildMapItem("userData.subNormalMap"),
-            'normalScale': buildMGuiItem("normalScale"),
+            // 'normalScale': buildMGuiItem("normalScale"),
             'envMap': buildMapItem("envMap"),
             'envMapIntensity': buildMGuiItem("envMapIntensity"),
             "reset All": button(() => {
