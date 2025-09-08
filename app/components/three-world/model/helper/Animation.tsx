@@ -77,7 +77,7 @@ function Animation({ motionNames }: { motionNames: string[] }) {
     return (
         <>
             {
-                motionNames.map((motionName, idx) =>
+                motionNames.map(motionName =>
                     <VMDMotion
                         key={motionName}
                         args={[mesh, mixer, motionFiles[motionName], onInit, motionName]} />

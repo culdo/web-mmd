@@ -69,9 +69,10 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
         }
         init()
         return () => {
+            const reset = mixer.existingAction(clipRef.current) === null
             if (actionRef.current) actionRef.current.stop()
             if (clipRef.current) mixer.uncacheAction(clipRef.current)
-            onInit?.(true)
+            onInit?.(reset)
         }
     }, [vmdFile, target, blendMode, loopMode])
 }
