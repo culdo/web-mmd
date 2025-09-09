@@ -91,42 +91,25 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
         }
         init()
         return () => {
-            const reset = mixer.existingAction(clipRef.current) === null
             if (actionRef.current) actionRef.current.stop()
             if (clipRef.current) mixer.uncacheAction(clipRef.current)
+            const reset = mixer.existingAction(clipRef.current) === null
+            if (target instanceof SkinnedMesh && reset) target.skeleton.pose()
             onInit?.(reset)
             setIsInit(false)
         }
     }, [vmdFile, target, blendMode])
-
-    const isLockRef = useRef(false)
 
     const enableMotion = (enabled: boolean) => {
         if (enabled) {
             if (actionRef.current.timeScale == 1.0) return
             actionRef.current.setEffectiveTimeScale(1.0)
         } else {
-            if (actionRef.current.timeScale == 0.0) return
             setTimeout(() => {
                 actionRef.current.setEffectiveTimeScale(0.0)
                 actionRef.current.time = player.currentTime
             }, 10)
         }
-    }
-
-    const tempEnable = (cb?: Function) => {
-        if (!controlName || isLockRef.current) return
-        if (actionRef.current.timeScale == 1.0) {
-            enableMotion(false)
-            return
-        }
-        isLockRef.current = true
-        enableMotion(true)
-        cb?.()
-        onInit?.(true, () => {
-            enableMotion(false)
-            isLockRef.current = false
-        })
     }
 
     // Init triggered by
@@ -152,8 +135,8 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
 
     // On player pause and seeking
     useEffect(() => {
-        if (!controlName || !isInit || triggeredBy != TriggerMode.PLAYER) return
-        tempEnable()
+        if (!controlName || !player.paused || !isInit || triggeredBy != TriggerMode.PLAYER) return
+        enableMotion(false)
     }, [isInit, triggeredBy, currentTime])
 
     // Triggered by player

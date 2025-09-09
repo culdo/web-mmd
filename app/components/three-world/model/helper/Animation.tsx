@@ -1,7 +1,7 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { AnimationAction, AnimationMixer, LoopRepeat } from "three";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimationAction, AnimationMixer } from "three";
+import { useEffect, useMemo, useRef } from "react";
 import { useModel, useRuntimeHelper } from "./ModelContext";
 import buildUpdatePMX from "./buildUpdatePMX";
 import { CheckModel } from "./WithModel";
@@ -62,11 +62,9 @@ function Animation({ motionNames }: { motionNames: string[] }) {
     const runtimeHelper = useRuntimeHelper()
 
     const isResetRef = useRef(false)
-    const isResetCbRef = useRef<Function[]>([])
 
-    const onInit = (reset = false, resetCb?: Function) => {
+    const onInit = (reset = false) => {
         isResetRef.current = reset
-        if (resetCb) isResetCbRef.current.push(resetCb)
         runtimeHelper.resetPhysic?.()
     }
 
@@ -83,9 +81,6 @@ function Animation({ motionNames }: { motionNames: string[] }) {
 
     useFrame((_, delta) => {
         onLoop(isResetRef.current, isResetRef.current ? undefined : delta)
-        while (isResetCbRef.current.length > 0) {
-            isResetCbRef.current.pop()()
-        }
         isResetRef.current = false
     }, 1)
 
