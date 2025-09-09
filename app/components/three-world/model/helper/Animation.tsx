@@ -1,8 +1,7 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import useVMD from "../../animation/useVMD";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { AnimationMixer } from "three";
-import { useEffect, useMemo, useState } from "react";
+import { AnimationAction, AnimationMixer, LoopRepeat } from "three";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useModel, useRuntimeHelper } from "./ModelContext";
 import buildUpdatePMX from "./buildUpdatePMX";
 import { CheckModel } from "./WithModel";
@@ -15,17 +14,14 @@ function Animation({ motionNames }: { motionNames: string[] }) {
     const motionFiles = usePresetStore(state => state.motionFiles)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
 
-    const mixer = useMemo(() => new AnimationMixer(mesh), [mesh]);
+    const mixer = useMemo(() => new AnimationMixer(mesh), [mesh]) as AnimationMixer & {
+        _actions: AnimationAction[]
+    };
 
     const onLoop = useMemo(() => {
 
         let backupBones = new Float32Array(mesh.skeleton.bones.length * 7);
-        let init = false;
         const copyBones = (fromOrTo: "fromArray" | "toArray") => {
-            if (!init) {
-                init = true
-                return
-            }
             const bones = mesh.skeleton.bones;
             for (let i = 0, il = bones.length; i < il; i++) {
                 const bone = bones[i];
@@ -34,18 +30,29 @@ function Animation({ motionNames }: { motionNames: string[] }) {
             }
         }
 
-        const restoreBones = () => copyBones("fromArray")
+        let init = false;
+        const restoreBones = (reset = false) => {
+            if (!init) {
+                init = true
+                return
+            }
+            if (reset) {
+                mesh.skeleton.pose()
+            } else {
+                copyBones("fromArray")
+            }
+        }
         const saveBones = () => copyBones("toArray")
 
         const updatePMX = buildUpdatePMX(mesh)
 
-        return (reset = false) => {
-            if (reset) {
-                mesh.skeleton.pose()
+        return (reset = false, delta?: number) => {
+            restoreBones(reset)
+            if (delta && !isMotionUpdating()) {
+                mixer.update(delta)
             } else {
-                restoreBones()
+                mixer.setTime(player.currentTime)
             }
-            mixer.setTime(player.currentTime)
             saveBones()
 
             updatePMX()
@@ -53,8 +60,13 @@ function Animation({ motionNames }: { motionNames: string[] }) {
 
     }, [mesh])
     const runtimeHelper = useRuntimeHelper()
-    const onInit = (reset = false) => {
-        onLoop(reset)
+
+    const isResetRef = useRef(false)
+    const isResetCbRef = useRef<Function[]>([])
+
+    const onInit = (reset = false, resetCb?: Function) => {
+        isResetRef.current = reset
+        if (resetCb) isResetCbRef.current.push(resetCb)
         runtimeHelper.resetPhysic?.()
     }
 
@@ -69,9 +81,12 @@ function Animation({ motionNames }: { motionNames: string[] }) {
         }
     }, [mixer])
 
-    useFrame(() => {
-        if (!isMotionUpdating()) return
-        onLoop()
+    useFrame((_, delta) => {
+        onLoop(isResetRef.current, isResetRef.current ? undefined : delta)
+        while (isResetCbRef.current.length > 0) {
+            isResetCbRef.current.pop()()
+        }
+        isResetRef.current = false
     }, 1)
 
     return (

@@ -2,15 +2,14 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { PerspectiveCamera, Vector3 } from "three";
-import usePresetStore from "@/app/stores/usePresetStore";
-import updateCamera from "../updateCamera";
+import { useModel } from "../../../model/helper/ModelContext";
+import WithModel from "../../../model/helper/WithModel";
 
 function FixFollowMode() {
     const camera = useThree(state => state.camera) as PerspectiveCamera
     const controls = useGlobalStore(state => state.controls)
     
-    const targetModelId = usePresetStore(state => state.targetModelId)
-    const targetModel = useGlobalStore(state => state.models)[targetModelId]
+    const targetModel = useModel()
 
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
 
@@ -49,4 +48,4 @@ function FixFollowMode() {
     return <></>;
 }
 
-export default FixFollowMode;
+export default WithModel(FixFollowMode);
