@@ -107,7 +107,7 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
         } else {
             setTimeout(() => {
                 actionRef.current.setEffectiveTimeScale(0.0)
-                actionRef.current.time = player.currentTime
+                if (triggeredBy == TriggerMode.PLAYER) actionRef.current.time = player.currentTime
             }, 10)
         }
     }
