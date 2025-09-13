@@ -16,7 +16,7 @@ function GameMode() {
     const prevCenterPos = useRef(new Vector3())
     const centerPos = useRef(new Vector3())
     const prevRot = useRef(0.0)
-    const isOrbitControl = useGlobalStore(state => state.isOrbitControl)
+    const isOrbitControlRef = useGlobalStore(state => state.isOrbitControlRef)
 
     const getCenterPos = () => targetModel.getObjectByName("smoothCenter").getWorldPosition(centerPos.current)
 
@@ -43,7 +43,7 @@ function GameMode() {
 
         controls.target.add(delta)
 
-        if (isOrbitControl) {
+        if (isOrbitControlRef.current) {
             cameraLimiterRef.current.subVectors(camera.position, position)
             targetLimiterRef.current.subVectors(controls.target, position)
         } else {

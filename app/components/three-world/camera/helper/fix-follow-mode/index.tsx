@@ -17,7 +17,7 @@ function FixFollowMode() {
     const getSmoothCenter = () => targetModel.getObjectByName("smoothCenter").position
 
     const prevCenterPos = useRef(null)
-    const isOrbitControl = useGlobalStore(state => state.isOrbitControl)
+    const isOrbitControlRef = useGlobalStore(state => state.isOrbitControlRef)
 
     const setTime = () => {
         const position = getSmoothCenter().clone()
@@ -32,7 +32,7 @@ function FixFollowMode() {
 
         controls.target.add(delta)
 
-        if (!isOrbitControl) {
+        if (!isOrbitControlRef.current) {
             camera.position.add(delta)
             camera.updateProjectionMatrix()
         }

@@ -2,7 +2,7 @@ import useGlobalStore from '@/app/stores/useGlobalStore';
 import { TransformControls } from '@react-three/drei';
 import { useThree } from "@react-three/fiber";
 import { levaStore } from 'leva';
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Event, PerspectiveCamera } from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { setLevaValue } from '@/app/utils/gui';
@@ -14,10 +14,14 @@ function Controls() {
     const scene = useThree(state => state.scene)
     const gl = useThree(state => state.gl)
     const isTransformControl = useGlobalStore(state => state.isTransformControlRef)
+    const isOrbitControlRef = useGlobalStore(state => state.isOrbitControlRef)
     const selectedName = useGlobalStore(state => state.selectedName)
     const enabledTransform = useGlobalStore(state => state.enabledTransform)
+    const isWheelRef = useRef(false)
+    const onEndTimeoutRef = useRef<NodeJS.Timeout>()
 
     const onWheel = (event: WheelEvent) => {
+        isWheelRef.current = true
         if (event.shiftKey) {
             if (event.deltaX > 0) {
                 camera.fov *= 1.05
@@ -40,11 +44,15 @@ function Controls() {
     }
 
     const onStart = () => {
-        useGlobalStore.setState({isOrbitControl: true})
+        isOrbitControlRef.current = true
     }
 
     const onEnd = () => {
-        useGlobalStore.setState({isOrbitControl: false})
+        if(onEndTimeoutRef.current) clearTimeout(onEndTimeoutRef.current)
+        onEndTimeoutRef.current = setTimeout(() => {
+            isOrbitControlRef.current = false
+            isWheelRef.current = false
+        }, isWheelRef.current ? 1000 : 0)
 
         // studio.transaction(({set}) => {
         //     set(cameraObj.props.position.x, camera.position.x)
