@@ -24,7 +24,7 @@ function RunMode() {
                 "Game mode": RunTypes.GAME_MODE
             },
             onChange: (mode, _, options) => {
-                if (options.initial) return
+                if (options.initial || !options.fromPanel) return
                 if (mode == RunTypes.PLAYER_MODE) {
                     usePresetStore.setState(({ models }) => {
                         models[targetModelId].motionNames = defaultConfig.models.character.motionNames
