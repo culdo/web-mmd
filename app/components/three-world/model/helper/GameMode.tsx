@@ -121,9 +121,10 @@ function GameMode() {
             e.stopPropagation()
             if (e.repeat) return
             pressingCountRef.current += 1
-            if (["w", "a", "s", "d"].includes(e.key) && pressingCountRef.current == 1) {
+            if (["w", "a", "s", "d"].includes(e.key) && idleAction.enabled) {
                 setWeight(walkAction, 1.0)
                 walkAction.crossFadeFrom(idleAction, 0.2, false)
+                pressingCountRef.current = 1
             }
             if (e.key == "w") {
                 velocityRef.current = 15
@@ -134,7 +135,6 @@ function GameMode() {
             if (e.key == "s") {
                 targetTurnRef.current = mesh.rotation.y + Math.PI
                 rotateYVelocityRef.current = 8
-                pressingCountRef.current = 1
             }
             if (e.key == "d") {
                 rotateYVelocityRef.current = -2
