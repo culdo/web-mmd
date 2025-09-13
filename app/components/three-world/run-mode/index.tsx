@@ -27,7 +27,7 @@ function RunMode() {
                 if (options.initial || !options.fromPanel) return
                 if (mode == RunTypes.PLAYER_MODE) {
                     usePresetStore.setState(({ models, targetModelId }) => {
-                        models[targetModelId].motionNames = defaultConfig.models.character.motionNames
+                        models[targetModelId].motionNames = defaultConfig.models[targetModelId as "character"]?.motionNames ?? []
                         return { models: {...models}, "camera mode": CameraMode.MOTION_FILE }
                     })
                 }
