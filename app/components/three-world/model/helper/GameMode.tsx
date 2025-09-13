@@ -100,8 +100,7 @@ function GameMode() {
         }
     }, [mixer])
 
-    const rotateYDeltaRef = useRef(0.0)
-    const rotateYDampRef = useRef(0.0)
+    const rotateYVelocityRef = useRef(0.0)
     const velocityRef = useRef(0.0)
     const targetTurnRef = useRef(0.0)
     const pressingCountRef = useRef(0)
@@ -127,17 +126,17 @@ function GameMode() {
                 walkAction.crossFadeFrom(idleAction, 0.2, false)
             }
             if (e.key == "w") {
-                velocityRef.current = 0.7
+                velocityRef.current = 15
             }
             if (e.key == "a") {
-                rotateYDeltaRef.current = 0.1
+                rotateYVelocityRef.current = 2
             }
             if (e.key == "s") {
                 targetTurnRef.current = mesh.rotation.y + Math.PI
-                rotateYDeltaRef.current = 0.4
+                rotateYVelocityRef.current = 8
             }
             if (e.key == "d") {
-                rotateYDeltaRef.current = -0.1
+                rotateYVelocityRef.current = -2
             }
             if (e.key == " ") {
                 const startAction = pressingCountRef.current == 1 ? idleAction : walkAction
@@ -156,7 +155,7 @@ function GameMode() {
                 velocityRef.current = 0.0
             }
             if (["a", "d"].includes(e.key)) {
-                rotateYDeltaRef.current = 0.0
+                rotateYVelocityRef.current = 0.0
             }
             if ([" "].includes(e.key)) {
                 const endAction = pressingCountRef.current == 0 ? idleAction : walkAction
@@ -177,19 +176,19 @@ function GameMode() {
     const posDeltaRef = useRef(new Vector3(0, 0, 0))
     useFrame((_, delta) => {
         if (!isInit) return
-        rotateYDampRef.current = MathUtils.damp(rotateYDampRef.current, rotateYDeltaRef.current, 10.0, delta)
+        const walkAction = motionsRef.current.walk.action
 
-        mesh.rotation.y += rotateYDampRef.current % Math.PI * 2
+        mesh.rotation.y += (rotateYVelocityRef.current * delta * walkAction.weight) % Math.PI * 2
         if (targetTurnRef.current > 0.0 && mesh.rotation.y > targetTurnRef.current) {
             mesh.rotation.y = targetTurnRef.current
-            rotateYDeltaRef.current = 0.0
+            rotateYVelocityRef.current = 0.0
             targetTurnRef.current = 0.0
             const idleAction = motionsRef.current.idle.action
             setWeight(idleAction, 1.0)
-            idleAction.crossFadeFrom(motionsRef.current.walk.action, 0.2, false)
+            idleAction.crossFadeFrom(walkAction, 0.2, false)
         }
 
-        posDeltaRef.current.set(0, 0, velocityRef.current * motionsRef.current.walk.action.weight)
+        posDeltaRef.current.set(0, 0, velocityRef.current * delta * walkAction.weight)
         mesh.position.add(posDeltaRef.current.applyAxisAngle(_yAxis, mesh.rotation.y))
         onLoop(delta)
     }, 1)
