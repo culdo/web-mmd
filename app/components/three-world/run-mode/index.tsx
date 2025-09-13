@@ -1,8 +1,7 @@
 import usePresetStore from "@/app/stores/usePresetStore"
-import WithReady from "@/app/stores/WithReady"
 import { CameraMode } from "@/app/types/camera"
 import { useControls } from "leva"
-import { useRef } from "react"
+import defaultConfig from '@/app/presets/Default_config.json';
 
 enum RunTypes {
     PLAYER_MODE,
@@ -11,8 +10,6 @@ enum RunTypes {
 
 function RunMode() {
     const targetModelId = usePresetStore(state => state.targetModelId)
-    const prevMotionsRef = useRef<string[]>()
-    const prevCameraModeRef = useRef<number>()
     useControls({
         "run mode": {
             value: RunTypes.PLAYER_MODE,
@@ -23,15 +20,9 @@ function RunMode() {
             onChange: (mode, _, options) => {
                 if(options.initial) return
                 if (mode == RunTypes.PLAYER_MODE) {
-                    if (!prevMotionsRef.current) {
-                        const { models, "camera mode": cameraMode } = usePresetStore.getState()
-                        prevMotionsRef.current = [...models[targetModelId].motionNames]
-                        prevCameraModeRef.current = cameraMode
-                        return
-                    }
                     usePresetStore.setState(({ models }) => {
-                        models[targetModelId].motionNames = prevMotionsRef.current
-                        return { models: { ...models }, "camera mode": prevCameraModeRef.current }
+                        models[targetModelId].motionNames = defaultConfig.models.character.motionNames
+                        return { models: defaultConfig.models, "camera mode": CameraMode.MOTION_FILE }
                     })
                 }
 
