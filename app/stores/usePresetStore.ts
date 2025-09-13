@@ -98,7 +98,7 @@ useGlobalStore.setState({
     })
 })
 usePresetStore.persist.onFinishHydration(async (state) => {
-    if (!state.pmxFiles?.models || !state.models?.character?.motionNames) {
+    if (!state.pmxFiles?.models || !state.models?.character?.motionNames || Object.keys(state.motionFiles).length < 4) {
         const defaultData = await getDefaultDataWithProgress()
         usePresetStore.setState({ ...defaultData, ...defaultConfig })
     }
