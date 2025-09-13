@@ -5,11 +5,12 @@ import { button, useControls } from "leva";
 import { useEffect, useRef, useState } from "react";
 import { AdditiveAnimationBlendMode, AnimationAction, AnimationClip, AnimationMixer, Camera, LoopOnce, LoopRepeat, NormalAnimationBlendMode, SkinnedMesh } from "three";
 import { makeClipAdditive } from "three/src/animation/AnimationUtils.js";
+import makeClipLoopable from "./makeClipLoopable";
 
 enum TriggerMode {
     PLAYER,
     ALWAYS_RUN,
-    KEY_PRESSING,
+    GAME_CONTROL,
 }
 
 function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: string, onInit?: (reset?: boolean, resetCb?: Function) => void, controlName?: string) {
@@ -18,27 +19,19 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
     const actionRef = useRef<AnimationAction>()
     const clipRef = useRef<AnimationClip>()
     const [isInit, setIsInit] = useState(false)
-    const controlPath = `Model-${target.name}.Motion-${controlName?.split(".")[0]}`
+    const controlPath = `Model-${target.name}.Motion-${controlName?.split(".vmd")[0].replaceAll(".", "-")}`
     const currentTime = usePresetStore(state => state.currentTime)
 
     const {
         "blend mode": blendMode,
-        "triggered by": triggeredBy,
-        key: keyNeedPressed
+        "triggered by": triggeredBy
     } = useControls(controlPath, {
         "triggered by": {
             value: TriggerMode.PLAYER,
             options: {
                 PLAYER: TriggerMode.PLAYER,
                 ALWAYS_RUN: TriggerMode.ALWAYS_RUN,
-                KEY_PRESSING: TriggerMode.KEY_PRESSING
-            }
-        },
-        "key": {
-            value: "",
-            render: (get) => {
-                const triggeredBy = get(`${controlPath}.triggered by`)
-                return triggeredBy == TriggerMode.KEY_PRESSING
+                GAME_CONTROL: TriggerMode.GAME_CONTROL
             }
         },
         "blend mode": {
@@ -82,6 +75,9 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
             if (blendMode == AdditiveAnimationBlendMode) {
                 makeClipAdditive(clip)
             }
+            if (triggeredBy != TriggerMode.PLAYER) {
+                makeClipLoopable(clip)
+            }
             clipRef.current = clip
             const action = mixer.clipAction(clip)
             actionRef.current = action
@@ -98,7 +94,7 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
             onInit?.(reset)
             setIsInit(false)
         }
-    }, [vmdFile, target, blendMode])
+    }, [vmdFile, target, triggeredBy, blendMode])
 
     const enableMotion = (enabled: boolean) => {
         if (enabled) {
@@ -121,7 +117,7 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
                 actionRef.current.setLoop(LoopOnce, 1)
                 break
 
-            case TriggerMode.KEY_PRESSING:
+            case TriggerMode.GAME_CONTROL:
                 enableMotion(false)
                 actionRef.current.setLoop(LoopRepeat, Infinity)
                 break
@@ -155,14 +151,17 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
 
     // Triggered by key pressing
     useEffect(() => {
-        if (!isInit || triggeredBy != TriggerMode.KEY_PRESSING) return
+        if (!isInit || triggeredBy != TriggerMode.GAME_CONTROL) return
         const onPress = (e: KeyboardEvent) => {
-            if (e.key == keyNeedPressed) {
-                enableMotion(true)
+            if (e.key == "w") {
+                actionRef.current.setEffectiveTimeScale(1.0)
+            }
+            if (e.key == "s") {
+                actionRef.current.setEffectiveTimeScale(-1.0)
             }
         }
         const onRelease = (e: KeyboardEvent) => {
-            if (e.key == keyNeedPressed) {
+            if (["w", "s"].includes(e.key)) {
                 enableMotion(false)
             }
         }
@@ -174,7 +173,7 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
             document.removeEventListener("keydown", onPress)
             document.removeEventListener("keyup", onRelease)
         }
-    }, [triggeredBy, keyNeedPressed, isInit])
+    }, [triggeredBy, isInit])
 
 }
 

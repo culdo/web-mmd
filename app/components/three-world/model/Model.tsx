@@ -7,6 +7,7 @@ import Morph from "./helper/Morph";
 import Material from "./helper/Material";
 import Physics from "./helper/Physics";
 import Animation from "./helper/Animation";
+import GameMode from "./helper/GameMode";
 
 function Model({ id, fileName, motionNames = null, enableMorph = true, enableMaterial = true, enablePhysics = true }: { id: string, fileName: string, enableMorph?: boolean, enableMaterial?: boolean, enablePhysics?: boolean, motionNames?: string[] }) {
     const pmxFiles = usePresetStore(state => state.pmxFiles)
@@ -44,6 +45,7 @@ function Model({ id, fileName, motionNames = null, enableMorph = true, enableMat
             {enableMaterial && <Material />}
             {enablePhysics && <Physics />}
             {motionNames?.length > 0 && <Animation motionNames={motionNames} />}
+            {motionNames?.length == 0 && <GameMode></GameMode>}
         </PmxModel>
     );
 }

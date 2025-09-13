@@ -24,7 +24,6 @@ export type GlobalState = {
         physics: MMDPhysics,
         looped: boolean
     },
-    controls: OrbitControls
     models: Record<string, SkinnedMesh>,
     playDeltaRef: MutableRefObject<number>
     isMotionUpdating: () => boolean,

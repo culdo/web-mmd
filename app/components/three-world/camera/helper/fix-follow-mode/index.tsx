@@ -4,10 +4,11 @@ import { useEffect, useRef } from "react";
 import { PerspectiveCamera, Vector3 } from "three";
 import { useModel } from "../../../model/helper/ModelContext";
 import WithModel from "../../../model/helper/WithModel";
+import { OrbitControls } from "three-stdlib";
 
 function FixFollowMode() {
     const camera = useThree(state => state.camera) as PerspectiveCamera
-    const controls = useGlobalStore(state => state.controls)
+    const controls = useThree(state => state.controls) as OrbitControls
     
     const targetModel = useModel()
 

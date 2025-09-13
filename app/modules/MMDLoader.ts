@@ -1815,6 +1815,10 @@ class AnimationBuilder {
 
 			}
 
+			times.length = index + 1;
+			values.length = ( index + 1 ) * stride;
+			interpolations.length = ( index + 1 ) * interpolateStride;
+
 		}
 
 		const track = new typedKeyframeTrack(node, times, values);
@@ -1837,7 +1841,7 @@ export function createTrackInterpolant(track: KeyframeTrack, interpolations: Ite
 
 // interpolation
 
-class CubicBezierInterpolation extends Interpolant {
+export class CubicBezierInterpolation extends Interpolant {
 	interpolationParams: Float32Array;
 	isCamera: boolean;
 

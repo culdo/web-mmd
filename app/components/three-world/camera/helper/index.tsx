@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import CompositeMode from "./composite-mode";
 import FixFollowMode from "./fix-follow-mode";
 import MotionFileMode from "./motion-file-mode";
+import GameMode from "./game-mode";
 import dynamic from 'next/dynamic';
 const EditorMode = dynamic(() => import('./editor-mode'), { ssr: false })
 
@@ -13,7 +14,8 @@ const cameraModeMap = [
     MotionFileMode,
     CompositeMode,
     FixFollowMode,
-    EditorMode
+    EditorMode,
+    GameMode
 ]
 
 function CameraWorkHelper() {
@@ -28,10 +30,11 @@ function CameraWorkHelper() {
                 "Motion File": CameraMode.MOTION_FILE,
                 "Composition": CameraMode.COMPOSITION,
                 "Fixed Follow": CameraMode.FIXED_FOLLOW,
-                "Editor": CameraMode.EDITOR
+                "Editor": CameraMode.EDITOR,
+                "Game Mode": CameraMode.GAME_MODE
             },
-            order: 0,
-        },
+            order: 1,
+        }
     }), [cameraMode])
 
     useEffect(() => {

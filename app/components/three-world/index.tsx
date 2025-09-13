@@ -7,8 +7,9 @@ import Skybox from './skybox/Skybox';
 import Debug from './debug';
 import Effects from '../effects';
 import useRenderer from './renderer/useRenderer';
-import CreditsList from './html/CreditsList';
+import CreditsList from './credits';
 import Models from './model';
+import RunMode from './run-mode';
 
 function ThreeWorld() {
     useRenderer()
@@ -17,6 +18,7 @@ function ThreeWorld() {
             <Plugins></Plugins>
             <Lights></Lights>
             <Models></Models>
+            <RunMode></RunMode>
             <Camera></Camera>
             <Controls></Controls>
             <Effects></Effects>

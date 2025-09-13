@@ -1,12 +1,13 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useRef } from "react";
+import { OrbitControls } from "three-stdlib";
 
 function useRenderLoop() {
 
     const player = useGlobalStore(state => state.player)
-    const controls = useGlobalStore(state => state.controls)
+    const controls = useThree(state => state.controls) as OrbitControls
     const playDeltaRef = useGlobalStore(state => state.playDeltaRef)
 
 

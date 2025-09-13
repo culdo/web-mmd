@@ -12,7 +12,7 @@ function Gui() {
     const targetOptions = Object.keys(models)
 
     const [_, setTargetId] = useControls(() => ({
-        targetModelId: {
+        "target model id": {
             ...buildGuiItem("targetModelId"),
             options: targetOptions
         },
@@ -22,7 +22,7 @@ function Gui() {
     }), [targetOptions])
 
     useEffect(() => {
-        setTargetId({ targetModelId })
+        setTargetId({ "target model id": targetModelId })
     }, [targetModelId])
 
     const { fileName, motionNames } = models[targetModelId]
@@ -73,13 +73,13 @@ function Gui() {
                 if (options.initial || val == "Select...") return
                 usePresetStore.setState(({ models }) => {
                     const motionNames = models[targetModelId].motionNames
-                    if(motionNames.includes(val)) return {}
+                    if (motionNames.includes(val)) return {}
                     motionNames.push(val)
                     return {
                         models: { ...models }
                     }
                 })
-                set({"blend motion": "Select..."})
+                set({ "blend motion": "Select..." })
             }
         },
         "enable physics": {

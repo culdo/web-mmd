@@ -13,19 +13,9 @@ function Controls() {
     const camera = useThree(state => state.camera) as PerspectiveCamera
     const scene = useThree(state => state.scene)
     const gl = useThree(state => state.gl)
-    const isOrbitControl = useGlobalStore(state => state.isOrbitControl)
     const isTransformControl = useGlobalStore(state => state.isTransformControlRef)
     const selectedName = useGlobalStore(state => state.selectedName)
     const enabledTransform = useGlobalStore(state => state.enabledTransform)
-    const cameraObj = useGlobalStore(state => state.cameraObj)
-
-    useEffect(() => {
-        const controls = controlsRef.current
-        useGlobalStore.setState({
-            controls
-        })
-
-    }, [])
 
     const onWheel = (event: WheelEvent) => {
         if (event.shiftKey) {

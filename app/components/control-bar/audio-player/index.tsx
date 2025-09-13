@@ -28,7 +28,7 @@ function AudioPlayer() {
     const [mute, setMute] = useState(true)
 
     useControls(() => ({
-        ...buildGuiObj("auto hide GUI", { order: 1 })
+        ...buildGuiObj("auto hide GUI", { order: 2 })
     }))
 
     const [gui, setMusicGui] = useControls('Music', () => ({
@@ -104,6 +104,7 @@ function AudioPlayer() {
 
     // keyboard shortcuts
     useEffect(() => {
+        if(cameraMode == CameraMode.GAME_MODE) return
         const handler = (e: KeyboardEvent) => {
             const player = ytPlayer.current
             if (!player) return
@@ -126,7 +127,7 @@ function AudioPlayer() {
         }
         document.addEventListener("keydown", handler)
         return () => document.removeEventListener("keydown", handler)
-    }, [])
+    }, [cameraMode])
 
     // seek to saved time when change preset
     useEffect(() => {

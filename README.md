@@ -16,7 +16,8 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
 
 # Features
 * Play MMD with time control bar(time seeking, jump to time...etc)
-* Change Model, Stage, Motion, Camera and Music(From YT or file)
+* Game mode (can control character to walk and jump by keyboard)
+* Change Model, Stage, Motion, Camera and Music(From YT)
 * Turn on/off auto camera(can play manually)
 * Adjust shadow/outline/color/...etc
 * Layout settings (Auto-hide gui/Show FPS/Fullscreen...etc)
@@ -27,6 +28,11 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
 * Keyboard Shortcuts(play/pause, toggle camera mode, manipulate camera cuts...)
 
 # Keyboard shortcuts
+## Game mode
+* **W/A/S/D**: Walk
+* **Space**: Jump
+
+## Player mode
 * **Space**: Play/Pause
 * **`** : Toggle Camera mode (between motion and composite mode)
 * **<** : Previous frame (under 30 fps) 
@@ -41,6 +47,7 @@ Move these object on `transform control` through below ways:
 * Select a `Light` from `Lights > [Choose a light] > Select` gui menu
 
 # Demo credits
+## Player mode
 The demo presets is from [this excellent MMD video](https://www.youtube.com/watch?v=ix9nEjSxgeo) :
 * Music: GimmexGimme by 八王子P × Giga
 * Model: つみ式みくさんv4 by つみだんご
@@ -48,6 +55,8 @@ The demo presets is from [this excellent MMD video](https://www.youtube.com/watc
 * Emotion: GimmeGimmeリップ表情v07 by ノン
 * Camera: Gimme x Gimme镜头 by 冬菇
 * Stage: RedialC_EpRoomDS by RedialC
+## Game mode
+* Motions: 移動モーション v1.3 by むつごろう
 
 # Development
 1. Install deps via `npm install`
@@ -96,10 +105,10 @@ It uses `Github Action` to deploy the demo site. Related files are located at `.
 - [x] In-APP Credits list
 - [x] Allow multiple models
 - [x] Multiple motions blending
+- [x] Game mode
 
 ## WIP
 
 ## Planning 
 - [ ] Camera movement templates
 - [ ] Auto turn-off some effects on the first time for real-time performance
-- [ ] A little camera game(?)
