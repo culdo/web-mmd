@@ -134,6 +134,7 @@ function GameMode() {
             if (e.key == "s") {
                 targetTurnRef.current = mesh.rotation.y + Math.PI
                 rotateYVelocityRef.current = 8
+                pressingCountRef.current = 1
             }
             if (e.key == "d") {
                 rotateYVelocityRef.current = -2

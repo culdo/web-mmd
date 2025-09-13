@@ -38,7 +38,7 @@ function GameMode() {
         delta.subVectors(position, prevCenterPos.current)
         prevCenterPos.current.copy(position)
 
-        posDampRef.current = MathUtils.damp(posDampRef.current, delta.length(), 5.0, dt)
+        posDampRef.current = MathUtils.damp(posDampRef.current, delta.length(), 2.0, dt)
         delta.normalize().multiplyScalar(posDampRef.current)
 
         controls.target.add(delta)
@@ -61,8 +61,8 @@ function GameMode() {
             cameraLimiterRef.current.applyAxisAngle(_yAxis, rotDampRef.current)
             targetLimiterRef.current.applyAxisAngle(_yAxis, rotDampRef.current)
 
-            const camDamp = MathUtils.damp(camDelta.length(), cameraLimiterRef.current.length(), 10.0, dt)
-            const targetDamp = MathUtils.damp(controlsDelta.length(), targetLimiterRef.current.length(), 10.0, dt)
+            const camDamp = MathUtils.damp(camDelta.length(), cameraLimiterRef.current.length(), 2.0, dt)
+            const targetDamp = MathUtils.damp(controlsDelta.length(), targetLimiterRef.current.length(), 2.0, dt)
 
             camDelta.copy(cameraLimiterRef.current).normalize().multiplyScalar(camDamp)
             controlsDelta.copy(targetLimiterRef.current).normalize().multiplyScalar(targetDamp)
