@@ -25,34 +25,50 @@ function GameMode() {
     const controlsDeltaRef = useRef(new Vector3())
     const posDampRef = useRef(0.0)
     const rotDampRef = useRef(0.0)
+    const cameraLimiterRef = useRef(new Vector3())
+    const targetLimiterRef = useRef(new Vector3())
+
+    cameraLimiterRef.current.subVectors(camera.position, getCenterPos())
+    targetLimiterRef.current.subVectors(controls.target, getCenterPos())
 
     const update = (dt = 0.0) => {
         const position = getCenterPos()
 
         const delta = deltaRef.current
         delta.subVectors(position, prevCenterPos.current)
-
         prevCenterPos.current.copy(position)
+
+        posDampRef.current = MathUtils.damp(posDampRef.current, delta.length(), 5.0, dt)
+        delta.normalize().multiplyScalar(posDampRef.current)
+
         controls.target.add(delta)
 
-        if (!isOrbitControl) {
+        if (isOrbitControl) {
+            cameraLimiterRef.current.subVectors(camera.position, position)
+            targetLimiterRef.current.subVectors(controls.target, position)
+        } else {
             camera.position.add(delta)
 
             const rotDelta = targetModel.rotation.y - prevRot.current
+            prevRot.current = targetModel.rotation.y
             rotDampRef.current = MathUtils.damp(rotDampRef.current, rotDelta, 5.0, dt)
 
             const camDelta = camDeltaRef.current
             const controlsDelta = controlsDeltaRef.current
-            camDelta.subVectors(camera.position, getCenterPos())
-            controlsDelta.subVectors(controls.target, getCenterPos())
-            
-            camDelta.applyAxisAngle(_yAxis, rotDampRef.current)
-            controlsDelta.applyAxisAngle(_yAxis, rotDampRef.current)
-            
-            camera.position.addVectors(getCenterPos(), camDelta)
-            controls.target.addVectors(getCenterPos(), controlsDelta)
+            camDelta.subVectors(camera.position, position)
+            controlsDelta.subVectors(controls.target, position)
 
-            prevRot.current = targetModel.rotation.y
+            cameraLimiterRef.current.applyAxisAngle(_yAxis, rotDampRef.current)
+            targetLimiterRef.current.applyAxisAngle(_yAxis, rotDampRef.current)
+
+            const camDamp = MathUtils.damp(camDelta.length(), cameraLimiterRef.current.length(), 10.0, dt)
+            const targetDamp = MathUtils.damp(controlsDelta.length(), targetLimiterRef.current.length(), 10.0, dt)
+
+            camDelta.copy(cameraLimiterRef.current).normalize().multiplyScalar(camDamp)
+            controlsDelta.copy(targetLimiterRef.current).normalize().multiplyScalar(targetDamp)
+
+            camera.position.addVectors(position, camDelta)
+            controls.target.addVectors(position, controlsDelta)
 
             camera.updateProjectionMatrix()
             camera.lookAt(controls.target)
