@@ -45,7 +45,7 @@ function Model({ id, fileName, motionNames = null, enableMorph = true, enableMat
             {enableMaterial && <Material />}
             {enablePhysics && <Physics />}
             {motionNames?.length > 0 && <Animation motionNames={motionNames} />}
-            {motionNames?.length == 0 && <GameMode></GameMode>}
+            {motionNames === null && <GameMode></GameMode>}
         </PmxModel>
     );
 }

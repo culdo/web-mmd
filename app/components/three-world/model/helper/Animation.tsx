@@ -7,6 +7,8 @@ import buildUpdatePMX from "./buildUpdatePMX";
 import { CheckModel } from "./WithModel";
 import VMDMotion from "./VMDMotion";
 import { useFrame } from "@react-three/fiber";
+import { useControls } from "leva";
+import isRenderGui from "./useRenderGui";
 
 function Animation({ motionNames }: { motionNames: string[] }) {
     const mesh = useModel()
@@ -17,6 +19,26 @@ function Animation({ motionNames }: { motionNames: string[] }) {
     const mixer = useMemo(() => new AnimationMixer(mesh), [mesh]) as AnimationMixer & {
         _actions: AnimationAction[]
     };
+
+    const blendOptions = Object.keys(motionFiles).filter(val => !motionNames.includes(val))
+    const [, set] = useControls(`Model-${mesh.name}`, () => ({
+        "blend motion": {
+            value: "Select...",
+            options: blendOptions,
+            onChange: (val, path, options) => {
+                if (options.initial || val == "Select...") return
+                usePresetStore.setState(({ models }) => {
+                    const motionNames = models[mesh.name].motionNames
+                    if (motionNames.includes(val)) return {}
+                    motionNames.push(val)
+                    return {
+                        models: { ...models }
+                    }
+                })
+                set({ "blend motion": "Select..." })
+            }
+        }
+    }), { order: 2, render: () => isRenderGui(mesh.name) }, [blendOptions])
 
     const onLoop = useMemo(() => {
 

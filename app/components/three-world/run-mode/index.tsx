@@ -2,6 +2,8 @@ import usePresetStore from "@/app/stores/usePresetStore"
 import { CameraMode } from "@/app/types/camera"
 import { useControls } from "leva"
 import defaultConfig from '@/app/presets/Default_config.json';
+import { useEffect } from "react";
+import WithModel from "../model/helper/WithModel";
 
 enum RunTypes {
     PLAYER_MODE,
@@ -10,33 +12,41 @@ enum RunTypes {
 
 function RunMode() {
     const targetModelId = usePresetStore(state => state.targetModelId)
-    useControls({
+    const models = usePresetStore(state => state.models)
+    const modelConfig = models[targetModelId]
+    const runMode = modelConfig.motionNames ? RunTypes.PLAYER_MODE : RunTypes.GAME_MODE
+
+    const [_, set] = useControls(() => ({
         "run mode": {
-            value: RunTypes.PLAYER_MODE,
+            value: runMode,
             options: {
                 "Player mode": RunTypes.PLAYER_MODE,
                 "Game mode": RunTypes.GAME_MODE
             },
             onChange: (mode, _, options) => {
-                if(options.initial) return
+                if (options.initial) return
                 if (mode == RunTypes.PLAYER_MODE) {
                     usePresetStore.setState(({ models }) => {
                         models[targetModelId].motionNames = defaultConfig.models.character.motionNames
-                        return { models: defaultConfig.models, "camera mode": CameraMode.MOTION_FILE }
+                        return { models: {...models}, "camera mode": CameraMode.MOTION_FILE }
                     })
                 }
 
                 if (mode == RunTypes.GAME_MODE) {
                     usePresetStore.setState(({ models }) => {
-                        models[targetModelId].motionNames = []
+                        models[targetModelId].motionNames = null
                         return { models: { ...models }, "camera mode": CameraMode.GAME_MODE }
                     })
                 }
             },
             order: 0
         }
-    })
+    }))
+
+    useEffect(() => {
+        set({ "run mode": runMode })
+    }, [modelConfig, runMode])
     return <></>
 }
 
-export default RunMode;
+export default WithModel(RunMode);

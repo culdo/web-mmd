@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { AdditiveAnimationBlendMode, AnimationAction, AnimationClip, AnimationMixer, Camera, LoopOnce, LoopRepeat, NormalAnimationBlendMode, SkinnedMesh } from "three";
 import { makeClipAdditive } from "three/src/animation/AnimationUtils.js";
 import makeClipLoopable from "./makeClipLoopable";
+import isRenderGui from "../model/helper/useRenderGui";
 
 enum TriggerMode {
     PLAYER,
@@ -67,7 +68,7 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
                 return { models: { ...models } }
             })
         })
-    }, { collapsed: true, render: () => !!controlName }, [controlName])
+    }, { collapsed: true, render: () => !!controlName && isRenderGui(target.name) }, [controlName])
 
     useEffect(() => {
         const init = async () => {

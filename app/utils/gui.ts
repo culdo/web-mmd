@@ -55,7 +55,7 @@ function loadModel(add = false) {
             if (add) {
                 newModels[firstId] = {
                     fileName: firstModelname,
-                    motionNames: [Object.entries(motionFiles)[0][0]],
+                    motionNames: [],
                     enableMaterial: true,
                     enableMorph: true,
                     enablePhysics: true

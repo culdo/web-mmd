@@ -22,7 +22,7 @@
         },
         "stage": {
             "fileName": "RedialC_EpRoomDS/EPDS.pmx",
-            "motionNames": null,
+            "motionNames": [],
             "enableMaterial": true,
             "enableMorph": true,
             "enablePhysics": true
