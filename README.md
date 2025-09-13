@@ -29,8 +29,9 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
 
 # Keyboard shortcuts
 ## Game mode
-* **W/A/S/D**: Walk
-* **Space**: Jump
+* **W/A/S/D**: Walk and move in the direction
+* **Space**: Front flip jump
+* Release all above keys: Idle
 
 ## Player mode
 * **Space**: Play/Pause
@@ -41,10 +42,10 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
   * **→** : Previous keyframe
   * **←** : Next keyframe
 
-# Model & Lights
-Move these object on `transform control` through below ways: 
-* Directly click on a `Model`
-* Select a `Light` from `Lights > [Choose a light] > Select` gui menu
+# Transform Control
+Move the objects by `transform control` in below ways: 
+* Model: Directly click on it
+* Light: Select one from `Lights > [Choose a light] > Select` gui menu
 
 # Demo credits
 ## Player mode
