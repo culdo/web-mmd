@@ -26,14 +26,14 @@ function RunMode() {
             onChange: (mode, _, options) => {
                 if (options.initial || !options.fromPanel) return
                 if (mode == RunTypes.PLAYER_MODE) {
-                    usePresetStore.setState(({ models }) => {
+                    usePresetStore.setState(({ models, targetModelId }) => {
                         models[targetModelId].motionNames = defaultConfig.models.character.motionNames
                         return { models: {...models}, "camera mode": CameraMode.MOTION_FILE }
                     })
                 }
 
                 if (mode == RunTypes.GAME_MODE) {
-                    usePresetStore.setState(({ models }) => {
+                    usePresetStore.setState(({ models, targetModelId }) => {
                         models[targetModelId].motionNames = null
                         return { models: { ...models }, "camera mode": CameraMode.GAME_MODE }
                     })
@@ -45,7 +45,7 @@ function RunMode() {
 
     useEffect(() => {
         set({ "run mode": runMode })
-    }, [modelConfig, runMode])
+    }, [runMode])
     return <></>
 }
 
