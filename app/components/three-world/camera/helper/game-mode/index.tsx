@@ -32,9 +32,6 @@ function GameMode() {
         const delta = deltaRef.current
         delta.subVectors(position, prevCenterPos.current)
 
-        posDampRef.current = MathUtils.damp(posDampRef.current, delta.length(), 5.0, dt)
-        delta.normalize().multiplyScalar(posDampRef.current)
-
         prevCenterPos.current.copy(position)
         controls.target.add(delta)
 

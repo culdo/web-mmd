@@ -103,8 +103,8 @@ function GameMode() {
     const rotateYDeltaRef = useRef(0.0)
     const rotateYDampRef = useRef(0.0)
     const velocityRef = useRef(0.0)
-    const velocityDampRef = useRef(0.0)
-
+    const targetTurnRef = useRef(0.0)
+    const pressingCountRef = useRef(0)
 
     function setWeight(action: AnimationAction, weight: number) {
         action.enabled = true;
@@ -119,41 +119,49 @@ function GameMode() {
         const walkAction = motionsRef.current.walk.action
         const jumpAction = motionsRef.current.jump.action
         const onPress = (e: KeyboardEvent) => {
+            e.stopPropagation()
             if (e.repeat) return
-            if (e.key == "w") {
+            pressingCountRef.current += 1
+            if (["w", "a", "s", "d"].includes(e.key) && pressingCountRef.current == 1) {
                 setWeight(walkAction, 1.0)
                 walkAction.crossFadeFrom(idleAction, 0.2, false)
+            }
+            if (e.key == "w") {
                 velocityRef.current = 0.7
             }
             if (e.key == "a") {
-                rotateYDeltaRef.current = 0.2
+                rotateYDeltaRef.current = 0.1
             }
             if (e.key == "s") {
-                setWeight(walkAction, 1.0)
-                walkAction.warp(1.0, -1.0, 0.5)
-                velocityRef.current = -0.3
+                targetTurnRef.current = mesh.rotation.y + Math.PI
+                rotateYDeltaRef.current = 0.4
             }
             if (e.key == "d") {
-                rotateYDeltaRef.current = -0.2
+                rotateYDeltaRef.current = -0.1
             }
             if (e.key == " ") {
+                const startAction = pressingCountRef.current == 1 ? idleAction : walkAction
                 setWeight(jumpAction, 1.0)
-                jumpAction.crossFadeFrom(idleAction, 0.2, false)
+                jumpAction.crossFadeFrom(startAction, 0.2, false)
             }
         }
 
         const onRelease = (e: KeyboardEvent) => {
-            if (["w", "s", " "].includes(e.key)) {
+            pressingCountRef.current -= 1
+            if (["w", "a", "d"].includes(e.key) && pressingCountRef.current == 0) {
                 setWeight(idleAction, 1.0)
                 idleAction.crossFadeFrom(walkAction, 0.2, false)
-                velocityRef.current = 0.0
             }
-            if ([" "].includes(e.key)) {
-                setWeight(idleAction, 1.0)
-                idleAction.crossFadeFrom(jumpAction, 0.2, false)
+            if (e.key == "w") {
+                velocityRef.current = 0.0
             }
             if (["a", "d"].includes(e.key)) {
                 rotateYDeltaRef.current = 0.0
+            }
+            if ([" "].includes(e.key)) {
+                const endAction = pressingCountRef.current == 0 ? idleAction : walkAction
+                setWeight(endAction, 1.0)
+                endAction.crossFadeFrom(jumpAction, 0.2, false)
             }
         }
 
@@ -170,7 +178,16 @@ function GameMode() {
     useFrame((_, delta) => {
         if (!isInit) return
         rotateYDampRef.current = MathUtils.damp(rotateYDampRef.current, rotateYDeltaRef.current, 10.0, delta)
+
         mesh.rotation.y += rotateYDampRef.current % Math.PI * 2
+        if (targetTurnRef.current > 0.0 && mesh.rotation.y > targetTurnRef.current) {
+            mesh.rotation.y = targetTurnRef.current
+            rotateYDeltaRef.current = 0.0
+            targetTurnRef.current = 0.0
+            const idleAction = motionsRef.current.idle.action
+            setWeight(idleAction, 1.0)
+            idleAction.crossFadeFrom(motionsRef.current.walk.action, 0.2, false)
+        }
 
         posDeltaRef.current.set(0, 0, velocityRef.current * motionsRef.current.walk.action.weight)
         mesh.position.add(posDeltaRef.current.applyAxisAngle(_yAxis, mesh.rotation.y))
