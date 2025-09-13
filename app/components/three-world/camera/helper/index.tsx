@@ -21,8 +21,6 @@ const cameraModeMap = [
 function CameraWorkHelper() {
     const cameraMode = usePresetStore(state => state["camera mode"])
 
-    const getCameraMode = () => usePresetStore.getState()['camera mode']
-
     const [, set] = useControls(() => ({
         'camera mode': {
             ...buildGuiItem("camera mode") as object,
@@ -38,10 +36,11 @@ function CameraWorkHelper() {
     }), [cameraMode])
 
     useEffect(() => {
+        set({ "camera mode": cameraMode })
         // keyboard shortcuts
-        document.addEventListener("keydown", (e) => {
+        const onKeyDown = (e: KeyboardEvent) => {
             if (e.key == "`") {
-                const isEditMode = getCameraMode() != CameraMode.MOTION_FILE
+                const isEditMode = cameraMode != CameraMode.MOTION_FILE
                 let targetMode;
                 if (isEditMode) {
                     targetMode = CameraMode.MOTION_FILE
@@ -51,8 +50,12 @@ function CameraWorkHelper() {
                 set({ "camera mode": targetMode })
 
             }
-        })
-    }, [])
+        }
+        document.addEventListener("keydown", onKeyDown)
+        return () => {
+            document.removeEventListener("keydown", onKeyDown)
+        }
+    }, [cameraMode])
 
     const Mode = cameraModeMap[cameraMode]
 
