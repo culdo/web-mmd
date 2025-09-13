@@ -1,6 +1,7 @@
 import usePresetStore from "@/app/stores/usePresetStore"
+import WithReady from "@/app/stores/WithReady"
 import { CameraMode } from "@/app/types/camera"
-import { button, useControls } from "leva"
+import { useControls } from "leva"
 import { useRef } from "react"
 
 enum RunTypes {
@@ -19,7 +20,8 @@ function RunMode() {
                 "Player mode": RunTypes.PLAYER_MODE,
                 "Game mode": RunTypes.GAME_MODE
             },
-            onChange: (mode) => {
+            onChange: (mode, _, options) => {
+                if(options.initial) return
                 if (mode == RunTypes.PLAYER_MODE) {
                     if (!prevMotionsRef.current) {
                         const { models, "camera mode": cameraMode } = usePresetStore.getState()
