@@ -1,0 +1,32 @@
+.button {
+	padding: 20px;
+	border-radius: 30px;
+	background-color: rgba(255, 255, 255, 0.273);
+	color: rgb(118, 184, 255);
+	font-size: 30px;
+	width: 300px;
+}
+
+.button:hover {
+	color: white;
+	background-color: rgba(92, 189, 253, 0.541);
+}
+
+.overlay {
+	position: absolute;
+	z-index: 2;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.menu {
+	height: 100%;
+	margin-left: 5em;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 1em;
+}

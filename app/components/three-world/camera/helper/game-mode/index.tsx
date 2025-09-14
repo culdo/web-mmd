@@ -17,6 +17,7 @@ function GameMode() {
     const centerPos = useRef(new Vector3())
     const prevRot = useRef(0.0)
     const isOrbitControlRef = useGlobalStore(state => state.isOrbitControlRef)
+    const showGameMenu = useGlobalStore(state => state.showGameMenu)
 
     const getCenterPos = () => targetModel.getObjectByName("smoothCenter").getWorldPosition(centerPos.current)
 
@@ -24,12 +25,37 @@ function GameMode() {
     const camDeltaRef = useRef(new Vector3())
     const controlsDeltaRef = useRef(new Vector3())
     const posDampRef = useRef(0.0)
-    const rotDampRef = useRef(0.0)
     const cameraLimiterRef = useRef(new Vector3())
     const targetLimiterRef = useRef(new Vector3())
+    const diffLengthRef = useRef(new Vector3())
 
-    cameraLimiterRef.current.subVectors(camera.position, getCenterPos())
-    targetLimiterRef.current.subVectors(controls.target, getCenterPos())
+    useEffect(() => {
+        const position = getCenterPos()
+        cameraLimiterRef.current.subVectors(camera.position, position)
+        targetLimiterRef.current.subVectors(controls.target, position)
+    }, [])
+
+    useEffect(() => {
+        if (!showGameMenu) return
+        const camOrig = cameraLimiterRef.current.clone()
+        cameraLimiterRef.current.set(
+            3.4469485287688677,
+            10.141209011110533,
+            11.1089944892801,
+        )
+        cameraLimiterRef.current.applyAxisAngle(_yAxis, targetModel.rotation.y)
+        const targetOrig = targetLimiterRef.current.clone()
+        targetLimiterRef.current.set(
+            -3.379365763119596,
+            8.313937683218128,
+            -0.9115918994124408,
+        )
+        targetLimiterRef.current.applyAxisAngle(_yAxis, targetModel.rotation.y)
+        return () => {
+            cameraLimiterRef.current = camOrig
+            targetLimiterRef.current = targetOrig
+        }
+    }, [showGameMenu])
 
     const update = (dt = 0.0) => {
         const position = getCenterPos()
@@ -51,21 +77,20 @@ function GameMode() {
 
             const rotDelta = targetModel.rotation.y - prevRot.current
             prevRot.current = targetModel.rotation.y
-            rotDampRef.current = MathUtils.damp(rotDampRef.current, rotDelta, 5.0, dt)
 
             const camDelta = camDeltaRef.current
             const controlsDelta = controlsDeltaRef.current
             camDelta.subVectors(camera.position, position)
             controlsDelta.subVectors(controls.target, position)
 
-            cameraLimiterRef.current.applyAxisAngle(_yAxis, rotDampRef.current)
-            targetLimiterRef.current.applyAxisAngle(_yAxis, rotDampRef.current)
+            cameraLimiterRef.current.applyAxisAngle(_yAxis, rotDelta)
+            targetLimiterRef.current.applyAxisAngle(_yAxis, rotDelta)
 
-            const camDamp = MathUtils.damp(camDelta.length(), cameraLimiterRef.current.length(), 2.0, dt)
-            const targetDamp = MathUtils.damp(controlsDelta.length(), targetLimiterRef.current.length(), 2.0, dt)
+            const diffLength = diffLengthRef.current.subVectors(camDelta, cameraLimiterRef.current).length()
+            const diffWeight = diffLength == 0 ? 0 : 1 - MathUtils.damp(diffLength, 0.0, 2.0, dt) / diffLength
 
-            camDelta.copy(cameraLimiterRef.current).normalize().multiplyScalar(camDamp)
-            controlsDelta.copy(targetLimiterRef.current).normalize().multiplyScalar(targetDamp)
+            camDelta.lerp(cameraLimiterRef.current, diffWeight)
+            controlsDelta.lerp(targetLimiterRef.current, diffWeight)
 
             camera.position.addVectors(position, camDelta)
             controls.target.addVectors(position, controlsDelta)

@@ -36,7 +36,8 @@ export type GlobalState = {
     enabledTransform: boolean,
     presetReadyPromise: Promise<void>
     theatreStudio: IStudio,
-    showCredits: boolean
+    showCredits: boolean,
+    showGameMenu: boolean
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -76,7 +77,8 @@ const useGlobalStore = create<GlobalState>(
         enabledTransform: true,
         presetReadyPromise: new Promise(() => { }),
         theatreStudio: null,
-        showCredits: false
+        showCredits: false,
+        showGameMenu: false
     })
 )
 

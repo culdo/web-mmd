@@ -9,6 +9,7 @@ import Panel from "./components/panel";
 import dynamic from "next/dynamic";
 import usePresetStore from "./stores/usePresetStore";
 import { WebGPURenderer } from "three/webgpu";
+import GameMenu from "./components/three-world/run-mode/GameMenu";
 const ControlBar = dynamic(() => import('./components/control-bar'), { ssr: false })
 
 export default function Home() {
@@ -32,6 +33,7 @@ export default function Home() {
       <ControlBar></ControlBar>
       <FileSelector></FileSelector>
       <Panel></Panel>
+      <GameMenu></GameMenu>
     </>
   )
 }
