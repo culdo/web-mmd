@@ -133,7 +133,7 @@ function GameMode() {
                 rotateYVelocityRef.current = 2
             }
             if (e.key == "s") {
-                targetTurnRef.current = mesh.rotation.y + Math.PI
+                targetTurnRef.current = (mesh.rotation.y + Math.PI) % (Math.PI * 2)
                 rotateYVelocityRef.current = 8
             }
             if (e.key == "d") {
@@ -179,7 +179,7 @@ function GameMode() {
         if (!isInit) return
         const walkAction = motionsRef.current.walk.action
 
-        mesh.rotation.y += (rotateYVelocityRef.current * delta * walkAction.weight) % Math.PI * 2
+        mesh.rotation.y = (mesh.rotation.y + rotateYVelocityRef.current * delta * walkAction.weight) % (Math.PI * 2)
         if (targetTurnRef.current > 0.0 && mesh.rotation.y > targetTurnRef.current) {
             mesh.rotation.y = targetTurnRef.current
             rotateYVelocityRef.current = 0.0
