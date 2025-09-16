@@ -32,6 +32,7 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
 * **W/A/S/D**: Walk and move in the direction
 * **Space**: Front flip jump
 * Release all above keys: Idle
+* **ESC**: Toggle game menu
 
 ## Player mode
 * **Space**: Play/Pause
