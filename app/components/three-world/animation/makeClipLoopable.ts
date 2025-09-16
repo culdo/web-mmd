@@ -7,7 +7,10 @@ function makeClipLoopable(clip: AnimationClip) {
         const times = track.times
         const values = track.values
         const strides = track.getValueSize()
+        
         const interpolations = (track.createInterpolant() as CubicBezierInterpolation).interpolationParams
+        if(interpolations === undefined) continue
+
         const intpStrides = interpolations.length / times.length
         if (times[0] != 0.0) {
             const aRange = clip.duration - times[times.length - 1]
