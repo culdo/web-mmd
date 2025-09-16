@@ -47,7 +47,7 @@ function CreditsList() {
                 <h1>RedialC_EpRoomDS by RedialC</h1>
                 <Credit color="#bffd73ff">Game mode</Credit>
                 <Credit>Motions</Credit>
-                <h1>移動モーション v1.3 by むつごろう</h1>
+                <h1>移動モーション v1.3、ぼんやり待ちループ by むつごろう</h1>
             </div>
         </Html>
     );

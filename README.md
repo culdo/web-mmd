@@ -57,7 +57,7 @@ The demo presets is from [this excellent MMD video](https://www.youtube.com/watc
 * Camera: Gimme x Gimme镜头 by 冬菇
 * Stage: RedialC_EpRoomDS by RedialC
 ## Game mode
-* Motions: 移動モーション v1.3 by むつごろう
+* Motions: 移動モーション v1.3、ぼんやり待ちループ by むつごろう
 
 # Development
 1. Install deps via `npm install`

@@ -24,7 +24,7 @@ function GameMode() {
 
     const motionsRef = useRef<Motions>({
         idle: {
-            name: "1.呼吸_(90f_移動なし).vmd",
+            name: "ぼんやり待ち合わせ_腕広いver(465f).vmd",
             action: null,
             clip: null
         },
