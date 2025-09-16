@@ -98,7 +98,7 @@ useGlobalStore.setState({
     })
 })
 usePresetStore.persist.onFinishHydration(async (state) => {
-    if (!state.pmxFiles?.models || !state.models?.character?.motionNames === undefined || !("ぼんやり待ち合わせ_腕広いver(465f).vmd" in state.motionFiles)) {
+    if (!state.pmxFiles?.models || !("run mode" in state)) {
         const defaultData = await getDefaultDataWithProgress()
         usePresetStore.setState({ ...defaultData, ...defaultConfig })
     }

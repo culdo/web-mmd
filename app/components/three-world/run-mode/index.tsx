@@ -8,37 +8,34 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame } from "@react-three/fiber";
 import { Material } from "three";
 
-enum RunTypes {
+export enum RunModes {
     PLAYER_MODE,
     GAME_MODE
 }
 
 function RunMode() {
-    const targetModelId = usePresetStore(state => state.targetModelId)
-    const models = usePresetStore(state => state.models)
-    const modelConfig = models[targetModelId]
-    const runMode = modelConfig.motionNames ? RunTypes.PLAYER_MODE : RunTypes.GAME_MODE
+    const runMode = usePresetStore(state => state["run mode"])
 
     const [_, set] = useControls(() => ({
         "run mode": {
             value: runMode,
             options: {
-                "Player mode": RunTypes.PLAYER_MODE,
-                "Game mode": RunTypes.GAME_MODE
+                "Player mode": RunModes.PLAYER_MODE,
+                "Game mode": RunModes.GAME_MODE
             },
             onChange: (mode, _, options) => {
                 if (options.initial || !options.fromPanel) return
-                if (mode == RunTypes.PLAYER_MODE) {
-                    usePresetStore.setState(({ models, targetModelId }) => {
-                        models[targetModelId].motionNames = defaultConfig.models[targetModelId as "character"]?.motionNames ?? []
-                        return { models: { ...models }, "camera mode": CameraMode.MOTION_FILE }
+                if (mode == RunModes.PLAYER_MODE) {
+                    usePresetStore.setState({
+                        "run mode": RunModes.PLAYER_MODE,
+                        "camera mode": CameraMode.MOTION_FILE
                     })
                 }
 
-                if (mode == RunTypes.GAME_MODE) {
-                    usePresetStore.setState(({ models, targetModelId }) => {
-                        models[targetModelId].motionNames = null
-                        return { models: { ...models }, "camera mode": CameraMode.GAME_MODE }
+                if (mode == RunModes.GAME_MODE) {
+                    usePresetStore.setState({
+                        "run mode": RunModes.GAME_MODE,
+                        "camera mode": CameraMode.FIXED_FOLLOW
                     })
                     useGlobalStore.setState({ gui: { hidden: true }, showGameMenu: true })
                     document.getElementById("rawPlayer").style.display = "none"
@@ -59,10 +56,10 @@ function RunMode() {
     useEffect(() => {
         isShowingGameMenu.current = true
     }, [showGameMenu])
-    
+
     useFrame((_, delta) => {
         const { stage } = runTimeModels
-        if (!stage || !isShowingGameMenu.current) {}
+        if (!stage || !isShowingGameMenu.current) return
         const opacityDelta = showGameMenu ? -2 : 2
         for (const material of stage.material as Material[]) {
             material.opacity += opacityDelta * delta

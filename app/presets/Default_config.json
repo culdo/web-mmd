@@ -33,6 +33,7 @@
     "currentTime": 0,
     "volume": 1,
     "camera mode": 0,
+    "run mode": 0,
     "physics": true,
     "ground shadow": true,
     "self shadow": true,

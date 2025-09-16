@@ -11,6 +11,8 @@ import GameMode from "./helper/GameMode";
 
 function Model({ id, fileName, motionNames = null, enableMorph = true, enableMaterial = true, enablePhysics = true }: { id: string, fileName: string, enableMorph?: boolean, enableMaterial?: boolean, enablePhysics?: boolean, motionNames?: string[] }) {
     const pmxFiles = usePresetStore(state => state.pmxFiles)
+    const runMode = usePresetStore(state => state["run mode"])
+    const targetModelId = usePresetStore(state => state.targetModelId)
     const url = pmxFiles.models[fileName]
     const folderName = fileName.split("/")[0]
 
@@ -44,8 +46,7 @@ function Model({ id, fileName, motionNames = null, enableMorph = true, enableMat
             {enableMorph && <Morph />}
             {enableMaterial && <Material />}
             {enablePhysics && <Physics />}
-            {motionNames?.length > 0 && <Animation motionNames={motionNames} />}
-            {motionNames === null && <GameMode></GameMode>}
+            {runMode && targetModelId == id ? <GameMode></GameMode> : <Animation motionNames={motionNames} />}
         </PmxModel>
     );
 }

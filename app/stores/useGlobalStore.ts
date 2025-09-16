@@ -81,7 +81,7 @@ const useGlobalStore = create<GlobalState>(
         presetReadyPromise: new Promise(() => { }),
         theatreStudio: null,
         creditsPose: null,
-        showGameMenu: false
+        showGameMenu: true
     })
 )
 

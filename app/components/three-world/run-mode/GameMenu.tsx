@@ -3,8 +3,8 @@ import styles from "./styles.module.css"
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { CameraMode } from "@/app/types/camera";
-import defaultConfig from '@/app/presets/Default_config.json';
 import { Vector3 } from "three";
+import { RunModes } from ".";
 
 function Button({ children, ...props }: { children: React.ReactNode } & DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>) {
     return (
@@ -22,10 +22,7 @@ function GameMenu() {
             useGlobalStore.setState({ creditsPose: null })
             return
         }
-        usePresetStore.setState(({ models, targetModelId }) => {
-            models[targetModelId].motionNames = defaultConfig.models[targetModelId as "character"]?.motionNames ?? []
-            return { models: { ...models }, "camera mode": CameraMode.MOTION_FILE }
-        })
+        usePresetStore.setState({ "run mode": RunModes.PLAYER_MODE, "camera mode": CameraMode.MOTION_FILE })
         useGlobalStore.setState({ gui: { hidden: false }, showGameMenu: false })
         document.getElementById("rawPlayer").style.display = "block"
     }
@@ -59,6 +56,7 @@ function GameMenu() {
 
 function Wrapper() {
     const showGameMenu = useGlobalStore(state => state.showGameMenu)
+    const runMode = usePresetStore(state => state["run mode"])
 
     useEffect(() => {
         const onKeydown = (e: KeyboardEvent) => {
@@ -74,7 +72,7 @@ function Wrapper() {
         }
     })
 
-    if (!showGameMenu) return <></>
+    if (!showGameMenu || !runMode) return <></>
     return <GameMenu></GameMenu>
 }
 

@@ -12,6 +12,7 @@ import { buildGuiItem, buildGuiObj } from "@/app/utils/gui";
 import { getProject } from "@theatre/core";
 import { CameraMode } from "@/app/types/camera";
 import { MediaControlBar, MediaController, MediaMuteButton, MediaPlayButton, MediaTimeDisplay, MediaTimeRange, MediaVolumeRange } from "media-chrome/react";
+import { RunModes } from "../../three-world/run-mode";
 
 function AudioPlayer() {
     const setCurrentTime = (currentTime: number) => usePresetStore.setState({ currentTime })
@@ -21,6 +22,7 @@ function AudioPlayer() {
 
     const autoHideGui = usePresetStore(state => state["auto hide GUI"])
     const cameraMode = usePresetStore(state => state["camera mode"])
+    const runMode = usePresetStore(state => state["run mode"])
     const setGui = (gui: Partial<Gui>) => useGlobalStore.setState({ gui })
     const presetReady = useGlobalStore(state => state.presetReady)
     const studio = useGlobalStore(state => state.theatreStudio)
@@ -104,7 +106,7 @@ function AudioPlayer() {
 
     // keyboard shortcuts
     useEffect(() => {
-        if(cameraMode == CameraMode.GAME_MODE) return
+        if(runMode == RunModes.GAME_MODE) return
         const handler = (e: KeyboardEvent) => {
             const player = ytPlayer.current
             if (!player) return
@@ -127,7 +129,7 @@ function AudioPlayer() {
         }
         document.addEventListener("keydown", handler)
         return () => document.removeEventListener("keydown", handler)
-    }, [cameraMode])
+    }, [runMode])
 
     // seek to saved time when change preset
     useEffect(() => {
