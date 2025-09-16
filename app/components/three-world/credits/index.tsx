@@ -16,20 +16,26 @@ function Credit({ color = "#ffd9aaff", children }: { children: React.ReactNode, 
 }
 
 function CreditsList() {
-    const isShow = useGlobalStore((state) => state.showCredits)
+    const creditsPose = useGlobalStore((state) => state.creditsPose)
 
     useControls("Credits", () => ({
-        show: button(() => useGlobalStore.setState({ showCredits: true }))
+        show: button(() => {
+            useGlobalStore.setState({ creditsPose: {
+                position: [0, 10, 10],
+                rotation: [0, 0, 0]
+            } })
+        })
     }), { order: 1000, collapsed: true })
 
-    return (isShow &&
+    return (creditsPose &&
         <Html
-            position={[0, 10, 10]}
+            position={creditsPose.position}
+            rotation={creditsPose.rotation}
             transform
         >
             <div className={styles.credits}
                 onClick={() => {
-                    useGlobalStore.setState({ showCredits: false })
+                    useGlobalStore.setState({ creditsPose: null })
                 }}
             >
                 <Credit color="#bffd73ff">Player mode</Credit>

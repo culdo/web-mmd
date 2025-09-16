@@ -18,6 +18,7 @@ function GameMode() {
     const prevRot = useRef(0.0)
     const isOrbitControlRef = useGlobalStore(state => state.isOrbitControlRef)
     const showGameMenu = useGlobalStore(state => state.showGameMenu)
+    const creditsPose = useGlobalStore(state => state.creditsPose)
 
     const getCenterPos = () => targetModel.getObjectByName("smoothCenter").getWorldPosition(centerPos.current)
 
@@ -38,24 +39,29 @@ function GameMode() {
     useEffect(() => {
         if (!showGameMenu) return
         const camOrig = cameraLimiterRef.current.clone()
+        const targetOrig = targetLimiterRef.current.clone()
         cameraLimiterRef.current.set(
             3.4469485287688677,
             10.141209011110533,
             11.1089944892801,
         )
-        cameraLimiterRef.current.applyAxisAngle(_yAxis, targetModel.rotation.y)
-        const targetOrig = targetLimiterRef.current.clone()
         targetLimiterRef.current.set(
             -3.379365763119596,
             8.313937683218128,
             -0.9115918994124408,
         )
+        if(creditsPose) {
+            cameraLimiterRef.current.y -= 5
+            targetLimiterRef.current.y -= 5
+            cameraLimiterRef.current.z += 40
+        }
+        cameraLimiterRef.current.applyAxisAngle(_yAxis, targetModel.rotation.y)
         targetLimiterRef.current.applyAxisAngle(_yAxis, targetModel.rotation.y)
         return () => {
             cameraLimiterRef.current = camOrig
             targetLimiterRef.current = targetOrig
         }
-    }, [showGameMenu])
+    }, [showGameMenu, creditsPose])
 
     const update = (dt = 0.0) => {
         const position = getCenterPos()
