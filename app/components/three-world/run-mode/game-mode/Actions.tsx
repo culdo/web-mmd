@@ -101,7 +101,6 @@ function Actions() {
     const rotateYVelocityRef = useRef(0.0)
     const velocityRef = useRef(0.0)
     const targetTurnRef = useRef(0.0)
-    const pressingCountRef = useRef(0)
 
     function setWeight(action: AnimationAction, weight: number) {
         action.enabled = true;
@@ -118,11 +117,10 @@ function Actions() {
         const onPress = (e: KeyboardEvent) => {
             e.stopPropagation()
             if (e.repeat) return
-            pressingCountRef.current += 1
-            if (["w", "a", "s", "d"].includes(e.key) && idleAction.enabled) {
+            const isStart = velocityRef.current == 0.0 && rotateYVelocityRef.current == 0.0
+            if (["w", "a", "s", "d"].includes(e.key) && isStart) {
                 setWeight(walkAction, 1.0)
                 walkAction.crossFadeFrom(idleAction, 0.2, false)
-                pressingCountRef.current = 1
             }
             if (e.key == "w") {
                 velocityRef.current = 15
@@ -138,26 +136,26 @@ function Actions() {
                 rotateYVelocityRef.current = -2
             }
             if (e.key == " ") {
-                const startAction = pressingCountRef.current == 1 ? idleAction : walkAction
+                const startAction = isStart ? idleAction : walkAction
                 setWeight(jumpAction, 1.0)
                 jumpAction.crossFadeFrom(startAction, 0.2, false)
             }
         }
 
         const onRelease = (e: KeyboardEvent) => {
-            pressingCountRef.current -= 1
-            if (["w", "a", "d"].includes(e.key) && pressingCountRef.current == 0) {
-                setWeight(idleAction, 1.0)
-                idleAction.crossFadeFrom(walkAction, 0.2, false)
-            }
             if (e.key == "w") {
                 velocityRef.current = 0.0
             }
             if (["a", "d"].includes(e.key)) {
                 rotateYVelocityRef.current = 0.0
             }
+            const isStop = velocityRef.current == 0.0 && rotateYVelocityRef.current == 0.0
+            if (["w", "a", "d"].includes(e.key) && isStop) {
+                setWeight(idleAction, 1.0)
+                idleAction.crossFadeFrom(walkAction, 0.2, false)
+            }
             if ([" "].includes(e.key)) {
-                const endAction = pressingCountRef.current == 0 ? idleAction : walkAction
+                const endAction = isStop ? idleAction : walkAction
                 setWeight(endAction, 1.0)
                 endAction.crossFadeFrom(jumpAction, 0.2, false)
             }
