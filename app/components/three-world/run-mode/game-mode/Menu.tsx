@@ -2,9 +2,8 @@ import { ButtonHTMLAttributes, DetailedHTMLProps, useEffect } from "react";
 import styles from "./styles.module.css"
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { CameraMode } from "@/app/types/camera";
 import { Vector3 } from "three";
-import { RunModes } from ".";
+import { RunModes } from "..";
 
 function Button({ children, ...props }: { children: React.ReactNode } & DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>) {
     return (
@@ -13,18 +12,16 @@ function Button({ children, ...props }: { children: React.ReactNode } & Detailed
 }
 
 function GameMenu() {
-    const creditsPos = useGlobalStore(state => state.creditsPose)
+    const creditsPose = useGlobalStore(state => state.creditsPose)
     const onNewGame = () => {
         useGlobalStore.setState({ showGameMenu: false })
     }
     const onExit = () => {
-        if (creditsPos) {
+        if (creditsPose) {
             useGlobalStore.setState({ creditsPose: null })
             return
         }
-        usePresetStore.setState({ "run mode": RunModes.PLAYER_MODE, "camera mode": CameraMode.MOTION_FILE })
-        useGlobalStore.setState({ gui: { hidden: false }, showGameMenu: false })
-        document.getElementById("rawPlayer").style.display = "block"
+        usePresetStore.setState({ "run mode": RunModes.PLAYER_MODE })
     }
     const onCredits = () => {
         const { targetModelId } = usePresetStore.getState()
@@ -33,17 +30,19 @@ function GameMenu() {
         const creditPos = new Vector3(0, 10, 10)
         creditPos.applyAxisAngle(new Vector3(0, 1, 0), model.rotation.y)
         creditPos.add(model.position)
-        useGlobalStore.setState({ creditsPose: {
-            position: creditPos.toArray(),
-            rotation: [model.rotation.x, model.rotation.y, model.rotation.z]
-        } })
+        useGlobalStore.setState({
+            creditsPose: {
+                position: creditPos.toArray(),
+                rotation: [model.rotation.x, model.rotation.y, model.rotation.z]
+            }
+        })
     }
 
     return (
         <div className={styles.overlay}>
             <div className={styles.menu}>
                 {
-                    creditsPos === null && <>
+                    creditsPose === null && <>
                         <Button onClick={onNewGame}>New Game</Button>
                         <Button onClick={onCredits}>Credits</Button>
                     </>

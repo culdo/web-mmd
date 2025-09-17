@@ -1,15 +1,15 @@
 import usePresetStore from "@/app/stores/usePresetStore";
 import { AnimationAction, AnimationClip, AnimationMixer, MathUtils, Vector3 } from "three";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useModel, useRuntimeHelper } from "./ModelContext";
-import buildUpdatePMX from "./buildUpdatePMX";
-import { CheckModel } from "./WithModel";
+import { useModel, useRuntimeHelper } from "../../model/helper/ModelContext";
+import buildUpdatePMX from "../../model/helper/buildUpdatePMX";
+import { CheckModel } from "../../model/helper/WithModel";
 import { useFrame } from "@react-three/fiber";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import makeClipLoopable from "../../animation/makeClipLoopable";
 import { buildOnProgress } from "@/app/utils/base";
 
-type Motions = Record<string, {
+type ActionsType = Record<string, {
     name: string,
     action: AnimationAction,
     clip: AnimationClip
@@ -17,12 +17,12 @@ type Motions = Record<string, {
 
 const _yAxis = new Vector3(0, 1, 0)
 
-function GameMode() {
+function Actions() {
     const mesh = useModel()
     const motionFiles = usePresetStore(state => state.motionFiles)
     const loader = useGlobalStore(state => state.loader)
 
-    const motionsRef = useRef<Motions>({
+    const motionsRef = useRef<ActionsType>({
         idle: {
             name: "ぼんやり待ち合わせ_腕広いver(465f).vmd",
             action: null,
@@ -197,4 +197,4 @@ function GameMode() {
     return <></>
 }
 
-export default CheckModel(GameMode);
+export default CheckModel(Actions);
