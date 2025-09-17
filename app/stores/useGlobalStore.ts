@@ -1,6 +1,6 @@
 import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
 import { MutableRefObject, createRef } from 'react';
-import { AnimationMixer, PerspectiveCamera, SkinnedMesh } from 'three';
+import { AnimationMixer, PerspectiveCamera, SkinnedMesh, Vector3 } from 'three';
 import { GrantSolver, MMDPhysics, OrbitControls } from 'three-stdlib';
 import { create } from 'zustand';
 import { MMDLoader } from '../modules/MMDLoader';
@@ -39,6 +39,10 @@ export type GlobalState = {
     creditsPose: {
         position: [number, number, number],
         rotation: [number, number, number]
+    },
+    cameraPose: {
+        position: Vector3,
+        target: Vector3
     },
     showGameMenu: boolean
 }
@@ -81,6 +85,10 @@ const useGlobalStore = create<GlobalState>(
         presetReadyPromise: new Promise(() => { }),
         theatreStudio: null,
         creditsPose: null,
+        cameraPose: {
+            position: new Vector3(),
+            target: new Vector3()
+        },
         showGameMenu: true
     })
 )

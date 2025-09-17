@@ -15,8 +15,6 @@ type ActionsType = Record<string, {
     clip: AnimationClip
 }>
 
-const _yAxis = new Vector3(0, 1, 0)
-
 function Actions() {
     const mesh = useModel()
     const motionFiles = usePresetStore(state => state.motionFiles)
@@ -190,7 +188,7 @@ function Actions() {
         }
 
         posDeltaRef.current.set(0, 0, velocityRef.current * delta * walkAction.weight)
-        mesh.position.add(posDeltaRef.current.applyAxisAngle(_yAxis, mesh.rotation.y))
+        mesh.position.add(posDeltaRef.current.applyQuaternion(mesh.quaternion))
         onLoop(delta)
     }, 1)
 

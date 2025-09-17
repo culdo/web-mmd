@@ -4,6 +4,7 @@ import useMenuTransit from "./useShowingMenu";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { CameraMode } from "@/app/types/camera";
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import Camera from "./Camera";
 
 function GameMode() {
     useEffect(() => {
@@ -26,6 +27,7 @@ function GameMode() {
     return (
         <>
             <Actions></Actions>
+            <Camera></Camera>
         </>
     );
 }
