@@ -16,7 +16,7 @@ function Model({ id, fileName, motionNames = [], enableMorph = true, enableMater
     const targetModelId = usePresetStore(state => state.targetModelId)
     const url = pmxFiles.models[fileName]
     const folderName = fileName.split("/")[0]
-    const enableAnimation = motionNames.length > 0 && (runMode == RunModes.PLAYER_MODE || targetModelId != id)
+    const enableAnimation = motionNames?.length > 0 && (runMode == RunModes.PLAYER_MODE || targetModelId != id)
     return (
         <PmxModel
             name={id}
