@@ -3,7 +3,6 @@ import { AnimationAction, AnimationClip, AnimationMixer, MathUtils, Vector3 } fr
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useModel, useRuntimeHelper } from "../../model/helper/ModelContext";
 import buildUpdatePMX from "../../model/helper/buildUpdatePMX";
-import { CheckModel } from "../../model/helper/WithModel";
 import { useFrame } from "@react-three/fiber";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import makeClipLoopable from "../../animation/makeClipLoopable";
@@ -46,6 +45,7 @@ function Actions() {
         const copyBones = (fromOrTo: "fromArray" | "toArray") => {
             if (!init) {
                 init = true
+                mesh.pose()
                 return
             }
             const bones = mesh.skeleton.bones;
@@ -193,4 +193,4 @@ function Actions() {
     return <></>
 }
 
-export default CheckModel(Actions);
+export default Actions;

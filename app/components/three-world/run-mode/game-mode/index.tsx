@@ -5,8 +5,10 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import { CameraMode } from "@/app/types/camera";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import Camera from "./Camera";
+import WithModel from "../../model/helper/WithModel";
 
 function GameMode() {
+    const cameraMode = usePresetStore(state => state["camera mode"])
     useEffect(() => {
         const { "camera mode": prevCameraMode } = usePresetStore.getState()
         usePresetStore.setState({
@@ -32,4 +34,4 @@ function GameMode() {
     );
 }
 
-export default GameMode;
+export default WithModel(GameMode);

@@ -1,6 +1,5 @@
 import useGlobalStore from "@/app/stores/useGlobalStore"
 import { useEffect } from "react"
-import WithModel from "../../model/helper/WithModel"
 import { useModel } from "../../model/helper/ModelContext"
 
 const Poses = {
@@ -41,4 +40,4 @@ function Camera() {
     return <></>;
 }
 
-export default WithModel(Camera);
+export default Camera;

@@ -28,8 +28,8 @@ function FixFollowMode() {
 
     useEffect(() => {
         const position = getCenterPos()
-        cameraPose.position.subVectors(camera.position, position)
-        cameraPose.target.subVectors(controls.target, position)
+        if(cameraPose.position.length() == 0) cameraPose.position.subVectors(camera.position, position)
+        if(cameraPose.target.length() == 0) cameraPose.target.subVectors(controls.target, position)
     }, [])
 
     const update = (dt = 0.0) => {
