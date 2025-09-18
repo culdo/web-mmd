@@ -7,8 +7,6 @@ import buildUpdatePMX from "./buildUpdatePMX";
 import { CheckModel } from "./WithModel";
 import VMDMotion from "./VMDMotion";
 import { useFrame } from "@react-three/fiber";
-import { useControls } from "leva";
-import isRenderGui from "./useRenderGui";
 
 function Animation({ motionNames }: { motionNames: string[] }) {
     const mesh = useModel()
@@ -20,28 +18,7 @@ function Animation({ motionNames }: { motionNames: string[] }) {
         _actions: AnimationAction[]
     };
 
-    const blendOptions = Object.keys(motionFiles).filter(val => !motionNames.includes(val))
-    const [, set] = useControls(`Model-${mesh.name}`, () => ({
-        "blend motion": {
-            value: "Select...",
-            options: blendOptions,
-            onChange: (val, path, options) => {
-                if (options.initial || val == "Select...") return
-                usePresetStore.setState(({ models }) => {
-                    const motionNames = models[mesh.name].motionNames
-                    if (motionNames.includes(val)) return {}
-                    motionNames.push(val)
-                    return {
-                        models: { ...models }
-                    }
-                })
-                set({ "blend motion": "Select..." })
-            }
-        }
-    }), { order: 2, render: () => isRenderGui(mesh.name) }, [blendOptions])
-
     const onLoop = useMemo(() => {
-
         let backupBones = new Float32Array(mesh.skeleton.bones.length * 7);
         const copyBones = (fromOrTo: "fromArray" | "toArray") => {
             const bones = mesh.skeleton.bones;
@@ -53,27 +30,30 @@ function Animation({ motionNames }: { motionNames: string[] }) {
         }
 
         let init = false;
-        const restoreBones = (reset = false) => {
+        const restoreBones = () => {
             if (!init) {
                 init = true
                 return
             }
-            if (reset) {
-                mesh.skeleton.pose()
-            } else {
-                copyBones("fromArray")
+            if (isResetPoseRef.current) {
+                mesh.pose()
+                return
             }
+            copyBones("fromArray")
         }
         const saveBones = () => copyBones("toArray")
 
         const updatePMX = buildUpdatePMX(mesh)
 
-        return (reset = false, delta?: number) => {
-            restoreBones(reset)
-            if (delta && !isMotionUpdating()) {
-                mixer.update(delta)
-            } else {
+        return (delta: number) => {
+            restoreBones()
+            if (isResetPoseRef.current || isMotionUpdating()) {
                 mixer.setTime(player.currentTime)
+                for (const action of mixer._actions) {
+                    action.time = player.currentTime
+                }
+            } else {
+                mixer.update(delta)
             }
             saveBones()
 
@@ -83,11 +63,18 @@ function Animation({ motionNames }: { motionNames: string[] }) {
     }, [mesh])
     const runtimeHelper = useRuntimeHelper()
 
-    const isResetRef = useRef(false)
+    const isResetPoseRef = useRef(true)
+    const isResetPhysicsRef = useRef(true)
 
-    const onInit = (reset = false) => {
-        isResetRef.current = reset
-        runtimeHelper.resetPhysic?.()
+    const resetPose = () => {
+        isResetPoseRef.current = true
+        resetPhysics()
+    }
+
+    const resetPhysics = () => {
+        setTimeout(() => {
+            isResetPhysicsRef.current = true
+        }, 100)
     }
 
     useEffect(() => {
@@ -102,8 +89,14 @@ function Animation({ motionNames }: { motionNames: string[] }) {
     }, [mixer])
 
     useFrame((_, delta) => {
-        onLoop(isResetRef.current, isResetRef.current ? undefined : delta)
-        isResetRef.current = false
+        onLoop(delta)
+        if (isResetPoseRef.current) {
+            isResetPoseRef.current = false
+        }
+        if (isResetPhysicsRef.current) {
+            runtimeHelper.resetPhysic?.()
+            isResetPhysicsRef.current = false
+        }
     }, 1)
 
     return (
@@ -112,7 +105,13 @@ function Animation({ motionNames }: { motionNames: string[] }) {
                 motionNames.map(motionName =>
                     <VMDMotion
                         key={motionName}
-                        args={[mesh, mixer, motionFiles[motionName], onInit, motionName]} />
+                        target={mesh}
+                        mixer={mixer}
+                        vmdFile={motionFiles[motionName]}
+                        motionName={motionName}
+                        resetPose={resetPose}
+                        resetPhysic={resetPhysics}
+                    />
                 )
             }
         </>

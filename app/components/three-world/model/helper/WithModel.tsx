@@ -22,7 +22,7 @@ export default WithModel
 export function CheckModel<T>(Comp: React.ComponentType<T>) {
     return function WrapCom(props: T) {
         const mesh = useModel()
-        if (!mesh.geometry.userData.MMD?.rigidBodies) return <></>
+        if (mesh.geometry.userData.MMD?.rigidBodies.length == 0) return <></>
         return <Comp {...props}></Comp>;
     }
 }

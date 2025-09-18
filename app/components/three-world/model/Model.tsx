@@ -9,13 +9,13 @@ import Physics from "./helper/Physics";
 import Animation from "./helper/Animation";
 import { RunModes } from "../run-mode";
 
-function Model({ id, fileName, motionNames = null, enableMorph = true, enableMaterial = true, enablePhysics = true }: { id: string, fileName: string, enableMorph?: boolean, enableMaterial?: boolean, enablePhysics?: boolean, motionNames?: string[] }) {
+function Model({ id, fileName, motionNames = [], enableMorph = true, enableMaterial = true, enablePhysics = true }: { id: string, fileName: string, enableMorph?: boolean, enableMaterial?: boolean, enablePhysics?: boolean, motionNames?: string[] }) {
     const pmxFiles = usePresetStore(state => state.pmxFiles)
     const runMode = usePresetStore(state => state["run mode"])
     const targetModelId = usePresetStore(state => state.targetModelId)
     const url = pmxFiles.models[fileName]
     const folderName = fileName.split("/")[0]
-
+    const enableAnimation = motionNames.length > 0 && (runMode == RunModes.PLAYER_MODE || targetModelId != id)
     return (
         <PmxModel
             name={id}
@@ -46,7 +46,7 @@ function Model({ id, fileName, motionNames = null, enableMorph = true, enableMat
             {enableMorph && <Morph />}
             {enableMaterial && <Material />}
             {enablePhysics && <Physics />}
-            {(runMode == RunModes.PLAYER_MODE || targetModelId != id) && <Animation motionNames={motionNames} />}
+            {enableAnimation && <Animation motionNames={motionNames} />}
         </PmxModel>
     );
 }

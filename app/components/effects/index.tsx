@@ -157,7 +157,7 @@ function Effects() {
         if (!dof.target) {
             dof.target = new Vector3()
         }
-    })
+    }, 3)
 
     const renderer = useThree(state => state.gl)
     const isWebGPU = renderer instanceof WebGPURenderer

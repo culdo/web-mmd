@@ -6,6 +6,7 @@ import { useEffect } from "react";
 function Gui() {
     const models = usePresetStore(state => state.models)
     const pmxFiles = usePresetStore(state => state.pmxFiles)
+    const motionFiles = usePresetStore(state => state.motionFiles)
     const targetModelId = usePresetStore(state => state.targetModelId)
 
     const targetOptions = Object.keys(models)
@@ -24,8 +25,9 @@ function Gui() {
         setGui({ "target model id": targetModelId })
     }, [targetModelId])
 
-    const { fileName } = models[targetModelId]
+    const { fileName, motionNames } = models[targetModelId]
     const modelsOption = Object.keys(pmxFiles.models)
+    const blendOptions = Object.keys(motionFiles).filter(val => !motionNames.includes(val))
 
     const [, set] = useControls(`Model-${targetModelId}`, () => ({
         "model": {
@@ -63,8 +65,25 @@ function Gui() {
                     }
                 })
             })
-        })
-    }), { order: 2 }, [modelsOption, targetModelId])
+        }),
+        "blend motion": {
+            value: "Select...",
+            options: blendOptions,
+            onChange: (val, path, options) => {
+                if (options.initial || val == "Select...") return
+                usePresetStore.setState(({ models }) => {
+                    const { motionNames } = models[targetModelId]
+                    if (!motionNames.includes(val)) {
+                        motionNames.push(val)
+                    }
+                    return {
+                        models: { ...models }
+                    }
+                })
+                set({ "blend motion": "Select..." })
+            }
+        }
+    }), { order: 2 }, [modelsOption, blendOptions, targetModelId])
 
     return <></>;
 }
