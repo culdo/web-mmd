@@ -31,7 +31,9 @@ function CreditsList() {
         <Html
             position={creditsPose.position}
             rotation={creditsPose.rotation}
+            zIndexRange={[100, 0]}
             transform
+            occlude="blending"
         >
             <div className={styles.credits}
                 onClick={() => {

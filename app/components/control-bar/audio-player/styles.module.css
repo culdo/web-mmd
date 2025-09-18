@@ -8,6 +8,7 @@
 	bottom: 25px;
 	transition: opacity 1s ease 0s; 
 	opacity: 0;
+	z-index: 1000;
 }
 
 @media only screen and (max-width: 1000px) {
