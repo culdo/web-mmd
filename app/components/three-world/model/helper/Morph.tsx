@@ -1,6 +1,3 @@
-import useGlobalStore from "@/app/stores/useGlobalStore";
-import usePresetStore, { PresetState } from "@/app/stores/usePresetStore";
-import { setLevaValue } from "@/app/utils/gui";
 import { useControls } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
 import { useEffect, useState } from "react";

@@ -1,7 +1,8 @@
 import Gui from "./Gui";
 import usePresetStore from "@/app/stores/usePresetStore";
-import Model from "./Model";
 import WithReady from "@/app/stores/WithReady";
+import dynamic from "next/dynamic";
+const Model = dynamic(() => import('./Model'), { ssr: false })
 
 function Models() {
     const models = usePresetStore(state => state.models)

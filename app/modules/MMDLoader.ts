@@ -108,14 +108,6 @@ class MMDLoader extends Loader {
 	animationBuilder: AnimationBuilder;
 	animationPath: any;
 	params: any;
-	loadAsync: (url: string, onProgress?: (event: ProgressEvent<EventTarget>) => void) => Promise<{
-		data: PMXModel
-		mesh: SkinnedMesh
-		geometry: MMDGeometry
-		material: (MeshPhysicalMaterial | MMDToonMaterial)[]
-		skeleton: Skeleton
-		rootBones: Bone[]
-	}>;
 
 	constructor(manager?: LoadingManager) {
 
@@ -159,7 +151,7 @@ class MMDLoader extends Loader {
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	async load(url: string, onLoad: (build: ReturnType<MeshBuilder["build"]>) => void, onProgress: Function, onError: Function) {
+	async loadAsync(url: string, onProgress?: (event: ProgressEvent<EventTarget>) => void) {
 
 		const builder = this.meshBuilder.setCrossOrigin(this.crossOrigin);
 
@@ -184,7 +176,7 @@ class MMDLoader extends Loader {
 			}
 		}
 
-		const data = await this.loadPMX(url, onProgress, onError);
+		const data = await this.loadPMX(url, onProgress, undefined);
 
 		if (params && params.modelTextures) {
 			data.textures.forEach((texturePath: string, index: number) => {
@@ -194,8 +186,9 @@ class MMDLoader extends Loader {
 		}
 
 		this.params = null
-		onLoad(builder.build(data, resourcePath, onProgress, onError, params));
 
+		const result = builder.build(data, resourcePath, onProgress, undefined, params)
+		return result;
 	}
 
 	/**
@@ -221,51 +214,20 @@ class MMDLoader extends Loader {
 	}
 
 	/**
-	 * Loads mode file and motion file(s) as an object containing
-	 * a SkinnedMesh and a AnimationClip.
-	 * Tracks of AnimationClip are fitting to the model.
-	 *
-	 * @param {string} modelUrl - url to Model(.pmd or .pmx) file
-	 * @param {string|Array{string}} vmdUrl - url(s) to animation(.vmd) file
-	 * @param {function} onLoad
-	 * @param {function} onProgress
-	 * @param {function} onError
-	 */
-	async loadWithAnimation(modelUrl: string, vmdUrl: string | string[], onProgress: any, onError = () => { }, params: any = null) {
-
-		const { mesh } = await this
-			.setModelParams(params)
-			.loadAsync(modelUrl, onProgress);
-
-		const animation = await this.loadAnimation(vmdUrl, mesh, onProgress, onError);
-
-		return {
-			mesh: mesh,
-			animation: animation
-		}
-
-	}
-
-	/**
 	 * Loads .pmx file as an Object.
 	 *
 	 * @param {string} url - url to .pmx file
 	 * @param {function} onProgress
 	 * @param {function} onError
 	 */
-	async loadPMX(url: any, onProgress: any, onError: any) {
+	async loadPMX(url: string, onProgress: any, onError: any) {
 
 		const parser = this._getParser();
 
-		const buffer = await this.loader
-			.setMimeType(undefined)
-			.setPath(this.path)
-			.setResponseType('arraybuffer')
-			.setRequestHeader(this.requestHeader)
-			.setWithCredentials(this.withCredentials)
-			.loadAsync(url, onProgress) as ArrayBufferLike;
+		const buffer = Buffer.from(url.split("base64,")[1], 'base64').buffer;
+		const model = parser.parsePmx(buffer, true)
 
-		return { ...parser.parsePmx(buffer, true) }
+		return model
 
 	}
 
@@ -283,19 +245,11 @@ class MMDLoader extends Loader {
 		const urls = Array.isArray(url) ? url : [url];
 
 		const vmds = [];
-		const vmdNum = urls.length;
 
 		const parser = this._getParser();
 
-		this.loader
-			.setMimeType(undefined)
-			.setPath(this.animationPath)
-			.setResponseType('arraybuffer')
-			.setRequestHeader(this.requestHeader)
-			.setWithCredentials(this.withCredentials);
-
 		for (let i = 0, il = urls.length; i < il; i++) {
-			const buffer = await this.loader.loadAsync(urls[i], onProgress);
+			const buffer = Buffer.from(urls[i].split("base64,")[1], 'base64').buffer;
 			vmds.push(parser.parseVmd(buffer, true));
 		}
 
@@ -415,8 +369,6 @@ class MeshBuilder {
 			.setCrossOrigin(this.crossOrigin)
 			.setResourcePath(resourcePath)
 			.build(data, geometry, onProgress, onError, params);
-
-		// console.log( mesh ); // for console debug
 
 		return {
 			data,

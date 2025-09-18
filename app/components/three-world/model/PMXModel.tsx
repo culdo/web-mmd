@@ -31,14 +31,14 @@ function PMXModel({ url, modelTextures, enableSdef = true, enablePBR = true, chi
         }
         if (url.startsWith("data:")) {
             Object.assign(params, {
-                modelTextures: modelTextures
+                modelTextures
             });
         }
 
         const init = async () => {
             const initProps = await loader
                 .setModelParams(params)
-                .loadAsync(url, buildOnProgress(url));
+                .loadAsync(url);
             setProps(initProps)
         }
         init()
