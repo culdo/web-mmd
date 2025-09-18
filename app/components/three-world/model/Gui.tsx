@@ -27,7 +27,7 @@ function Gui() {
 
     const { fileName, motionNames } = models[targetModelId]
     const modelsOption = Object.keys(pmxFiles.models)
-    const blendOptions = Object.keys(motionFiles).filter(val => !motionNames.includes(val))
+    const blendOptions = Object.keys(motionFiles).filter(val => !motionNames?.includes(val))
 
     const [, set] = useControls(`Model-${targetModelId}`, () => ({
         "model": {
