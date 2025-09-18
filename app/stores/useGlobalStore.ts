@@ -86,7 +86,7 @@ const useGlobalStore = create<GlobalState>(
         theatreStudio: null,
         creditsPose: null,
         cameraPose: {
-            position: new Vector3(),
+            position: new Vector3(0, 10, 50),
             target: new Vector3()
         },
         showGameMenu: true
