@@ -3,11 +3,11 @@ import { useEffect } from "react"
 import { useModel } from "../../model/helper/ModelContext"
 
 const Poses = {
-    menu: {
-        position: [3.4, 10.1, 11.1],
-        target: [-3.3, 8.3, -0.9,]
+    inMenu: {
+        position: [0.4, 9.0, 6.0],
+        target: [-1.4, 9.0, -0.9,]
     },
-    game: {
+    inGame: {
         position: [0, 30, -50],
         target: [0, 0, 0]
     }
@@ -22,8 +22,8 @@ function Camera() {
     useEffect(() => {
         const camOrig = cameraPose.position.clone()
         const targetOrig = cameraPose.target.clone()
-        cameraPose.position.fromArray(showGameMenu ? Poses.menu.position : Poses.game.position)
-        cameraPose.target.fromArray(showGameMenu ? Poses.menu.target : Poses.game.target)
+        cameraPose.position.fromArray(showGameMenu ? Poses.inMenu.position : Poses.inGame.position)
+        cameraPose.target.fromArray(showGameMenu ? Poses.inMenu.target : Poses.inGame.target)
         if (creditsPose) {
             cameraPose.position.y -= 5
             cameraPose.target.y -= 5
