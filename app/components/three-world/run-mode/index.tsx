@@ -30,7 +30,7 @@ function RunMode() {
 
     return (
         <>
-            {runMode == RunModes.GAME_MODE && <GameMode></GameMode>}
+            {runMode == RunModes.GAME_MODE && <GameMode />}
         </>
     )
 }

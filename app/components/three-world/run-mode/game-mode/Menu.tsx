@@ -71,7 +71,7 @@ function Wrapper() {
         }
     })
 
-    if (!showGameMenu || !runMode) return <></>
+    if (!showGameMenu || runMode != RunModes.GAME_MODE) return <></>
     return <GameMenu></GameMenu>
 }
 
