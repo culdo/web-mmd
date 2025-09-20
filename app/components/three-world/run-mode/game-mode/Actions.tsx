@@ -175,8 +175,9 @@ function Actions() {
         if (!isInit) return
         const walkAction = motionsRef.current.walk.action
 
-        mesh.rotation.y = (mesh.rotation.y + rotateYVelocityRef.current * delta * walkAction.weight) % (Math.PI * 2)
-        if (targetTurnRef.current > 0.0 && mesh.rotation.y > targetTurnRef.current) {
+        const rotDelta = rotateYVelocityRef.current * delta * walkAction.weight
+        mesh.rotation.y = (mesh.rotation.y + rotDelta) % (Math.PI * 2)
+        if (targetTurnRef.current > 0.0 && Math.abs(mesh.rotation.y - targetTurnRef.current) < rotDelta) {
             mesh.rotation.y = targetTurnRef.current
             rotateYVelocityRef.current = 0.0
             targetTurnRef.current = 0.0
