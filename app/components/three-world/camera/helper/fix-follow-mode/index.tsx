@@ -1,7 +1,7 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
-import { MathUtils, PerspectiveCamera, Quaternion, Vector3 } from "three";
+import { MathUtils, PerspectiveCamera, Quaternion, Spherical, Vector3 } from "three";
 import { useModel } from "../../../model/helper/ModelContext";
 import WithModel from "../../../model/helper/WithModel";
 import { OrbitControls } from "three-stdlib";
@@ -14,60 +14,80 @@ function FixFollowMode() {
 
     const prevCenterPos = useRef(new Vector3())
     const isOrbitControlRef = useGlobalStore(state => state.isOrbitControlRef)
-    const cameraPose = useGlobalStore(state => state.cameraPose)
+    const cameraOffset = useGlobalStore(state => state.cameraPose)
 
-    const getCenterPos = () => targetModel.skeleton.getBoneByName("センター").getWorldPosition(cameraPose.center)
+    const getCenterPos = () => targetModel.skeleton.getBoneByName("センター").getWorldPosition(cameraOffset.center)
 
-    const deltaRef = useRef(new Vector3())
+    const targetWeight = useRef(new Vector3())
+    const currentPosRef = useRef(new Vector3())
+    const currentTargetRef = useRef(new Vector3())
     const camDeltaRef = useRef(new Vector3())
-    const controlsDeltaRef = useRef(new Vector3())
-    const posDampRef = useRef(0.0)
-    const diffLengthRef = useRef(new Vector3())
+    const targetDeltaRef = useRef(new Vector3())
     const desiredPosRef = useRef(new Vector3())
     const desiredTargetRef = useRef(new Vector3())
+    
+    const sphericalRef = useRef(new Spherical())
+    const sphericalDeltaRef = useRef(new Spherical())
+    const sphericalTempRef = useRef(new Spherical())
+    const dampingFactor = 0.2
 
     useEffect(() => {
         const position = getCenterPos()
-        if(cameraPose.position.length() == 0) cameraPose.position.subVectors(camera.position, position)
-        if(cameraPose.target.length() == 0) cameraPose.target.subVectors(controls.target, position)
+        if(cameraOffset.position.length() == 0) cameraOffset.position.subVectors(camera.position, position)
+        if(cameraOffset.target.length() == 0) cameraOffset.target.subVectors(controls.target, position)
     }, [])
 
     const update = (dt = 0.0) => {
         const centerPos = getCenterPos()
 
-        const delta = deltaRef.current
-        delta.subVectors(centerPos, prevCenterPos.current)
-        prevCenterPos.current.copy(centerPos)
-
-        posDampRef.current = MathUtils.damp(posDampRef.current, delta.length(), 2.0, dt)
-        delta.normalize().multiplyScalar(posDampRef.current)
-
-        controls.target.add(delta)
-
         if (isOrbitControlRef.current) {
-            cameraPose.position.subVectors(camera.position, centerPos)
-            cameraPose.target.subVectors(controls.target, centerPos)
+            cameraOffset.position.subVectors(camera.position, controls.target).applyQuaternion(targetModel.quaternion.invert())
+            cameraOffset.target.subVectors(controls.target, centerPos).applyQuaternion(targetModel.quaternion.invert())
         } else {
-            camera.position.add(delta)
 
-            const camDelta = camDeltaRef.current
-            const controlsDelta = controlsDeltaRef.current
-            camDelta.subVectors(camera.position, centerPos)
-            controlsDelta.subVectors(controls.target, centerPos)
+            const posOffset = currentPosRef.current
+            const targetOffset = currentTargetRef.current
+
+            posOffset.subVectors(camera.position, controls.target)
+            targetOffset.subVectors(controls.target, centerPos)
             
-            desiredPosRef.current.copy(cameraPose.position)
-            desiredTargetRef.current.copy(cameraPose.target)
-            desiredPosRef.current.applyQuaternion(targetModel.quaternion)
-            desiredTargetRef.current.applyQuaternion(targetModel.quaternion)
+            const desiredPosOffset = desiredPosRef.current
+            const desiredTargetOffset = desiredTargetRef.current
 
-            const diffLength = diffLengthRef.current.subVectors(camDelta, desiredPosRef.current).length()
-            const diffWeight = diffLength == 0 ? 0 : 1 - MathUtils.damp(diffLength, 0.0, 2.0, dt) / diffLength
+            desiredPosOffset.copy(cameraOffset.position)
+            desiredTargetOffset.copy(cameraOffset.target)
+            desiredPosOffset.applyQuaternion(targetModel.quaternion)
+            desiredTargetOffset.applyQuaternion(targetModel.quaternion)
 
-            camDelta.lerp(desiredPosRef.current, diffWeight)
-            controlsDelta.lerp(desiredTargetRef.current, diffWeight)
+            const spherical = sphericalRef.current
+            const sphericalTemp = sphericalTempRef.current
 
-            camera.position.addVectors(centerPos, camDelta)
-            controls.target.addVectors(centerPos, controlsDelta)
+            spherical.setFromVector3(posOffset)
+            sphericalTemp.setFromVector3(desiredPosOffset)
+            let thetaDelta = sphericalTemp.theta - spherical.theta
+            let phiDelta = sphericalTemp.phi - spherical.phi
+            
+            if(Math.abs(thetaDelta) > Math.PI) {
+                thetaDelta += 2 * Math.PI * -Math.sign(thetaDelta)
+            }
+            if(Math.abs(phiDelta) > Math.PI) {
+                phiDelta += 2 * Math.PI * -Math.sign(phiDelta)
+            }
+
+            const deltaLength = targetWeight.current.subVectors(posOffset, desiredPosRef.current).length()
+            const deltaWeight = deltaLength == 0 ? 0 : 1 - MathUtils.damp(deltaLength, 0.0, 2.0, dt) / deltaLength
+
+            spherical.theta = MathUtils.lerp(spherical.theta, spherical.theta + thetaDelta, deltaWeight)
+			spherical.phi = MathUtils.lerp(spherical.phi, spherical.phi + phiDelta, deltaWeight)
+			spherical.radius = MathUtils.lerp(spherical.radius, sphericalTemp.radius, deltaWeight)
+            spherical.makeSafe()
+            
+            posOffset.setFromSpherical(spherical)
+
+            targetOffset.lerp(desiredTargetRef.current, deltaWeight)
+            
+            controls.target.addVectors(centerPos, targetOffset)
+            camera.position.addVectors(controls.target, posOffset)
 
             camera.updateProjectionMatrix()
             camera.lookAt(controls.target)

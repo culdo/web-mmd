@@ -4,7 +4,7 @@ import { useModel } from "../../model/helper/ModelContext"
 
 const Poses = {
     inMenu: {
-        position: [0.4, 9.0, 6.0],
+        position: [1.8, 0.0, 6.9],
         target: [-1.4, 9.0, -0.9,]
     },
     inGame: {
@@ -17,7 +17,6 @@ function Camera() {
     const creditsPose = useGlobalStore(state => state.creditsPose)
     const cameraPose = useGlobalStore(state => state.cameraPose)
     const showGameMenu = useGlobalStore(state => state.showGameMenu)
-    const targetModel = useModel()
 
     useEffect(() => {
         const camOrig = cameraPose.position.clone()
@@ -29,8 +28,6 @@ function Camera() {
             cameraPose.target.y -= 5
             cameraPose.position.z += 40
         }
-        cameraPose.position.applyQuaternion(targetModel.quaternion)
-        cameraPose.target.applyQuaternion(targetModel.quaternion)
         return () => {
             cameraPose.position = camOrig
             cameraPose.target = targetOrig
