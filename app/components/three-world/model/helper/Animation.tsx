@@ -79,8 +79,8 @@ function Animation({ motionNames }: { motionNames: string[] }) {
 
     useEffect(() => {
         mixer.addEventListener('finished', (e) => {
+            player.api.pauseVideo()
             player.currentTime = 0.0
-            player.pause()
             e.action.enabled = true
             setTimeout(() => {
                 e.action.setEffectiveTimeScale(0.0)

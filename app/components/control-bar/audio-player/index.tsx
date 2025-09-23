@@ -127,8 +127,8 @@ function AudioPlayer() {
                 player.currentTime -= 1 / 30
             }
         }
-        document.addEventListener("keydown", handler)
-        return () => document.removeEventListener("keydown", handler)
+        document.addEventListener("keyup", handler)
+        return () => document.removeEventListener("keyup", handler)
     }, [runMode])
 
     // seek to saved time when change preset
