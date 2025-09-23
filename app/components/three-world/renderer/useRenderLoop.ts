@@ -30,7 +30,7 @@ function useRenderLoop() {
             }
 
         } else {
-            if (controls.autoRotate) {
+            if (controls?.autoRotate) {
                 controls.update();
             }
         }

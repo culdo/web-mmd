@@ -1,6 +1,5 @@
 import useGlobalStore from "@/app/stores/useGlobalStore"
 import { useEffect } from "react"
-import { useModel } from "../../model/helper/ModelContext"
 
 const Poses = {
     inMenu: {
@@ -15,7 +14,7 @@ const Poses = {
 
 function Camera() {
     const creditsPose = useGlobalStore(state => state.creditsPose)
-    const cameraPose = useGlobalStore(state => state.cameraPose)
+    const cameraPose = useGlobalStore(state => state.cameraOffset)
     const showGameMenu = useGlobalStore(state => state.showGameMenu)
 
     useEffect(() => {

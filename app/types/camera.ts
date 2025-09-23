@@ -2,7 +2,8 @@ export enum CameraMode {
     MOTION_FILE,
     COMPOSITION,
     FIXED_FOLLOW,
-    EDITOR
+    EDITOR,
+    DJ
 }
 
 export type CameraObj = {

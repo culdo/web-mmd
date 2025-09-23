@@ -7,6 +7,8 @@ import { Event, PerspectiveCamera } from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { setLevaValue } from '@/app/utils/gui';
 import { OrbitControls } from './orbit-controls';
+import usePresetStore from '@/app/stores/usePresetStore';
+import { CameraMode } from '@/app/types/camera';
 
 function Controls() {
     const controlsRef = useRef<OrbitControlsImpl>()
@@ -102,4 +104,9 @@ function Controls() {
     );
 }
 
-export default Controls;
+function Wrapper() {
+    const cameraMode = usePresetStore(state => state["camera mode"])
+    return cameraMode == CameraMode.DJ ? <></> : <Controls />;
+}
+
+export default Wrapper;

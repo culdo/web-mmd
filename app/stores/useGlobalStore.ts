@@ -13,7 +13,11 @@ import { IStudio } from '@theatre/studio';
 export type Gui = LevaRootProps & { _timeoutID?: NodeJS.Timeout }
 export type GlobalState = {
     loader: MMDLoader,
-    player: CustomVideoElement,
+    player: CustomVideoElement & {
+        api: YT.Player & {
+            videoTitle: string;
+        };
+    },
     gui: Gui,
     camera: PerspectiveCamera,
     cameraObj: ISheetObject<CameraObj>,
@@ -40,9 +44,12 @@ export type GlobalState = {
         position: [number, number, number],
         rotation: [number, number, number]
     },
-    cameraPose: {
+    cameraOffset: {
         position: Vector3,
-        target: Vector3
+        up: Vector3,
+        target: Vector3,
+        center: Vector3,
+        dampingFactor: number
     },
     showGameMenu: boolean
 }
@@ -85,9 +92,12 @@ const useGlobalStore = create<GlobalState>(
         presetReadyPromise: new Promise(() => { }),
         theatreStudio: null,
         creditsPose: null,
-        cameraPose: {
+        cameraOffset: {
             position: new Vector3(0, 10, 50),
-            target: new Vector3()
+            up: new Vector3(0, 1, 0),
+            target: new Vector3(),
+            center: new Vector3(),
+            dampingFactor: 10
         },
         showGameMenu: true
     })

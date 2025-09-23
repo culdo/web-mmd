@@ -5,9 +5,6 @@ import { buildGuiItem, loadFile } from "@/app/utils/gui";
 import usePresetStore from "@/app/stores/usePresetStore";
 
 import { PerspectiveCamera } from "@react-three/drei";
-import { PerspectiveCamera as PerspectiveCameraImpl, Vector3 } from "three";
-import { useThree } from "@react-three/fiber";
-import { useRef } from "react";
 
 function Camera() {
     const cameraName = usePresetStore(state => state.camera)
@@ -16,8 +13,6 @@ function Camera() {
     const fov = usePresetStore(state => state.fov)
     const near = usePresetStore(state => state.near)
     const zoom = usePresetStore(state => state.zoom)
-    const camera = useThree(state => state.camera)
-    const cameraRef = useRef<PerspectiveCameraImpl>()
 
     const [_, set] = useControls('Camera', () => ({
         name: {
@@ -38,20 +33,18 @@ function Camera() {
     }), { order: 201, collapsed: true }, [presetReady])
 
     return (
-        <PerspectiveCamera
-            ref={cameraRef}
-            fov={fov}
-            near={near}
-            zoom={zoom}
-            position={[0, 10, 50]}
-            makeDefault
-        >
-            <object3D visible={false} name="target"></object3D>
-            {
-                camera == cameraRef.current &&
-                <CameraWorkHelper></CameraWorkHelper>
-            }
-        </PerspectiveCamera>
+        <>
+            <PerspectiveCamera
+                fov={fov}
+                near={near}
+                zoom={zoom}
+                position={[0, 10, 50]}
+                makeDefault
+            >
+                <object3D visible={false} name="target"></object3D>
+            </PerspectiveCamera>
+            <CameraWorkHelper></CameraWorkHelper>
+        </>
     )
 }
 
