@@ -97,7 +97,7 @@ const useGlobalStore = create<GlobalState>(
             up: new Vector3(0, 1, 0),
             target: new Vector3(),
             center: new Vector3(),
-            dampingFactor: 10
+            dampingFactor: 5
         },
         showGameMenu: true
     })
