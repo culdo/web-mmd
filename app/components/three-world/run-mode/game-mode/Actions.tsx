@@ -1,5 +1,5 @@
 import usePresetStore from "@/app/stores/usePresetStore";
-import { AnimationAction, AnimationClip, AnimationMixer, MathUtils, Vector3 } from "three";
+import { AnimationAction, AnimationClip, AnimationMixer, MathUtils, Quaternion, Vector3 } from "three";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useModel, useRuntimeHelper } from "../../model/helper/ModelContext";
 import buildUpdatePMX from "../../model/helper/buildUpdatePMX";
@@ -100,7 +100,7 @@ function Actions() {
 
     const rotateYVelocityRef = useRef(0.0)
     const velocityRef = useRef(0.0)
-    const targetTurnRef = useRef(0.0)
+    const targetTurnRef = useRef(new Quaternion(0, 0, 0, 0))
 
     function setWeight(action: AnimationAction, weight: number) {
         action.enabled = true;
@@ -129,7 +129,8 @@ function Actions() {
                 rotateYVelocityRef.current = 2
             }
             if (e.key == "s") {
-                targetTurnRef.current = (mesh.rotation.y + Math.PI) % (Math.PI * 2)
+                _quat.setFromAxisAngle(_yAxis, Math.PI)
+                targetTurnRef.current.multiplyQuaternions(mesh.quaternion, _quat)
                 rotateYVelocityRef.current = 8
             }
             if (e.key == "d") {
@@ -171,16 +172,20 @@ function Actions() {
     }, [isInit])
 
     const posDeltaRef = useRef(new Vector3(0, 0, 0))
+    const _quat = useRef(new Quaternion()).current
+    const _yAxis = useRef(new Vector3(0, 1, 0)).current
     useFrame((_, delta) => {
         if (!isInit) return
         const walkAction = motionsRef.current.walk.action
 
         const rotDelta = rotateYVelocityRef.current * delta * walkAction.weight
-        mesh.rotation.y = (mesh.rotation.y + rotDelta) % (Math.PI * 2)
-        if (targetTurnRef.current > 0.0 && Math.abs(mesh.rotation.y - targetTurnRef.current) < rotDelta) {
-            mesh.rotation.y = targetTurnRef.current
+        _quat.setFromAxisAngle(_yAxis, rotDelta)
+        mesh.applyQuaternion(_quat)
+
+        if (targetTurnRef.current.length() > 0 && mesh.quaternion.angleTo(targetTurnRef.current) < rotDelta) {
+            mesh.quaternion.copy(targetTurnRef.current)
             rotateYVelocityRef.current = 0.0
-            targetTurnRef.current = 0.0
+            targetTurnRef.current.set(0, 0, 0, 0)
             const idleAction = motionsRef.current.idle.action
             setWeight(idleAction, 1.0)
             idleAction.crossFadeFrom(walkAction, 0.2, false)
