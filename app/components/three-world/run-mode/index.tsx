@@ -1,6 +1,4 @@
-import usePresetStore from "@/app/stores/usePresetStore"
 import { useControls } from "leva"
-import { useEffect } from "react";
 import WithModel from "../model/helper/WithModel";
 import GameMode from "./game-mode";
 import { buildGuiItem } from "@/app/utils/gui";
@@ -11,9 +9,7 @@ export enum RunModes {
 }
 
 function RunMode() {
-    const runMode = usePresetStore(state => state["run mode"])
-
-    const [_, set] = useControls(() => ({
+    const { "run mode": runMode } = useControls({
         "run mode": {
             ...buildGuiItem("run mode"),
             options: {
@@ -22,11 +18,7 @@ function RunMode() {
             },
             order: 0
         }
-    }))
-
-    useEffect(() => {
-        set({ "run mode": runMode })
-    }, [runMode])
+    })
 
     return (
         <>

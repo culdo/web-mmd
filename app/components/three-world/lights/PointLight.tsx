@@ -5,8 +5,6 @@ import { Sphere } from "@react-three/drei"
 import { button, folder, useControls } from "leva"
 
 function PointLight({ name }: { name?: string }) {
-    const presetReady = useGlobalStore(state => state.presetReady)
-
     const guiName = `Light.${name}`
 
     const pointLight = useControls('Light', {
@@ -27,7 +25,7 @@ function PointLight({ name }: { name?: string }) {
                 return { Light: { ...Light } }
             }))
         })
-    }, [presetReady])
+    })
     return (
         <>
             <pointLight name={`${guiName}.position`} color={pointLight.color} position={pointLight.position} intensity={pointLight.intensity}>

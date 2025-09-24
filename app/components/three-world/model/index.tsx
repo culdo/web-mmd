@@ -14,7 +14,7 @@ function Models() {
                     ([id, props]) =>
                         <Model key={id} id={id} {...props} />
                 )
-            };
+            }
             <Gui></Gui>
         </>
     )

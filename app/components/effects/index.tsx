@@ -60,10 +60,8 @@ function Effects() {
         rgba: [ColorChannel.RED, ColorChannel.GREEN, ColorChannel.BLUE, ColorChannel.ALPHA]
     } as { [k: string]: [number, number?, number?, number?] }
 
-    const preset = usePresetStore()
-
     const buildDofGui = buildGuiFunc({
-        disabled: !preset["bokeh enabled"]
+        render: (get) => get("Effects.DepthOfField.enabled")
     })
 
     const dofConfig = useControls('Effects.DepthOfField', {
@@ -130,7 +128,7 @@ function Effects() {
             value: debugChannels.rgba,
             options: debugChannels
         }
-    }, { collapsed: true }, [debugTextures, preset]);
+    }, { collapsed: true }, [debugTextures]);
 
     const bloomConfig = useControls('Effects.Bloom', {
         enabled: buildGuiItem("bloom enabled"),

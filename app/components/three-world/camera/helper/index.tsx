@@ -1,6 +1,6 @@
 import { CameraMode } from '@/app/types/camera';
 import usePresetStore from "@/app/stores/usePresetStore";
-import { buildGuiItem } from "@/app/utils/gui";
+import { buildGuiItem, buildGuiObj } from "@/app/utils/gui";
 import { useControls } from "leva";
 import { useEffect } from "react";
 import CompositeMode from "./composite-mode";
@@ -19,11 +19,9 @@ const cameraModeMap = [
 ]
 
 function CameraWorkHelper() {
-    const cameraMode = usePresetStore(state => state["camera mode"])
-
-    const [, set] = useControls(() => ({
+    const { 'camera mode': cameraMode } = useControls({
         'camera mode': {
-            ...buildGuiItem("camera mode") as object,
+            ...buildGuiItem("camera mode"),
             options: {
                 "Motion File": CameraMode.MOTION_FILE,
                 "Composition": CameraMode.COMPOSITION,
@@ -33,29 +31,24 @@ function CameraWorkHelper() {
             },
             order: 1,
         }
-    }), [cameraMode])
+    })
 
     useEffect(() => {
-        set({ "camera mode": cameraMode })
         // keyboard shortcuts
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.key == "`") {
-                const isEditMode = cameraMode != CameraMode.MOTION_FILE
-                let targetMode;
-                if (isEditMode) {
-                    targetMode = CameraMode.MOTION_FILE
-                } else {
-                    targetMode = CameraMode.COMPOSITION
-                }
-                set({ "camera mode": targetMode })
-
+                usePresetStore.setState(({ "camera mode": cameraMode }) => {
+                    const isMotionMode = cameraMode == CameraMode.MOTION_FILE
+                    const targetMode = isMotionMode ? CameraMode.COMPOSITION : CameraMode.MOTION_FILE;
+                    return { "camera mode": targetMode }
+                })
             }
         }
         document.addEventListener("keydown", onKeyDown)
         return () => {
             document.removeEventListener("keydown", onKeyDown)
         }
-    }, [cameraMode])
+    }, [])
 
     const Mode = cameraModeMap[cameraMode]
 

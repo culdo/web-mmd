@@ -13,16 +13,20 @@ function Skybox({ hdrUrl }: { hdrUrl: string }) {
     const texture = useLoader(RGBELoader, hdrUrl);
 
     useControls("Skybox", {
-        "envIntensity": buildGuiItem("envIntensity", (value) => {
-            scene.environmentIntensity = value
-        }),
+        "envIntensity": {
+            ...buildGuiItem("envIntensity", (value) => {
+                scene.environmentIntensity = value
+            }),
+            max: 1.0,
+            min: 0.0
+        },
         "envRotation": buildGuiItem("envRotation", (value) => {
             scene.environmentRotation = value
         })
     }, { order: 2, collapsed: true })
     useEffect(() => {
         let pmremGenerator: PMREMGeneratorWebGL
-        if(gl instanceof WebGPURenderer) {
+        if (gl instanceof WebGPURenderer) {
             pmremGenerator = new PMREMGeneratorWebGPU(gl as any) as unknown as PMREMGeneratorWebGL;
         } else {
             pmremGenerator = new PMREMGeneratorWebGL(gl);

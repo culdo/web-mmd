@@ -1,5 +1,4 @@
-import useGlobalStore, { GlobalState } from "@/app/stores/useGlobalStore";
-import { useThree } from "@react-three/fiber";
+import useGlobalStore from "@/app/stores/useGlobalStore";
 
 function WithReady<T>(Component: React.ComponentType<T>) {
     return function WrappedComponent(props: T) {

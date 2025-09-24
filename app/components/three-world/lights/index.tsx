@@ -4,13 +4,10 @@ import usePresetStore from "@/app/stores/usePresetStore"
 import { buildGuiItem } from "@/app/utils/gui"
 import { randomBytes } from "crypto"
 import { button, folder, useControls } from "leva"
-import { useEffect } from "react"
 import DirectionalLight from "./DirectionalLight"
 import PointLight from './PointLight'
 
 function Lights() {
-    const presetReady = useGlobalStore(state => state.presetReady)
-
     const fog = useControls('Light', {
         fog: folder({
             color: buildGuiItem("fog color"),
@@ -20,7 +17,7 @@ function Lights() {
                 max: 0.01
             }
         }),
-    }, { order: 300, collapsed: true }, [presetReady])
+    }, { order: 300, collapsed: true })
 
     const ambientLight = useControls('Light', {
         ambientLight: folder({
@@ -31,7 +28,7 @@ function Lights() {
                 max: 10,
             },
         })
-    }, [presetReady])
+    })
 
     const dirLights = usePresetStore(states => states.Light)
 

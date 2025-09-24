@@ -7,23 +7,18 @@ function Gui() {
     const models = usePresetStore(state => state.models)
     const pmxFiles = usePresetStore(state => state.pmxFiles)
     const motionFiles = usePresetStore(state => state.motionFiles)
-    const targetModelId = usePresetStore(state => state.targetModelId)
 
     const targetOptions = Object.keys(models)
 
-    const [_, setGui] = useControls(() => ({
-        "target model id": {
+    const { "target model": targetModelId } = useControls({
+        "target model": {
             ...buildGuiItem("targetModelId"),
             options: targetOptions
         },
         "add new model": button(() => {
             loadModel(true)
         })
-    }), [targetOptions])
-
-    useEffect(() => {
-        setGui({ "target model id": targetModelId })
-    }, [targetModelId])
+    }, [targetOptions])
 
     const { fileName, motionNames } = models[targetModelId]
     const modelsOption = Object.keys(pmxFiles.models)

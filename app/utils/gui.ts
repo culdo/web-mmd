@@ -89,23 +89,24 @@ function setLevaValue<T>(path: string, value: T) {
 // extract type from array type
 type GuiValue<T> = T extends number[] ? [number, number, number] : T;
 
+const _unSubscribers: Record<string, () => void> = {}
 function buildGuiFunc(defaultOptions?: InputOptions) {
     return function buildGuiItem<const T extends keyof PresetState>(key: T, handler?: OnChangeHandler, options?: InputOptions) {
 
         const initialValue = usePresetStore.getState()[key]
 
         const onChange: OnChangeHandler = (value, path, options) => {
-
-            if (!options.initial) {
+            if (!options.initial && options.fromPanel) {
                 usePresetStore.setState({ [key]: value })
             } else {
-                value = initialValue
-
-                const init = () => {
-                    const initialValue = usePresetStore.getState()[key]
-                    setLevaValue(path, initialValue)
+                if (_unSubscribers[key]) {
+                    _unSubscribers[key]()
+                    delete _unSubscribers[key]
                 }
-                usePresetStore.persist.onFinishHydration(init)
+                const unSubscriber = usePresetStore.subscribe(state => state[key], (val) => {
+                    setLevaValue(path, val)
+                })
+                _unSubscribers[key] = unSubscriber
             }
             if (handler) {
                 handler(value, path, options)
@@ -126,9 +127,7 @@ const buildGuiItem = buildGuiFunc()
 
 function buildGuiObj<const T extends keyof PresetState>(key: T, options?: InputOptions) {
     return {
-        [key]: {
-            ...buildGuiItem(key, options?.onChange, options)
-        }
+        [key]: buildGuiItem(key, options?.onChange, options)
     } as {
             [key in T]: ReturnType<typeof buildGuiItem<T>>
         }

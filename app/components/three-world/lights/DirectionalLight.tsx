@@ -4,7 +4,6 @@ import { buildFlexGuiItem } from "@/app/utils/gui"
 import { button, folder, useControls } from "leva"
 
 function DirectionalLight({ name }: { name?: string }) {
-    const presetReady = useGlobalStore(state => state.presetReady)
     const shadowBias = usePresetStore(state => state["shadow bias"])
 
     const guiName = `Light.${name}`
@@ -25,7 +24,7 @@ function DirectionalLight({ name }: { name?: string }) {
                 return { Light: { ...Light } }
             }))
         })
-    }, [presetReady])
+    })
     return (
         <>
             <directionalLight castShadow={directionalLight.castShadow} name={`${guiName}.position`} 

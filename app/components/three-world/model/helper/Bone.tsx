@@ -1,16 +1,12 @@
-import useGlobalStore from "@/app/stores/useGlobalStore";
-import usePresetStore, { PresetState } from "@/app/stores/usePresetStore";
-import { setLevaValue } from "@/app/utils/gui";
-import { button, folder, useControls } from "leva";
+import { button, useControls } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
 import { useEffect, useState } from "react";
 import { useModel } from "./ModelContext";
-import { EulerTuple, Vector3Tuple } from "three";
+import { Vector3Tuple } from "three";
 import isRenderGui from "./useRenderGui";
 
 function Bone() {
     const model = useModel()
-    const presetReady = useGlobalStore(state => state.presetReady)
 
     const [controllers, setControllers] = useState<Schema>({})
 
@@ -62,9 +58,8 @@ function Bone() {
     }, { collapsed: true, render: () => isRenderGui(model.name) }, [controllers])
 
     useEffect(() => {
-        if (!presetReady) return
         updateBoneFolder();
-    }, [presetReady])
+    })
 
     return <></>
 }
