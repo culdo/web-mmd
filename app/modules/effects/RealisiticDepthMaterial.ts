@@ -20,5 +20,7 @@ export class RealisiticDepthMaterial extends ShaderMaterial {
 			fragmentShader,
 			vertexShader
 		});
+
+		this.color = new Color()
 	}
 }
