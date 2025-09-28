@@ -187,19 +187,19 @@ function Content() {
                     What is MMD?
                 </Text>
                 <Text position={[0, -1, 0]} fontSize={0.3} color={color}>
-                    MikuMikuDance(MMD) is a high-quality 3D software for making Dancing MV.
+                    MikuMikuDance(MMD) is a free 3D software for making high-quality Dancing MV.
                 </Text>
                 <Text position={[0, -1.5, 0]} fontSize={0.3} color={color}>
                     The original Windows version and specifications was developed by 樋口優.
                 </Text>
                 <Text position={[0, -2, 0]} fontSize={0.3} color={color}>
-                    And laterly be ported to other platforms.
+                    And has been ported to other platforms since release.
                 </Text>
                 <Text position={[0, -3, 0]} fontSize={0.3} color={color}>
                     Web MMD is based on the Three.js MMD libs developed by takahirox.
                 </Text>
                 <Text position={[0, -3.5, 0]} fontSize={0.3} color={color}>
-                    With many new features and fixes.
+                    It has many new features and fixes.
                 </Text>
             </Section>
             <Section start={31.51} end={40} position={[8, 4, 0]}>
@@ -213,7 +213,7 @@ function Content() {
                     Then in the video description or in the video you can find the Credits List.
                 </Text>
                 <Text position={[0, -3, 0]} fontSize={0.3} color={color}>
-                    The Credits List has the info of each parts. Check the following sections!
+                    It has the materials info divided into the following sections!
                 </Text>
             </Section>
             <Section start={40} end={57.50} position={[-10, 0, 0]}>
@@ -230,7 +230,7 @@ function Content() {
                     Models
                 </Text>
                 <Text position={[0, -1, 0]} fontSize={0.3} color={color}>
-                    You can download the Character, Stage model from MMD resource share sites,
+                    You can download the Character, Stage model from MMD resource share sites.
                 </Text>
                 <Text position={[0, -2, 0]} fontSize={0.3} color={color}>
                     Like bowlroll.net or 3d.nicovideo.jp!
@@ -241,7 +241,7 @@ function Content() {
                     Motions
                 </Text>
                 <Text position={[0, -1, 0]} fontSize={0.3} color={color}>
-                    You can download the Dancing, Emotion and Camera motions from MMD resource share sites,
+                    You can download the Dancing, Emotion and Camera motions from MMD resource share sites.
                 </Text>
                 <Text position={[0, -2, 0]} fontSize={0.3} color={color}>
                     Like bowlroll.net or 3d.nicovideo.jp!
