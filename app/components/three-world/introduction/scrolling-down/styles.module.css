@@ -1,0 +1,38 @@
+.scroll-down {
+    position: absolute;
+    left: 50%;
+    bottom: 40px;
+    color: #000;
+    display: none;
+    z-index: 1000;
+    font-size: large;
+    transform: translate(-50%, 0%);
+    animation: fade_move_down 2s ease-in-out infinite;
+}
+
+.arrow {
+    width: 20px;
+    height: 20px;
+    margin: auto;
+    transform: rotate(45deg);
+    border-bottom: 3px solid #000;
+    border-right: 3px solid #000;
+}
+
+
+/*animated scroll arrow animation*/
+@keyframes fade_move_down {
+    0% {
+        transform: translate(-50%, -20px);
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, 20px);
+        opacity: 0;
+    }
+}

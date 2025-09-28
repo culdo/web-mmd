@@ -10,6 +10,7 @@ import dynamic from "next/dynamic";
 import usePresetStore from "./stores/usePresetStore";
 import { WebGPURenderer } from "three/webgpu";
 import GameMenu from "./components/three-world/run-mode/game-mode/Menu";
+import ScrollingDown from "./components/three-world/introduction/scrolling-down";
 const ControlBar = dynamic(() => import('./components/control-bar'), { ssr: false })
 
 export default function Home() {
@@ -34,6 +35,7 @@ export default function Home() {
       <FileSelector></FileSelector>
       <Panel></Panel>
       <GameMenu></GameMenu>
+      <ScrollingDown></ScrollingDown>
     </>
   )
 }

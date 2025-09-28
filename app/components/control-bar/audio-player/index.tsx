@@ -71,7 +71,9 @@ function AudioPlayer() {
             loadedRef.current = true
             return
         }
-        setGui({ hidden: false });
+        if (autoHideGui) {
+            setGui({ hidden: false });
+        }
 
         // editor mode
         if (cameraMode == CameraMode.EDITOR) {
@@ -106,7 +108,7 @@ function AudioPlayer() {
 
     // keyboard shortcuts
     useEffect(() => {
-        if(runMode == RunModes.GAME_MODE) return
+        if (runMode == RunModes.GAME_MODE) return
         const handler = (e: KeyboardEvent) => {
             const player = ytPlayer.current
             if (!player) return
