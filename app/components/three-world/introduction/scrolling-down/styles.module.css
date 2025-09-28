@@ -1,13 +1,19 @@
 .scroll-down {
     position: absolute;
     left: 50%;
-    bottom: 40px;
-    color: #000;
+    bottom: 60px;
+    color: #007590;
     display: none;
+    width: 100%;
+    text-align: center;
     z-index: 1000;
-    font-size: large;
+    font-size: x-large;
+    font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
     transform: translate(-50%, 0%);
-    animation: fade_move_down 2s ease-in-out infinite;
+    padding-left: 10%;
+    padding-right: 10%;
+    /* animation: fade_move_down 2s ease-in-out infinite; */
 }
 
 .arrow {
@@ -15,8 +21,8 @@
     height: 20px;
     margin: auto;
     transform: rotate(45deg);
-    border-bottom: 3px solid #000;
-    border-right: 3px solid #000;
+    border-bottom: 3px solid #007590;
+    border-right: 3px solid #007590;
 }
 
 
@@ -35,4 +41,19 @@
         transform: translate(-50%, 20px);
         opacity: 0;
     }
+}
+
+.item {
+    flex: auto;
+    height: 50px;
+    border-bottom: 2px solid #007590;
+}
+
+.item:hover,
+.active {
+    cursor: pointer;
+    background-image: linear-gradient(#007590, #007590);
+    background-size: 2px 50%;
+    background-repeat: no-repeat;
+    background-position: bottom;
 }

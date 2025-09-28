@@ -8,6 +8,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Group, Quaternion, Spherical, Vector2, Vector3 } from "three";
 import { OrbitControls } from "three-stdlib";
 import { PerspectiveCamera } from "three";
+import styles from "./scrolling-down/styles.module.css"
 
 const ContentContext = createContext<{
     sectionTimesRef?: MutableRefObject<number[]>
@@ -21,10 +22,27 @@ function Section({ start, end, position = [0, 0, 0], children }: { start: number
     const { sectionTimesRef, camRot } = useContext(ContentContext)
     const camera = useThree(state => state.camera)
     const _v = useRef(new Vector3()).current
+    const idxRef = useRef(0)
+    const navBtRef = useRef<Element>()
 
     useEffect(() => {
         sectionTimesRef.current.push(start)
+        const idx = sectionTimesRef.current.length
+        const navBt = document.getElementById(`section${idx}`)
+        const onClick = () => {
+            player.api.pauseVideo()
+            player.currentTime = start
+        }
+        navBt.addEventListener("click", onClick)
+        navBtRef.current = navBt
+        idxRef.current = idx
+
+        return () => {
+            sectionTimesRef.current = []
+            navBt.removeEventListener("click", onClick)
+        }
     }, [])
+
     useFrame(() => {
         if (!player) return
         if (start <= player.currentTime && player.currentTime < end) {
@@ -43,7 +61,12 @@ function Section({ start, end, position = [0, 0, 0], children }: { start: number
                 groupRef.current.position.copy(_v)
                 groupRef.current.position.add(_v.fromArray(position).applyQuaternion(camera.quaternion))
                 groupRef.current.quaternion.set(0, 0, 0, 1).multiply(camera.quaternion)
+                
                 camRot.copy(camera.quaternion)
+                for(const item of document.querySelectorAll(`.${styles.active}`)) {
+                    item.classList.remove(styles.active)
+                }
+                navBtRef.current.classList.add(styles.active)
             }
             isPlayedRef.current = true
         } else {
@@ -71,15 +94,12 @@ function Content() {
     })
 
     const player = useGlobalStore(state => state.player)
-    const spherical = useRef(new Spherical()).current
     const _v = useRef(new Vector3()).current
-    const _zeroV = useRef(new Vector2()).current
-    const _screenV = useRef(new Vector2()).current
+    const _v2 = useRef(new Vector3()).current
     const camRot = useRef(new Quaternion()).current
-    const _q = useRef(new Quaternion()).current
     const camera = useThree(state => state.camera) as PerspectiveCamera
     useEffect(() => {
-        if (!player) return
+        if (!player || !camera) return
         const onWheel = (e: WheelEvent) => {
             if (e.deltaY > 0) {
                 if (player.paused) {
@@ -118,17 +138,15 @@ function Content() {
             _v.add(camera.position)
             target.position.copy(_v)
 
-            const screenAngle = _q.angleTo(camRot)
             _v.subVectors(camera.position, target.position)
-            spherical.setFromVector3(_v)
-            _screenV.set(xWeight, yWeight).rotateAround(_zeroV, screenAngle)
-            spherical.theta += _screenV.x
-            spherical.phi += _screenV.y
-            _v.setFromSpherical(spherical)
+            _v2.set(1, 0, 0).applyQuaternion(camRot)
+            _v.applyAxisAngle(_v2, yWeight)
+            _v2.set(0, 1, 0).applyQuaternion(camRot)
+            _v.applyAxisAngle(_v2, xWeight)
             _v.add(target.position)
             camera.position.copy(_v)
-            camera.up.set(0, 1, 0).applyQuaternion(camRot)
-
+            
+            camera.up.copy(_v2)
             camera.lookAt(target.position)
         }
 
@@ -139,7 +157,7 @@ function Content() {
 
         const onPause = () => {
             const scrollDown = document.getElementById("scroll-down")
-            scrollDown.style.display = "block"
+            scrollDown.style.display = "flex"
         }
 
         player.addEventListener("play", onPlay)
@@ -152,7 +170,7 @@ function Content() {
             document.removeEventListener("wheel", onWheel)
             document.removeEventListener("mousemove", onMousemove)
         }
-    }, [player])
+    }, [player, camera])
     const sectionTimesRef = useRef<number[]>([])
     return (
         <ContentContext.Provider value={{ sectionTimesRef, camRot }}>
@@ -169,7 +187,7 @@ function Content() {
                     What is MMD?
                 </Text>
                 <Text position={[0, -1, 0]} fontSize={0.3} color={color}>
-                    MikuMikuDance(MMD) is a highly-complete free 3D software for making Dancing MV.
+                    MikuMikuDance(MMD) is a high-quality 3D software for making Dancing MV.
                 </Text>
                 <Text position={[0, -1.5, 0]} fontSize={0.3} color={color}>
                     The original Windows version and specifications was developed by 樋口優.
@@ -247,7 +265,7 @@ function Scene() {
             models.stage.visible = false
             controls.enabled = false
             document.getElementById("rawPlayer").style.display = "none"
-            document.getElementById("scroll-down").style.display = "block"
+            document.getElementById("scroll-down").style.display = "flex"
             useGlobalStore.setState({ gui: { hidden: true } })
             usePresetStore.setState({
                 "auto hide GUI": false,
