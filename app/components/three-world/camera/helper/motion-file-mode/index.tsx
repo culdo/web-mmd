@@ -28,7 +28,7 @@ function MotionFileMode() {
     useFrame(() => {
         if (!isMotionUpdating()) return
         updateMotion()
-    }, 1)
+    }, 2)
     return <></>;
 }
 
