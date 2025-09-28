@@ -97,7 +97,7 @@ function AudioPlayer() {
         loadedRef.current = false
         if (currentTime == 0.0) {
             // Weird bug, which need to jump out of buffered range to avoid initial volume too loud
-            ytPlayer.current.currentTime = ytPlayer.current.duration
+            ytPlayer.current.currentTime = ytPlayer.current.duration - 1.0
         } else {
             ytPlayer.current.currentTime = currentTime
         }
