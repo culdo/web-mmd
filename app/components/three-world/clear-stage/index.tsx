@@ -6,12 +6,12 @@ import { Color } from "three";
 
 function ClearStage() {
     const scene = useThree(state => state.scene)
-
+    
     useEffect(() => {
+        const bgColor = "#caf9ff"
+        
         const prevBg = scene.background
         const prevFogColor = usePresetStore.getState()["fog color"]
-
-        const bgColor = "#caf9ff"
 
         scene.background = new Color(bgColor)
         usePresetStore.setState({ "fog color": bgColor })
