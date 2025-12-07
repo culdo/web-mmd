@@ -1,4 +1,4 @@
-.scroll-down {
+.sections {
     position: absolute;
     left: 50%;
     bottom: 60px;
@@ -56,4 +56,8 @@
     background-size: 2px 50%;
     background-repeat: no-repeat;
     background-position: bottom;
+}
+
+.tryNow {
+    color: rgb(255, 0, 144);
 }
