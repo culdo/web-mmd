@@ -35,11 +35,5 @@
         "action": "debugWithChrome"
       }
     },
-    {
-      "name": "Run runCameraToTracks.ts",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "npx tsx ./scripts/runCameraToTracks.ts ~/self/mmd/motions/GimmeGimme_with_emotion.vmd"
-    },
   ]
 }
