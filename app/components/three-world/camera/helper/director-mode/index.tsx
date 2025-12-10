@@ -6,6 +6,7 @@ import { PerspectiveCamera, Quaternion, Spherical, Vector2, Vector3 } from "thre
 import { useFrame, useThree } from "@react-three/fiber";
 import WithModel from "../../../model/helper/WithModel";
 import { useModel } from "../../../model/helper/ModelContext";
+import { enqueueSnackbar } from "notistack";
 
 export const DjContext = createContext<{ showBeat: boolean, deltaSpherical: Spherical }>(null);
 export const useDj = () => useContext(DjContext)
@@ -70,6 +71,11 @@ function DirectorMode() {
     const trackUpRef = useRef(true)
     const trackTargetRef = useRef(true)
 
+    const infoStyle = (started: boolean) => ({
+        style: {
+            backgroundColor: started ? 'green' : 'red',
+        },
+    })
 
     useEffect(() => {
         const onPause = () => {
@@ -78,17 +84,24 @@ function DirectorMode() {
         }
 
         const checkTrackings = (e: KeyboardEvent) => {
-            if (e.key == "1") {
-                trackAngleRef.current = !trackAngleRef.current
-            }
-            if (e.key == "2") {
-                trackTargetRef.current = !trackTargetRef.current
-            }
-            if (e.key == "3") {
-                trackDistanceRef.current = !trackDistanceRef.current
-            }
-            if (e.key == "4") {
-                trackUpRef.current = !trackUpRef.current
+            if(modeRef.current == MODE.SET) {
+                if(e.ctrlKey) return
+                if (e.key == "1") {
+                    trackAngleRef.current = !trackAngleRef.current
+                    enqueueSnackbar(trackAngleRef.current ? 'Angle Tracking Started' : 'Angle Tracking Stopped', infoStyle(trackAngleRef.current))
+                }
+                if (e.key == "2") {
+                    trackTargetRef.current = !trackTargetRef.current
+                    enqueueSnackbar(trackTargetRef.current ? 'Target Tracking Started' : 'Target Tracking Stopped', infoStyle(trackTargetRef.current))
+                }
+                if (e.key == "3") {
+                    trackDistanceRef.current = !trackDistanceRef.current
+                    enqueueSnackbar(trackDistanceRef.current ? 'Distance Tracking Started' : 'Distance Tracking Stopped', infoStyle(trackDistanceRef.current))
+                }
+                if (e.key == "4") {
+                    trackUpRef.current = !trackUpRef.current
+                    enqueueSnackbar(trackUpRef.current ? 'Up Tracking Started' : 'Up Tracking Stopped', infoStyle(trackUpRef.current))
+                }
             }
 
             if (!trackAngleRef.current || modeRef.current == MODE.NONE) {
@@ -104,23 +117,24 @@ function DirectorMode() {
 
         const onKeydown = (e: KeyboardEvent) => {
             e.preventDefault()
+            if(e.repeat) return
 
             const isSet = modeRef.current == MODE.SET
 
             if (e.key == "Tab") {
                 modeRef.current = isSet ? MODE.NONE : MODE.SET
+                enqueueSnackbar(!isSet ? 'All Tracking Started' : 'All Tracking Stopped', infoStyle(!isSet))
             }
-            if (e.ctrlKey && e.key == "q") {
-                trackBoneRef.current = "上半身"
+            if(e.ctrlKey) {
+                if (e.key == "1") {
+                    trackBoneRef.current = "上半身"
+                    enqueueSnackbar("Tracking 上半身")
+                }
+                if (e.key == "2") {
+                    trackBoneRef.current = "頭"
+                    enqueueSnackbar("Tracking 頭")
+                }
             }
-            if (e.ctrlKey && e.key == "w") {
-                trackBoneRef.current = "頭"
-            }
-            checkTrackings(e)
-        }
-
-        const onKeyup = (e: KeyboardEvent) => {
-            if (modeRef.current == MODE.SET) return
             checkTrackings(e)
         }
 
@@ -185,7 +199,6 @@ function DirectorMode() {
 
         player.addEventListener("pause", onPause)
         document.addEventListener("keydown", onKeydown)
-        document.addEventListener("keyup", onKeyup)
         domElement.addEventListener("mousemove", onMousemove)
         domElement.addEventListener("mousedown", onMousedown)
         domElement.addEventListener("mouseup", onMouseup)
@@ -194,7 +207,6 @@ function DirectorMode() {
         return () => {
             player.removeEventListener("pause", onPause)
             document.removeEventListener("keydown", onKeydown)
-            document.removeEventListener("keyup", onKeyup)
             domElement.removeEventListener("mousemove", onMousemove)
             domElement.removeEventListener("mousedown", onMousedown)
             domElement.removeEventListener("mouseup", onMouseup)

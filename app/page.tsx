@@ -11,6 +11,7 @@ import usePresetStore from "./stores/usePresetStore";
 import { WebGPURenderer } from "three/webgpu";
 import GameMenu from "./components/three-world/run-mode/game-mode/Menu";
 import IntroSections from "./components/three-world/introduction/sections";
+import { SnackbarProvider } from "notistack";
 const ControlBar = dynamic(() => import('./components/control-bar'), { ssr: false })
 
 export default function Home() {
@@ -36,6 +37,7 @@ export default function Home() {
       <Panel></Panel>
       <GameMenu></GameMenu>
       <IntroSections></IntroSections>
+      <SnackbarProvider anchorOrigin={{ horizontal: "left", vertical: "top" }} autoHideDuration={1000} variant="info" />
     </>
   )
 }
