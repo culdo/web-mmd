@@ -72,14 +72,7 @@ function DirectorMode() {
 
 
     useEffect(() => {
-        const onPlay = () => {
-            document.getElementById("rawPlayer").style.display = "none"
-            document.body.style.cursor = "none"
-        }
-
         const onPause = () => {
-            document.getElementById("rawPlayer").style.display = "block"
-            document.body.style.cursor = "default"
             mouseModeRef.current = null
             document.exitPointerLock()
         }
@@ -190,7 +183,6 @@ function DirectorMode() {
             e.preventDefault()
         }
 
-        player.addEventListener("play", onPlay)
         player.addEventListener("pause", onPause)
         document.addEventListener("keydown", onKeydown)
         document.addEventListener("keyup", onKeyup)
@@ -200,7 +192,6 @@ function DirectorMode() {
         domElement.addEventListener("wheel", onWheel)
         domElement.addEventListener("contextmenu", onContextmenu)
         return () => {
-            player.removeEventListener("play", onPlay)
             player.removeEventListener("pause", onPause)
             document.removeEventListener("keydown", onKeydown)
             document.removeEventListener("keyup", onKeyup)
