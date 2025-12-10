@@ -45,10 +45,12 @@ export type GlobalState = {
         rotation: [number, number, number]
     },
     cameraOffset: {
+        center: Vector3,
+        // target relative to center
+        target: Vector3,
+        // position relative to center
         position: Vector3,
         up: Vector3,
-        target: Vector3,
-        center: Vector3,
         dampingFactor: number
     },
     showGameMenu: boolean

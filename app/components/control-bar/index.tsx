@@ -20,9 +20,7 @@ function ControlBar() {
 
             rawPlayer.style.opacity = "0.5";
             fullScreenBt.style.opacity = "0.5";
-            if (usePresetStore.getState()["camera mode"] != CameraMode.DJ) {
-                document.body.style.cursor = "default"
-            }
+            document.body.style.cursor = "default"
             if (timeoutIdRef.current !== null) {
                 clearTimeout(timeoutIdRef.current);
                 timeoutIdRef.current = undefined

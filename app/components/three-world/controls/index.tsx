@@ -104,9 +104,4 @@ function Controls() {
     );
 }
 
-function Wrapper() {
-    const cameraMode = usePresetStore(state => state["camera mode"])
-    return cameraMode == CameraMode.DJ ? <></> : <Controls />;
-}
-
-export default Wrapper;
+export default Controls;

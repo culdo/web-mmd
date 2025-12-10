@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import FixFollowMode from "../fix-follow-mode";
+import Following from "./Following";
 import BeatCircle from "./BeatCircle";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { PerspectiveCamera, Quaternion, Spherical, Vector2, Vector3 } from "three";
@@ -11,15 +11,15 @@ export const DjContext = createContext<{ showBeat: boolean, deltaSpherical: Sphe
 export const useDj = () => useContext(DjContext)
 
 const beatsMap: { text: string, theta: number, phi: number }[] = [
-    { text: "q", theta: -60, phi: -30},
-    { text: "w", theta: 0, phi: -30},
-    { text: "e", theta: 60, phi: -30},
-    { text: "a", theta: -60, phi: 0},
-    { text: "s", theta: 0, phi: 0},
-    { text: "d", theta: 60, phi: 0},
-    { text: "z", theta: -60, phi: 30},
-    { text: "x", theta: 0, phi: 30},
-    { text: "c", theta: 60, phi: 30}
+    { text: "q", theta: -60, phi: -30 },
+    { text: "w", theta: 0, phi: -30 },
+    { text: "e", theta: 60, phi: -30 },
+    { text: "a", theta: -60, phi: 0 },
+    { text: "s", theta: 0, phi: 0 },
+    { text: "d", theta: 60, phi: 0 },
+    { text: "z", theta: -60, phi: 30 },
+    { text: "x", theta: 0, phi: 30 },
+    { text: "c", theta: 60, phi: 30 }
 ]
 const _twoPI = 2 * Math.PI
 
@@ -32,7 +32,12 @@ enum MOUSE {
     PAN,
 }
 
-function DjMode() {
+enum MODE {
+    NONE,
+    SET,
+}
+
+function DirectorMode() {
     const [showBeat, setShowBeat] = useState(false)
 
     const { domElement } = useThree(state => state.gl)
@@ -41,7 +46,7 @@ function DjMode() {
     const cameraPose = useGlobalStore(state => state.cameraOffset)
     const player = useGlobalStore(state => state.player)
     const moveDelta = useRef(new Vector2()).current
-    const deltaSpherical = useRef(new Spherical(10)).current
+    const deltaSpherical = useRef(new Spherical(30)).current
     const spherical = useRef(new Spherical()).current
     const _v = useRef(new Vector3()).current
     const mouseModeRef = useRef<MOUSE>()
@@ -59,11 +64,11 @@ function DjMode() {
     const leftHandTarget = useRef(new Vector3()).current
     const targetRot = useRef(new Quaternion()).current
 
-    const autoModeRef = useRef(true)
+    const modeRef = useRef(MODE.SET)
     const trackAngleRef = useRef(false)
-    const trackDistanceRef = useRef(autoModeRef.current)
-    const trackRotRef = useRef(autoModeRef.current)
-    const trackTargetRef = useRef(autoModeRef.current)
+    const trackDistanceRef = useRef(true)
+    const trackUpRef = useRef(true)
+    const trackTargetRef = useRef(true)
 
 
     useEffect(() => {
@@ -79,53 +84,51 @@ function DjMode() {
             document.exitPointerLock()
         }
 
-        const onKeydown = (e: KeyboardEvent) => {
-            e.preventDefault()
+        const checkTrackings = (e: KeyboardEvent) => {
             if (e.key == "1") {
-                autoModeRef.current = !autoModeRef.current
+                trackAngleRef.current = !trackAngleRef.current
+            }
+            if (e.key == "2") {
+                trackTargetRef.current = !trackTargetRef.current
+            }
+            if (e.key == "3") {
+                trackDistanceRef.current = !trackDistanceRef.current
+            }
+            if (e.key == "4") {
+                trackUpRef.current = !trackUpRef.current
+            }
 
-                trackTargetRef.current = autoModeRef.current
-                trackDistanceRef.current = autoModeRef.current
-                trackRotRef.current = autoModeRef.current
+            if (!trackAngleRef.current || modeRef.current == MODE.NONE) {
+                centerRot.set(0, 0, 0, 1)
             }
-            if (e.key == "2" || e.key == "¡") {
-                trackBoneRef.current = "上半身"
+            if (!trackTargetRef.current || modeRef.current == MODE.NONE) {
+                cameraPose.target.set(0, 0, 0)
             }
-            if (e.key == "3" || e.key == "™") {
-                trackBoneRef.current = "頭"
-            }
-            if (e.key == "Control") {
-                trackAngleRef.current = true
-            }
-            if (e.key == "Alt") {
-                trackTargetRef.current = !autoModeRef.current
-            }
-            if (e.key == "Shift") {
-                trackDistanceRef.current = !autoModeRef.current
-            }
-            if (e.key == "Meta") {
-                trackRotRef.current = !autoModeRef.current
+            if (!trackUpRef.current || modeRef.current == MODE.NONE) {
+                cameraPose.up.set(0, 1, 0)
             }
         }
 
+        const onKeydown = (e: KeyboardEvent) => {
+            e.preventDefault()
+
+            const isSet = modeRef.current == MODE.SET
+
+            if (e.key == "Tab") {
+                modeRef.current = isSet ? MODE.NONE : MODE.SET
+            }
+            if (e.ctrlKey && e.key == "q") {
+                trackBoneRef.current = "上半身"
+            }
+            if (e.ctrlKey && e.key == "w") {
+                trackBoneRef.current = "頭"
+            }
+            checkTrackings(e)
+        }
+
         const onKeyup = (e: KeyboardEvent) => {
-            if (e.key == "Control") {
-                trackAngleRef.current = false
-            }
-            if (e.key == "Alt") {
-                trackTargetRef.current = autoModeRef.current
-            }
-            if (e.key == "Shift") {
-                trackDistanceRef.current = autoModeRef.current
-            }
-            if (e.key == "Meta") {
-                trackRotRef.current = autoModeRef.current
-            }
-            centerRot.set(0, 0, 0, 1)
-            cameraPose.target.set(0, 3, 0)
-            cameraPose.up.set(0, 1, 0)
-            if (beatsMap.map(b => b.text).includes(e.key)) return
-            deltaSpherical.set(10, 0, 0)
+            if (modeRef.current == MODE.SET) return
+            checkTrackings(e)
         }
 
         const onMousedown = async (e: MouseEvent) => {
@@ -210,32 +213,37 @@ function DjMode() {
     }, [])
 
     useFrame(() => {
-        if (trackDistanceRef.current) {
-            model.skeleton.getBoneByName("上半身").getWorldPosition(centerPos)
-            model.skeleton.getBoneByName("右手先").getWorldPosition(rightHandPos)
-            model.skeleton.getBoneByName("左手先").getWorldPosition(leftHandPos)
-        }
-        if (trackAngleRef.current) {
-            model.skeleton.getBoneByName(trackBoneRef.current).getWorldQuaternion(centerRot)
-        }
-        if (trackTargetRef.current) {
-            model.skeleton.getBoneByName("右手先").getWorldPosition(rightHandTarget)
-            model.skeleton.getBoneByName("左手先").getWorldPosition(leftHandTarget)
-            rightHandTarget.sub(cameraPose.center)
-            leftHandTarget.sub(cameraPose.center)
-            cameraPose.target.addVectors(rightHandTarget, leftHandTarget).multiplyScalar(0.5)
-        }
-        if (trackRotRef.current) {
-            cameraPose.up.set(0, 1, 0).applyQuaternion(model.skeleton.getBoneByName(trackBoneRef.current).getWorldQuaternion(targetRot))
-            cameraPose.up.z = 0
-        }
+        let handsDistantce = 0.0
 
-        const rightHandLength = handPosTemp.subVectors(rightHandPos, centerPos).length()
-        const leftHandLength = handPosTemp.subVectors(leftHandPos, centerPos).length()
+        if (modeRef.current != MODE.NONE) {
+            if (trackDistanceRef.current) {
+                model.skeleton.getBoneByName("上半身").getWorldPosition(centerPos)
+                model.skeleton.getBoneByName("右手先").getWorldPosition(rightHandPos)
+                model.skeleton.getBoneByName("左手先").getWorldPosition(leftHandPos)
+                const rightHandLength = handPosTemp.subVectors(rightHandPos, centerPos).length()
+                const leftHandLength = handPosTemp.subVectors(leftHandPos, centerPos).length()
+                handsDistantce = (rightHandLength + leftHandLength) * 2 - 20.0
+            }
+            if (trackAngleRef.current) {
+                model.skeleton.getBoneByName(trackBoneRef.current).getWorldQuaternion(centerRot)
+            }
+            if (trackTargetRef.current) {
+                model.skeleton.getBoneByName("右手先").getWorldPosition(rightHandTarget)
+                model.skeleton.getBoneByName("左手先").getWorldPosition(leftHandTarget)
+                rightHandTarget.sub(cameraPose.center)
+                leftHandTarget.sub(cameraPose.center)
+                cameraPose.target.addVectors(rightHandTarget, leftHandTarget).multiplyScalar(0.5)
+                cameraPose.target.y += 2.0
+            }
+            if (trackUpRef.current) {
+                cameraPose.up.set(0, 1, 0).applyQuaternion(model.skeleton.getBoneByName(trackBoneRef.current).getWorldQuaternion(targetRot))
+                cameraPose.up.z = 0
+            }
+        }
 
         spherical.setFromVector3(cameraPose.position)
 
-        const radius = (rightHandLength + leftHandLength) * 2 + deltaSpherical.radius
+        const radius = handsDistantce + deltaSpherical.radius
         if (radius > 0) {
             spherical.radius = radius
         }
@@ -256,9 +264,9 @@ function DjMode() {
                     beatsMap.map(b => <BeatCircle key={b.text} text={b.text} theta={b.theta} phi={b.phi}></BeatCircle>)
                 }
             </DjContext.Provider>
-            <FixFollowMode></FixFollowMode>
+            <Following></Following>
         </>
     );
 }
 
-export default WithModel(DjMode);
+export default WithModel(DirectorMode);

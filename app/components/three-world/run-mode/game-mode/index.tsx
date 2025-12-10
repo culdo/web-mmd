@@ -8,11 +8,10 @@ import Camera from "./Camera";
 import WithModel from "../../model/helper/WithModel";
 
 function GameMode() {
-    const cameraMode = usePresetStore(state => state["camera mode"])
     useEffect(() => {
         const { "camera mode": prevCameraMode } = usePresetStore.getState()
         usePresetStore.setState({
-            "camera mode": CameraMode.FIXED_FOLLOW
+            "camera mode": CameraMode.DIRECTOR
         })
         useGlobalStore.setState({ gui: { hidden: true }, showGameMenu: true })
         document.getElementById("rawPlayer").style.display = "none"

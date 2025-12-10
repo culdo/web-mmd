@@ -26,5 +26,5 @@ test('changing camera mode with saving config', async ({ page }) => {
   await expect(page).toHaveTitle("Web MMD")
   await expect(page).toHaveScreenshot({maxDiffPixelRatio: 0.1});
   await page.reload()
-  await expect(page.getByLabel("camera mode")).toHaveValue(CameraMode.FIXED_FOLLOW.toString())
+  await expect(page.getByLabel("camera mode")).toHaveValue(CameraMode.DIRECTOR.toString())
 });

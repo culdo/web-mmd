@@ -1,12 +1,11 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
-import { MathUtils, PerspectiveCamera, Quaternion, Spherical, Vector3 } from "three";
+import { MathUtils, PerspectiveCamera, Spherical, Vector3 } from "three";
 import { useModel } from "../../../model/helper/ModelContext";
-import WithModel from "../../../model/helper/WithModel";
 import { OrbitControls } from "three-stdlib";
 
-function FixFollowMode() {
+function Following() {
     const camera = useThree(state => state.camera) as PerspectiveCamera
     const controls = useThree(state => state.controls) as OrbitControls
     const targetRef = useRef(controls?.target ?? new Vector3())
@@ -96,4 +95,4 @@ function FixFollowMode() {
     return <></>;
 }
 
-export default WithModel(FixFollowMode);
+export default Following;

@@ -4,18 +4,16 @@ import { buildGuiItem, buildGuiObj } from "@/app/utils/gui";
 import { useControls } from "leva";
 import { useEffect } from "react";
 import CompositeMode from "./composite-mode";
-import FixFollowMode from "./fix-follow-mode";
 import MotionFileMode from "./motion-file-mode";
-import DjMode from "./dj-mode";
+import DirectorMode from "./director-mode";
 import dynamic from 'next/dynamic';
 const EditorMode = dynamic(() => import('./editor-mode'), { ssr: false })
 
 const cameraModeMap = [
     MotionFileMode,
     CompositeMode,
-    FixFollowMode,
+    DirectorMode,
     EditorMode,
-    DjMode
 ]
 
 function CameraWorkHelper() {
@@ -25,9 +23,8 @@ function CameraWorkHelper() {
             options: {
                 "Motion File": CameraMode.MOTION_FILE,
                 "Composition": CameraMode.COMPOSITION,
-                "Fixed Follow": CameraMode.FIXED_FOLLOW,
+                "Director": CameraMode.DIRECTOR,
                 "Editor": CameraMode.EDITOR,
-                "DJ": CameraMode.DJ
             },
             order: 1,
         }
