@@ -63,6 +63,7 @@ function DirectorMode() {
     const trackBoneRef = useRef("上半身")
     const rightHandTarget = useRef(new Vector3()).current
     const leftHandTarget = useRef(new Vector3()).current
+    const panPos = useRef(new Vector3()).current
     const targetRot = useRef(new Quaternion()).current
 
     const modeRef = useRef(MODE.SET)
@@ -84,8 +85,8 @@ function DirectorMode() {
         }
 
         const checkTrackings = (e: KeyboardEvent) => {
-            if(modeRef.current == MODE.SET) {
-                if(e.ctrlKey) return
+            if (modeRef.current == MODE.SET) {
+                if (e.ctrlKey) return
                 if (e.key == "1") {
                     trackAngleRef.current = !trackAngleRef.current
                     enqueueSnackbar(trackAngleRef.current ? 'Angle Tracking Started' : 'Angle Tracking Stopped', infoStyle(trackAngleRef.current))
@@ -109,6 +110,7 @@ function DirectorMode() {
             }
             if (!trackTargetRef.current || modeRef.current == MODE.NONE) {
                 cameraPose.target.set(0, 0, 0)
+                panPos.set(0, 0, 0)
             }
             if (!trackUpRef.current || modeRef.current == MODE.NONE) {
                 cameraPose.up.set(0, 1, 0)
@@ -117,7 +119,7 @@ function DirectorMode() {
 
         const onKeydown = (e: KeyboardEvent) => {
             e.preventDefault()
-            if(e.repeat) return
+            if (e.repeat) return
 
             const isSet = modeRef.current == MODE.SET
 
@@ -125,7 +127,7 @@ function DirectorMode() {
                 modeRef.current = isSet ? MODE.NONE : MODE.SET
                 enqueueSnackbar(!isSet ? 'All Tracking Started' : 'All Tracking Stopped', infoStyle(!isSet))
             }
-            if(e.ctrlKey) {
+            if (e.ctrlKey) {
                 if (e.key == "1") {
                     trackBoneRef.current = "上半身"
                     enqueueSnackbar("Tracking 上半身")
@@ -139,24 +141,23 @@ function DirectorMode() {
         }
 
         const onMousedown = async (e: MouseEvent) => {
-            await domElement.requestPointerLock()
             switch (e.button) {
                 case MOUSE.LEFT:
-                    mouseModeRef.current = MOUSE.ROTATE
+                    mouseModeRef.current = mouseModeRef.current == MOUSE.ROTATE ? null : MOUSE.ROTATE
                     break;
                 case MOUSE.MIDDLE:
                     break;
                 case MOUSE.RIGHT:
-                    mouseModeRef.current = MOUSE.PAN
+                    mouseModeRef.current = mouseModeRef.current == MOUSE.PAN ? null : MOUSE.PAN
                     break;
             }
+            if (mouseModeRef.current !== null) {
+                domElement.requestPointerLock()
+            } else {
+                document.exitPointerLock()
+            }
         }
-
-        const onMouseup = (e: MouseEvent) => {
-            mouseModeRef.current = null
-            document.exitPointerLock()
-        }
-
+        
         const onMousemove = (e: MouseEvent) => {
             cameraPose.dampingFactor = 5.0
             if (mouseModeRef.current === null) return
@@ -176,12 +177,12 @@ function DirectorMode() {
                     const leftDistance = moveDelta.x * targetDistance / domElement.clientHeight
                     _v.setFromMatrixColumn(camera.matrix, 0); // get X column of objectMatrix
                     _v.multiplyScalar(- leftDistance);
-                    cameraPose.target.add(_v);
+                    panPos.add(_v);
 
                     const upDistance = moveDelta.y * targetDistance / domElement.clientHeight
                     _v.setFromMatrixColumn(camera.matrix, 1);
                     _v.multiplyScalar(upDistance);
-                    cameraPose.target.add(_v);
+                    panPos.add(_v);
                     break
             }
 
@@ -201,7 +202,6 @@ function DirectorMode() {
         document.addEventListener("keydown", onKeydown)
         domElement.addEventListener("mousemove", onMousemove)
         domElement.addEventListener("mousedown", onMousedown)
-        domElement.addEventListener("mouseup", onMouseup)
         domElement.addEventListener("wheel", onWheel)
         domElement.addEventListener("contextmenu", onContextmenu)
         return () => {
@@ -209,7 +209,6 @@ function DirectorMode() {
             document.removeEventListener("keydown", onKeydown)
             domElement.removeEventListener("mousemove", onMousemove)
             domElement.removeEventListener("mousedown", onMousedown)
-            domElement.removeEventListener("mouseup", onMouseup)
             domElement.removeEventListener("wheel", onWheel)
             domElement.removeEventListener("contextmenu", onContextmenu)
         }
@@ -230,14 +229,17 @@ function DirectorMode() {
             if (trackAngleRef.current) {
                 model.skeleton.getBoneByName(trackBoneRef.current).getWorldQuaternion(centerRot)
             }
+
+            cameraPose.target.copy(panPos)
             if (trackTargetRef.current) {
                 model.skeleton.getBoneByName("右手先").getWorldPosition(rightHandTarget)
                 model.skeleton.getBoneByName("左手先").getWorldPosition(leftHandTarget)
-                rightHandTarget.sub(cameraPose.center)
-                leftHandTarget.sub(cameraPose.center)
-                cameraPose.target.addVectors(rightHandTarget, leftHandTarget).multiplyScalar(0.5)
+                rightHandTarget.sub(cameraPose.center).multiplyScalar(0.5)
+                leftHandTarget.sub(cameraPose.center).multiplyScalar(0.5)
+                cameraPose.target.add(rightHandTarget).add(leftHandTarget)
                 cameraPose.target.y += 2.0
             }
+
             if (trackUpRef.current) {
                 cameraPose.up.set(0, 1, 0).applyQuaternion(model.skeleton.getBoneByName(trackBoneRef.current).getWorldQuaternion(targetRot))
                 cameraPose.up.z = 0
