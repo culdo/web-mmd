@@ -1,14 +1,11 @@
 import useGlobalStore from "@/app/stores/useGlobalStore"
 import usePresetStore from "@/app/stores/usePresetStore"
-import { useThree } from "@react-three/fiber"
 import { useEffect } from "react"
-import { OrbitControls } from "three-stdlib"
 import ClearStage from "../../clear-stage"
 import Content from "./Content"
 
 function Scene() {
     const models = useGlobalStore(state => state.models)
-    const controls = useThree(state => state.controls) as OrbitControls
     useEffect(() => {
         if (models.stage) {
             const {
@@ -18,7 +15,6 @@ function Scene() {
             } = usePresetStore.getState()
 
             models.stage.visible = false
-            controls.enabled = false
             document.getElementById("rawPlayer").style.display = "none"
             document.getElementById("intro-sections").style.display = "flex"
             useGlobalStore.setState({ gui: { hidden: true } })
@@ -30,7 +26,6 @@ function Scene() {
 
             return () => {
                 models.stage.visible = true
-                controls.enabled = true
                 document.getElementById("rawPlayer").style.display = "block"
                 document.getElementById("intro-sections").style.display = "none"
                 useGlobalStore.setState({ gui: { hidden: false } })
