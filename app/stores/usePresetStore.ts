@@ -2,7 +2,6 @@ import defaultConfig from '@/app/presets/Default_config.json';
 import localforage from 'localforage';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { CameraClip } from '../components/three-world/camera/helper/composite-mode';
 import useConfigStore from './useConfigStore';
 import useGlobalStore from './useGlobalStore';
 import { withProgress } from '../utils/base';
@@ -15,8 +14,6 @@ export type PresetState = typeof defaultConfig & {
         models: Record<string, string>,
         modelTextures: Record<string, Record<string, string>>
     }
-} & {
-    compositeClips?: CameraClip[]
 } & {
     // https://github.com/microsoft/TypeScript/issues/32063
     ["Character.position"]: [number, number, number]
