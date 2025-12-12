@@ -217,6 +217,8 @@ function DirectorMode() {
     useFrame(() => {
         let handsDistantce = 0.0
 
+        cameraPose.target.copy(panPos)
+        
         if (modeRef.current != MODE.NONE) {
             if (trackDistanceRef.current) {
                 model.skeleton.getBoneByName("上半身").getWorldPosition(centerPos)
@@ -230,7 +232,6 @@ function DirectorMode() {
                 model.skeleton.getBoneByName(trackBoneRef.current).getWorldQuaternion(centerRot)
             }
 
-            cameraPose.target.copy(panPos)
             if (trackTargetRef.current) {
                 model.skeleton.getBoneByName("右手先").getWorldPosition(rightHandTarget)
                 model.skeleton.getBoneByName("左手先").getWorldPosition(leftHandTarget)
