@@ -3,8 +3,9 @@ import { useFrame, useThree } from "@react-three/fiber"
 import { useContext, useEffect, useRef } from "react"
 import { Group, Vector3 } from "three"
 import styles from "./styles.module.css"
-import ContentContext from "../scene/context"
+import ContentContext from "../context"
 import usePresetStore from "@/app/stores/usePresetStore"
+import { RunModes } from "../.."
 
 function Section({ start, end, position = [0, 0, 0], children }: { start: number, end: number, position?: [number, number, number], children: React.ReactNode }) {
     const player = useGlobalStore(state => state.player)
@@ -37,7 +38,7 @@ function Section({ start, end, position = [0, 0, 0], children }: { start: number
     useEffect(() => {
         const tryNowBt = document.getElementById('tryNow')
         const onClick = () => {
-            usePresetStore.setState({ introEnabled: false })
+            usePresetStore.setState({ "run mode": RunModes.PLAYER_MODE })
         }
         tryNowBt.addEventListener("click", onClick)
 

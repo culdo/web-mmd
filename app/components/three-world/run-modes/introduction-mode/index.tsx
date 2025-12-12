@@ -3,12 +3,14 @@ import usePresetStore from "@/app/stores/usePresetStore"
 import { useEffect } from "react"
 import ClearStage from "../../clear-stage"
 import Content from "./Content"
+import { CameraMode } from "@/app/types/camera"
 
 function Scene() {
     const models = useGlobalStore(state => state.models)
     useEffect(() => {
         if (models.stage) {
             const {
+                "camera mode": prevCameraMode,
                 "bloom enabled": prevBloomEnabled,
                 "Ambient intensity": prevAmbientIntensity,
                 "auto hide GUI": prevAutoHideGui
@@ -19,6 +21,7 @@ function Scene() {
             document.getElementById("intro-sections").style.display = "flex"
             useGlobalStore.setState({ gui: { hidden: true } })
             usePresetStore.setState({
+                "camera mode": CameraMode.MOTION_FILE,
                 "auto hide GUI": false,
                 "bloom enabled": false,
                 "Ambient intensity": 0.5
@@ -30,6 +33,7 @@ function Scene() {
                 document.getElementById("intro-sections").style.display = "none"
                 useGlobalStore.setState({ gui: { hidden: false } })
                 usePresetStore.setState({
+                    "camera mode": prevCameraMode,
                     "auto hide GUI": prevAutoHideGui,
                     "bloom enabled": prevBloomEnabled,
                     "Ambient intensity": prevAmbientIntensity

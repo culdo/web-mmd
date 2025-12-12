@@ -12,7 +12,7 @@ test('changing camera mode with saving config', async ({ page }) => {
   await expect(page).toHaveTitle("Web MMD")
   await expect(page).toHaveScreenshot();
   await page.reload()
-  await expect(page.getByLabel("camera mode")).toHaveValue(CameraMode.COMPOSITION.toString())
+  await expect(page.getByLabel("camera mode")).toHaveValue(CameraMode.FIX_FOLLOWING.toString())
 
   // Untitled to Untitled(moded) preset transition
   await page.getByLabel("camera mode").selectOption({ label: "Motion File" })

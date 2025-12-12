@@ -3,7 +3,7 @@ import { useThree } from "@react-three/fiber"
 import { useControls } from "leva"
 import { useRef, useEffect } from "react"
 import { Vector3, Quaternion, PerspectiveCamera } from "three"
-import Section from "../sections/Section"
+import Section from "./sections/Section"
 import { Text } from "@react-three/drei";
 import ContentContext from "./context"
 

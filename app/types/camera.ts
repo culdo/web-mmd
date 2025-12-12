@@ -1,6 +1,6 @@
 export enum CameraMode {
     MOTION_FILE,
-    COMPOSITION,
+    FIX_FOLLOWING,
     DIRECTOR,
     EDITOR,
 }

@@ -2,15 +2,14 @@
 
 import { Canvas } from "@react-three/fiber";
 import LoadingOverlay from "./components/loading-overlay";
-import SceneTimeline from "./components/scene-timeline";
 import ThreeWorld from "./components/three-world";
 import FileSelector from "./components/file-selector";
 import Panel from "./components/panel";
 import dynamic from "next/dynamic";
 import usePresetStore from "./stores/usePresetStore";
 import { WebGPURenderer } from "three/webgpu";
-import GameMenu from "./components/three-world/run-mode/game-mode/Menu";
-import IntroSections from "./components/three-world/introduction/sections";
+import GameMenu from "./components/three-world/run-modes/game-mode/Menu";
+import IntroSections from "./components/three-world/run-modes/introduction-mode/sections";
 import { SnackbarProvider } from "notistack";
 const ControlBar = dynamic(() => import('./components/control-bar'), { ssr: false })
 
@@ -21,7 +20,6 @@ export default function Home() {
   return (
     <>
       <LoadingOverlay></LoadingOverlay>
-      <SceneTimeline></SceneTimeline>
       <Canvas
         dpr={pr1 ? 1.0 : undefined}
         key={isWebGPU ? "webgpu" : "webgl"}

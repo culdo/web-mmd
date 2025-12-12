@@ -11,7 +11,7 @@ function GameMode() {
     useEffect(() => {
         const { "camera mode": prevCameraMode } = usePresetStore.getState()
         usePresetStore.setState({
-            "camera mode": CameraMode.DIRECTOR
+            "camera mode": CameraMode.FIX_FOLLOWING
         })
         useGlobalStore.setState({ gui: { hidden: true }, showGameMenu: true })
         document.getElementById("rawPlayer").style.display = "none"

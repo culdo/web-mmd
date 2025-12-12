@@ -12,7 +12,7 @@ import { buildGuiItem, buildGuiObj } from "@/app/utils/gui";
 import { getProject } from "@theatre/core";
 import { CameraMode } from "@/app/types/camera";
 import { MediaControlBar, MediaController, MediaMuteButton, MediaPlayButton, MediaTimeDisplay, MediaTimeRange, MediaVolumeRange } from "media-chrome/react";
-import { RunModes } from "../../three-world/run-mode";
+import { RunModes } from "../../three-world/run-modes";
 
 function AudioPlayer() {
     const setCurrentTime = (currentTime: number) => usePresetStore.setState({ currentTime })

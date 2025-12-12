@@ -3,7 +3,7 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import * as THREE from 'three';
 import PmxModel from "./PMXModel";
 import { ThreeEvent } from "@react-three/fiber";
-import { RunModes } from "../run-mode";
+import { RunModes } from "../run-modes";
 import dynamic from "next/dynamic";
 const Morph = dynamic(() => import('./helper/Morph'), { ssr: false })
 const Material = dynamic(() => import('./helper/Material'), { ssr: false })
@@ -16,7 +16,11 @@ function Model({ id, fileName, motionNames = [], enableMorph = true, enableMater
     const targetModelId = usePresetStore(state => state.targetModelId)
     const url = pmxFiles.models[fileName]
     const folderName = fileName.split("/")[0]
-    const enableAnimation = motionNames.length > 0 && (runMode == RunModes.PLAYER_MODE || targetModelId != id)
+    const enableAnimation = motionNames.length > 0 && (
+                                runMode == RunModes.PLAYER_MODE || 
+                                runMode == RunModes.INTRO_MODE || 
+                                targetModelId != id
+                            )
     return (
         <PmxModel
             name={id}

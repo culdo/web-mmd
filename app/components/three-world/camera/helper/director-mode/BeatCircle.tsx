@@ -3,7 +3,7 @@ import { Text } from "@react-three/drei";
 import { useEffect, useRef } from "react";
 import { DoubleSide, Group } from "three";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useDj } from ".";
+import { useDirector } from "./Director";
 
 type Props = {
     theta: number,
@@ -13,7 +13,7 @@ type Props = {
 }
 
 function BeatCircle({ text, theta, phi, color = "aqua" }: Props) {
-    const { showBeat, deltaSpherical } = useDj()
+    const { showBeat, deltaSpherical } = useDirector()
 
     const camera = useThree(state => state.camera)
 

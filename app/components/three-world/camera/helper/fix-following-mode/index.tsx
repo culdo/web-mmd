@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 import { MathUtils, PerspectiveCamera, Spherical, Vector3 } from "three";
 import { useModel } from "../../../model/helper/ModelContext";
 import { OrbitControls } from "three-stdlib";
+import WithModel from "../../../model/helper/WithModel";
 
-function Following() {
+function FixFollowing() {
     const camera = useThree(state => state.camera) as PerspectiveCamera
     const controls = useThree(state => state.controls) as OrbitControls
     const targetRef = useRef(controls?.target ?? new Vector3())
@@ -95,4 +96,4 @@ function Following() {
     return <></>;
 }
 
-export default Following;
+export default WithModel(FixFollowing);
