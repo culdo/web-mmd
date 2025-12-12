@@ -22,12 +22,15 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
 * Adjust shadow/outline/color/...etc
 * Layout settings (Auto-hide gui/Show FPS/Fullscreen...etc)
 * Presets (open/save-as/copy/export as `JSON` format)
-* Camera Composition mode (create/delete/jump forward/backward camera cuts)
+* Camera Director mode (control camera by shortcuts in real-time)
 * Camera Fixed-Follow mode (can adjust using mouse)
 * Camera Editor mode (can edit on dope-sheet timeline)
 * Keyboard Shortcuts(play/pause, toggle camera mode, manipulate camera cuts...)
 
-# Keyboard shortcuts
+# Keyboard and Mouse shortcuts
+* Left click: Change camera angle
+* Right click: Change camera panning
+
 ## Game mode
 * **W/A/S/D**: Walk and move in the direction
 * **Space**: Front flip jump
@@ -36,12 +39,17 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
 
 ## Player mode
 * **Space**: Play/Pause
-* **`** : Toggle Camera mode (between motion and composite mode)
 * **<** : Previous frame (under 30 fps) 
 * **\>** : Next frame (under 30 fps)
-* At camera composite mode
-  * **→** : Previous keyframe
-  * **←** : Next keyframe
+
+## Camera Director mode
+* **Tab**: Toggle All Trackings
+* **1**: Toggle Angle Tracking
+* **2**: Toggle Target Tracking
+* **3**: Toggle Distance Tracking
+* **4**: Toggle Up Tracking
+* **Q,W,E,A,S,D,Z,X,C**: Move camera to one of 9 angles
+
 
 # Transform Control
 Move the objects by `transform control` in below ways: 
@@ -108,6 +116,8 @@ It uses `Github Action` to deploy the demo site. Related files are located at `.
 - [x] Allow multiple models
 - [x] Multiple motions blending
 - [x] Game mode
+- [x] Introduction mode
+- [x] Director mode
 
 ## WIP
 
