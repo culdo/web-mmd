@@ -209,6 +209,7 @@ function Director() {
             domElement.removeEventListener("mousedown", onMousedown)
             domElement.removeEventListener("wheel", onWheel)
             domElement.removeEventListener("contextmenu", onContextmenu)
+            cameraPose.up.set(0, 1, 0)
         }
     }, [])
 
