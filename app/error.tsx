@@ -12,7 +12,7 @@ export default function Error({
     useEffect(() => {
         const result = confirm("An unexpected error occurred!\nMaybe there is a problem with the preset configs.\nClick OK to reset the preset configs.")
         const reset = async () => {
-            await resetPreset()
+            await resetPreset({ reactive: false })
             location.reload()
         }
         if (result) {

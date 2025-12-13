@@ -68,9 +68,14 @@ const getDefaultDataWithProgress = async () => {
     return await dataResp.json()
 }
 
-export const resetPreset = async () => {
+export const resetPreset = async ({ reactive } = { reactive: true }) => {
     const defaultData = await getDefaultDataWithProgress()
-    await storage.setItem(useConfigStore.getState().preset, { state: { ...defaultConfig, ...defaultData } })
+    const state = { ...defaultConfig, ...defaultData }
+    if (reactive) {
+        usePresetStore.setState(state)
+    } else {
+        await storage.setItem(useConfigStore.getState().preset, { state })
+    }
 }
 
 const usePresetStore = create(
@@ -94,7 +99,10 @@ useGlobalStore.setState({
         presetReadySolve = resolve
     })
 })
-usePresetStore.persist.onFinishHydration(async () => {
+usePresetStore.persist.onFinishHydration(async (state) => {
+    if (!state.pmxFiles?.models) {
+        await resetPreset()
+    }
     presetReadySolve()
     useGlobalStore.setState({ presetReady: true })
 })
