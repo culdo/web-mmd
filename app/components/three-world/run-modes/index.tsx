@@ -10,6 +10,14 @@ export enum RunModes {
     INTRO_MODE
 }
 
+const PlayerMode = () => <></>;
+
+const runModes = [
+    PlayerMode,
+    GameMode,
+    IntroductionMode
+]
+
 function RunMode() {
     const { "run mode": runMode } = useControls({
         "run mode": {
@@ -23,12 +31,9 @@ function RunMode() {
         }
     })
 
-    return (
-        <>
-            {runMode == RunModes.GAME_MODE && <GameMode />}
-            {runMode == RunModes.INTRO_MODE && <IntroductionMode />}
-        </>
-    )
+    const Mode = runModes[runMode % runModes.length];
+
+    return <Mode />;
 }
 
 export default WithModel(RunMode);

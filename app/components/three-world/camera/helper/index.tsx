@@ -28,7 +28,7 @@ function CameraWorkHelper() {
         }
     })
 
-    const Mode = cameraModeMap[cameraMode]
+    const Mode = cameraModeMap[cameraMode % cameraModeMap.length];
 
     return <Mode />
 }
