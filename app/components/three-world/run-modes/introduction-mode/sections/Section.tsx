@@ -18,6 +18,8 @@ function Section({ start, end, position = [0, 0, 0], children }: { start: number
     const navBtRef = useRef<Element>()
 
     useEffect(() => {
+        const prevVol = player.volume
+
         sectionTimesRef.current.push(start)
         const idx = sectionTimesRef.current.length
         const navBt = document.getElementById(`section${idx}`)
@@ -32,6 +34,7 @@ function Section({ start, end, position = [0, 0, 0], children }: { start: number
         return () => {
             sectionTimesRef.current = []
             navBt.removeEventListener("click", onClick)
+            player.volume = prevVol
         }
     }, [])
 
