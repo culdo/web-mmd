@@ -71,7 +71,7 @@ function usePreset() {
             };
             selectFile.click();
         },
-        "Reset Preset": resetPreset
+        "Reset Preset": () => resetPreset()
     }
 
     const controllers = Object.fromEntries(
