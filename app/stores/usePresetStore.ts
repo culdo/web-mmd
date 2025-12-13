@@ -70,7 +70,7 @@ const getDefaultDataWithProgress = async () => {
 
 export const resetPreset = async () => {
     const defaultData = await getDefaultDataWithProgress()
-    usePresetStore.setState({ ...defaultConfig, ...defaultData })
+    await storage.setItem(useConfigStore.getState().preset, { state: { ...defaultConfig, ...defaultData } })
 }
 
 const usePresetStore = create(
@@ -94,11 +94,7 @@ useGlobalStore.setState({
         presetReadySolve = resolve
     })
 })
-usePresetStore.persist.onFinishHydration(async (state) => {
-    if (!state.pmxFiles?.models || !state.models?.stage?.motionNames || !("ぼんやり待ち合わせ_腕広いver(465f).vmd" in state.motionFiles)) {
-        const defaultData = await getDefaultDataWithProgress()
-        usePresetStore.setState({ ...defaultData, ...defaultConfig })
-    }
+usePresetStore.persist.onFinishHydration(async () => {
     presetReadySolve()
     useGlobalStore.setState({ presetReady: true })
 })
