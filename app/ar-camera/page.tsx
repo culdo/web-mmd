@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { Matrix4, Mesh } from "three";
 import { useGLTF } from '@react-three/drei'
 import useWebRTC from "./useWebrtc";
-import { useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 
 const matrixHelper = new Matrix4()
 
@@ -24,7 +24,6 @@ function ObjectPlacement() {
       if (results.length === 0) return
 
       getWorldMatrix(matrixHelper, results[0])
-      dataChannel?.send(JSON.stringify(camera.matrix.elements))
       previewRef.current.matrixWorld.copy(matrixHelper)
     },
 
@@ -42,6 +41,11 @@ function ObjectPlacement() {
       domOverlayRoot?.removeEventListener('click', placeObject)
     }
   }, [domOverlayRoot])
+
+  useFrame(() => {
+    if(!targetRef.current) return;
+    dataChannel?.send(JSON.stringify(targetRef.current?.modelViewMatrix.invert().elements))
+  })
 
   return (
     <>

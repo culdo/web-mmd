@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { use, useEffect, useRef, useState } from "react";
 
 const configuration = {
   iceServers: [{
@@ -7,18 +7,16 @@ const configuration = {
 };
 
 function useWebRTC() {
-  const dataChannelRef = useRef<RTCDataChannel | null>(null);
+  const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
   useEffect(() => {
+    if (dataChannel) return;
     const peerConnection = new RTCPeerConnection();
     peerConnection.onicecandidate = setSDP;
-    
-    const dataChannel = peerConnection.createDataChannel('chat', { negotiated: true, id: 999 });
-    dataChannel.onopen = datachannelopen;
-    dataChannel.onmessage = datachannelmessage;
-    dataChannelRef.current = dataChannel;
 
-    document.getElementById('chatbutton').onclick = chatbuttonclick;
-    document.getElementById('resetbutton').onclick = reset;
+    const _dataChannel = peerConnection.createDataChannel('chat', { negotiated: true, id: 999 });
+    _dataChannel.onopen = () => {
+      setDataChannel(_dataChannel);
+    };
 
     const urlParams = new URLSearchParams(window.location.search);
     const sdp = JSON.parse(urlParams.get('sdp'));
@@ -36,14 +34,6 @@ function useWebRTC() {
     } else if (sdp.type === 'answer') {
       // offering side
       setAnswer(sdp);
-    }
-
-    function chatlog(msg: string) {
-      const chatelement = document.getElementById('chatlog');
-      const newchatentry = document.createElement("p");
-      newchatentry.textContent = '[' + new Date() + '] ' + msg;
-      chatelement.appendChild(newchatentry);
-      chatelement.scrollTop = chatelement.scrollHeight
     }
 
     async function startOffering() {
@@ -70,45 +60,29 @@ function useWebRTC() {
     }
 
     function setSDP(event: RTCPeerConnectionIceEvent) {
-      if (event.candidate != null) {
-        console.log('new ice candidate');
-      } else {
-        console.log('all ice candidates');
+      if (event.candidate === null) {
         const sdpStr = JSON.stringify(peerConnection.localDescription);
-        const query = `/ar-camera?sdp=${encodeURIComponent(sdpStr)}`;
+        const query = `/ar-camera.html?sdp=${encodeURIComponent(sdpStr)}`;
         window.history.pushState(null, "", query);
       }
     }
 
-    function datachannelopen() {
-      chatlog('connected');
-    }
-
-    function datachannelmessage(message: { data: any; }) {
-      const text = message.data;
-      chatlog(text);
-    }
-
-    function chatbuttonclick() {
-      const textelement = document.getElementById('chatinput') as HTMLInputElement;
-      const text = textelement.value
-      dataChannel.send(text);
-      chatlog(text);
-      textelement.value = '';
-    }
-
     function reset() {
-      if (dataChannel) {
-        dataChannel.close();
+      if (_dataChannel) {
+        _dataChannel.close();
       }
       if (peerConnection) {
         peerConnection.close();
       }
-      window.location.href = window.location.href.split("?")[0];;
+      window.history.pushState(null, "", "/");
+    }
+
+    return () => {
+      reset();
     }
   }, []);
 
-  return dataChannelRef.current
+  return dataChannel
 }
 
 

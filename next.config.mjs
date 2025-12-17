@@ -21,8 +21,16 @@ export default (phase) => {
         },
         env: {
             COMMIT: process.env.COMMIT
-        }
+        },
+        async rewrites() {
+            return [
+                {
+                    source: '/:path.html',
+                    destination: '/:path'
+                },
+            ]
+        },
     };
     return nextConfig
-  }
+}
 
