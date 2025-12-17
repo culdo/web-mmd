@@ -4,6 +4,7 @@ import { useControls } from "leva";
 import MotionFileMode from "./motion-file-mode";
 import FixFollowingMode from "./fix-following-mode";
 import DirectorMode from "./director-mode";
+import AR from "./ar-mode";
 import dynamic from 'next/dynamic';
 const EditorMode = dynamic(() => import('./editor-mode'), { ssr: false })
 
@@ -12,6 +13,7 @@ const cameraModeMap = [
     FixFollowingMode,
     DirectorMode,
     EditorMode,
+    AR
 ]
 
 function CameraWorkHelper() {
@@ -23,6 +25,7 @@ function CameraWorkHelper() {
                 "Fix Following": CameraMode.FIX_FOLLOWING,
                 "Director": CameraMode.DIRECTOR,
                 "Editor": CameraMode.EDITOR,
+                "AR": CameraMode.AR,
             },
             order: 1,
         }

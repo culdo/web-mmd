@@ -3,6 +3,7 @@ export enum CameraMode {
     FIX_FOLLOWING,
     DIRECTOR,
     EDITOR,
+    AR
 }
 
 export type CameraObj = {
