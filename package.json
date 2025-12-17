@@ -34,7 +34,7 @@
     "three": "^0.178.0",
     "three-stdlib": "^2.36.0",
     "ts-node": "^10.9.2",
-    "youtube-video-element": "^1.6.2",
+    "youtube-video-element": "^1.8.1",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
