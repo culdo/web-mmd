@@ -1,3 +1,5 @@
+"use client"
+
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import styles from "./styles.module.css"
 
