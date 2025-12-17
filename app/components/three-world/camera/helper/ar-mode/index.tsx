@@ -9,11 +9,11 @@ function ARCameraMode() {
 
     useEffect(() => {
         enqueueSnackbar("Waiting for AR session...", { persist: true, key: "ar-webrtc-connect" });
-        if (!dataChannel) return;
+        if (!dataChannel) return () => closeSnackbar("ar-webrtc-connect");
 
         closeSnackbar("ar-webrtc-connect");
         camera.matrixWorldAutoUpdate = false;
-        window.history.pushState(null, "", "/");
+        window.history.pushState(null, "", "./");
 
         const handleMessage = (event: MessageEvent) => {
             camera.matrixWorld.fromArray(JSON.parse(event.data));

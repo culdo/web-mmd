@@ -62,8 +62,8 @@ function useWebRTC() {
     function setSDP(event: RTCPeerConnectionIceEvent) {
       if (event.candidate === null) {
         const sdpStr = JSON.stringify(peerConnection.localDescription);
-        const query = `/ar-camera.html?sdp=${encodeURIComponent(sdpStr)}`;
-        window.history.pushState(null, "", query);
+        const url = `./ar-camera.html?sdp=${encodeURIComponent(sdpStr)}`;
+        window.history.pushState(null, "", url);
       }
     }
 
@@ -74,7 +74,7 @@ function useWebRTC() {
       if (peerConnection) {
         peerConnection.close();
       }
-      window.history.pushState(null, "", "/");
+      window.history.pushState(null, "", "./");
     }
 
     return () => {
