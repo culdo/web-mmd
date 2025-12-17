@@ -11,16 +11,22 @@
       "name": "Next.js: debug chrome client-side",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:3000",
+      "url": "https://localhost:3000",
       "runtimeArgs": [
         "--incognito"
       ]
     },
     {
+      "name": "Next.js: debug chrome ar camera",
+      "type": "chrome",
+      "request": "launch",
+      "url": "https://192.168.31.172:3000/ar-camera"
+    },
+    {
       "name": "Next.js: debug firefox client-side",
       "type": "firefox",
       "request": "launch",
-      "url": "http://localhost:3000",
+      "url": "https://localhost:3000",
       "webRoot": "${workspaceFolder}",
       "firefoxArgs": ["-private-window"]
     },
