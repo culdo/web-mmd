@@ -156,5 +156,5 @@
     "Light.ambientLight.color": "#ffffff",
     "Effects.set pixelratio 1": false,
     "isWebGPU": false,
-    "version": null
+    "version": 0
 }

@@ -33,7 +33,6 @@ export type GlobalState = {
     presetReady: boolean,
     selectedName: string,
     enabledTransform: boolean,
-    presetReadyPromise: Promise<void>
     theatreStudio: IStudio,
     creditsPose: {
         position: [number, number, number],
@@ -86,7 +85,6 @@ const useGlobalStore = create<GlobalState>(
         presetReady: false,
         selectedName: null,
         enabledTransform: true,
-        presetReadyPromise: new Promise(() => { }),
         theatreStudio: null,
         creditsPose: null,
         cameraOffset: {

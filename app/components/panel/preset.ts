@@ -1,5 +1,5 @@
 import useConfigStore from "@/app/stores/useConfigStore";
-import usePresetStore, { resetPreset } from "@/app/stores/usePresetStore";
+import usePresetStore, { migratePreset, resetPreset, setPreset } from "@/app/stores/usePresetStore";
 import { startFileDownload } from "@/app/utils/base";
 import { button, LevaInputs, useControls } from "leva";
 import path from "path-browserify";
@@ -10,16 +10,15 @@ function usePreset() {
     const presetsList = useConfigStore(state => state.presetsList)
     const addPreset = useConfigStore(state => state.addPreset)
     const removePreset = useConfigStore(state => state.removePreset)
-    const loadPreset = useConfigStore(state => state.loadPreset)
 
     const getApi = usePresetStore.getState
-    
+
     const presetFn = {
         "New Preset": async () => {
             let newName = prompt("New preset name:");
             if (newName) {
                 addPreset(newName)
-                loadPreset(newName);
+                setPreset(newName)
                 resetPreset()
             }
         },
@@ -27,14 +26,15 @@ function usePreset() {
             let newName = prompt("Copy as preset name:");
             if (newName) {
                 addPreset(newName)
-                loadPreset(newName);
+                setPreset(newName);
+                usePresetStore.setState(state => ({ ...state }))
             }
         },
         "Delete Preset": async () => {
             if (confirm("Are you sure?")) {
                 removePreset(preset)
                 const { presetsList } = useConfigStore.getState()
-                loadPreset(presetsList[presetsList.length - 1]);
+                setPreset(presetsList[presetsList.length - 1], true);
             }
         },
         "Save Preset": () => {
@@ -56,18 +56,24 @@ function usePreset() {
             const selectFile = document.getElementById("selectFile")
             selectFile.onchange = async function (e: any) {
                 const files = e.target.files
-                if(files.length < 1) {
+                if (files.length < 1) {
                     return
                 }
                 const presetFile = files[0]
                 const newName = path.parse(presetFile.name).name
-                
+
                 let reader = new FileReader();
                 reader.readAsText(presetFile);
                 reader.onloadend = async () => {
                     addPreset(newName)
-                    loadPreset(newName);
-                    usePresetStore.setState(JSON.parse(reader.result as string))
+                    setPreset(newName);
+                    const loadedPreset = JSON.parse(reader.result as string)
+                    const { version } = usePresetStore.getState()
+                    if (version != loadedPreset.version) {
+                        await migratePreset(loadedPreset, loadedPreset.version)
+                    } else {
+                        usePresetStore.setState(loadedPreset)
+                    }
                 }
             };
             selectFile.click();
@@ -90,8 +96,8 @@ function usePreset() {
                 collapsed: false
             },
             onChange: (val, prop, options) => {
-                if (!options.initial) {
-                    loadPreset(val)
+                if (!options.initial && options.fromPanel) {
+                    setPreset(val, true)
                 }
             }
         },

@@ -81,6 +81,15 @@ export const resetPreset = async ({ reactive } = { reactive: true }) => {
     }
 }
 
+export const migratePreset = async (preset: any, version: number) => {
+    const defaultPreset = await getDefaultPreset()
+    usePresetStore.setState(states => {
+        _.defaults(states, defaultPreset)
+        return { ...states }
+    })
+    return preset
+}
+
 const usePresetStore = create(
     subscribeWithSelector(
         persist<PresetState>(
@@ -93,43 +102,27 @@ const usePresetStore = create(
                 name: useConfigStore.getState().preset,
                 storage,
                 version: 1,
-                migrate: async (persistedState: any, version) => {
-                    const defaultPreset = await getDefaultPreset()
-                    usePresetStore.setState(states => {
-                        _.defaults(states, defaultPreset)
-                        return { ...states }
-                    })
-                    return persistedState
-                }
+                migrate: migratePreset
             })
     )
 )
 
-let presetReadySolve: () => void
-useGlobalStore.setState({
-    presetReadyPromise: new Promise<void>((resolve) => {
-        presetReadySolve = resolve
-    })
-})
-usePresetStore.persist.onFinishHydration(async () => {
-    presetReadySolve()
+usePresetStore.persist.onFinishHydration(() => {
     useGlobalStore.setState({ presetReady: true })
 })
 
 usePresetStore.persist.onHydrate(() => {
-    useGlobalStore.setState({
-        presetReady: false,
-        presetReadyPromise: new Promise<void>((resolve) => {
-            presetReadySolve = resolve
-        })
-    })
+    useGlobalStore.setState({ presetReady: false })
 })
 
 // move to here to avoid cycle imports
-useConfigStore.subscribe((state) => state.preset, (newPreset) => {
-    usePresetStore.persist.setOptions({ name: newPreset })
-    db = localforage.createInstance({ name: newPreset })
-    usePresetStore.persist.rehydrate()
-})
+export const setPreset = async (newPresetName: string, rehydrate = false) => {
+    useConfigStore.setState({ preset: newPresetName })
+    usePresetStore.persist.setOptions({ name: newPresetName })
+    db = localforage.createInstance({ name: newPresetName })
+    if (rehydrate) {
+        await usePresetStore.persist.rehydrate()
+    }
+}
 
 export default usePresetStore;
