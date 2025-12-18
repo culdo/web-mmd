@@ -101,7 +101,7 @@ useGlobalStore.setState({
     })
 })
 usePresetStore.persist.onFinishHydration(async (state) => {
-    if (!state.pmxFiles?.models) {
+    if (!state.pmxFiles?.models || !state.audioFile) {
         await resetPreset()
     }
     presetReadySolve()
