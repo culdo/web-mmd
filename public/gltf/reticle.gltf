@@ -72,6 +72,25 @@
                 "metallicFactor" : 0,
                 "roughnessFactor" : 1
             }
+        },
+        {
+            "doubleSided" : true,
+            "emissiveFactor" : [
+                1,
+                0.5199682712554932,
+                0.27902206778526306
+            ],
+            "name" : "target",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.8000000715255737,
+                    0.5679765939712524,
+                    0.05667726323008537,
+                    1
+                ],
+                "metallicFactor" : 0,
+                "roughnessFactor" : 1
+            }
         }
     ],
     "meshes" : [
