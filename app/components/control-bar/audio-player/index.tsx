@@ -109,11 +109,11 @@ function AudioPlayer() {
         return () => document.removeEventListener("keyup", handler)
     }, [runMode])
 
-    // seek to saved time when change preset
+    // load saved time when preset changed
     useEffect(() => {
-        if (!presetReady) return
+        if(playerRef.current.currentTime == currentTime) return
         playerRef.current.currentTime = currentTime
-    }, [presetReady])
+    }, [currentTime])
 
     return (
         <>
