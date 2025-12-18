@@ -6,6 +6,7 @@ import useConfigStore from './useConfigStore';
 import useGlobalStore from './useGlobalStore';
 import { withProgress } from '../utils/base';
 import { PersistStorage, StorageValue, persist } from '../middleware/persist';
+import _ from 'lodash';
 
 export type PresetState = typeof defaultConfig & {
     motionFiles: Record<string, string>,
@@ -64,18 +65,18 @@ const storage: PersistStorage<PresetState> = {
     },
 }
 
-const getDefaultDataWithProgress = async () => {
+const getDefaultPreset = async () => {
     const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
-    return await dataResp.json()
+    const defaultData = await dataResp.json()
+    return { ...defaultConfig, ...defaultData }
 }
 
 export const resetPreset = async ({ reactive } = { reactive: true }) => {
-    const defaultData = await getDefaultDataWithProgress()
-    const state = { ...defaultConfig, ...defaultData }
+    const defaultPreset = await getDefaultPreset()
     if (reactive) {
-        usePresetStore.setState(state)
+        usePresetStore.setState(defaultPreset)
     } else {
-        await storage.setItem(useConfigStore.getState().preset, { state })
+        await storage.setItem(useConfigStore.getState().preset, { state: defaultPreset })
     }
 }
 
@@ -100,10 +101,12 @@ useGlobalStore.setState({
         presetReadySolve = resolve
     })
 })
-usePresetStore.persist.onFinishHydration(async (state) => {
-    if (!state.pmxFiles?.models || !state.audioFile) {
-        await resetPreset()
-    }
+usePresetStore.persist.onFinishHydration(async () => {
+    const defaultPreset = await getDefaultPreset()
+    usePresetStore.setState(states => {
+        _.defaults(states, defaultPreset)
+        return { ...states }
+    })
     presetReadySolve()
     useGlobalStore.setState({ presetReady: true })
 })
