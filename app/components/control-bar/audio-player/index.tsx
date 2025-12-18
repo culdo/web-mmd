@@ -2,13 +2,11 @@ import { SyntheticEvent, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css"
 import useGlobalStore, { Gui } from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { useControls } from "leva";
+import { button, useControls } from "leva";
 
-import YoutubeVideo from 'youtube-video-element/react';
 import 'media-chrome/react';
 import 'media-chrome/react/menu';
-import CustomVideoElement from "youtube-video-element";
-import { buildGuiItem, buildGuiObj } from "@/app/utils/gui";
+import { buildGuiItem, buildGuiObj, loadFile } from "@/app/utils/gui";
 import { getProject } from "@theatre/core";
 import { CameraMode } from "@/app/types/camera";
 import { MediaControlBar, MediaController, MediaMuteButton, MediaPlayButton, MediaTimeDisplay, MediaTimeRange, MediaVolumeRange } from "media-chrome/react";
@@ -20,6 +18,7 @@ function AudioPlayer() {
     const currentTime = usePresetStore(state => state.currentTime)
     const musicName = usePresetStore(state => state.musicName)
 
+    const audioFile = usePresetStore(state => state.audioFile)
     const autoHideGui = usePresetStore(state => state["auto hide GUI"])
     const cameraMode = usePresetStore(state => state["camera mode"])
     const runMode = usePresetStore(state => state["run mode"])
@@ -27,31 +26,25 @@ function AudioPlayer() {
     const presetReady = useGlobalStore(state => state.presetReady)
     const studio = useGlobalStore(state => state.theatreStudio)
 
-    const [mute, setMute] = useState(true)
-
     useControls(() => ({
         ...buildGuiObj("auto hide GUI", { order: 2 })
     }))
 
-    const [gui, setMusicGui] = useControls('Music', () => ({
+    useControls('Music', () => ({
         name: {
-            value: musicName,
+            ...buildGuiItem("musicName"),
             editable: false
         },
-        ytUrl: {
-            label: "YT URL",
-            ...buildGuiItem("musicYtURL")
-        },
+        "select audio file": button(() => {
+            loadFile((audioFile, musicName) => {
+                usePresetStore.setState({ audioFile, musicName })
+            })
+        }),
     }), { order: 200, collapsed: true }, [musicName])
 
-    const ytPlayer = useRef<CustomVideoElement & {
-        api: YT.Player & {
-            videoTitle: string
-        }
-    }>()
+    const playerRef = useRef<HTMLVideoElement>()
 
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        if (!loadedRef.current) return
         if (autoHideGui) {
             setGui({ hidden: true })
 
@@ -63,14 +56,6 @@ function AudioPlayer() {
     }
 
     const onPause = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        if (!loadedRef.current) {
-            if (currentTime == 0.0) {
-                ytPlayer.current.currentTime = 0.0
-            }
-            setMute(false)
-            loadedRef.current = true
-            return
-        }
         if (autoHideGui) {
             setGui({ hidden: false });
         }
@@ -80,37 +65,28 @@ function AudioPlayer() {
             studio.ui.restore()
         }
 
-        setCurrentTime(ytPlayer.current.currentTime);
+        setCurrentTime(playerRef.current.currentTime);
         useGlobalStore.setState({ enabledTransform: true })
     }
 
     const onSeeked = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        if (!ytPlayer.current.paused) return
+        if (!playerRef.current.paused) return
         if (cameraMode == CameraMode.EDITOR) {
             const sequence = getProject("MMD").sheet("MMD UI").sequence
-            sequence.position = ytPlayer.current.currentTime
+            sequence.position = playerRef.current.currentTime
         }
     }
 
-    const loadedRef = useRef(false)
-    const onLoadedMetadata = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        loadedRef.current = false
-        if (currentTime == 0.0) {
-            // Weird bug, which need to jump out of buffered range to avoid initial volume too loud
-            ytPlayer.current.currentTime = ytPlayer.current.duration - 1.0
-        } else {
-            ytPlayer.current.currentTime = currentTime
-        }
-        useGlobalStore.setState({ player: ytPlayer.current })
-        const musicName = ytPlayer.current.api.videoTitle
-        setMusicGui({ name: musicName })
+    const onLoaded = (player: HTMLVideoElement) => {
+        playerRef.current = player;
+        useGlobalStore.setState({ player })
     }
 
     // keyboard shortcuts
     useEffect(() => {
         if (runMode == RunModes.GAME_MODE) return
         const handler = (e: KeyboardEvent) => {
-            const player = ytPlayer.current
+            const player = playerRef.current
             if (!player) return
             if (e.key == " ") {
                 e.stopPropagation()
@@ -135,23 +111,21 @@ function AudioPlayer() {
 
     // seek to saved time when change preset
     useEffect(() => {
-        if (!presetReady || !loadedRef.current) return
-        ytPlayer.current.currentTime = currentTime
+        if (!presetReady) return
+        playerRef.current.currentTime = currentTime
     }, [presetReady])
 
     return (
         <>
             <MediaController id="rawPlayer" className={`${styles.player} control-bar`} audio>
-                <YoutubeVideo
-                    ref={ytPlayer}
+                <video
+                    ref={onLoaded}
                     slot="media"
-                    src={gui.ytUrl}
+                    src={audioFile}
                     onPlay={onPlay}
                     onPause={onPause}
                     onSeeked={onSeeked}
-                    onLoadedMetadata={onLoadedMetadata}
-                    muted={mute}
-                ></YoutubeVideo>
+                ></video>
                 <MediaControlBar style={{
                     width: "100%"
                 }}>

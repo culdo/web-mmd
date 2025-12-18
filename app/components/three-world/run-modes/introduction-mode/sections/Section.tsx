@@ -24,7 +24,7 @@ function Section({ start, end, position = [0, 0, 0], children }: { start: number
         const idx = sectionTimesRef.current.length
         const navBt = document.getElementById(`section${idx}`)
         const onClick = () => {
-            player.api.pauseVideo()
+            player.pause()
             player.currentTime = start
         }
         navBt.addEventListener("click", onClick)
@@ -79,7 +79,7 @@ function Section({ start, end, position = [0, 0, 0], children }: { start: number
         } else {
             if (isPlayedRef.current) {
                 if (!player.paused) {
-                    player.api.pauseVideo()
+                    player.pause()
                     player.currentTime = end
                 }
                 isPlayedRef.current = false

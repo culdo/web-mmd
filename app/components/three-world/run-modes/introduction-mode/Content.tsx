@@ -24,7 +24,7 @@ function Content() {
                 if (player.paused) {
                     player.play()
                 } else {
-                    player.api.pauseVideo()
+                    player.pause()
                     let minNextTime = player.duration
                     for (const time of sectionTimesRef.current) {
                         if (time > player.currentTime && time < minNextTime) {
@@ -35,7 +35,7 @@ function Content() {
                 }
             } else {
                 if (!player.paused) {
-                    player.api.pauseVideo()
+                    player.pause()
                 } else {
                     let maxPrevTime = 0
                     for (const time of sectionTimesRef.current) {
@@ -140,7 +140,7 @@ function Content() {
                     Music
                 </Text>
                 <Text position={[0, -1, 0]} fontSize={0.3} color={color}>
-                    You can choose a music from YT!
+                    You can load a audio file!
                 </Text>
 
             </Section>

@@ -17,7 +17,7 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
 # Features
 * Play MMD with time control bar(time seeking, jump to time...etc)
 * Game mode (can control character to walk and jump by keyboard)
-* Change Model, Stage, Motion, Camera and Music(From YT)
+* Change Model, Stage, Motion, Camera and Music
 * Turn on/off auto camera(can play manually)
 * Adjust shadow/outline/color/...etc
 * Layout settings (Auto-hide gui/Show FPS/Fullscreen...etc)
@@ -81,7 +81,7 @@ The demo presets is from [this excellent MMD video](https://www.youtube.com/watc
 * `Next.js` (For framework and static site generation)
 * `@react-three/*` (For r3f eco-system tools)
 * `theatre.js` (For camera editor mode)
-* `media-chrome` (For audio from YT)
+* `media-chrome` (For audio)
 * `playwright` (For testing)
 
 ## E2E Testing using Playwright

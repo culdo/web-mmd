@@ -13,7 +13,8 @@ export type PresetState = typeof defaultConfig & {
     pmxFiles: {
         models: Record<string, string>,
         modelTextures: Record<string, Record<string, string>>
-    }
+    },
+    audioFile: string
 } & {
     // https://github.com/microsoft/TypeScript/issues/32063
     ["Character.position"]: [number, number, number]

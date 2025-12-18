@@ -19,7 +19,6 @@
     "@theatre/core": "https://github.com/culdo/theatre/releases/download/0.7.15/core.tgz",
     "@theatre/r3f": "https://github.com/culdo/theatre/releases/download/0.7.15/r3f.tgz",
     "@theatre/studio": "https://github.com/culdo/theatre/releases/download/0.7.15/studio.tgz",
-    "@types/youtube": "^0.1.2",
     "ammojs-typed": "^1.0.6",
     "iconv-lite": "^0.6.3",
     "leva": "^0.10.0",
@@ -34,7 +33,6 @@
     "three": "^0.178.0",
     "three-stdlib": "^2.36.0",
     "ts-node": "^10.9.2",
-    "youtube-video-element": "^1.8.1",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
