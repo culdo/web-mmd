@@ -48,7 +48,7 @@ const storage: PersistStorage<PresetState> = {
         console.log(name, 'has been retrieved', preset)
         return {
             state: preset,
-            version: 0
+            version: preset.version ?? 0
         }
     },
     setItem: async (name: string, value: StorageValue<PresetState>): Promise<void> => {
@@ -57,6 +57,7 @@ const storage: PersistStorage<PresetState> = {
         for (const [key, val] of Object.entries(value.state)) {
             await db.setItem(key, val)
         }
+        await db.setItem("version", value.version)
         document.title = "Web MMD"
     },
     removeItem: async (name: string): Promise<void> => {
@@ -90,7 +91,16 @@ const usePresetStore = create(
             },
             {
                 name: useConfigStore.getState().preset,
-                storage
+                storage,
+                version: 1,
+                migrate: async (persistedState: any, version) => {
+                    const defaultPreset = await getDefaultPreset()
+                    usePresetStore.setState(states => {
+                        _.defaults(states, defaultPreset)
+                        return { ...states }
+                    })
+                    return persistedState
+                }
             })
     )
 )
@@ -102,11 +112,6 @@ useGlobalStore.setState({
     })
 })
 usePresetStore.persist.onFinishHydration(async () => {
-    const defaultPreset = await getDefaultPreset()
-    usePresetStore.setState(states => {
-        _.defaults(states, defaultPreset)
-        return { ...states }
-    })
     presetReadySolve()
     useGlobalStore.setState({ presetReady: true })
 })
