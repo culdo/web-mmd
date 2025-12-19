@@ -92,7 +92,6 @@
     "auto hide GUI": true,
     "set pixelratio 1.0": true,
     "motionOffset": 0,
-    "musicYtURL": "https://www.youtube.com/watch?v=ERo-sPa1a5g",
     "musicName": "八王子P × Giga「Gimme×Gimme feat. 初音ミク・鏡音リン」",
     "materials": {
         "character": {
@@ -154,7 +153,7 @@
     "targetMaterial": 0,
     "Directional intensity": 0,
     "Light.ambientLight.color": "#ffffff",
-    "Effects.set pixelratio 1": false,
     "isWebGPU": false,
-    "version": 0
+    "version": 0,
+    "ar camera scale": 100
 }
