@@ -111,27 +111,26 @@ function AudioPlayer() {
 
     // load saved time when preset changed
     useEffect(() => {
-        if(playerRef.current.currentTime == currentTime) return
+        if (playerRef.current.currentTime == currentTime) return
         playerRef.current.currentTime = currentTime
     }, [currentTime])
 
     return (
-        <>
-            <MediaController id="rawPlayer" className={`${styles.player} control-bar`} audio>
-                <video
-                    ref={onLoaded}
-                    slot="media"
-                    src={audioFile}
-                    onPlay={onPlay}
-                    onPause={onPause}
-                    onSeeked={onSeeked}
-                ></video>
-                <MediaControlBar style={{
-                    width: "100%"
-                }}>
-                    <MediaPlayButton disabled></MediaPlayButton>
-                    <style>
-                        {`
+        <MediaController id="rawPlayer" className={`${styles.player} control-bar`} audio>
+            <audio
+                ref={onLoaded}
+                slot="media"
+                src={audioFile}
+                onPlay={onPlay}
+                onPause={onPause}
+                onSeeked={onSeeked}
+            ></audio>
+            <MediaControlBar style={{
+                width: "100%"
+            }}>
+                <MediaPlayButton disabled></MediaPlayButton>
+                <style>
+                    {`
 
                         media-mute-button + media-volume-range {
                             width: 0;
@@ -148,15 +147,14 @@ function AudioPlayer() {
                         media-volume-range:focus-within {
                             width: 70px;
                         }`
-                        }
-                    </style>
-                    <MediaMuteButton />
-                    <MediaVolumeRange />
-                    <MediaTimeRange />
-                    <MediaTimeDisplay showDuration />
-                </MediaControlBar>
-            </MediaController>
-        </>
+                    }
+                </style>
+                <MediaMuteButton />
+                <MediaVolumeRange />
+                <MediaTimeRange />
+                <MediaTimeDisplay showDuration />
+            </MediaControlBar>
+        </MediaController>
     );
 }
 

@@ -23,7 +23,7 @@
     "iconv-lite": "^0.6.3",
     "leva": "^0.10.0",
     "lodash": "^4.17.21",
-    "media-chrome": "^4.13.1",
+    "media-chrome": "^4.17.2",
     "nanoid": "^5.1.2",
     "next": "^15.2.4",
     "notistack": "^3.0.2",
