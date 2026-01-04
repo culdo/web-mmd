@@ -17,7 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <title>Web MMD</title>
-        <link rel="icon" href="/icon.png" sizes="any" />
+        <link rel="icon" href="./icon.png" sizes="any" />
         <meta name="description" content="Play MMD everywhere" />
       </head>
       <body>{children}</body>
