@@ -1,11 +1,18 @@
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants.js'
+import type { NextConfig } from 'next'
 
-export default (phase) => {
+export default async (phase: string) => {
     const isDev = phase === PHASE_DEVELOPMENT_SERVER
-    /**
-     * @type {import('next').NextConfig}
-     */
-    const nextConfig = {
+    let firebaseConfig: string;
+
+    if (process.env.FIREBASE_CONFIG) {
+        firebaseConfig = process.env.FIREBASE_CONFIG
+    } else {
+        // @ts-ignore
+        firebaseConfig = JSON.stringify((await import("@/app/modules/firebase/config.json")))
+    }
+
+    const nextConfig: NextConfig = {
         assetPrefix: isDev ? undefined : './',
         reactStrictMode: false,
         output: 'export',
@@ -21,7 +28,7 @@ export default (phase) => {
         },
         env: {
             COMMIT: process.env.COMMIT,
-            GOOGLE_SERVICE_ACCOUNT: process.env.GOOGLE_SERVICE_ACCOUNT
+            FIREBASE_CONFIG: firebaseConfig
         },
         async rewrites() {
             return [
