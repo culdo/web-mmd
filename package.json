@@ -20,6 +20,7 @@
     "@theatre/r3f": "https://github.com/culdo/theatre/releases/download/0.7.15/r3f.tgz",
     "@theatre/studio": "https://github.com/culdo/theatre/releases/download/0.7.15/studio.tgz",
     "ammojs-typed": "^1.0.6",
+    "firebase": "^12.8.0",
     "iconv-lite": "^0.6.3",
     "leva": "^0.10.0",
     "lodash": "^4.17.21",

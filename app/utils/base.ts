@@ -133,4 +133,6 @@ function debugWait(ms = 2000) {
     return new Promise((res) => setTimeout(() => res(true), ms))
 }
 
-export { blobToBase64, dataURItoBlobUrl, debugWait, disposeMesh, buildOnProgress, saveCurrTime, startFileDownload, withProgress, withTimeElapse };
+const isDev = process.env.NODE_ENV === 'development';
+
+export { blobToBase64, dataURItoBlobUrl, debugWait, disposeMesh, buildOnProgress, saveCurrTime, startFileDownload, withProgress, withTimeElapse, isDev };

@@ -20,7 +20,8 @@ export default (phase) => {
             return config
         },
         env: {
-            COMMIT: process.env.COMMIT
+            COMMIT: process.env.COMMIT,
+            GOOGLE_SERVICE_ACCOUNT: process.env.GOOGLE_SERVICE_ACCOUNT
         },
         async rewrites() {
             return [

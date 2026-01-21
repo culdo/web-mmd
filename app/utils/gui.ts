@@ -1,10 +1,9 @@
 import { levaStore } from "leva";
-import { InputOptions, OnChangeHandler, Schema } from "leva/dist/declarations/src/types";
+import { InputOptions, OnChangeHandler } from "leva/dist/declarations/src/types";
 import _ from "lodash";
 import usePresetStore, { PresetState } from "../stores/usePresetStore";
 import { blobToBase64 } from "./base";
 import * as THREE from "three";
-import { randomBytes } from "crypto";
 import { nanoid } from "nanoid";
 
 function loadModel(add = false) {
@@ -228,5 +227,11 @@ function buildMaterialGuiFunc(targetModel: THREE.SkinnedMesh, targetMaterialIdx:
     }
 }
 
+const infoStyle = (started: boolean) => ({
+    style: {
+        backgroundColor: started ? 'green' : 'red',
+    },
+})
 
-export { buildMaterialGuiFunc, buildFlexGuiItem, buildGuiFunc, buildGuiItem, buildGuiObj, loadFile, loadModel, setLevaValue };
+
+export { buildMaterialGuiFunc, buildFlexGuiItem, buildGuiFunc, buildGuiItem, buildGuiObj, loadFile, loadModel, setLevaValue, infoStyle };

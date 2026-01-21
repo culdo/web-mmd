@@ -1,5 +1,5 @@
 import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
-import { MutableRefObject, createRef } from 'react';
+import { Dispatch, MutableRefObject, SetStateAction, createRef } from 'react';
 import { AnimationMixer, PerspectiveCamera, SkinnedMesh, Vector3 } from 'three';
 import { GrantSolver, MMDPhysics } from 'three-stdlib';
 import { create } from 'zustand';
@@ -47,7 +47,11 @@ export type GlobalState = {
         up: Vector3,
         dampingFactor: number
     },
-    showGameMenu: boolean
+    showGameMenu: boolean,
+    // MultiPlayer
+    peers: Record<string, JSX.Element>;
+    onOfferingRef: React.MutableRefObject<(data: any) => void>;
+    onAnsweringRef: React.MutableRefObject<(data: any) => void>;
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -94,7 +98,10 @@ const useGlobalStore = create<GlobalState>(
             center: new Vector3(),
             dampingFactor: 5
         },
-        showGameMenu: true
+        showGameMenu: true,
+        peers: {},
+        onOfferingRef: createRef(),
+        onAnsweringRef: createRef(),
     })
 )
 

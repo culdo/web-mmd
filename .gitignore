@@ -44,3 +44,6 @@ public/ammo.*
 /playwright/.cache/
 
 certificates
+
+# firebase config
+/app/modules/firebase/config.json

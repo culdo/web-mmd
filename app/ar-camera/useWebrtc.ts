@@ -1,4 +1,4 @@
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 const configuration = {
   iceServers: [{
@@ -23,16 +23,13 @@ function useWebRTC() {
     if (!sdp) {
       // offering side
       startOffering();
-      // listening for answer via cookie
-      cookieStore.onchange = async (event: CookieChangeEvent) => {
-        const sdp = JSON.parse(event.changed[0].value);
-        await peerConnection.setRemoteDescription(sdp);
-      };
+      listenAnswer();
     } else if (sdp.type === 'offer') {
       // answering side
       takeOffer(sdp);
     } else if (sdp.type === 'answer') {
       // offering side
+      // open a new blank tab to set the answer
       setAnswer(sdp);
     }
 
@@ -50,6 +47,13 @@ function useWebRTC() {
     function setAnswer(sdp: any) {
       setCookie('sdp', JSON.stringify(sdp));
       window.close();
+    }
+
+    function listenAnswer() {
+      cookieStore.onchange = async (event: CookieChangeEvent) => {
+        const sdp = JSON.parse(event.changed[0].value);
+        await peerConnection.setRemoteDescription(sdp);
+      };
     }
 
     function setCookie(name: string, value: string, days = 1) {

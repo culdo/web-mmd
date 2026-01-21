@@ -5,6 +5,7 @@ import { PerspectiveCamera, Quaternion, Spherical, Vector2, Vector3 } from "thre
 import { useFrame, useThree } from "@react-three/fiber";
 import { useModel } from "../../../model/helper/ModelContext";
 import { enqueueSnackbar } from "notistack";
+import { infoStyle } from "@/app/utils/gui";
 
 export const DjContext = createContext<{ showBeat: boolean, deltaSpherical: Spherical }>(null);
 export const useDirector = () => useContext(DjContext)
@@ -69,12 +70,6 @@ function Director() {
     const trackDistanceRef = useRef(true)
     const trackUpRef = useRef(true)
     const trackTargetRef = useRef(true)
-
-    const infoStyle = (started: boolean) => ({
-        style: {
-            backgroundColor: started ? 'green' : 'red',
-        },
-    })
 
     useEffect(() => {
         const onPause = () => {
