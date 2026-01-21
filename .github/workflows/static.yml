@@ -35,6 +35,8 @@ jobs:
           cache: 'npm'
       - run: npm install
       - name: Build
+        env:
+          GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
         run: COMMIT=$(date +'%Y/%m/%d')-${GITHUB_SHA::7} npx next build
       - name: Setup Pages
         uses: actions/configure-pages@v5
