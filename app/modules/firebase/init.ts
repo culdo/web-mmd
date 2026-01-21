@@ -2,8 +2,8 @@ import { initializeApp } from "firebase/app";
 import { collection, doc, getCountFromServer, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, Timestamp, Unsubscribe, updateDoc, where } from "firebase/firestore";
 import firebaseConfig from "./config.json";
 
-const gsa = process.env.GOOGLE_SERVICE_ACCOUNT ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT) : null;
-const app = initializeApp(gsa ?? firebaseConfig);
+const gsa = process.env.GOOGLE_SERVICE_ACCOUNT ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT) : firebaseConfig;
+const app = initializeApp(gsa);
 const db = getFirestore(app);
 
 export async function setUser(id: string, sdp: RTCSessionDescriptionInit = null, offerId = "") {
