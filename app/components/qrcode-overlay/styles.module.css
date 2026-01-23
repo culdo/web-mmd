@@ -1,0 +1,30 @@
+.qrcode {
+	position: fixed;
+	top: 25%;
+	left: 25%;
+
+	padding: 12px;
+	border-radius: 30px;
+	margin-bottom: 0px;
+
+	color: black;
+	background-color: #ffffff;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	align-items: center;
+	z-index: 999;
+	opacity: 0.9;
+
+	box-shadow: 0 0 4px rgba(0, 0, 0, .15);
+}
+
+.copy {
+	color: rgb(0, 123, 255);
+	text-decoration: none;
+}
+
+.copy:hover {
+	cursor: pointer;
+	text-decoration: underline;
+}

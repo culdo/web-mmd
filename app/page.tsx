@@ -12,6 +12,7 @@ import GameMenu from "./components/three-world/run-modes/game-mode/Menu";
 import IntroSections from "./components/three-world/run-modes/introduction-mode/sections";
 import { SnackbarProvider } from "notistack";
 import Multiplayer from "./components/multiplayer";
+import QRCodeOverlay from "./components/qrcode-overlay";
 const ControlBar = dynamic(() => import('./components/control-bar'), { ssr: false })
 
 export default function Home() {
@@ -38,6 +39,7 @@ export default function Home() {
       <IntroSections></IntroSections>
       <Multiplayer></Multiplayer>
       <SnackbarProvider anchorOrigin={{ horizontal: "left", vertical: "top" }} autoHideDuration={1000} variant="info" />
+      <QRCodeOverlay></QRCodeOverlay>
     </>
   )
 }

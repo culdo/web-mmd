@@ -4,13 +4,17 @@ import { useEffect, useRef } from "react";
 import Room from "./room";
 import useConfigStore from "@/app/stores/useConfigStore";
 import { isDev } from "@/app/utils/base";
+import useAnswerRTC from "./room/useAnswerRTC";
+import useSdpListener from "./room/useSdpListener";
 
 function Multiplayer() {
     const uid = useConfigStore(state => state.uid);
 
     const isActiveRef = useRef(true);
+    useSdpListener();
+    useAnswerRTC();
 
-    const [gui, set] = useControls("MultiPlayer", () => ({
+    const [_, set] = useControls("MultiPlayer", () => ({
         "Id": {
             value: "",
             editable: false
@@ -18,8 +22,7 @@ function Multiplayer() {
         "Online Users": {
             value: "0 users",
             editable: false,
-        },
-        "Always online": isDev
+        }
     }), { order: 10 })
 
     useEffect(() => {
@@ -31,7 +34,7 @@ function Multiplayer() {
     }, []);
 
     useEffect(() => {
-        if (gui["Always online"]) {
+        if (isDev) {
             setUserActive(uid, true);
             isActiveRef.current = true;
             return
@@ -54,7 +57,7 @@ function Multiplayer() {
         return () => {
             clearInterval(intervalId);
         }
-    }, [gui["Always online"]]);
+    }, []);
 
     return <Room />;
 }

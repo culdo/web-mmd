@@ -1,17 +1,20 @@
 import { listenOnUser } from "@/app/modules/firebase/init";
-import { useRef, useEffect } from "react";
+import { useEffect, useRef } from "react";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import useConfigStore from "@/app/stores/useConfigStore";
 
-function useDataListener() {
+function useSdpListener(inited = true) {
     const uid = useConfigStore(state => state.uid);
-    const initRef = useRef(false);
     const onOfferingRef = useGlobalStore(state => state.onOfferingRef);
     const onAnsweringRef = useGlobalStore(state => state.onAnsweringRef);
+    const initRef = useRef(inited);
 
     useEffect(() => {
         const unsub = listenOnUser(uid, async (data: any) => {
-
+            if (!initRef.current) {
+                initRef.current = true
+                return
+            }
             onOfferingRef.current?.(data);
             onAnsweringRef.current?.(data);
         })
@@ -19,4 +22,4 @@ function useDataListener() {
     }, []);
 }
 
-export default useDataListener;
+export default useSdpListener;

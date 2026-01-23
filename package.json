@@ -28,6 +28,7 @@
     "nanoid": "^5.1.2",
     "next": "^15.2.4",
     "notistack": "^3.0.2",
+    "qrcode.react": "^4.2.0",
     "r3f-perf": "^7.2.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

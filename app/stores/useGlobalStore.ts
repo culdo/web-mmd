@@ -1,5 +1,5 @@
 import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
-import { Dispatch, MutableRefObject, SetStateAction, createRef } from 'react';
+import { MutableRefObject, createRef } from 'react';
 import { AnimationMixer, PerspectiveCamera, SkinnedMesh, Vector3 } from 'three';
 import { GrantSolver, MMDPhysics } from 'three-stdlib';
 import { create } from 'zustand';
@@ -50,8 +50,14 @@ export type GlobalState = {
     showGameMenu: boolean,
     // MultiPlayer
     peers: Record<string, JSX.Element>;
-    onOfferingRef: React.MutableRefObject<(data: any) => void>;
-    onAnsweringRef: React.MutableRefObject<(data: any) => void>;
+    onOfferingRef: MutableRefObject<(data: any) => void>;
+    onAnsweringRef: MutableRefObject<(data: any) => void>;
+    peerChannels: Record<string, {
+        connection: RTCPeerConnection,
+        channels: Record<string, RTCDataChannel>
+    }>;
+    onInitRef: MutableRefObject<(data: any, peer: RTCPeerConnection) => void>;
+    qrCodeUrl: string;
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -102,6 +108,9 @@ const useGlobalStore = create<GlobalState>(
         peers: {},
         onOfferingRef: createRef(),
         onAnsweringRef: createRef(),
+        peerChannels: {},
+        onInitRef: createRef(),
+        qrCodeUrl: null
     })
 )
 
