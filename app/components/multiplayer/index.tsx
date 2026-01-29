@@ -1,4 +1,4 @@
-import { getUserCounts, setUserActive } from "@/app/modules/firebase/init";
+import { setUserActive } from "@/app/modules/firebase/init";
 import { useControls } from "leva";
 import { useEffect, useRef } from "react";
 import Room from "./room";
@@ -18,17 +18,12 @@ function Multiplayer() {
         "Id": {
             value: "",
             editable: false
-        },
-        "Online Users": {
-            value: "0 users",
-            editable: false,
         }
     }), { order: 10 })
 
     useEffect(() => {
         const init = async () => {
-            const counts = await getUserCounts()
-            set({ Id: uid, "Online Users": `${counts} users` });
+            set({ Id: uid });
         }
         init();
     }, []);

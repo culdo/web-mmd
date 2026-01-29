@@ -19,7 +19,6 @@ function Room() {
                 peers[doc.id] = <PeerConnection key={doc.id} targetUid={doc.id} />;
             });
             useGlobalStore.setState({ peers: { ...peers } });
-            setLevaValue("MultiPlayer.Online Users", `${docs.size} users`)
         }
         init()
 
