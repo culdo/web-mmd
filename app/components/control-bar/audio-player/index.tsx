@@ -22,13 +22,7 @@ function AudioPlayer() {
     const autoHideGui = usePresetStore(state => state["auto hide GUI"])
     const cameraMode = usePresetStore(state => state["camera mode"])
     const runMode = usePresetStore(state => state["run mode"])
-    const setGui = (gui: Partial<Gui>) => useGlobalStore.setState({ gui })
-    const presetReady = useGlobalStore(state => state.presetReady)
     const studio = useGlobalStore(state => state.theatreStudio)
-
-    useControls(() => ({
-        ...buildGuiObj("auto hide GUI", { order: 2 })
-    }))
 
     useControls('Music', () => ({
         name: {
@@ -40,13 +34,14 @@ function AudioPlayer() {
                 usePresetStore.setState({ audioFile, musicName })
             })
         }),
+        "auto hide GUI on playing": buildGuiItem("auto hide GUI")
     }), { order: 200, collapsed: true }, [musicName])
 
     const playerRef = useRef<HTMLVideoElement>()
 
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         if (autoHideGui) {
-            setGui({ hidden: true })
+            document.getElementById("leva-container").style.opacity = "0.0";
 
             // editor mode
             studio?.ui.hide()
@@ -57,7 +52,7 @@ function AudioPlayer() {
 
     const onPause = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         if (autoHideGui) {
-            setGui({ hidden: false });
+            document.getElementById("leva-container").style.opacity = "1.0";
         }
 
         // editor mode

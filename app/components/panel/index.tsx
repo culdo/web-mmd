@@ -18,7 +18,7 @@ function Panel() {
     }, []);
 
     return (
-        <div className={styles.levaContainer}>
+        <div id="leva-container" className={styles.levaContainer}>
             <Leva
                 oneLineLabels
                 {...gui}
