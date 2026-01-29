@@ -19,7 +19,7 @@ function Multiplayer() {
             value: "",
             editable: false
         }
-    }), { order: 10 })
+    }), { order: 10, collapsed: true })
 
     useEffect(() => {
         const init = async () => {

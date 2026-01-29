@@ -23,7 +23,7 @@ function Effects() {
 
     const effectConfig = useControls('Effects', {
         ...buildGuiObj("show outline")
-    }, { order: 2 })
+    }, { order: 2, collapsed: true })
 
     const debugTextures = useMemo(() => {
         if (!normal) return { None: null }
