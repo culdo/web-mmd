@@ -27,6 +27,7 @@ function Model({ id, fileName, motionNames = [], enableMorph = true, enableMater
             url={url}
             modelTextures={pmxFiles.modelTextures[folderName]}
             castShadow={true}
+            receiveShadow={true}
             onCreate={(mesh: THREE.SkinnedMesh) => {
                 useGlobalStore.setState(({ models }) => {
                     models[id] = mesh
