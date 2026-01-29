@@ -6,6 +6,7 @@ import { ThreeEvent } from "@react-three/fiber";
 import { RunModes } from "../run-modes";
 import dynamic from "next/dynamic";
 import { useControls } from "leva";
+import useGui from "./useGui";
 const Morph = dynamic(() => import('./helper/Morph'), { ssr: false })
 const Material = dynamic(() => import('./helper/Material'), { ssr: false })
 const Physics = dynamic(() => import("./helper/Physics"), { ssr: false })
@@ -23,20 +24,7 @@ function Model({ id, fileName, motionNames = [], enableMorph = true, enableMater
         targetModelId != id
     )
 
-    const isRenderHelper = (enabled: boolean) => ({
-        value: enabled,
-        render: (get: (key: string) => any) => get(`Model-${id}.controller.enabled`)
-    })
-
-    const controller = useControls(`Model-${id}.controller`, {
-        "enabled": true,
-        "enableMorph": isRenderHelper(enableMorph),
-        "enableMaterial": isRenderHelper(enableMaterial),
-        "enablePhysics": isRenderHelper(enablePhysics),
-        "enableAnimation": isRenderHelper(true)
-    }, {
-        render: (get) => get("target model") == id
-    })
+    const controller = useGui(id)
 
     if (!controller.enabled) return null;
 

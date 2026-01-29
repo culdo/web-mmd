@@ -155,7 +155,7 @@ function Material() {
         updateControls(targetMaterialIdx);
     }, [targetMaterialIdx])
 
-    useControls(`Model-${model.name}.Material`, {
+    useControls(`Model.${model.name}.Material`, {
         "targetMaterial": {
             ...buildGuiItem("targetMaterialIdx"),
             options: materialMap,

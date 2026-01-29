@@ -48,7 +48,7 @@ function Bone() {
         setControllers(newControllers)
     }
 
-    const [_, set] = useControls(`Model-${model.name}.Bones`, () => {
+    const [_, set] = useControls(`Model.${model.name}.Bones`, () => {
         return {
             ...controllers,
             "update": button(() => {

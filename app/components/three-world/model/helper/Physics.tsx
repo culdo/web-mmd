@@ -28,8 +28,6 @@ function Physics() {
             }
         );
 
-        const zeroVector = new Ammo.btVector3()
-
         const optimizeIK = (physicsEnabled: boolean) => {
             const iks = mesh.geometry.userData.MMD.iks;
             const bones = mesh.geometry.userData.MMD.bones;
@@ -51,10 +49,8 @@ function Physics() {
 
         const reset = () => {
             physics.reset();
-            for (const rigidBody of physics.bodies as any) {
-                rigidBody.body.clearForces()
-                rigidBody.body.setLinearVelocity(zeroVector)
-                rigidBody.body.setAngularVelocity(zeroVector)
+            for (const rigidBody of physics.bodies) {
+                rigidBody.reset()
             }
         }
 
@@ -80,7 +76,7 @@ function Physics() {
         "show rigid bodies": showRigidBodies,
         "show IK bones": showIkBones,
         "show skeleton": showSkeleton
-    } = useControls(`Model-${mesh.name}.debug`, {
+    } = useControls(`Model.${mesh.name}.debug`, {
         ...buildGuiObj("show rigid bodies"),
         ...buildGuiObj("show IK bones"),
         ...buildGuiObj("show skeleton"),

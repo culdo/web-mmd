@@ -29,7 +29,7 @@ function Morph() {
         updateMorphFolder();
     }, [])
 
-    useControls(`Model-${model.name}.Morphs`,
+    useControls(`Model.${model.name}.Morphs`,
         () => controllers,
         { collapsed: true, render: () => isRenderGui(model.name) }, [controllers]
     )
