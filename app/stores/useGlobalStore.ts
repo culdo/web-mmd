@@ -1,6 +1,6 @@
 import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
 import { MutableRefObject, createRef } from 'react';
-import { AnimationMixer, PerspectiveCamera, SkinnedMesh, Vector3 } from 'three';
+import { AnimationMixer, Euler, PerspectiveCamera, SkinnedMesh, Vector3 } from 'three';
 import { GrantSolver, MMDPhysics } from 'three-stdlib';
 import { create } from 'zustand';
 import { MMDLoader } from '../modules/MMDLoader';
@@ -35,8 +35,8 @@ export type GlobalState = {
     enabledTransform: boolean,
     theatreStudio: IStudio,
     creditsPose: {
-        position: [number, number, number],
-        rotation: [number, number, number]
+        position: Vector3,
+        rotation: Euler
     },
     cameraOffset: {
         center: Vector3,

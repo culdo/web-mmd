@@ -32,8 +32,8 @@ function GameMenu() {
         creditPos.add(model.position)
         useGlobalStore.setState({
             creditsPose: {
-                position: creditPos.toArray(),
-                rotation: [model.rotation.x, model.rotation.y, model.rotation.z]
+                position: creditPos.clone(),
+                rotation: model.rotation.clone()
             }
         })
     }

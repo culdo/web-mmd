@@ -2,6 +2,8 @@ import { Html } from "@react-three/drei";
 import { button, useControls } from "leva";
 import styles from "./styles.module.css"
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import { useThree } from "@react-three/fiber";
+import { Euler, PerspectiveCamera, Vector3 } from "three";
 
 function Credit({ color = "#ffd9aaff", children }: { children: React.ReactNode, color?: string }) {
     return (
@@ -17,15 +19,24 @@ function Credit({ color = "#ffd9aaff", children }: { children: React.ReactNode, 
 
 function CreditsList() {
     const creditsPose = useGlobalStore((state) => state.creditsPose)
+    const camera = useThree(state => state.camera) as PerspectiveCamera
 
     useControls("Credits", () => ({
         show: button(() => {
-            useGlobalStore.setState({ creditsPose: {
-                position: [0, 10, 10],
-                rotation: [0, 0, 0]
-            } })
+            const creditsPose = {
+                position: new Vector3(-10, 10, -10),
+                rotation: new Euler()
+            }
+            useGlobalStore.setState({ creditsPose })
+            // trigger renderering on same position
+            camera.position.z += 0.001
+            setTimeout(() => {
+                camera.position.set(0, 10, 30)
+                camera.fov = 30
+                camera.lookAt(creditsPose.position)
+            }, 100)
         })
-    }), { order: 1000, collapsed: true })
+    }), { order: 1000, collapsed: true }, [camera])
 
     return (creditsPose &&
         <Html

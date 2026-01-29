@@ -22,20 +22,19 @@ function Controls() {
     const isWheelRef = useRef(false)
     const onEndTimeoutRef = useRef<NodeJS.Timeout>()
 
-    const onWheel = (event: WheelEvent) => {
-        isWheelRef.current = true
-        if (event.shiftKey) {
-            if (event.deltaX > 0) {
-                camera.fov *= 1.05
-            } else {
-                camera.fov *= 0.95
-            }
-            camera.updateProjectionMatrix()
-            setLevaValue("Camera.fov", camera.fov)
-        }
-    }
-
     useEffect(() => {
+        const onWheel = (event: WheelEvent) => {
+            isWheelRef.current = true
+            if (event.shiftKey) {
+                if (event.deltaX > 0) {
+                    camera.fov *= 1.05
+                } else {
+                    camera.fov *= 0.95
+                }
+                camera.updateProjectionMatrix()
+                setLevaValue("Camera.fov", camera.fov)
+            }
+        }
         gl.domElement.addEventListener('wheel', onWheel)
         return () => gl.domElement.removeEventListener('wheel', onWheel)
     }, [camera])
@@ -50,7 +49,7 @@ function Controls() {
     }
 
     const onEnd = () => {
-        if(onEndTimeoutRef.current) clearTimeout(onEndTimeoutRef.current)
+        if (onEndTimeoutRef.current) clearTimeout(onEndTimeoutRef.current)
         onEndTimeoutRef.current = setTimeout(() => {
             isOrbitControlRef.current = false
             isWheelRef.current = false
