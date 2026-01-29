@@ -51,7 +51,7 @@ function Physics() {
 
         const reset = () => {
             physics.reset();
-            for (const rigidBody of physics.bodies as any[]) {
+            for (const rigidBody of physics.bodies as any) {
                 rigidBody.body.clearForces()
                 rigidBody.body.setLinearVelocity(zeroVector)
                 rigidBody.body.setAngularVelocity(zeroVector)

@@ -5,6 +5,7 @@ import PmxModel from "./PMXModel";
 import { ThreeEvent } from "@react-three/fiber";
 import { RunModes } from "../run-modes";
 import dynamic from "next/dynamic";
+import { useControls } from "leva";
 const Morph = dynamic(() => import('./helper/Morph'), { ssr: false })
 const Material = dynamic(() => import('./helper/Material'), { ssr: false })
 const Physics = dynamic(() => import("./helper/Physics"), { ssr: false })
@@ -17,10 +18,28 @@ function Model({ id, fileName, motionNames = [], enableMorph = true, enableMater
     const url = pmxFiles.models[fileName]
     const folderName = fileName.split("/")[0]
     const enableAnimation = motionNames.length > 0 && (
-                                runMode == RunModes.PLAYER_MODE || 
-                                runMode == RunModes.INTRO_MODE || 
-                                targetModelId != id
-                            )
+        runMode == RunModes.PLAYER_MODE ||
+        runMode == RunModes.INTRO_MODE ||
+        targetModelId != id
+    )
+
+    const isRenderHelper = (enabled: boolean) => ({
+        value: enabled,
+        render: (get: (key: string) => any) => get(`Model-${id}.controller.enabled`)
+    })
+
+    const controller = useControls(`Model-${id}.controller`, {
+        "enabled": true,
+        "enableMorph": isRenderHelper(enableMorph),
+        "enableMaterial": isRenderHelper(enableMaterial),
+        "enablePhysics": isRenderHelper(enablePhysics),
+        "enableAnimation": isRenderHelper(true)
+    }, {
+        render: (get) => get("target model") == id
+    })
+
+    if (!controller.enabled) return null;
+
     return (
         <PmxModel
             name={id}
@@ -49,10 +68,10 @@ function Model({ id, fileName, motionNames = [], enableMorph = true, enableMater
             }}
         >
             <object3D name="smoothCenter"></object3D>
-            {enableMorph && <Morph />}
-            {enableMaterial && <Material />}
-            {enablePhysics && <Physics />}
-            {enableAnimation && <Animation motionNames={motionNames} />}
+            {controller.enableMorph && <Morph />}
+            {controller.enableMaterial && <Material />}
+            {controller.enablePhysics && <Physics />}
+            {enableAnimation && controller.enableAnimation && <Animation motionNames={motionNames} />}
         </PmxModel>
     );
 }
