@@ -29,7 +29,7 @@ export default function Home() {
           const renderer = new WebGPURenderer(props as any)
           await renderer.init()
           return renderer
-        }) : null} shadows>
+        }) : undefined} shadows>
         <ThreeWorld />
       </Canvas>
       <ControlBar></ControlBar>
