@@ -11,7 +11,6 @@ import {
 	Euler,
 	FileLoader,
 	Float32BufferAttribute,
-	Int32BufferAttribute,
 	FrontSide,
 	Interpolant,
 	Loader,
@@ -19,13 +18,11 @@ import {
 	UniformsUtils,
 	ShaderMaterial,
 	MultiplyOperation,
-	NearestFilter,
 	NumberKeyframeTrack,
 	OneMinusSrcAlphaFactor,
 	Quaternion,
 	QuaternionKeyframeTrack,
 	RepeatWrapping,
-	Skeleton,
 	SkinnedMesh,
 	SrcAlphaFactor,
 	TextureLoader,
@@ -38,19 +35,17 @@ import {
 	RGB_ETC1_Format,
 	RGB_ETC2_Format,
 	SRGBColorSpace,
-	InterpolateDiscrete,
-	Camera,
 	LoadingManager,
 	KeyframeTrack,
 	ShaderMaterialParameters,
-	Material,
 	Texture,
 	CompressedTexture,
 	MeshPhongMaterial,
 	WebGLProgramParametersWithUniforms,
 	WebGLRenderer,
 	MeshPhysicalMaterial,
-	TypedArray
+	TypedArray,
+	DataTexture
 } from 'three';
 import { MMDToonShader } from './shaders/MMDToonShader';
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
@@ -65,6 +60,13 @@ type ShaderParams = {
 	enablePBR: boolean,
 	isWebGPU: boolean
 }
+
+declare module 'three' {
+  interface KeyframeTrack {
+    createInterpolant(): Interpolant;
+  }
+}
+
 /**
  * Dependencies
  *  - mmd-parser https://github.com/takahirox/mmd-parser
@@ -1148,13 +1150,13 @@ class MaterialBuilder {
 				visible: (material.flag & 0x10) !== 0 && material.edgeSize > 0.0
 			};
 
-			let newMaterial: MMDMaterial;
+			let newMaterial: MeshPhysicalMaterial | MMDToonMaterial | MMDMaterial;
 
 			if (shaderParams.isWebGPU && shaderParams.enableSdef) {
 				newMaterial = new MMDMaterial(params)
 				newMaterial.buildSkinningNode = (mesh) => nodeObject(new SdefSkinningNode(mesh))
 			} else {
-				newMaterial = (shaderParams.enablePBR ? new MeshPhysicalMaterial(params) : new MMDToonMaterial(params)) as MMDMaterial
+				newMaterial = shaderParams.enablePBR ? new MeshPhysicalMaterial(params) : new MMDToonMaterial(params)
 				newMaterial.onBeforeCompile = (params: WebGLProgramParametersWithUniforms, _: WebGLRenderer) => {
 					if (shaderParams.enableSdef) {
 						params.vertexShader = initSdef(params.vertexShader)
@@ -1171,7 +1173,7 @@ class MaterialBuilder {
 
 			// set transparent true if alpha morph is defined.
 
-			function checkAlphaMorph(elements: any[], materials: (MeshPhysicalMaterial | MMDToonMaterial)[]) {
+			function checkAlphaMorph(elements: any[], materials: (MeshPhysicalMaterial | MMDToonMaterial | MMDMaterial)[]) {
 
 				for (let i = 0, il = elements.length; i < il; i++) {
 
@@ -1283,7 +1285,7 @@ class MaterialBuilder {
 
 		}
 
-		let loader: TextureLoader = this.manager.getHandler(fullPath);
+		let loader: TextureLoader | TGALoader = this.manager.getHandler(fullPath);
 
 		if (loader === null) {
 
@@ -1321,9 +1323,9 @@ class MaterialBuilder {
 	}
 
 	// Check if the partial image area used by the texture is transparent.
-	_checkImageTransparency(material: MeshPhysicalMaterial | MMDToonMaterial, geometry: BufferGeometry, groupIndex: number) {
+	_checkImageTransparency(material: MeshPhysicalMaterial | MMDToonMaterial | MMDMaterial, geometry: BufferGeometry, groupIndex: number) {
 
-		const map = material.map
+		const map: Texture<any> = material.map
 		// Is there any efficient ways?
 		function createImageData(image: any) {
 
@@ -1398,9 +1400,9 @@ class MaterialBuilder {
 
 		}
 
-		if ((map as CompressedTexture).isCompressedTexture === true) {
+		if (map instanceof CompressedTexture) {
 
-			if ((map as CompressedTexture).format in NON_ALPHA_CHANNEL_FORMATS) {
+			if (map.format in NON_ALPHA_CHANNEL_FORMATS) {
 
 				material.transparent = false;
 

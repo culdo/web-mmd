@@ -11,11 +11,14 @@ import { FloatType, Texture, Vector3 } from "three";
 import { TextureEffectComp } from "./TextureEffectComp";
 import { ColorChannel } from "postprocessing";
 import { WebGPURenderer } from "three/webgpu";
-import WebGPUEffectComposer from "./WebGPUEffectComposer";
-import usePresetStore from "@/app/stores/usePresetStore";
+import WebGPUEffectComposer from "./webGPU/WebGPUEffectComposer";
 import { NormalBlending } from "./NormalBlending";
 import { NormalBlendingPass } from "@/app/modules/effects/NormalBlendingPass";
 import WithReady from "@/app/stores/WithReady";
+import OutlineNode from "./webGPU/OutlineNode";
+import PassNode from "./webGPU/PassNode";
+import BloomNode from "./webGPU/BloomNode";
+import DofNode from "./webGPU/DofNode";
 
 function Effects() {
     const [dof, setDof] = useState<HexDofEffect>()
@@ -161,7 +164,23 @@ function Effects() {
     const isWebGPU = renderer instanceof WebGPURenderer
 
     if (isWebGPU) {
-        return <WebGPUEffectComposer></WebGPUEffectComposer>
+        return (
+            <WebGPUEffectComposer>
+                {effectConfig["show outline"] ? <OutlineNode></OutlineNode> : <PassNode></PassNode>}
+                {dofConfig.enabled && <DofNode
+                    focusDistance={dofConfig.focalDistance}
+                    focalLength={dofConfig.focalLength}
+                    bokehScale={dofConfig.focusRange}
+                >
+                </DofNode>}
+                {bloomConfig.enabled && <BloomNode
+                    strength={bloomConfig.intensity}
+                    radius={bloomConfig.luminanceSmoothing}
+                    threshold={bloomConfig.luminanceThreshold}
+                >
+                </BloomNode>}
+            </WebGPUEffectComposer>
+        )
     } else {
         return (
             <EffectComposer renderPriority={3} frameBufferType={dofConfig.debugTexture ? FloatType : undefined}>

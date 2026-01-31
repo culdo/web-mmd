@@ -1,14 +1,14 @@
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
-import { add, normalLocal, ShaderNodeObject } from "three/tsl";
+import { add, normalLocal } from "three/tsl";
 import { SkinningNode } from "three/webgpu";
 
 class SdefSkinningNode extends SkinningNode {
-    positionNode: ShaderNodeObject<OperatorNode>;
-    boneMatricesNode: ShaderNodeObject<OperatorNode>;
-    skinIndexNode: ShaderNodeObject<OperatorNode>;
-    skinWeightNode: ShaderNodeObject<OperatorNode>;
-    bindMatrixNode: ShaderNodeObject<OperatorNode>;
-    bindMatrixInverseNode: ShaderNodeObject<OperatorNode>;
+    positionNode: OperatorNode;
+    boneMatricesNode: OperatorNode;
+    skinIndexNode: OperatorNode;
+    skinWeightNode: OperatorNode;
+    bindMatrixNode: OperatorNode;
+    bindMatrixInverseNode: OperatorNode;
     
 	getSkinnedPosition( boneMatrices = this.boneMatricesNode, position = this.positionNode ) {
 

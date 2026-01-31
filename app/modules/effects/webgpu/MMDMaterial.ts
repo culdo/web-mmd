@@ -1,9 +1,8 @@
-import { ShaderNodeObject } from "three/tsl";
-import { Node, NodeBuilder, MeshPhysicalNodeMaterial, Object3D, SkinnedMesh } from "three/webgpu";
+import { Node, NodeBuilder, MeshPhysicalNodeMaterial, SkinnedMesh } from "three/webgpu";
 
 class MMDMaterial extends MeshPhysicalNodeMaterial {
-	vertexOutput: ShaderNodeObject<Node>
-	buildSkinningNode: (mesh: SkinnedMesh) => ShaderNodeObject<Node>
+	vertexOutput: Node
+	buildSkinningNode: (mesh: SkinnedMesh) => Node
 
 	setupVertex( builder: NodeBuilder ) {
 		const vertexOutput = super.setupVertex( builder )

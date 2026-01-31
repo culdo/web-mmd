@@ -319,7 +319,10 @@ class OutlinePass extends Pass {
 
 			}
 
-			material.version = originalMaterial.version; // update outline material if necessary
+			// update outline material if necessary
+			if (material.version != originalMaterial.version) {
+				material.needsUpdate = true
+			}
 
 		}
 

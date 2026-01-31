@@ -1,8 +1,7 @@
-import { BackSide, Camera, Color, MeshToonMaterial, Scene, SkinnedMesh } from "three";
-import { normalLocal, cameraProjectionMatrix, modelViewMatrix, float, vec4, positionLocal, nodeObject, normalize, getCurrentStack } from "three/tsl";
-import { PassNode, NodeFrame, MeshToonNodeMaterial, NodeBuilder, MeshPhysicalNodeMaterial } from "three/webgpu";
+import { BackSide, Camera, Color, Scene } from "three";
+import { normalLocal, cameraProjectionMatrix, modelViewMatrix, float, vec4, positionLocal, nodeObject, normalize } from "three/tsl";
+import { PassNode, NodeFrame } from "three/webgpu";
 import MMDMaterial from "./MMDMaterial";
-import SdefSkinningNode from "./SdefSkinningNode";
 
 /**
  * Represents a render pass for producing a toon outline effect on compatible objects.
