@@ -1,8 +1,9 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { Leva } from "leva";
-import usePreset from "./preset";
+import usePreset from "./usePreset";
 import styles from "./styles.module.css"
 import { useEffect, useState } from "react";
+import useAbout from "./useAbout";
 
 function Panel() {
     const gui = useGlobalStore(state => state.gui)
@@ -11,6 +12,7 @@ function Panel() {
     const [collapsed, setCollapsed] = useState(false)
     
     usePreset()
+    useAbout()
     useEffect(() => {
         if (window.innerWidth < 1000) {
             setCollapsed(true)
