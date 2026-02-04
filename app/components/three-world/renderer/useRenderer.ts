@@ -1,5 +1,5 @@
 import useGlobalStore from "@/app/stores/useGlobalStore"
-import { buildGuiObj } from "@/app/utils/gui"
+import { buildGuiItem, buildGuiObj } from "@/app/utils/gui"
 import { useControls } from "leva"
 import useRenderLoop from "./useRenderLoop"
 import { useThree } from "@react-three/fiber"
@@ -16,7 +16,7 @@ function useRenderer() {
     }, [renderer.shadowMap.type])
     
     useControls("Renderer", {
-        ...buildGuiObj("set pixelratio 1.0"),
+        "set pixelratio 1": buildGuiItem("set pixelratio 1.0"),
         ...buildGuiObj("enable PBR"),
         ...buildGuiObj("isWebGPU")
     }, { order: 100, collapsed: true })
