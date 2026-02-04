@@ -106,6 +106,15 @@ function Material() {
                 usePresetStore.setState({ materials: defaultConfig.materials })
             }),
             "debug": folder({
+                'only show this': {
+                    value: false,
+                    onChange: (state) => {
+                        for (const m of materials) {
+                            if (m == material && state) continue
+                            m.visible = !state
+                        }
+                    }
+                },
                 'transparent': buildMGuiItem("transparent"),
                 'opacity': buildMGuiItem("opacity"),
                 'depthTest': buildMGuiItem("depthTest"),
