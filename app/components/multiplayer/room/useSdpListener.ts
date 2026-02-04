@@ -10,7 +10,7 @@ function useSdpListener(inited = true) {
     const initRef = useRef(inited);
 
     useEffect(() => {
-        const unsub = listenOnUser(uid, async (data: any) => {
+        const unsub = listenOnUser(uid, async (data: UserInfo) => {
             if (!initRef.current) {
                 initRef.current = true
                 return

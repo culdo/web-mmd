@@ -7,7 +7,7 @@ function useAnswerRTC() {
     const onInitRef = useGlobalStore(state => state.onInitRef)
     const onAnsweringRef = useGlobalStore(state => state.onAnsweringRef)
     useEffect(() => {
-        onAnsweringRef.current = async (data: any) => {
+        onAnsweringRef.current = async (data: UserInfo) => {
             if (data?.sdp?.type == 'offer') {
                 if (checkPeer(data.offerId)) return;
                 const onicecandidate = (sdp: RTCSessionDescriptionInit) => {

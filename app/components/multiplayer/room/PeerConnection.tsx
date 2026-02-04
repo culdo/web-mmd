@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Schema } from "leva/dist/declarations/src/types";
 import useOfferRTC from "./useOfferRTC";
 
-function PeerConnection({ targetUid, dataChannel, reset }: { targetUid: string, dataChannel?: RTCDataChannel, reset?: () => void }) {
+function PeerConnection({ targetUid, initChannel, reset }: { targetUid: string, initChannel?: RTCDataChannel, reset?: () => void }) {
     const buildConnect = useOfferRTC()
     const [controllers, setControllers] = useState<Schema>({})
 
@@ -11,18 +11,18 @@ function PeerConnection({ targetUid, dataChannel, reset }: { targetUid: string, 
 
     useEffect(() => {
         const newControllers: Schema = {}
-        if (dataChannel) {
+        if (initChannel) {
             newControllers["Disconnect"] = button(reset)
         } else {
             newControllers["Connect"] = button(buildConnect(targetUid))
         }
         setControllers(newControllers)
 
-        if (dataChannel) {
+        if (initChannel) {
             return () => reset();
         }
 
-    }, [dataChannel])
+    }, [initChannel])
     return <></>;
 }
 

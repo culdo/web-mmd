@@ -10,8 +10,8 @@ function useChannel(label: string, id: number, peerIdOrCode: string) {
         if (peerChannel) {
             setPeerConnection(peerChannel?.connection);
         } else {
-            onInitRef.current = (data, peer) => {
-                if (peerIdOrCode == data) {
+            onInitRef.current = (code, peer) => {
+                if (peerIdOrCode == code) {
                     setPeerConnection(peer);
                     onInitRef.current = null;
                 }

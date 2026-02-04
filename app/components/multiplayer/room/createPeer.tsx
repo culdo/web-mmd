@@ -16,23 +16,23 @@ function createPeer(uid: string, onicecandidate: (sdp: RTCSessionDescriptionInit
             peerConnection.onicecandidate = null;
         }
     };
-    const dataChannel = peerConnection.createDataChannel("init", { negotiated: true, id: 0 })
-    dataChannel.onopen = () => {
+    const initChannel = peerConnection.createDataChannel("init", { negotiated: true, id: 0 })
+    initChannel.onopen = () => {
         useGlobalStore.setState(({ peers, peerChannels }) => {
-            peers[uid] = <PeerConnection key={uid} targetUid={uid} dataChannel={dataChannel} reset={reset} />;
+            peers[uid] = <PeerConnection key={uid} targetUid={uid} initChannel={initChannel} reset={reset} />;
             peerChannels[uid] = {
                 connection: peerConnection,
-                channels: { [dataChannel.label]: dataChannel }
+                channels: { [initChannel.label]: initChannel }
             };
             return {
                 peers: { ...peers },
                 peerChannels: { ...peerChannels }
             }
         })
-        onOpen?.(dataChannel)
+        onOpen?.(initChannel)
         enqueueSnackbar(`Connected with ${uid}!`, infoStyle(true));
     }
-    dataChannel.onclose = () => {
+    initChannel.onclose = () => {
         useGlobalStore.setState(({ peers, peerChannels }) => {
             peers[uid] = <PeerConnection key={uid} targetUid={uid} />;
             delete peerChannels[uid];
@@ -46,7 +46,7 @@ function createPeer(uid: string, onicecandidate: (sdp: RTCSessionDescriptionInit
 
     function reset() {
         peerConnection.close();
-        dataChannel.close();
+        initChannel.close();
     }
 
     return peerConnection;

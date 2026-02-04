@@ -3,7 +3,6 @@ import { button, useControls } from "leva";
 import { useEffect, useState } from "react";
 import PeerConnection from "./PeerConnection";
 import { Schema } from "leva/dist/declarations/src/types";
-import { setLevaValue } from "@/app/utils/gui";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import useConfigStore from "@/app/stores/useConfigStore";
 
@@ -13,10 +12,10 @@ function Room() {
 
     useEffect(() => {
         const init = async () => {
-            const docs = await getActiveUsers();
-            docs.forEach((doc) => {
-                if (doc.id === uid) return;
-                peers[doc.id] = <PeerConnection key={doc.id} targetUid={doc.id} />;
+            const users = await getActiveUsers();
+            users.forEach((user) => {
+                if (user.id === uid) return;
+                peers[user.id] = <PeerConnection key={user.id} targetUid={user.id} />;
             });
             useGlobalStore.setState({ peers: { ...peers } });
         }
