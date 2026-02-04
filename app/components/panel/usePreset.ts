@@ -1,7 +1,7 @@
 import useConfigStore from "@/app/stores/useConfigStore";
 import usePresetStore, { migratePreset, resetPreset, setPreset } from "@/app/stores/usePresetStore";
 import { startFileDownload } from "@/app/utils/base";
-import { button, LevaInputs, useControls } from "leva";
+import { button, useControls } from "leva";
 import path from "path-browserify";
 import { useEffect } from "react";
 
@@ -101,12 +101,7 @@ function usePreset() {
                 }
             }
         },
-        ...controllers,
-        version: {
-            type: LevaInputs.STRING,
-            value: process.env.COMMIT ?? "dev",
-            editable: false
-        },
+        ...controllers
     }), { order: 900, collapsed: true }, [controllers, presetsList])
 
     useEffect(() => {
