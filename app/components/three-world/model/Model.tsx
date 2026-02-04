@@ -5,8 +5,7 @@ import PmxModel from "./PMXModel";
 import { ThreeEvent } from "@react-three/fiber";
 import { RunModes } from "../run-modes";
 import dynamic from "next/dynamic";
-import { useControls } from "leva";
-import useGui from "./useGui";
+import { button, useControls } from "leva";
 const Morph = dynamic(() => import('./helper/Morph'), { ssr: false })
 const Material = dynamic(() => import('./helper/Material'), { ssr: false })
 const Physics = dynamic(() => import("./helper/Physics"), { ssr: false })
@@ -24,7 +23,40 @@ function Model({ id, fileName, motionNames = [], enableMorph = true, enableMater
         targetModelId != id
     )
 
-    const controller = useGui(id)
+    const modelsOption = Object.keys(pmxFiles.models)
+    const isRenderHelper = (enabled: boolean) => ({
+        value: enabled,
+        render: (get: (key: string) => any) => get(`Model.${id}.enabled`)
+    })
+
+    const [controller, set] = useControls(`Model.${id}`, () => ({
+        "variant": {
+            value: fileName,
+            options: modelsOption,
+            onChange: (value, path, options) => {
+                if (!options.initial) {
+                    const { models } = usePresetStore.getState()
+                    const newModels = { ...models }
+                    newModels[id].fileName = value
+                    usePresetStore.setState({ models: newModels })
+                } else {
+                    set({ variant: fileName })
+                }
+            },
+        },
+        "delete": button(() => {
+            usePresetStore.setState(({ models }) => {
+                delete models[id]
+                const newTargetModelId = Object.keys(models)[0]
+                return { models: { ...models }, targetModelId: newTargetModelId }
+            })
+        }),
+        "enabled": true,
+        "enableMorph": isRenderHelper(enableMorph),
+        "enableMaterial": isRenderHelper(enableMaterial),
+        "enablePhysics": isRenderHelper(enablePhysics),
+        "enableAnimation": isRenderHelper(true)
+    }), { order: 2, render: (get) => get("Model.target model") == id }, [modelsOption])
 
     if (!controller.enabled) return null;
 

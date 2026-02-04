@@ -7,6 +7,9 @@ import buildUpdatePMX from "./buildUpdatePMX";
 import { CheckModel } from "./WithModel";
 import VMDMotion from "./VMDMotion";
 import { useFrame } from "@react-three/fiber";
+import { button, useControls } from "leva";
+import { loadFile } from "@/app/utils/gui";
+import isRenderGui from "./useRenderGui";
 
 function Animation({ motionNames }: { motionNames: string[] }) {
     const mesh = useModel()
@@ -17,6 +20,40 @@ function Animation({ motionNames }: { motionNames: string[] }) {
     const mixer = useMemo(() => new AnimationMixer(mesh), [mesh]) as AnimationMixer & {
         _actions: AnimationAction[]
     };
+
+    const blendOptions = Object.keys(motionFiles).filter(val => !motionNames.includes(val))
+
+    const [_, set] = useControls(`Model.${mesh.name}.Animation`, () => ({
+        "add motion file": button(() => {
+            loadFile((motionFile, motionName) => {
+                usePresetStore.setState(({ models, motionFiles }) => {
+                    motionFiles[motionName] = motionFile
+                    models[mesh.name].motionNames[0] = motionName
+                    return {
+                        motionFiles: { ...motionFiles },
+                        models: { ...models }
+                    }
+                })
+            })
+        }),
+        "blend motion": {
+            value: "Select...",
+            options: blendOptions,
+            onChange: (val, path, options) => {
+                if (options.initial || val == "Select...") return
+                usePresetStore.setState(({ models }) => {
+                    const { motionNames } = models[mesh.name]
+                    if (!motionNames.includes(val)) {
+                        motionNames.push(val)
+                    }
+                    return {
+                        models: { ...models }
+                    }
+                })
+                set({ "blend motion": "Select..." })
+            }
+        }
+    }), { collapsed: true, render: () => isRenderGui(mesh.name), order: 0 })
 
     const onLoop = useMemo(() => {
         let backupBones = new Float32Array(mesh.skeleton.bones.length * 7);

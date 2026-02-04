@@ -29,7 +29,7 @@ function VMDMotion({ target, mixer, vmdFile, motionName, resetPose, resetPhysic 
     const actionRef = useRef<AnimationAction>()
     const clipRef = useRef<AnimationClip>()
     const [isInit, setIsInit] = useState(false)
-    const controlPath = `Model.${target.name}.Motion-${motionName?.split(".vmd")[0].replaceAll(".", "-")}`
+    const controlPath = `Model.${target.name}.Animation.Motion-${motionName?.split(".vmd")[0].replaceAll(".", "-")}`
     const currentTime = usePresetStore(state => state.currentTime)
 
     const {
