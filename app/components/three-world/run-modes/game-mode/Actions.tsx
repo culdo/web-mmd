@@ -166,6 +166,8 @@ function Actions() {
         document.addEventListener("keyup", onRelease)
 
         return () => {
+            mesh.position.set(0, 0, 0)
+            mesh.rotation.set(0, 0, 0)
             document.removeEventListener("keydown", onPress)
             document.removeEventListener("keyup", onRelease)
         }
