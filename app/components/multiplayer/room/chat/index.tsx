@@ -1,42 +1,66 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import BroadcastChannel from "../../peer/channel/BroadcastChannel";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css"
 
 function Chat() {
     const channel = useGlobalStore(state => state.broadcastChannels)["chat"]
-    const [texts, setTexts] = useState("")
+    const [texts, setTexts] = useState<{
+        node: React.ReactNode,
+        style?: string
+    }[]>([
+        {
+            node: "Wellcome to Chat!",
+            style: "text-sky-300 self-center"
+        }
+    ])
     const inputRef = useRef<HTMLInputElement>()
-    const textareaRef = useRef<HTMLTextAreaElement>()
+    const textareaRef = useRef<HTMLDivElement>()
 
     useEffect(() => {
         if (!channel) return
         channel.onMessage = (msg) => {
-            const text = `${msg.sender}: ${msg.data}`
-            setTexts((prevText) => {
-                return prevText + text + "\n"
+            setTexts((texts) => {
+                texts.push({
+                    node: `${msg.sender}: ${msg.data}`,
+                    style: ""
+                })
+                return [...texts]
             })
-            textareaRef.current.scrollTop = textareaRef.current.scrollHeight
         }
         inputRef.current.onkeydown = (e) => {
             if (e.key == "Enter") {
                 const text = inputRef.current.value
                 if (!text) return
-                setTexts((prevText) => {
-                    return prevText + `me: ${text}` + "\n"
+                setTexts((texts) => {
+                    texts.push({
+                        node: `me: ${text}`,
+                        style: "text-yellow-300"
+                    })
+                    return [...texts]
                 })
                 channel.send(text)
                 inputRef.current.value = ""
-                textareaRef.current.scrollTop = textareaRef.current.scrollHeight
             }
         }
     }, [channel])
+
+    useEffect(() => {
+        textareaRef.current.scrollTop = textareaRef.current.scrollHeight
+    }, [texts])
+
     return (
         <>
             <BroadcastChannel label="chat"></BroadcastChannel>
             <div className={styles.chat}>
-                <textarea ref={textareaRef} readOnly value={texts}></textarea>
-                <input ref={inputRef} placeholder="typing here..." type="text"></input>
+                <div ref={textareaRef} className="px-2 h-full bg-white bg-opacity-10 rounded-t-lg hover:overflow-auto overflow-hidden flex flex-col">
+                    {
+                        Object.entries(texts).map(
+                            ([i, text]) => <div key={i} className={text.style}>{text.node}</div>
+                        )
+                    }
+                </div>
+                <input name="input" ref={inputRef} className="px-2 rounded-b-md" placeholder="sending message..." type="text"></input>
             </div>
         </>
     );
