@@ -52,7 +52,7 @@ function Chat() {
     return (
         <>
             <BroadcastChannel label="chat"></BroadcastChannel>
-            <div className={styles.chat}>
+            <div id="chat" className={styles.chat}>
                 <div ref={textareaRef} className="px-2 h-full bg-white bg-opacity-10 rounded-t-lg hover:overflow-auto overflow-hidden flex flex-col">
                     {
                         Object.entries(texts).map(
