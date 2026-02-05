@@ -2,9 +2,8 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { AnimationAction, AnimationMixer } from "three";
 import { useEffect, useMemo, useRef } from "react";
-import { useModel, useRuntimeHelper } from "./ModelContext";
+import { CheckModel, useModel } from "./ModelContext";
 import buildUpdatePMX from "./buildUpdatePMX";
-import { CheckModel } from "./WithModel";
 import VMDMotion from "./VMDMotion";
 import { useFrame } from "@react-three/fiber";
 import { button, useControls } from "leva";
@@ -98,7 +97,6 @@ function Animation({ motionNames }: { motionNames: string[] }) {
         }
 
     }, [mesh])
-    const runtimeHelper = useRuntimeHelper()
 
     const isResetPoseRef = useRef(true)
     const isResetPhysicsRef = useRef(true)
@@ -135,7 +133,7 @@ function Animation({ motionNames }: { motionNames: string[] }) {
             isResetPoseRef.current = false
         }
         if (isResetPhysicsRef.current) {
-            runtimeHelper.resetPhysic?.()
+            mesh.userData.resetPhysic?.()
             isResetPhysicsRef.current = false
         }
     }, 1)

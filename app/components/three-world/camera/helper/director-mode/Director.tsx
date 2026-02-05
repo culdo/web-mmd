@@ -3,7 +3,7 @@ import BeatCircle from "./BeatCircle";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { PerspectiveCamera, Quaternion, Spherical, Vector2, Vector3 } from "three";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useModel } from "../../../model/helper/ModelContext";
+import { useTargetModel } from "../../../model/helper/useTargetModel";
 import { enqueueSnackbar } from "notistack";
 import { infoStyle } from "@/app/utils/gui";
 
@@ -51,7 +51,7 @@ function Director() {
     const _v = useRef(new Vector3()).current
     const mouseModeRef = useRef<MOUSE>()
 
-    const model = useModel()
+    const model = useTargetModel()
     const centerPos = useRef(new Vector3()).current
     const centerRot = useRef(new Quaternion()).current
     const rotVec = useRef(new Vector3(0, 0, 1)).current

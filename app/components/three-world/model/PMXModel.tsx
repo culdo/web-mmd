@@ -1,8 +1,7 @@
-import { ReactNode, useEffect, useRef, useState } from "react"
+import { ReactNode, useEffect, useState } from "react"
 import { Skeleton, SkinnedMesh } from "three"
 import { initBones, MMDLoader } from "@/app/modules/MMDLoader"
 import useGlobalStore from "@/app/stores/useGlobalStore"
-import { buildOnProgress } from "@/app/utils/base"
 import { ThreeElement } from "@react-three/fiber"
 import { ModelContext } from "./helper/ModelContext"
 import usePresetStore from "@/app/stores/usePresetStore"
@@ -73,8 +72,6 @@ function PMXModel({ url, modelTextures, enableSdef = true, enablePBR = true, chi
         setInited(true)
     }, [mesh])
 
-    const runtimeHelper = useRef({})
-
     if (!initProps) return
 
     const { data, geometry, material } = initProps
@@ -85,7 +82,7 @@ function PMXModel({ url, modelTextures, enableSdef = true, enablePBR = true, chi
             args={[geometry, material]}
             ref={mesh => mesh && setMesh(mesh)}
             {...props}>
-            <ModelContext.Provider value={{ mesh: mesh, runtimeHelper }}>
+            <ModelContext.Provider value={{ mesh: mesh }}>
                 {inited && children}
             </ModelContext.Provider>
         </skinnedMesh>

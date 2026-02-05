@@ -4,8 +4,8 @@ import AmmoCls from "ammojs-typed";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
-import WithModel from "../model/helper/WithModel";
 import usePresetStore from "@/app/stores/usePresetStore";
+import { WithTargetModel } from "../model/helper/useTargetModel";
 
 type MeshWithPhys = THREE.Mesh & {
     userData: {
@@ -324,4 +324,4 @@ function Swing() {
     );
 }
 
-export default WithModel(Swing);
+export default WithTargetModel(Swing);

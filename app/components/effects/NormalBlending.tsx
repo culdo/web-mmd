@@ -1,15 +1,15 @@
 import { NormalBlendingPass } from '@/app/modules/effects/NormalBlendingPass'
 import useGlobalStore from '@/app/stores/useGlobalStore'
 import usePresetStore from '@/app/stores/usePresetStore'
-import { forwardRef, Ref, useEffect, useMemo } from 'react'
+import { forwardRef, Ref, useMemo } from 'react'
 import { MeshPhysicalMaterial, Texture } from 'three'
-import WithModel from '../three-world/model/helper/WithModel'
+import { WithTargetModel } from '../three-world/model/helper/useTargetModel'
 
 type Material = MeshPhysicalMaterial & {
   "userData.subNormalMap": Texture
 }
 
-export const NormalBlending = WithModel(forwardRef(function Effect(
+export const NormalBlending = WithTargetModel(forwardRef(function Effect(
   { },
   ref: Ref<NormalBlendingPass>
 ) {

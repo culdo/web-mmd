@@ -5,7 +5,6 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import { CameraMode } from "@/app/types/camera";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import Camera from "./Camera";
-import WithModel from "../../model/helper/WithModel";
 
 function GameMode() {
     useEffect(() => {
@@ -33,4 +32,4 @@ function GameMode() {
     );
 }
 
-export default WithModel(GameMode);
+export default GameMode;

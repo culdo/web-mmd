@@ -2,16 +2,15 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { MathUtils, PerspectiveCamera, Spherical, Vector3 } from "three";
-import { useModel } from "../../../model/helper/ModelContext";
+import { useTargetModel, WithTargetModel } from "../../../model/helper/useTargetModel";
 import { OrbitControls } from "three-stdlib";
-import WithModel from "../../../model/helper/WithModel";
 
 function FixFollowing() {
     const camera = useThree(state => state.camera) as PerspectiveCamera
     const controls = useThree(state => state.controls) as OrbitControls
     const targetRef = useRef(controls?.target ?? new Vector3())
 
-    const targetModel = useModel()
+    const targetModel = useTargetModel()
 
     const isOrbitControlRef = useGlobalStore(state => state.isOrbitControlRef)
     const cameraOffset = useGlobalStore(state => state.cameraOffset)
@@ -96,4 +95,4 @@ function FixFollowing() {
     return <></>;
 }
 
-export default WithModel(FixFollowing);
+export default WithTargetModel(FixFollowing);

@@ -1,7 +1,7 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { RootState, useFrame } from "@react-three/fiber";
 import { useMemo, useState } from "react";
-import { useModel, useRuntimeHelper } from "./ModelContext";
+import { CheckModel, useModel } from "./ModelContext";
 import { useControls } from "leva";
 import { buildGuiObj } from "@/app/utils/gui";
 import { MMDPhysics, MMDPhysicsHelper } from "three-stdlib";
@@ -9,12 +9,10 @@ import { Helper } from "@react-three/drei";
 import { CCDIKHelper } from "three/examples/jsm/animation/CCDIKSolver.js";
 import { SkeletonHelper } from "three";
 import isRenderGui from "./useRenderGui";
-import { CheckModel } from "./WithModel";
 
 function Physics() {
     const mesh = useModel()
     const playDeltaRef = useGlobalStore(state => state.playDeltaRef)
-    const runtimeHelper = useRuntimeHelper()
     const [physicsHelper, setPhysicsHelper] = useState<MMDPhysicsHelper>()
     const onUpdate = useMemo(() => {
 
@@ -56,7 +54,7 @@ function Physics() {
 
         physics.warmup(60);
         optimizeIK(true);
-        runtimeHelper.resetPhysic = reset
+        mesh.userData.resetPhysic = reset
         setPhysicsHelper(physics.createHelper())
 
         return (_: RootState, delta: number) => {

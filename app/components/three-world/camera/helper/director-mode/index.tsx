@@ -1,6 +1,6 @@
 import Director from "./Director";
 import FixFollowing from "../fix-following-mode";
-import WithModel from "../../../model/helper/WithModel";
+import { WithTargetModel } from "../../../model/helper/useTargetModel";
 
 function DirectorMode() {
     return (
@@ -11,4 +11,4 @@ function DirectorMode() {
     );
 }
 
-export default WithModel(DirectorMode);
+export default WithTargetModel(DirectorMode);

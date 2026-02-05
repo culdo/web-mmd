@@ -1,7 +1,7 @@
 import usePresetStore from "@/app/stores/usePresetStore";
 import { AnimationAction, AnimationClip, AnimationMixer, MathUtils, Quaternion, Vector3 } from "three";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useModel, useRuntimeHelper } from "../../model/helper/ModelContext";
+import { useTargetModel } from "../../model/helper/useTargetModel";
 import buildUpdatePMX from "../../model/helper/buildUpdatePMX";
 import { useFrame } from "@react-three/fiber";
 import useGlobalStore from "@/app/stores/useGlobalStore";
@@ -15,7 +15,7 @@ type ActionsType = Record<string, {
 }>
 
 function Actions() {
-    const mesh = useModel()
+    const mesh = useTargetModel()
     const motionFiles = usePresetStore(state => state.motionFiles)
     const loader = useGlobalStore(state => state.loader)
 
@@ -70,7 +70,6 @@ function Actions() {
         }
 
     }, [mesh])
-    const runtimeHelper = useRuntimeHelper()
 
     const [isInit, setInit] = useState(false)
     useEffect(() => {
@@ -88,7 +87,7 @@ function Actions() {
                 motion.action = action
             }
             setInit(true)
-            runtimeHelper.resetPhysic?.()
+            mesh.userData.resetPhysic?.()
         }
         init()
         return () => {

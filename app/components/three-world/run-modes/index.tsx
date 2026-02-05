@@ -1,5 +1,5 @@
 import { useControls } from "leva"
-import WithModel from "../model/helper/WithModel";
+import { WithTargetModel } from "../model/helper/useTargetModel";
 import GameMode from "./game-mode";
 import { buildGuiItem } from "@/app/utils/gui";
 import IntroductionMode from "./introduction-mode";
@@ -36,4 +36,4 @@ function RunMode() {
     return <Mode />;
 }
 
-export default WithModel(RunMode);
+export default WithTargetModel(RunMode);
