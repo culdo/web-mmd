@@ -2,13 +2,13 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import createPeer, { checkPeer } from "./createPeer";
 import { setUser } from "@/app/modules/firebase/init";
 import useConfigStore from "@/app/stores/useConfigStore";
-import { createRef, useCallback } from "react";
+import { useCallback } from "react";
 
-function useOfferRTC(targetUid: string, initCode = "") {
+function useOfferRTC() {
     const uid = useConfigStore(state => state.uid);
     const onOfferingRef = useGlobalStore(state => state.onOfferingRef)
 
-    const connect = useCallback(() => new Promise<RTCPeerConnection>((resolve) => async () => {
+    const connect = useCallback((targetUid: string, initCode = "") => new Promise<RTCPeerConnection>(async (resolve) => {
         if (checkPeer(targetUid)) return;
         const onicecandidate = (sdp: RTCSessionDescriptionInit) => {
             setUser(targetUid, sdp, uid);
@@ -28,7 +28,7 @@ function useOfferRTC(targetUid: string, initCode = "") {
         // start offering
         await peerConnection.setLocalDescription();
         return peerConnection;
-    }), [targetUid])
+    }), [])
 
     return connect;
 }

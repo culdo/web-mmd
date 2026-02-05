@@ -10,12 +10,12 @@ function useWebRTC() {
   const initUid = searchParams.get('initUid')
   const initCode = searchParams.get('initCode')
   useSdpListener(false)
-  const connect = useOfferRTC(initUid, initCode)
+  const connect = useOfferRTC()
   const dataChannel = useChannel("ARCamera", 1, initUid)
 
   useEffect(() => {
     if (initUid) {
-      connect()
+      connect(initUid, initCode)
     }
   }, [initUid]);
 

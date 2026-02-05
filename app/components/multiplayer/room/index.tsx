@@ -8,27 +8,23 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import Channel from "../peer/channel";
 import Chat from "./chat";
 import usePresetStore from "@/app/stores/usePresetStore";
+import useOfferRTC from "../peer/useOfferRTC";
 
 function Room() {
     const myUid = useConfigStore(state => state.uid);
     const peerChannels = useGlobalStore(state => state.peerChannels)
+    const connect = useOfferRTC()
 
     useEffect(() => {
         const init = async () => {
             // await setUser(myUid)
             const users = await getActiveUsers();
-            useGlobalStore.setState(({ peerChannels }) => {
-                const peerIds = users.docs.map(user => user.id).filter(id => id !== myUid)
-                for (const peerId of peerIds) {
-                    if (!peerChannels[peerId]) {
-                        peerChannels[peerId] = {
-                            peerConnection: null,
-                            channels: {}
-                        } as PeerChannel
-                    }
+            const peerIds = users.docs.map(user => user.id).filter(id => id !== myUid)
+            for (const peerId of peerIds) {
+                if (!peerChannels[peerId]) {
+                    await connect(peerId)
                 }
-                return { peerChannels: { ...peerChannels } }
-            })
+            }
         }
         init()
     }, [])
