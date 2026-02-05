@@ -1,46 +1,64 @@
-import { getActiveUsers } from "@/app/modules/firebase/init";
+import { getActiveUsers, setUser } from "@/app/modules/firebase/init";
 import { button, useControls } from "leva";
-import { useEffect, useState } from "react";
-import PeerConnection from "./PeerConnection";
+import { useEffect } from "react";
+import PeerConnection from "../peer/PeerConnection";
 import { Schema } from "leva/dist/declarations/src/types";
-import useGlobalStore from "@/app/stores/useGlobalStore";
 import useConfigStore from "@/app/stores/useConfigStore";
+import useGlobalStore from "@/app/stores/useGlobalStore";
+import Channel from "../peer/channel";
+import Chat from "./chat";
+import usePresetStore from "@/app/stores/usePresetStore";
 
 function Room() {
-    const uid = useConfigStore(state => state.uid);
-    const peers = useGlobalStore(state => state.peers);
+    const myUid = useConfigStore(state => state.uid);
+    const peerChannels = useGlobalStore(state => state.peerChannels)
 
     useEffect(() => {
         const init = async () => {
+            // await setUser(myUid)
             const users = await getActiveUsers();
-            users.forEach((user) => {
-                if (user.id === uid) return;
-                peers[user.id] = <PeerConnection key={user.id} targetUid={user.id} />;
-            });
-            useGlobalStore.setState({ peers: { ...peers } });
+            useGlobalStore.setState(({ peerChannels }) => {
+                const peerIds = users.docs.map(user => user.id).filter(id => id !== myUid)
+                for (const peerId of peerIds) {
+                    if (!peerChannels[peerId]) {
+                        peerChannels[peerId] = {
+                            peerConnection: null,
+                            channels: {}
+                        } as PeerChannel
+                    }
+                }
+                return { peerChannels: { ...peerChannels } }
+            })
         }
         init()
-
-        return () => {
-            useGlobalStore.setState({ peers: {} });
-        }
     }, [])
 
-    return Object.values(peers);
+    return (
+        <>
+            {
+                Object.keys(peerChannels).map(uid =>
+                    <PeerConnection key={uid} id={uid}>
+                        <Channel label="chat" id={1}></Channel>
+                    </PeerConnection>
+                )
+            }
+            <Chat></Chat>
+        </>
+    );
 }
 
 function Wrapper() {
-    const [joined, setJoined] = useState(false);
+    const enableMultiPlayer = usePresetStore(state => state.enableMultiPlayer);
 
-    const roomControllers: Schema = joined ? {
-        "Leave Room": button(() => setJoined(false))
+    const roomControllers: Schema = enableMultiPlayer ? {
+        "Leave Room": button(() => usePresetStore.setState({ enableMultiPlayer: false }))
     } : {
-        "Join Room": button(() => setJoined(true))
+        "Join Room": button(() => usePresetStore.setState({ enableMultiPlayer: true }))
     }
 
     useControls("MultiPlayer", () => (roomControllers), { order: 10 }, [roomControllers])
 
-    return joined ? <Room /> : null;
+    return enableMultiPlayer ? <Room /> : null;
 }
 
 export default Wrapper;

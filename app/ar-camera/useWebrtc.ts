@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import useOfferRTC from "../components/multiplayer/room/useOfferRTC";
+import useOfferRTC from "../components/multiplayer/peer/useOfferRTC";
 import { useSearchParams } from "next/navigation";
-import useChannel from "../components/multiplayer/room/useChannel";
-import useSdpListener from "../components/multiplayer/room/useSdpListener";
+import useChannel from "../components/multiplayer/peer/channel/useChannel";
+import useSdpListener from "../components/multiplayer/peer/useSdpListener";
 
 function useWebRTC() {
   
@@ -10,12 +10,12 @@ function useWebRTC() {
   const initUid = searchParams.get('initUid')
   const initCode = searchParams.get('initCode')
   useSdpListener(false)
-  const buildConnect = useOfferRTC(initCode)
+  const connect = useOfferRTC(initUid, initCode)
   const dataChannel = useChannel("ARCamera", 1, initUid)
 
   useEffect(() => {
     if (initUid) {
-      buildConnect(initUid)()
+      connect()
     }
   }, [initUid]);
 

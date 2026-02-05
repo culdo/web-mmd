@@ -1,12 +1,19 @@
+import { isDev } from "@/app/utils/base";
 import { initializeApp } from "firebase/app";
 import { collection, doc, getCountFromServer, getDoc, getDocs, getFirestore, limit, onSnapshot, orderBy, query, setDoc, Timestamp, Unsubscribe, updateDoc, where } from "firebase/firestore";
 
 const app = initializeApp(JSON.parse(process.env.FIREBASE_CONFIG));
 const db = getFirestore(app);
 
+enum ActiveTypes {
+    DISABLED,
+    PROD,
+    DEV
+}
+
 export async function setUser(id: string, sdp: RTCSessionDescriptionInit = null, offerId = "") {
     await setDoc(doc(db, "users", id), {
-        active: false,
+        active: isDev ? ActiveTypes.DEV : ActiveTypes.DISABLED,
         sdp,
         offerId
     });
@@ -14,7 +21,7 @@ export async function setUser(id: string, sdp: RTCSessionDescriptionInit = null,
 
 export async function setUserActive(id: string, active: boolean) {
     await updateDoc(doc(db, "users", id), {
-        active
+        active: isDev ? ActiveTypes.DEV : ActiveTypes.PROD
     });
 }
 
@@ -24,16 +31,9 @@ export async function checkUserExists(id: string) {
     return docSnap.exists();
 }
 
-export async function getUserCounts() {
-    const coll = collection(db, "users");
-    const q = query(coll, where("active", "==", true));
-    const snapshot = await getCountFromServer(q);
-    return snapshot.data().count;
-}
-
 export async function getActiveUsers() {
     const coll = collection(db, "users");
-    const q = query(coll, where("active", "==", true), limit(10));
+    const q = query(coll, where("active", "==", isDev ? ActiveTypes.DEV : ActiveTypes.PROD));
     const querySnapshot = await getDocs(q);
     return querySnapshot;
 }

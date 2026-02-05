@@ -15,7 +15,7 @@ function useAnswerRTC() {
                 };
                 const peerConnection = createPeer(data.offerId, onicecandidate, (dc) => {
                     dc.onmessage = (e) => {
-                        onInitRef.current?.(e.data, peerConnection)
+                        onInitRef.current?.(e.data, data.offerId)
                     }
                 });
                 // take offer

@@ -1,0 +1,10 @@
+.chat {
+	position: absolute;
+	width: 25%;
+	left: 25px; 
+	bottom: 100px;
+	transition: opacity 1s ease 0s; 
+	opacity: 0.5;
+	z-index: 1000;
+	color: black;
+}

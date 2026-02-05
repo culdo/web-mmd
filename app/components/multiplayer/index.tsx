@@ -4,8 +4,8 @@ import { useEffect, useRef } from "react";
 import Room from "./room";
 import useConfigStore from "@/app/stores/useConfigStore";
 import { isDev } from "@/app/utils/base";
-import useAnswerRTC from "./room/useAnswerRTC";
-import useSdpListener from "./room/useSdpListener";
+import useAnswerRTC from "./peer/useAnswerRTC";
+import useSdpListener from "./peer/useSdpListener";
 
 function Multiplayer() {
     const uid = useConfigStore(state => state.uid);

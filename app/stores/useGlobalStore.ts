@@ -49,14 +49,11 @@ export type GlobalState = {
     },
     showGameMenu: boolean,
     // MultiPlayer
-    peers: Record<string, JSX.Element>;
     onOfferingRef: MutableRefObject<(data: UserInfo) => void>;
     onAnsweringRef: MutableRefObject<(data: UserInfo) => void>;
-    peerChannels: Record<string, {
-        connection: RTCPeerConnection,
-        channels: Record<string, RTCDataChannel>
-    }>;
-    onInitRef: MutableRefObject<(code: string, peer: RTCPeerConnection) => void>;
+    peerChannels: Record<string, PeerChannel>;
+    broadcastChannels: Record<string, OneToManyChannel>;
+    onInitRef: MutableRefObject<(code: string, peerId: string) => void>;
     qrCodeUrl: string;
 }
 
@@ -105,12 +102,12 @@ const useGlobalStore = create<GlobalState>(
             dampingFactor: 5
         },
         showGameMenu: true,
-        peers: {},
         onOfferingRef: createRef(),
         onAnsweringRef: createRef(),
         peerChannels: {},
         onInitRef: createRef(),
-        qrCodeUrl: null
+        qrCodeUrl: null,
+        broadcastChannels: {}
     })
 )
 

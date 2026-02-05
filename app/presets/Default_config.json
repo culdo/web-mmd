@@ -155,5 +155,6 @@
     "Light.ambientLight.color": "#ffffff",
     "isWebGPU": false,
     "version": 0,
-    "ar camera scale": 100
+    "ar camera scale": 100,
+    "enableMultiPlayer": false
 }

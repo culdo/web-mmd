@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { closeSnackbar, enqueueSnackbar } from "notistack";
 import { useControls } from "leva";
 import { buildGuiItem } from "@/app/utils/gui";
-import useChannel from "@/app/components/multiplayer/room/useChannel";
+import useChannel from "@/app/components/multiplayer/peer/channel/useChannel";
 import { nanoid } from "nanoid";
 import useConfigStore from "@/app/stores/useConfigStore";
 import useGlobalStore from "@/app/stores/useGlobalStore";
