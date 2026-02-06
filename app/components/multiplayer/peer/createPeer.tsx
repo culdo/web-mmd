@@ -2,7 +2,7 @@ import { enqueueSnackbar } from "notistack";
 import { infoStyle } from "@/app/utils/gui";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 
-function createPeer(uid: string, onicecandidate: (sdp: RTCSessionDescriptionInit) => void, onOpen: (dataChannel: RTCDataChannel) => void = null) {
+function createPeer(uid: string, setSDP: (sdp: RTCSessionDescriptionInit) => void, onOpen: (dataChannel: RTCDataChannel) => void = null) {
     const peerConnection = new RTCPeerConnection({
         iceServers: [{
             urls: "stun:stun2.l.google.com:19302"
@@ -27,8 +27,9 @@ function createPeer(uid: string, onicecandidate: (sdp: RTCSessionDescriptionInit
 
     peerConnection.onicecandidate = (event: RTCPeerConnectionIceEvent) => {
         if (event.candidate?.type === "srflx" || event.candidate === null) {
+            console.log(`${peerConnection.localDescription.type} to ${uid}`)
             console.log(peerConnection.localDescription)
-            onicecandidate(peerConnection.localDescription.toJSON());
+            setSDP(peerConnection.localDescription.toJSON());
             peerConnection.onicecandidate = null;
         }
     };

@@ -2,9 +2,11 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import BroadcastChannel from "../../peer/channel/BroadcastChannel";
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css"
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function Chat() {
     const channel = useGlobalStore(state => state.broadcastChannels)["chat"]
+    const uid = useConfigStore(state => state.uid)
     const [texts, setTexts] = useState<{
         node: React.ReactNode,
         style?: string
@@ -34,7 +36,7 @@ function Chat() {
                 if (!text) return
                 setTexts((texts) => {
                     texts.push({
-                        node: `me: ${text}`,
+                        node: `${uid}(me): ${text}`,
                         style: "text-yellow-300"
                     })
                     return [...texts]

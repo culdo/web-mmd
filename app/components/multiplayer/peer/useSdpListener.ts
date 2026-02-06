@@ -1,21 +1,16 @@
-import { listenOnUser } from "@/app/modules/firebase/init";
+import { listenOnConnections } from "@/app/modules/firebase/init";
 import { useEffect, useRef } from "react";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import useConfigStore from "@/app/stores/useConfigStore";
 
-function useSdpListener(inited = true) {
+function useSdpListener() {
     const uid = useConfigStore(state => state.uid);
     const onOfferingRef = useGlobalStore(state => state.onOfferingRef);
     const onAnsweringRef = useGlobalStore(state => state.onAnsweringRef);
-    const initRef = useRef(inited);
 
     useEffect(() => {
-        const unsub = listenOnUser(uid, async (data: UserInfo) => {
-            if (!initRef.current) {
-                initRef.current = true
-                return
-            }
-            onOfferingRef.current?.(data);
+        const unsub = listenOnConnections(uid, async (cid: string, data: ConnectionInfo) => {
+            onOfferingRef.current[cid]?.(data);
             onAnsweringRef.current?.(data);
         })
         return () => unsub();

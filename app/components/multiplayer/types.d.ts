@@ -1,8 +1,7 @@
-type UserInfo = {
-    id: string
-    active: boolean
+type ConnectionInfo = {
+    peerA: string
+    peerB: string
     sdp: RTCSessionDescriptionInit
-    offerId: string
 }
 
 type PeerChannel = {

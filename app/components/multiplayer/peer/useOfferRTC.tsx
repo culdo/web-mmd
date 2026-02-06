@@ -1,6 +1,6 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import createPeer, { checkPeer } from "./createPeer";
-import { setUser } from "@/app/modules/firebase/init";
+import { setSDP, setUser } from "@/app/modules/firebase/init";
 import useConfigStore from "@/app/stores/useConfigStore";
 import { useCallback } from "react";
 
@@ -8,27 +8,28 @@ function useOfferRTC() {
     const uid = useConfigStore(state => state.uid);
     const onOfferingRef = useGlobalStore(state => state.onOfferingRef)
 
-    const connect = useCallback((targetUid: string, initCode = "") => new Promise<RTCPeerConnection>(async (resolve) => {
+    const connect = useCallback(async (targetUid: string, initCode = "") => {
         if (checkPeer(targetUid)) return;
-        const onicecandidate = (sdp: RTCSessionDescriptionInit) => {
-            setUser(targetUid, sdp, uid);
+        const setOfferSDP = (sdp: RTCSessionDescriptionInit) => {
+            setSDP([targetUid, uid], sdp);
         };
-        const peerConnection = createPeer(targetUid, onicecandidate, (dc) => {
-            resolve(peerConnection)
+        const peerConnection = createPeer(targetUid, setOfferSDP, (dc) => {
             if (initCode) dc.send(initCode)
         });
         // listen for answer
-        onOfferingRef.current = async (data: any) => {
+        const connectionId = [targetUid, uid].sort().join("_")
+        onOfferingRef.current[connectionId] = async (data: ConnectionInfo) => {
             if (data?.sdp?.type == 'answer') {
+                console.log(`Answer from ${targetUid}`)
                 console.log(data.sdp)
                 await peerConnection.setRemoteDescription(data.sdp);
-                onOfferingRef.current = null;
+                delete onOfferingRef.current[connectionId]
             };
         }
         // start offering
         await peerConnection.setLocalDescription();
         return peerConnection;
-    }), [])
+    }, [])
 
     return connect;
 }

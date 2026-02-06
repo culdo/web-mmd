@@ -49,8 +49,8 @@ export type GlobalState = {
     },
     showGameMenu: boolean,
     // MultiPlayer
-    onOfferingRef: MutableRefObject<(data: UserInfo) => void>;
-    onAnsweringRef: MutableRefObject<(data: UserInfo) => void>;
+    onOfferingRef: MutableRefObject<Record<string, (data: ConnectionInfo) => void>>;
+    onAnsweringRef: MutableRefObject<(data: ConnectionInfo) => void>;
     peerChannels: Record<string, PeerChannel>;
     broadcastChannels: Record<string, OneToManyChannel>;
     onInitRef: MutableRefObject<(code: string, peerId: string) => void>;
@@ -102,7 +102,11 @@ const useGlobalStore = create<GlobalState>(
             dampingFactor: 5
         },
         showGameMenu: true,
-        onOfferingRef: createRef(),
+        onOfferingRef: (() => {
+            const ref: MutableRefObject<{}> = createRef()
+            ref.current = {}
+            return ref
+        })(),
         onAnsweringRef: createRef(),
         peerChannels: {},
         onInitRef: createRef(),

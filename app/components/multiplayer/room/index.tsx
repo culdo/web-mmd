@@ -22,7 +22,7 @@ function Room() {
             const peerIds = users.docs.map(user => user.id).filter(id => id !== myUid)
             for (const peerId of peerIds) {
                 if (!peerChannels[peerId]) {
-                    await connect(peerId)
+                    connect(peerId)
                 }
             }
         }

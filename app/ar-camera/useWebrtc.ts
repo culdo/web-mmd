@@ -9,7 +9,7 @@ function useWebRTC() {
   const searchParams = useSearchParams()
   const initUid = searchParams.get('initUid')
   const initCode = searchParams.get('initCode')
-  useSdpListener(false)
+  useSdpListener()
   const connect = useOfferRTC()
   const dataChannel = useChannel("ARCamera", 1, initUid)
 
