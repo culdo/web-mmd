@@ -5,7 +5,7 @@ import PeerConnection from "../peer/PeerConnection";
 import { Schema } from "leva/dist/declarations/src/types";
 import useConfigStore from "@/app/stores/useConfigStore";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import Channel from "../peer/channel";
+import GroupChannel from "../peer/channel/GroupChannel";
 import Chat from "./chat";
 import usePresetStore from "@/app/stores/usePresetStore";
 import useOfferRTC from "../peer/useOfferRTC";
@@ -13,6 +13,7 @@ import useOfferRTC from "../peer/useOfferRTC";
 function Room() {
     const myUid = useConfigStore(state => state.uid);
     const peerChannels = useGlobalStore(state => state.peerChannels)
+    const groupChannels = useGlobalStore(state => state.groupChannels)
     const connect = useOfferRTC()
 
     useEffect(() => {
@@ -34,11 +35,15 @@ function Room() {
             {
                 Object.keys(peerChannels).map(uid =>
                     <PeerConnection key={uid} id={uid}>
-                        <Channel label="chat" id={1}></Channel>
+                        {
+                            Object.values(groupChannels).map(groupChannel => groupChannel.createPeerChannel(uid))
+                        }
                     </PeerConnection>
                 )
             }
-            <Chat></Chat>
+            <GroupChannel label="chat" id={1}>
+                <Chat></Chat>
+            </GroupChannel>
         </>
     );
 }

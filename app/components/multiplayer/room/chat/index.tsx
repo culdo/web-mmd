@@ -1,11 +1,10 @@
-import useGlobalStore from "@/app/stores/useGlobalStore";
-import BroadcastChannel from "../../peer/channel/BroadcastChannel";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css"
 import useConfigStore from "@/app/stores/useConfigStore";
+import { GroupChannelContext } from "../../peer/channel/GroupChannel";
 
 function Chat() {
-    const channel = useGlobalStore(state => state.broadcastChannels)["chat"]
+    const channel = useContext(GroupChannelContext)
     const uid = useConfigStore(state => state.uid)
     const [texts, setTexts] = useState<{
         node: React.ReactNode,
@@ -20,7 +19,6 @@ function Chat() {
     const textareaRef = useRef<HTMLDivElement>()
 
     useEffect(() => {
-        if (!channel) return
         channel.onMessage = (msg) => {
             setTexts((texts) => {
                 texts.push({
@@ -53,7 +51,6 @@ function Chat() {
 
     return (
         <>
-            <BroadcastChannel label="chat"></BroadcastChannel>
             <div id="chat" className={styles.chat}>
                 <div ref={textareaRef} className="px-2 h-full bg-white bg-opacity-10 rounded-t-lg hover:overflow-auto overflow-hidden flex flex-col">
                     {

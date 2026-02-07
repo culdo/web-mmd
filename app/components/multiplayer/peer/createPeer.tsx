@@ -23,7 +23,7 @@ function createPeer(uid: string, setSDP: (sdp: RTCSessionDescriptionInit) => voi
                 clearUp()
         }
     }
-    
+
 
     peerConnection.onicecandidate = (event: RTCPeerConnectionIceEvent) => {
         if (event.candidate?.type === "srflx" || event.candidate === null) {
@@ -34,6 +34,7 @@ function createPeer(uid: string, setSDP: (sdp: RTCSessionDescriptionInit) => voi
         }
     };
     const signalChannel = peerConnection.createDataChannel("signal", { negotiated: true, id: 0 })
+    const { groupChannels } = useGlobalStore.getState()
     signalChannel.onopen = () => {
         useGlobalStore.setState(({ peerChannels }) => {
             peerChannels[uid] = {
@@ -46,21 +47,27 @@ function createPeer(uid: string, setSDP: (sdp: RTCSessionDescriptionInit) => voi
         })
         onOpen?.(signalChannel)
         enqueueSnackbar(`Connected with ${uid}!`, infoStyle(true));
+        for(const gc of Object.values(groupChannels)) {
+            gc.onOpen?.(uid)
+        }
     }
 
     signalChannel.onclose = () => {
         clearUp()
     }
-    
+
     function clearUp() {
         useGlobalStore.setState(({ peerChannels }) => {
-            if(!(uid in peerChannels)) return {}
+            if (!(uid in peerChannels)) return {}
             delete peerChannels[uid];
             enqueueSnackbar(`Disconnected with ${uid}!`, infoStyle(false));
             return {
                 peerChannels: { ...peerChannels }
             }
         })
+        for(const gc of Object.values(groupChannels)) {
+            gc.onClose?.(uid)
+        }
     }
 
     return peerConnection;

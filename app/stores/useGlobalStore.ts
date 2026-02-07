@@ -52,9 +52,16 @@ export type GlobalState = {
     onOfferingRef: MutableRefObject<Record<string, (data: ConnectionInfo) => void>>;
     onAnsweringRef: MutableRefObject<(data: ConnectionInfo) => void>;
     peerChannels: Record<string, PeerChannel>;
-    broadcastChannels: Record<string, OneToManyChannel>;
+    groupChannels: Record<string, GroupChannel>;
     onInitRef: MutableRefObject<(code: string, peerId: string) => void>;
     qrCodeUrl: string;
+    remoteModels: Record<string, {
+        fileName: string,
+        motionNames: string[],
+        enableMorph: boolean,
+        enablePhysics: boolean,
+        enableMaterial: boolean
+    }>
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -111,7 +118,8 @@ const useGlobalStore = create<GlobalState>(
         peerChannels: {},
         onInitRef: createRef(),
         qrCodeUrl: null,
-        broadcastChannels: {}
+        groupChannels: {},
+        remoteModels: {}
     })
 )
 

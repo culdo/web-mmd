@@ -9,7 +9,10 @@ type PeerChannel = {
     channels?: Record<string, RTCDataChannel>
 }
 
-type OneToManyChannel = {
+type GroupChannel = {
+    createPeerChannel: (peerId: string) => React.ReactNode
     send: (data: any) => void,
     onMessage: (data: any) => void
+    onOpen: (sender: string) => void
+    onClose: (sender: string) => void
 }

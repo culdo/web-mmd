@@ -1,3 +1,4 @@
+import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import WithReady from "@/app/stores/WithReady";
 import { buildGuiItem, loadModel } from "@/app/utils/gui";
@@ -7,6 +8,7 @@ const Model = dynamic(() => import('./Model'), { ssr: false })
 
 function Models() {
     const models = usePresetStore(state => state.models)
+    const remoteModels = useGlobalStore(state => state.remoteModels)
     const targetOptions = Object.keys(models)
 
     useControls("Model", {
@@ -22,7 +24,7 @@ function Models() {
     return (
         <>
             {
-                Object.entries(models).map(
+                Object.entries({...models, ...remoteModels}).map(
                     ([id, props]) =>
                         <Model key={id} id={id} {...props} />
                 )
