@@ -5,11 +5,12 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useContext, useEffect } from "react";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { RunModes } from "../../run-modes";
+import RemoteModel from "./remote-model";
 
-function RemoteModel() {
+function Models() {
     const channel = useContext(GroupChannelContext)
     const model = useTargetModel()
-    const meshs = useGlobalStore(state => state.models)
+    const peerChannels = useGlobalStore(state => state.peerChannels)
 
     useEffect(() => {
         const { "run mode": prevMode } = usePresetStore.getState()
@@ -33,27 +34,56 @@ function RemoteModel() {
                 return { remoteModels: { ...remoteModels } }
             })
         }
-        channel.onMessage = ({ sender, data }) => {
-            if(meshs[sender] && meshs[sender].matrixWorldAutoUpdate) {
-                meshs[sender].matrixWorldAutoUpdate = false
-            }
-            meshs[sender]?.matrixWorld.fromArray(JSON.parse(data));
-        }
         channel.onClose = (sender) => {
             useGlobalStore.setState(({ remoteModels }) => {
                 delete remoteModels[sender]
                 return { remoteModels: { ...remoteModels } }
             })
         }
-    }, [channel, meshs])
+    }, [channel])
+
+    // send model keyboard control in game mode
+    useEffect(() => {
+        const onPress = (e: KeyboardEvent) => {
+            e.stopPropagation()
+            if (e.repeat) return
+            channel.send({
+                type: "keydown",
+                payload: e.key
+            })
+        }
+
+        const onRelease = (e: KeyboardEvent) => {
+            channel.send({
+                type: "keyup",
+                payload: e.key
+            })
+        }
+
+        document.addEventListener("keydown", onPress)
+        document.addEventListener("keyup", onRelease)
+
+        return () => {
+            document.removeEventListener("keydown", onPress)
+            document.removeEventListener("keyup", onRelease)
+        }
+    }, [])
 
     useFrame(() => {
-        channel.send(JSON.stringify(model.matrixWorld.elements))
+        channel.send({
+            type: "pose",
+            payload: model.matrixWorld.elements
+        })
     })
     return (
         <>
+            {
+                Object.entries(peerChannels)
+                    .filter(([_, pc]) => pc.channels["model"])
+                    .map(([sender, _]) => <RemoteModel key={sender} sender={sender}></RemoteModel>)
+            }
         </>
     );
 }
 
-export default WithTargetModel(RemoteModel);
+export default WithTargetModel(Models);

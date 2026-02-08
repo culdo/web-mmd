@@ -19,10 +19,10 @@ function Chat() {
     const textareaRef = useRef<HTMLDivElement>()
 
     useEffect(() => {
-        channel.onMessage = (msg) => {
+        channel.onMessage = ({ sender, data }) => {
             setTexts((texts) => {
                 texts.push({
-                    node: `${msg.sender}: ${msg.data}`,
+                    node: `${sender}: ${data}`,
                     style: ""
                 })
                 return [...texts]

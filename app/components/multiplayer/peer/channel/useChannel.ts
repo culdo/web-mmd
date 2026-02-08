@@ -23,11 +23,13 @@ function useChannel(label: string, id: number, peerIdOrCode: string) {
     useEffect(() => {
         if (!peerConnection) return
         const newDataChannel = peerConnection.createDataChannel(label, { negotiated: true, id });
+        const { groupChannels } = useGlobalStore.getState()
         newDataChannel.onopen = () => {
             useGlobalStore.setState(({peerChannels}) => {
                 peerChannels[peerId].channels[label] = newDataChannel
                 return {peerChannels: {...peerChannels}}
             })
+            groupChannels[label].onOpen?.(peerId)
         };
         newDataChannel.onclose = () => {
             useGlobalStore.setState(({peerChannels}) => {
@@ -37,6 +39,7 @@ function useChannel(label: string, id: number, peerIdOrCode: string) {
                 delete peerChannels[peerId].channels[label]
                 return {peerChannels: {...peerChannels}}
             })
+            groupChannels[label].onClose?.(peerId)
         };
     }, [peerConnection])
 

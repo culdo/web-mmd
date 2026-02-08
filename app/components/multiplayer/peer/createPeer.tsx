@@ -34,7 +34,6 @@ function createPeer(uid: string, setSDP: (sdp: RTCSessionDescriptionInit) => voi
         }
     };
     const signalChannel = peerConnection.createDataChannel("signal", { negotiated: true, id: 0 })
-    const { groupChannels } = useGlobalStore.getState()
     signalChannel.onopen = () => {
         useGlobalStore.setState(({ peerChannels }) => {
             peerChannels[uid] = {
@@ -47,9 +46,6 @@ function createPeer(uid: string, setSDP: (sdp: RTCSessionDescriptionInit) => voi
         })
         onOpen?.(signalChannel)
         enqueueSnackbar(`Connected with ${uid}!`, infoStyle(true));
-        for(const gc of Object.values(groupChannels)) {
-            gc.onOpen?.(uid)
-        }
     }
 
     signalChannel.onclose = () => {
@@ -65,9 +61,6 @@ function createPeer(uid: string, setSDP: (sdp: RTCSessionDescriptionInit) => voi
                 peerChannels: { ...peerChannels }
             }
         })
-        for(const gc of Object.values(groupChannels)) {
-            gc.onClose?.(uid)
-        }
     }
 
     return peerConnection;

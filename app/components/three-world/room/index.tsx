@@ -1,13 +1,13 @@
 import useConfigStore from "@/app/stores/useConfigStore";
 import usePresetStore from "@/app/stores/usePresetStore";
-import RemoteModel from "./remote-model";
+import Models from "./models";
 import GroupChannel from "../../multiplayer/peer/channel/GroupChannel";
 
 function Room() {
     return (
         <>
             <GroupChannel label="model" id={2}>
-                <RemoteModel></RemoteModel>
+                <Models></Models>
             </GroupChannel>
         </>
     );

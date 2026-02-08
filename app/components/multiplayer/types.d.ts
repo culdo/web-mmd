@@ -11,8 +11,13 @@ type PeerChannel = {
 
 type GroupChannel = {
     createPeerChannel: (peerId: string) => React.ReactNode
-    send: (data: any) => void,
-    onMessage: (data: any) => void
+    send: (data: any) => void
+    onMessage: ({ sender, data }: { sender: string, data: any }) => void
     onOpen: (sender: string) => void
     onClose: (sender: string) => void
+}
+
+type EventData = {
+    type: string
+    payload: any
 }

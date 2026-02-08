@@ -1,6 +1,5 @@
 import { createContext, useEffect } from "react";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import useConfigStore from "@/app/stores/useConfigStore";
 import Channel from ".";
 
 export const GroupChannelContext = createContext<GroupChannel>(null)
@@ -9,7 +8,6 @@ function GroupChannel({ label, id, peerIds = [], broadcast = true, children }: {
     const peerChannels = useGlobalStore(state => state.peerChannels)
     const groupChannels = useGlobalStore(state => state.groupChannels)
     const groupChannel = groupChannels[label]
-    const uid = useConfigStore(state => state.uid);
 
     // set up group channel
     useEffect(() => {
@@ -25,10 +23,16 @@ function GroupChannel({ label, id, peerIds = [], broadcast = true, children }: {
                 onOpen: () => { },
                 onClose: () => { },
                 onMessage: () => { },
-                send: () => { },
+                send: () => { }
             }
             return { groupChannels: { ...groupChannels } }
         })
+        return () => {
+            useGlobalStore.setState(({ groupChannels }) => {
+                delete groupChannels[label]
+                return { groupChannels: { ...groupChannels } }
+            })
+        }
     }, [])
 
     // set up send of group channel
@@ -37,10 +41,7 @@ function GroupChannel({ label, id, peerIds = [], broadcast = true, children }: {
         groupChannel.send = (data: any) => {
             for (const p of Object.values(peerChannels)) {
                 if (p.channels[label]?.readyState == "open") {
-                    p.channels[label]?.send(JSON.stringify({
-                        sender: uid,
-                        data
-                    }))
+                    p.channels[label]?.send(JSON.stringify(data))
                 }
             }
         }
@@ -49,29 +50,25 @@ function GroupChannel({ label, id, peerIds = [], broadcast = true, children }: {
     // set up onMessage of group channel
     useEffect(() => {
         if (!groupChannel?.onMessage) return
-        const onMessage = (ev: MessageEvent) => {
+        const buildOnMessage = (sender: string) => (ev: MessageEvent) => {
             const data = JSON.parse(ev.data)
-            groupChannel.onMessage(data)
+            groupChannel.onMessage({
+                sender,
+                data
+            })
         }
-        for (const p of Object.values(peerChannels)) {
-            p.channels[label]?.addEventListener("message", onMessage)
+        const handlers: Record<string, (ev: MessageEvent<any>) => void> = {}
+        for (const [peerId, peer] of Object.entries(peerChannels)) {
+            handlers[peerId] = buildOnMessage(peerId)
+            peer.channels[label]?.addEventListener("message", handlers[peerId])
         }
         return () => {
-            for (const p of Object.values(peerChannels)) {
-                p.channels[label]?.removeEventListener("message", onMessage)
+            for (const [peerId, peer] of Object.entries(peerChannels)) {
+                peer.channels[label]?.removeEventListener("message", handlers[peerId])
             }
         }
     }, [groupChannel?.onMessage, peerChannels])
 
-    // clean up
-    useEffect(() => {
-        return () => {
-            useGlobalStore.setState(({ groupChannels }) => {
-                delete groupChannels[label]
-                return { groupChannels: { ...groupChannels } }
-            })
-        }
-    }, [])
     return groupChannel ?
         <GroupChannelContext.Provider value={groupChannel}>
             {children}
