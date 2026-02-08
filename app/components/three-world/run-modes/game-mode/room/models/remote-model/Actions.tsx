@@ -1,10 +1,10 @@
 import usePresetStore from "@/app/stores/usePresetStore";
 import { AnimationAction, AnimationClip, AnimationMixer, Quaternion, Vector3 } from "three";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import buildUpdatePMX from "../../../model/helper/buildUpdatePMX";
+import buildUpdatePMX from "../../../../../model/helper/buildUpdatePMX";
 import { useFrame } from "@react-three/fiber";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import makeClipLoopable from "../../../animation/makeClipLoopable";
+import makeClipLoopable from "../../../../../animation/makeClipLoopable";
 import { buildOnProgress } from "@/app/utils/base";
 import { RemoteModelContext } from ".";
 

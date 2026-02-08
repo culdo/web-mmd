@@ -4,7 +4,7 @@ import { useTargetModel, WithTargetModel } from "@/app/components/three-world/mo
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { createRef, useContext, useEffect } from "react";
 import usePresetStore from "@/app/stores/usePresetStore";
-import { RunModes } from "../../run-modes";
+import { RunModes } from "../../..";
 import RemoteModel from "./remote-model";
 import useConfigStore from "@/app/stores/useConfigStore";
 import { Text } from "@react-three/drei";
@@ -18,8 +18,6 @@ function Models() {
     const uid = useConfigStore(state => state.uid)
 
     useEffect(() => {
-        const { "run mode": prevMode } = usePresetStore.getState()
-        usePresetStore.setState({ "run mode": RunModes.GAME_MODE })
         useGlobalStore.setState(({ modelsObject, groupChannels }) => {
             const chatTextRef = createRef<TextMeshImpl>()
             modelsObject[model.name] = (
@@ -34,11 +32,10 @@ function Models() {
                 chatTextRef,
                 remoteTextRefs: {}
             }
-            return { groupChannels: { ...groupChannels } }
+            return { groupChannels: { ...groupChannels }, modelsObject: {...modelsObject} }
         })
         return () => {
             useGlobalStore.setState({ showGameMenu: false, modelsObject: {} })
-            usePresetStore.setState({ "run mode": prevMode })
         }
     }, [])
 

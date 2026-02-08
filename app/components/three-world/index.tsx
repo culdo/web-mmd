@@ -10,7 +10,6 @@ import useRenderer from './renderer/useRenderer';
 import CreditsList from './credits';
 import Models from './model';
 import RunMode from './run-modes';
-import Room from './room';
 
 function ThreeWorld() {
     useRenderer()
@@ -26,7 +25,6 @@ function ThreeWorld() {
             <Skybox hdrUrl='BRDF.hdr'></Skybox>
             <Debug></Debug>
             <CreditsList></CreditsList>
-            <Room></Room>
         </>
     )
 }

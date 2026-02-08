@@ -1,7 +1,7 @@
 import useConfigStore from "@/app/stores/useConfigStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import Models from "./models";
-import GroupChannel from "../../multiplayer/peer/channel/GroupChannel";
+import GroupChannel from "../../../../multiplayer/peer/channel/GroupChannel";
 
 function Room() {
     return (

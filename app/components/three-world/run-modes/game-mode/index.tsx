@@ -5,19 +5,21 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import { CameraMode } from "@/app/types/camera";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import Camera from "./Camera";
+import Room from "./room";
 
 function GameMode() {
     useEffect(() => {
-        const { "camera mode": prevCameraMode, enableMultiPlayer } = usePresetStore.getState()
         usePresetStore.setState({
-            "camera mode": CameraMode.FIX_FOLLOWING
+            "camera mode": CameraMode.FIX_FOLLOWING,
+            enableMultiPlayer: true
         })
-        useGlobalStore.setState({ gui: { hidden: true }, showGameMenu: !enableMultiPlayer })
+        useGlobalStore.setState({ gui: { hidden: true }, showGameMenu: false })
         document.getElementById("rawPlayer").style.display = "none"
 
         return () => {
             usePresetStore.setState({
-                "camera mode": prevCameraMode
+                "camera mode": CameraMode.MOTION_FILE,
+                enableMultiPlayer: false
             })
             useGlobalStore.setState({ gui: { hidden: false }, showGameMenu: true })
             document.getElementById("rawPlayer").style.display = "block"
@@ -28,6 +30,7 @@ function GameMode() {
         <>
             <Actions></Actions>
             <Camera></Camera>
+            <Room></Room>
         </>
     );
 }

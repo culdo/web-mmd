@@ -15,29 +15,32 @@ For who wants to play MMD in the browser, now you can play it in **real-time** a
 This project is inspired by [the amazing three.js example](https://takahirox.github.io/three.js/examples/webgl_loader_mmd_audio.html) which by @takahirox.
 
 # Features
-* Play MMD with time control bar(time seeking, jump to time...etc)
-* Game mode (can control character to walk and jump by keyboard)
+* Run modes:
+  * MV Player mode: Play MMD with time control bar(time seeking, jump to time...etc)
+  * MultiPlayer Game mode: Control the MMD character and interact with the other players!
+* Camera modes:
+  * Director mode (control camera by shortcuts in real-time)
+  * Fixed-Follow mode (can adjust using mouse)
+  * Editor mode (can edit on dope-sheet timeline)
+  * AR mode (control camera by AR-compatible smartphone)
 * Change Model, Stage, Motion, Camera and Music
 * Turn on/off auto camera(can play manually)
 * Adjust shadow/outline/color/...etc
 * Layout settings (Auto-hide gui/Show FPS/Fullscreen...etc)
 * Presets (open/save-as/copy/export as `JSON` format)
-* Camera Director mode (control camera by shortcuts in real-time)
-* Camera Fixed-Follow mode (can adjust using mouse)
-* Camera Editor mode (can edit on dope-sheet timeline)
 * Keyboard Shortcuts(play/pause, toggle camera mode, manipulate camera cuts...)
 
 # Keyboard and Mouse shortcuts
 * Left click: Change camera angle
 * Right click: Change camera panning
 
-## Game mode
+## MultiPlayer Game mode
 * **W/A/S/D**: Walk and move in the direction
 * **Space**: Front flip jump
 * Release all above keys: Idle
 * **ESC**: Toggle game menu
 
-## Player mode
+## MV Player mode
 * **Space**: Play/Pause
 * **<** : Previous frame (under 30 fps) 
 * **\>** : Next frame (under 30 fps)
