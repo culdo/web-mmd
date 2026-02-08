@@ -62,6 +62,7 @@ export type GlobalState = {
         enablePhysics: boolean,
         enableMaterial: boolean
     }>
+    modelsObject: Record<string, React.ReactNode>
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -119,7 +120,8 @@ const useGlobalStore = create<GlobalState>(
         onInitRef: createRef(),
         qrCodeUrl: null,
         groupChannels: {},
-        remoteModels: {}
+        remoteModels: {},
+        modelsObject: {}
     })
 )
 

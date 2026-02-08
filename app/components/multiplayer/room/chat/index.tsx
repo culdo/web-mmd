@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css"
 import useConfigStore from "@/app/stores/useConfigStore";
 import { GroupChannelContext } from "../../peer/channel/GroupChannel";
+import useGlobalStore from "@/app/stores/useGlobalStore";
 
 function Chat() {
     const channel = useContext(GroupChannelContext)
@@ -17,9 +18,13 @@ function Chat() {
     ])
     const inputRef = useRef<HTMLInputElement>()
     const textareaRef = useRef<HTMLDivElement>()
+    const groupChannels = useGlobalStore(state => state.groupChannels)
 
     useEffect(() => {
         channel.onMessage = ({ sender, data }) => {
+            if (groupChannels["model"]) {
+                groupChannels["model"].sharedObjects.remoteTextRefs[sender].current.text = data
+            }
             setTexts((texts) => {
                 texts.push({
                     node: `${sender}: ${data}`,
@@ -32,6 +37,9 @@ function Chat() {
             if (e.key == "Enter") {
                 const text = inputRef.current.value
                 if (!text) return
+                if (groupChannels["model"]) {
+                    groupChannels["model"].sharedObjects.chatTextRef.current.text = text
+                }
                 setTexts((texts) => {
                     texts.push({
                         node: `${uid}(me): ${text}`,
@@ -41,6 +49,7 @@ function Chat() {
                 })
                 channel.send(text)
                 inputRef.current.value = ""
+                inputRef.current.blur()
             }
         }
     }, [channel])

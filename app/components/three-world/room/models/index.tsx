@@ -2,28 +2,49 @@ import { useFrame } from "@react-three/fiber";
 import { GroupChannelContext } from "@/app/components/multiplayer/peer/channel/GroupChannel";
 import { useTargetModel, WithTargetModel } from "@/app/components/three-world/model/helper/useTargetModel";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import { useContext, useEffect } from "react";
+import { createRef, useContext, useEffect } from "react";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { RunModes } from "../../run-modes";
 import RemoteModel from "./remote-model";
+import useConfigStore from "@/app/stores/useConfigStore";
+import { Text } from "@react-three/drei";
+// @ts-ignore
+import { Text as TextMeshImpl } from 'troika-three-text'
 
 function Models() {
     const channel = useContext(GroupChannelContext)
     const model = useTargetModel()
     const peerChannels = useGlobalStore(state => state.peerChannels)
+    const uid = useConfigStore(state => state.uid)
 
     useEffect(() => {
         const { "run mode": prevMode } = usePresetStore.getState()
         usePresetStore.setState({ "run mode": RunModes.GAME_MODE })
+        useGlobalStore.setState(({ modelsObject, groupChannels }) => {
+            const chatTextRef = createRef<TextMeshImpl>()
+            modelsObject[model.name] = (
+                <>
+                    <Text depthOffset={-900} position={[0, -2, 0]}>{uid}</Text>
+                    <Text ref={chatTextRef} position={[0, 20, 0]}>
+                        Wellcome to Web MMD!
+                    </Text>
+                </>
+            )
+            groupChannels["model"].sharedObjects = {
+                chatTextRef,
+                remoteTextRefs: {}
+            }
+            return { groupChannels: { ...groupChannels } }
+        })
         return () => {
-            useGlobalStore.setState({ showGameMenu: false })
+            useGlobalStore.setState({ showGameMenu: false, modelsObject: {} })
             usePresetStore.setState({ "run mode": prevMode })
         }
     }, [])
 
     useEffect(() => {
         channel.onOpen = (sender) => {
-            useGlobalStore.setState(({ remoteModels }) => {
+            useGlobalStore.setState(({ remoteModels, modelsObject, groupChannels }) => {
                 remoteModels[sender] = {
                     fileName: "つみ式ミクさんv4/つみ式ミクさんv4.pmx",
                     motionNames: [],
@@ -31,7 +52,17 @@ function Models() {
                     enableMaterial: true,
                     enableMorph: true
                 }
-                return { remoteModels: { ...remoteModels } }
+                const chatTextRef = createRef<TextMeshImpl>()
+                modelsObject[sender] = (
+                    <>
+                        <Text depthOffset={-900} position={[0, -2, 0]}>{sender}</Text>
+                        <Text ref={chatTextRef} position={[0, 20, 0]}>
+                            Wellcome to Web MMD!
+                        </Text>
+                    </>
+                )
+                groupChannels["model"].sharedObjects.remoteTextRefs[sender] = chatTextRef
+                return { remoteModels: { ...remoteModels }, modelsObject: {...modelsObject}, groupChannels: {...groupChannels} }
             })
         }
         channel.onClose = (sender) => {

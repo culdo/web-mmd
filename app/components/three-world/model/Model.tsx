@@ -22,6 +22,7 @@ function Model({ id, fileName, motionNames = [], enableMorph = true, enableMater
         runMode == RunModes.INTRO_MODE ||
         targetModelId != id
     )
+    const modelsObject = useGlobalStore(state => state.modelsObject)
 
     const modelsOption = Object.keys(pmxFiles.models)
     const isRenderHelper = (enabled: boolean) => ({
@@ -92,6 +93,7 @@ function Model({ id, fileName, motionNames = [], enableMorph = true, enableMater
             {controller.enableMaterial && <Material />}
             {controller.enablePhysics && <Physics />}
             {enableAnimation && controller.enableAnimation && <Animation motionNames={motionNames} />}
+            {modelsObject[id]}
         </PmxModel>
     );
 }

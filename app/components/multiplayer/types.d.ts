@@ -15,6 +15,10 @@ type GroupChannel = {
     onMessage: ({ sender, data }: { sender: string, data: any }) => void
     onOpen: (sender: string) => void
     onClose: (sender: string) => void
+    sharedObjects?: {
+        chatTextRef: MutableRefObject<any>
+        remoteTextRefs: Record<string, MutableRefObject<any>>
+    }
 }
 
 type EventData = {
