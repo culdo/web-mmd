@@ -11,6 +11,9 @@
     "update-snapshot": "playwright test --update-snapshots"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.3.7",
     "@react-spring/three": "^10.0.3",
     "@react-three/drei": "^10.6.0",
     "@react-three/fiber": "^9.2.0",
