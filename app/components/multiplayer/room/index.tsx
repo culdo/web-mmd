@@ -9,6 +9,7 @@ import GroupChannel from "../peer/channel/GroupChannel";
 import Chat from "./chat";
 import usePresetStore from "@/app/stores/usePresetStore";
 import useOfferRTC from "../peer/useOfferRTC";
+import Channel from "../peer/channel";
 
 function Room() {
     const myUid = useConfigStore(state => state.uid);
@@ -38,6 +39,7 @@ function Room() {
                         {
                             Object.values(groupChannels).map(groupChannel => groupChannel.createPeerChannel(uid))
                         }
+                        <Channel label="fileTransfer" id={3}></Channel>
                     </PeerConnection>
                 )
             }

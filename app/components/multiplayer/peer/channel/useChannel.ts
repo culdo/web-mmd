@@ -24,12 +24,33 @@ function useChannel(label: string, id: number, peerIdOrCode: string) {
         if (!peerConnection) return
         const newDataChannel = peerConnection.createDataChannel(label, { negotiated: true, id });
         const { groupChannels } = useGlobalStore.getState()
+
+        // Wrap the send and addEventListener to automatically stringify and parse JSON data
+        const rawSend = newDataChannel.send.bind(newDataChannel)
+        newDataChannel.send = (data: any) => {
+            rawSend(JSON.stringify(data))
+        }
+        const rawAddEventListener = newDataChannel.addEventListener.bind(newDataChannel)
+        newDataChannel.addEventListener = <K extends keyof RTCDataChannelEventMap>(type: K, listener: (ev: RTCDataChannelEventMap[K]) => void) => {
+            let handler = listener;
+            if (type === "message") {
+                handler = (ev) => {
+                    const parsedData = JSON.parse((ev as MessageEvent).data)
+                    listener({
+                        ...ev,
+                        data: parsedData,
+                    })
+                }
+            }
+            rawAddEventListener(type, handler)
+        }
+
         newDataChannel.onopen = () => {
             useGlobalStore.setState(({peerChannels}) => {
                 peerChannels[peerId].channels[label] = newDataChannel
                 return {peerChannels: {...peerChannels}}
             })
-            groupChannels[label].onOpen?.(peerId)
+            groupChannels[label]?.onOpen?.(peerId)
         };
         newDataChannel.onclose = () => {
             useGlobalStore.setState(({peerChannels}) => {
@@ -39,7 +60,7 @@ function useChannel(label: string, id: number, peerIdOrCode: string) {
                 delete peerChannels[peerId].channels[label]
                 return {peerChannels: {...peerChannels}}
             })
-            groupChannels[label].onClose?.(peerId)
+            groupChannels[label]?.onClose?.(peerId)
         };
     }, [peerConnection])
 

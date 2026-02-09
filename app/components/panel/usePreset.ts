@@ -11,7 +11,7 @@ function usePreset() {
     const addPreset = useConfigStore(state => state.addPreset)
     const removePreset = useConfigStore(state => state.removePreset)
 
-    const getApi = usePresetStore.getState
+    const getPresetStates = usePresetStore.getState
 
     const presetFn = {
         "New Preset": async () => {
@@ -38,17 +38,17 @@ function usePreset() {
             }
         },
         "Save Preset": () => {
-            const presetBlob = new Blob([JSON.stringify(getApi())], { type: 'application/json' })
+            const presetBlob = new Blob([JSON.stringify(getPresetStates())], { type: 'application/json' })
             const dlUrl = URL.createObjectURL(presetBlob)
             startFileDownload(dlUrl, `${preset}.json`)
         },
         "Save Config Only": () => {
-            const apiCopy = JSON.parse(JSON.stringify(getApi()))
-            delete apiCopy.pmxFiles
-            delete apiCopy.cameraFile
-            delete apiCopy.motionFiles
-            delete apiCopy.audioFile
-            const presetBlob = new Blob([JSON.stringify(apiCopy)], { type: 'application/json' })
+            const preset = getPresetStates()
+            delete preset.pmxFiles
+            delete preset.cameraFile
+            delete preset.motionFiles
+            delete preset.audioFile
+            const presetBlob = new Blob([JSON.stringify(preset)], { type: 'application/json' })
             const dlUrl = URL.createObjectURL(presetBlob)
             startFileDownload(dlUrl, `${preset}_config.json`)
         },

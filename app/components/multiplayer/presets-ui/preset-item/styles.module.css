@@ -1,0 +1,8 @@
+.presetContainer {
+	display: flex;
+	flex-direction: column;
+	height: 100px;
+	width: 200px;
+	align-items: center;
+	justify-content: space-between;
+}

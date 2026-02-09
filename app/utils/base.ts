@@ -3,14 +3,14 @@ import { Material, SkinnedMesh } from 'three';
 
 let progressMap: Record<string, number> = {};
 function buildOnProgress(url: string) {
-    if(url.startsWith("data:")) return null
+    if (url.startsWith("data:")) return null
     const loading = document.getElementById("loading")
 
     return function onProgress(xhr: ProgressEvent<EventTarget>) {
         if (xhr.lengthComputable) {
             let percentComplete = xhr.loaded / xhr.total;
             progressMap[url] = percentComplete;
-    
+
             let percentCompleteAll = 0;
             const loadingFileNum = progressMap.length
             for (const progress of Object.values(progressMap)) {
@@ -19,14 +19,14 @@ function buildOnProgress(url: string) {
             percentCompleteAll /= loadingFileNum
 
             if (loading) {
-                loading.textContent = "Loading " + Math.round(percentCompleteAll) + "%..." 
+                loading.textContent = "Loading " + Math.round(percentCompleteAll) + "%..."
             }
-    
+
             if (percentCompleteAll > 100) {
                 progressMap = {};
             }
         }
-    
+
     }
 }
 
@@ -56,27 +56,31 @@ function withProgress(resp: Response, totalSize: number) {
     }));
 }
 
-function dataURItoBlobUrl(dataURI: string) {
-    // convert base64 to raw binary data held in a string
-    // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
-    var byteString = atob(dataURI.split(',')[1]);
+async function dataURItoBlob(dataURI: string) {
+    const resp = await fetch(dataURI)
+    const blob = await resp.blob()
+    return blob
+}
 
-    // separate out the mime component
-    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
-
-    // write the bytes of the string to an ArrayBuffer
-    var ab = new ArrayBuffer(byteString.length);
-    var ia = new Uint8Array(ab);
-    for (var i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-    }
-
-    // write the ArrayBuffer to a blob, and you're done
-    var bb = new Blob([ab], { type: mimeString });
-    return {
-        type: mimeString,
-        src: URL.createObjectURL(bb)
+async function readBlobAsChunks(blob: Blob, onProgress: (data: string) => void) {
+    const chunkSize = 16384;
+    const fileReader = new FileReader();
+    let offset = 0;
+    fileReader.addEventListener('error', error => console.error('Error reading file:', error));
+    fileReader.addEventListener('abort', event => console.log('File reading aborted:', event));
+    fileReader.addEventListener('load', e => {
+        const result = e.target.result as string
+        onProgress(result);
+        offset += result.length;
+        if (offset < blob.size) {
+            readSlice(offset);
+        }
+    });
+    const readSlice = (offset: number) => {
+        const slice = blob.slice(offset, offset + chunkSize);
+        fileReader.readAsText(slice);
     };
+    readSlice(0);
 }
 
 let _currTimePrevUpdate = 0;
@@ -135,4 +139,4 @@ function debugWait(ms = 2000) {
 
 const isDev = process.env.NODE_ENV === 'development';
 
-export { blobToBase64, dataURItoBlobUrl, debugWait, disposeMesh, buildOnProgress, saveCurrTime, startFileDownload, withProgress, withTimeElapse, isDev };
+export { blobToBase64, dataURItoBlob, readBlobAsChunks as readDataUrlAsChunks, debugWait, disposeMesh, buildOnProgress, saveCurrTime, startFileDownload, withProgress, withTimeElapse, isDev };

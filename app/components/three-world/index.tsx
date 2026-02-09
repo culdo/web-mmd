@@ -10,9 +10,11 @@ import useRenderer from './renderer/useRenderer';
 import CreditsList from './credits';
 import Models from './model';
 import RunMode from './run-modes';
+import useScreenShot from './renderer/useScreenShot';
 
 function ThreeWorld() {
     useRenderer()
+    useScreenShot()
     return (
         <>
             <Plugins></Plugins>

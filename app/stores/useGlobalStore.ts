@@ -63,6 +63,8 @@ export type GlobalState = {
         enableMaterial: boolean
     }>
     modelsObject: Record<string, React.ReactNode>
+    screenShotArgs: [number, number]
+    getScreenShot: () => string
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -121,7 +123,9 @@ const useGlobalStore = create<GlobalState>(
         qrCodeUrl: null,
         groupChannels: {},
         remoteModels: {},
-        modelsObject: {}
+        modelsObject: {},
+        screenShotArgs: [512, 256],
+        getScreenShot: null
     })
 )
 

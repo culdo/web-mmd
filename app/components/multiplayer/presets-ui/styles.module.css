@@ -1,0 +1,17 @@
+.fileTransfer {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0; 
+	right: 0; 
+	width: 75%;
+	height: 70%;
+	margin: auto;
+	z-index: 1000;
+	color: black;
+	background-color: rgba(74, 74, 74, 0.8);
+	display: flex;
+	padding: 30px;
+	border-radius: 20px;
+	gap: 30px;
+}
