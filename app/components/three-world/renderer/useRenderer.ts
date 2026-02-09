@@ -7,14 +7,16 @@ import { useEffect } from "react"
 import { PCFShadowMap, PCFSoftShadowMap, WebGLRenderer } from "three"
 
 function useRenderer() {
-    // Temporarily fix a WebGL PCFSoftShadowMap bug in three.js r182 , which is fixed in r183.
+    // Temporarily fix the WebGL PCFSoftShadowMap bug in three.js r182, which is fixed in r183.
+    // Issue: https://github.com/mrdoob/three.js/issues/32591
     const renderer = useThree(state => state.gl)
+    const size = useThree(state => state.size)
     useEffect(() => {
         if (renderer instanceof WebGLRenderer && renderer.shadowMap.type == PCFSoftShadowMap) {
             renderer.shadowMap.type = PCFShadowMap
         }
-    }, [renderer.shadowMap.type])
-    
+    }, [renderer.shadowMap.type, size])
+
     useControls("Renderer", {
         "set pixelratio 1": buildGuiItem("set pixelratio 1.0"),
         ...buildGuiObj("enable PBR"),
