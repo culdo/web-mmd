@@ -6,7 +6,6 @@ import useConfigStore from "@/app/stores/useConfigStore";
 import { isDev } from "@/app/utils/base";
 import useAnswerRTC from "./peer/useAnswerRTC";
 import useSdpListener from "./peer/useSdpListener";
-import PresetsUI from "./presets-ui";
 
 function Multiplayer() {
     const uid = useConfigStore(state => state.uid);
@@ -58,7 +57,6 @@ function Multiplayer() {
     return (
         <>
             <Room />
-            <PresetsUI></PresetsUI>
         </>
     );
 }

@@ -13,7 +13,15 @@ import IntroSections from "./components/three-world/run-modes/introduction-mode/
 import { SnackbarProvider } from "notistack";
 import Multiplayer from "./components/multiplayer";
 import QRCodeOverlay from "./components/qrcode-overlay";
+import MainUI from "./components/main-ui";
 const ControlBar = dynamic(() => import('./components/control-bar'), { ssr: false })
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+const theme = createTheme({
+  colorSchemes: {
+    dark: true,
+  },
+});
 
 export default function Home() {
   const isWebGPU = usePresetStore(state => state.isWebGPU)
@@ -40,6 +48,9 @@ export default function Home() {
       <Multiplayer></Multiplayer>
       <SnackbarProvider anchorOrigin={{ horizontal: "left", vertical: "top" }} autoHideDuration={1000} variant="info" />
       <QRCodeOverlay></QRCodeOverlay>
+      <ThemeProvider theme={theme}>
+        <MainUI></MainUI>
+      </ThemeProvider>
     </>
   )
 }

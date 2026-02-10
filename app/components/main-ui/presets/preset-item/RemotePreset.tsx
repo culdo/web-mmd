@@ -3,8 +3,8 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore, { migratePreset, setPreset } from "@/app/stores/usePresetStore";
 import { MouseEvent, useEffect, useRef, useState } from "react";
 import PresetCard from "./PresetCard";
-import useSynced from "../../peer/channel/useSynced";
-import JSONDataChannel from "../../peer/channel/JSONDataChannel";
+import useSynced from "../../../multiplayer/peer/channel/useSynced";
+import JSONDataChannel from "../../../multiplayer/peer/channel/JSONDataChannel";
 
 function RemotePreset({ channel }: { channel: JSONDataChannel }) {
     const getScreenShot = useGlobalStore(state => state.getScreenShot)
