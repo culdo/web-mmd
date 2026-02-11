@@ -1,6 +1,12 @@
+Except where otherwise stated, this code is:
+1. The files under the "public/presets/" folder is not included in the MIT License,
+any person who used the data (Audios, Models, Motions...) in those files need to follow the original License from the author.
+2. Otherwise, this code is licensed under the MIT License. (See below)
+
 MIT License
 
-Copyright (c) 2022 culdo
+Copyright (c) 2022-2026 culdo
+Copyright © 2010-2016 three.js authors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
