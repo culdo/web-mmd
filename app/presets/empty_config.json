@@ -1,35 +1,18 @@
 {
     "musicURL": "",
-    "models": {
-        "character": {
-            "fileName": "つみ式ミクさんv4/つみ式ミクさんv4.pmx",
-            "motionNames": [
-                "GimmeGimme_with_emotion.vmd"
-            ],
-            "enableMorph": true,
-            "enablePhysics": true,
-            "enableMaterial": true
-        },
-        "stage": {
-            "fileName": "RedialC_EpRoomDS/EPDS.pmx",
-            "motionNames": [],
-            "enableMaterial": true,
-            "enableMorph": true,
-            "enablePhysics": true
-        }
-    },
-    "targetModelId": "character",
-    "camera": "GimmexGimme.vmd",
+    "models": {},
+    "targetModelId": "",
+    "camera": "",
     "currentTime": 0,
     "volume": 1,
-    "camera mode": 0,
+    "camera mode": 1,
     "run mode": 0,
     "physics": true,
     "ground shadow": true,
     "self shadow": true,
     "shadow bias": -0.015,
-    "fog color": "#6beeff",
-    "fog density": 0.0016,
+    "fog color": "#ffffff",
+    "fog density": 0.0,
     "Hemisphere sky": 6710886,
     "Hemisphere ground": 4730414,
     "Light.directionalLight.intensity": 2,
@@ -47,28 +30,7 @@
         1,
         1
     ],
-    "Light": {
-        "directionalLight-6FjL": {
-            "color": "#ffffff",
-            "intensity": 3.7,
-            "position": [
-                0,
-                19.634107386682132,
-                -12.962967784178506
-            ],
-            "castShadow": true
-        },
-        "directionalLight-m7UH": {
-            "color": "#ffffff",
-            "intensity": 2,
-            "position": [
-                -0.10336838010410077,
-                3.045394279257195,
-                15.36233263336133
-            ],
-            "castShadow": true
-        }
-    },
+    "Light": {},
     "distanceScalar": 15,
     "Ambient color": "#ffffff",
     "Ambient intensity": 0.19999999999999996,
@@ -82,16 +44,8 @@
     "auto hide GUI": true,
     "set pixelratio 1.0": true,
     "motionOffset": 0,
-    "musicName": "八王子P × Giga「Gimme×Gimme feat. 初音ミク・鏡音リン」",
-    "materials": {
-        "character": {
-            "頭": {
-                "userData": {
-                    "faceForward": 0.5
-                }
-            }
-        }
-    },
+    "musicName": "",
+    "materials": {},
     "targetMaterialIdx": 0,
     "Hemisphere intensity": 0,
     "bokeh enabled": false,
@@ -111,7 +65,7 @@
     "luminance enabled": true,
     "bloom threshold": 0.6500000000000001,
     "bloom smoothing": 1,
-    "envIntensity": 0.5,
+    "envIntensity": 0.0,
     "envRotation": [
         0,
         0,
@@ -141,5 +95,12 @@
     "isWebGPU": false,
     "version": 0,
     "ar camera scale": 100,
-    "enableMultiPlayer": false
+    "enableMultiPlayer": false,
+    "audioFile": null,
+    "motionFiles": {},
+    "cameraFile": "",
+    "pmxFiles": {
+        "models": {},
+        "modelTextures": {}
+    }
 }

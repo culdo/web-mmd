@@ -7,6 +7,7 @@ import useGlobalStore from './useGlobalStore';
 import { withProgress } from '../utils/base';
 import { PersistStorage, StorageValue, persist } from '../middleware/persist';
 import _ from 'lodash';
+import emptyConfig from '@/app/presets/empty_config.json';
 
 export type PresetState = typeof defaultConfig & {
     motionFiles: Record<string, string>,
@@ -18,7 +19,6 @@ export type PresetState = typeof defaultConfig & {
     audioFile: string
 } & {
     // https://github.com/microsoft/TypeScript/issues/32063
-    ["Character.position"]: [number, number, number]
     [key: `${string}.color`]: string,
     [key: `${string}.intensity`]: number,
     [key: `${string}.position`]: [number, number, number]
@@ -73,11 +73,11 @@ const getDefaultPreset = async () => {
 }
 
 export const resetPreset = async ({ reactive } = { reactive: true }) => {
-    const defaultPreset = await getDefaultPreset()
+    const emptyPreset = emptyConfig as PresetState
     if (reactive) {
-        usePresetStore.setState(defaultPreset)
+        usePresetStore.setState(emptyPreset)
     } else {
-        await storage.setItem(useConfigStore.getState().preset, { state: defaultPreset })
+        await storage.setItem(useConfigStore.getState().preset, { state: emptyPreset })
     }
 }
 

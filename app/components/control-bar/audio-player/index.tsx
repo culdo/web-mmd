@@ -42,7 +42,9 @@ function AudioPlayer() {
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         if (autoHideGui) {
             document.getElementById("leva-container").style.opacity = "0.0";
-            document.getElementById("chat").style.display = "none";
+            if(document.getElementById("chat")) {
+                document.getElementById("chat").style.display = "none";
+            }
 
             // editor mode
             studio?.ui.hide()
@@ -54,7 +56,9 @@ function AudioPlayer() {
     const onPause = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         if (autoHideGui) {
             document.getElementById("leva-container").style.opacity = "1.0";
-            document.getElementById("chat").style.display = "flex";
+            if(document.getElementById("chat")) {
+                document.getElementById("chat").style.display = "flex";
+            }
         }
 
         // editor mode
@@ -111,6 +115,13 @@ function AudioPlayer() {
         if (playerRef.current.currentTime == currentTime) return
         playerRef.current.currentTime = currentTime
     }, [currentTime])
+
+    useEffect(() => {
+        if (!audioFile) {
+            playerRef.current.removeAttribute("src")
+            playerRef.current.src = ""
+        }
+    }, [audioFile])
 
     return (
         <MediaController id="rawPlayer" className={`${styles.player} control-bar`} audio>

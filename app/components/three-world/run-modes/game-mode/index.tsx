@@ -6,6 +6,7 @@ import { CameraMode } from "@/app/types/camera";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import Camera from "./Camera";
 import Room from "./room";
+import { WithTargetModel } from "../../model/helper/useTargetModel";
 
 function GameMode() {
     useEffect(() => {
@@ -35,4 +36,4 @@ function GameMode() {
     );
 }
 
-export default GameMode;
+export default WithTargetModel(GameMode);
