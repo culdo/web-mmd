@@ -28,7 +28,10 @@
       "request": "launch",
       "url": "https://localhost:3000",
       "webRoot": "${workspaceFolder}",
-      "firefoxArgs": ["-private-window"]
+      "firefoxArgs": [
+        "-foreground",
+        "-private-window"
+      ]
     },
     {
       "name": "Next.js: debug full stack",
