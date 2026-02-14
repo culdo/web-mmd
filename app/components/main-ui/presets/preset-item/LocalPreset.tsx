@@ -1,36 +1,40 @@
-import useGlobalStore from "@/app/stores/useGlobalStore";
-import { MouseEvent, useEffect, useState } from "react";
+import { MouseEvent } from "react";
 import PresetCard from "./PresetCard";
 import useConfigStore from "@/app/stores/useConfigStore";
+import { setPreset } from "@/app/stores/usePresetStore";
+import { MenuItem } from "@mui/material";
+import { copyPreset, savePreset, saveConfigOnly, deletePreset } from "@/app/components/panel/presetFn";
 
-function LocalPreset() {
-    const getScreenShot = useGlobalStore(state => state.getScreenShot)
+function LocalPreset({ presetName }: { presetName: string }) {
+    const presetsInfo = useConfigStore(state => state.presetsInfo)
+    const screenShot = presetsInfo[presetName]?.screenShot
+
     const preset = useConfigStore(state => state.preset)
-    const [screenShot, setScreenShot] = useState<string>()
+    const isCurrentPreset = preset === presetName
 
-    useEffect(() => {
-        const screenshot = getScreenShot()
-        setScreenShot(screenshot)
-    }, [getScreenShot])
-
-    const inPreview = (e: MouseEvent) => {
-        const screenshot = getScreenShot()
-        setScreenShot(screenshot)
-    }
-
-    const outPreview = (e: MouseEvent) => {
-    }
     const onClick = (e: MouseEvent) => {
+        setPreset(presetName, true)
     }
 
     return (
         <PresetCard
-            presetName={preset}
+            presetName={presetName}
             previewImgSrc={screenShot}
-            inPreview={inPreview}
-            outPreview={outPreview}
-            onClick={onClick}
+            onClick={isCurrentPreset ? undefined : onClick}
+            selected={isCurrentPreset}
         >
+            <MenuItem onClick={copyPreset}>
+                Copy Preset
+            </MenuItem>
+            <MenuItem onClick={savePreset}>
+                Save Preset
+            </MenuItem>
+            <MenuItem onClick={saveConfigOnly}>
+                Save Config Only
+            </MenuItem>
+            <MenuItem sx={{ color: 'red' }} onClick={deletePreset}>
+                Delete Preset
+            </MenuItem>
         </PresetCard>
     );
 }

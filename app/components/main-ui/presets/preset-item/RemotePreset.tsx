@@ -1,4 +1,4 @@
-import useConfigStore from "@/app/stores/useConfigStore";
+import useConfigStore, { addPreset } from "@/app/stores/useConfigStore";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore, { migratePreset, setPreset } from "@/app/stores/usePresetStore";
 import { MouseEvent, useEffect, useRef, useState } from "react";
@@ -8,19 +8,6 @@ import JSONDataChannel from "../../../multiplayer/peer/channel/JSONDataChannel";
 
 function RemotePreset({ channel }: { channel: JSONDataChannel }) {
     const getScreenShot = useGlobalStore(state => state.getScreenShot)
-
-    const inPreview = (e: MouseEvent) => {
-        channel.send({
-            type: "inPreview",
-            payload: null
-        })
-    }
-    const outPreview = (e: MouseEvent) => {
-        channel.send({
-            type: "outPreview",
-            payload: null
-        })
-    }
     const onClick = (e: MouseEvent) => {
         const preset = usePresetStore.getState()
         const presetJson = JSON.stringify(preset)
@@ -50,7 +37,6 @@ function RemotePreset({ channel }: { channel: JSONDataChannel }) {
     const [previewImgSrc, setPreviewImgSrc] = useState<string>()
     const uid = useConfigStore(state => state.uid)
     const preset = useConfigStore(state => state.preset)
-    const addPreset = useConfigStore(state => state.addPreset)
 
     const synced = useSynced(channel)
     useEffect(() => {
@@ -61,7 +47,7 @@ function RemotePreset({ channel }: { channel: JSONDataChannel }) {
         })
         channel.send({
             type: "previewImg",
-            payload: getScreenShot()
+            payload: getScreenShot(200, 100)
         })
     }, [synced])
 
@@ -69,17 +55,6 @@ function RemotePreset({ channel }: { channel: JSONDataChannel }) {
         const loading = document.getElementById("loading")
         const onMessage = (e: MessageEvent) => {
             const { type, payload } = e.data    
-            if (type == "inPreview") {
-                previewIntervalRef.current = setInterval(() => {
-                    channel.send({
-                        type: "previewImg",
-                        payload: getScreenShot()
-                    })
-                }, 1000)
-            }
-            if (type == "outPreview") {
-                clearInterval(previewIntervalRef.current)
-            }
             if (type == "previewImg") {
                 setPreviewImgSrc(payload)
             }
@@ -118,8 +93,6 @@ function RemotePreset({ channel }: { channel: JSONDataChannel }) {
         <PresetCard
             presetName={presetName}
             previewImgSrc={previewImgSrc}
-            inPreview={inPreview}
-            outPreview={outPreview}
             onClick={onClick}
         >
         </PresetCard>

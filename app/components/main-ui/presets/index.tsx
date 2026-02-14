@@ -1,13 +1,17 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import RemotePreset from "./preset-item/RemotePreset";
 import LocalPreset from "./preset-item/LocalPreset";
-import { WithTargetModel } from "../../three-world/model/helper/useTargetModel";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function PresetsUI() {
     const peerChannels = useGlobalStore(state => state.peerChannels)
+    const presetList = useConfigStore(state => state.presetsList)
+
     return (
         <>
-            <LocalPreset></LocalPreset>
+            {
+                presetList.map(presetName => <LocalPreset key={presetName} presetName={presetName}></LocalPreset>)
+            }
             {
                 Object.entries(peerChannels)
                     .filter(([_, pc]) => pc.channels["fileTransfer"])
@@ -17,4 +21,4 @@ function PresetsUI() {
     );
 }
 
-export default WithTargetModel(PresetsUI);
+export default PresetsUI;

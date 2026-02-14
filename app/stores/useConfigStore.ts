@@ -7,8 +7,9 @@ import { setUser } from '../modules/firebase/init';
 export type ConfigState = {
     preset: string,
     presetsList: Array<string>,
-    addPreset: (newPreset: string) => void,
-    removePreset: (targetPreset: string) => void,
+    presetsInfo: Record<string, {
+        screenShot: string,
+    }>,
     uid: string;
     setUid: (uid: string) => void,
     _hasHydrated: boolean,
@@ -21,18 +22,7 @@ const useConfigStore = create(
             (set, get) => ({
                 preset: "Default",
                 presetsList: ["Default"],
-                addPreset: (newPreset: string) => set(state => {
-                    const set = new Set(state.presetsList)
-                    const presetsList = Array.from(set.add(newPreset))
-                    return { presetsList }
-                }),
-                removePreset: (targetPreset: string) => set(state => {
-                    const set = new Set(state.presetsList)
-                    set.delete(targetPreset)
-                    const presetsList = Array.from(set)
-                    localforage.removeItem(targetPreset)
-                    return { presetsList }
-                }),
+                presetsInfo: {},
                 uid: "",
                 setUid: (uid) => set({ uid }),
                 _hasHydrated: false,
@@ -55,5 +45,19 @@ const useConfigStore = create(
         )
     )
 )
+
+export const addPreset = (newPreset: string) => useConfigStore.setState(state => {
+    const set = new Set(state.presetsList)
+    const presetsList = Array.from(set.add(newPreset))
+    return { presetsList }
+})
+
+export const removePreset = (targetPreset: string) => useConfigStore.setState(state => {
+    const set = new Set(state.presetsList)
+    set.delete(targetPreset)
+    const presetsList = Array.from(set)
+    localforage.removeItem(targetPreset)
+    return { presetsList }
+})
 
 export default useConfigStore;

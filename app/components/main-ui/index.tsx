@@ -6,7 +6,8 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import LandscapeIcon from '@mui/icons-material/Landscape';
+import AnimationIcon from '@mui/icons-material/Animation';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -20,6 +21,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Presets from "./presets";
+import Resource from "./resource";
+import { loadPreset } from "../panel/presetFn";
 
 const style = {
     position: 'absolute',
@@ -36,8 +39,8 @@ const style = {
 
 const buttonStyle = {
     position: 'fixed',
-	top: "25px",
-	left: "25px"
+    top: "25px",
+    left: "25px"
 }
 
 function MainUI() {
@@ -47,8 +50,8 @@ function MainUI() {
 
     return (
         <>
-            <Button onClick={handleOpen} variant="contained" sx={buttonStyle} aria-label="collections" size="large">
-                <CollectionsIcon fontSize="inherit" />
+            <Button onClick={handleOpen} variant="contained" sx={buttonStyle} size="large">
+                <MenuIcon fontSize="inherit" />
             </Button>
             <Modal open={open} onClose={handleClose}>
                 <Box sx={style}>
@@ -66,19 +69,28 @@ const drawerWidth = 180;
 const drawerTopItems = {
     "Presets": {
         icon: <CollectionsIcon />,
-        component: <Presets />
+        component: <Presets />,
+        onLoad: loadPreset
     },
-    "Characters": {
+    "Models": {
         icon: <AccessibilityNewIcon />,
-        component: <div>Characters</div>
+        component: <div>Models</div>,
+        onLoad: loadPreset
     },
-    "Stages": {
-        icon: <LandscapeIcon />,
-        component: <div>Stages</div>
+    "Motions": {
+        icon: <AnimationIcon />,
+        component: <div>Motions</div>,
+        onLoad: loadPreset
     },
     "Cameras": {
         icon: <CameraAltIcon />,
-        component: <div>Cameras</div>
+        component: <div>Cameras</div>,
+        onLoad: loadPreset
+    },
+    "Musics": {
+        icon: <MusicNoteIcon />,
+        component: <div>Musics</div>,
+        onLoad: loadPreset
     }
 }
 const drawerBottomItems = {
@@ -116,7 +128,6 @@ function ResponsiveDrawer() {
 
     const drawer = (
         <div>
-            <Divider />
             <List>
                 {Object.entries(drawerTopItems).map(([text, item]) => (
                     <ListItem key={text} disablePadding>
@@ -219,9 +230,28 @@ function ResponsiveDrawer() {
             </Box>
             <Box
                 component="main"
-                sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` }, display: "flex", gap: 2 }}
+                sx={{
+                    p: 3,
+                    width: { sm: `calc(100% - ${drawerWidth}px)` },
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                    position: "fixed",
+                    top: 0,
+                    right: 0,
+                    overflowY: "auto",
+                    gap: 2
+                }}
             >
-                {drawerItems[selectedKey]?.component}
+                {
+                    selectedKey == "Settings" ? (
+                        <Typography variant="h4">{selectedKey}</Typography>
+                    ) : (
+                        <Resource selectedKey={selectedKey} onLoad={drawerItems[selectedKey].onLoad}>
+                            {drawerItems[selectedKey].component}
+                        </Resource>
+                    )
+                }
             </Box>
         </Box>
     );
