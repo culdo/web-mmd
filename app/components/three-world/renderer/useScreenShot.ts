@@ -1,33 +1,20 @@
+import useConfigStore from "@/app/stores/useConfigStore";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useThree } from "@react-three/fiber";
-import { useEffect, useLayoutEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 
 function useScreenShot() {
-    const screenShotArgs = useGlobalStore(state => state.screenShotArgs)
-    const [width, height] = screenShotArgs;
-    const target = useMemo(() => {
-        const target = new THREE.WebGLRenderTarget(width, height, {
-            minFilter: THREE.LinearFilter,
-            magFilter: THREE.LinearFilter
-        })
-        return target;
-    }, [])
-
-    useLayoutEffect(() => {
-        target.setSize(width, height)
-    }, [target, width, height])
-
-    useEffect(() => {
-        return () => target.dispose()
-    }, [])
-
     const scene = useThree(state => state.scene);
     const camera = useThree(state => state.camera);
     const gl = useThree(state => state.gl);
 
-    useEffect(() => {
-        const getScreenShot = () => {
+    const getScreenShot = useMemo(() => {
+        const getScreenShot = (width: number, height: number) => {
+            const target = new THREE.WebGLRenderTarget(width, height, {
+                minFilter: THREE.LinearFilter,
+                magFilter: THREE.LinearFilter
+            })
             gl.setRenderTarget(target);
             gl.clear();
             gl.render(scene, camera);
@@ -35,6 +22,7 @@ function useScreenShot() {
 
             const imageData = new ImageData(width, height);
             gl.readRenderTargetPixels(target, 0, 0, width, height, imageData.data);
+            target.dispose();
 
             const canvas = document.createElement('canvas');
             canvas.width = width;
@@ -49,7 +37,25 @@ function useScreenShot() {
             return canvas.toDataURL('image/jpeg', 0.5);
         }
         useGlobalStore.setState({ getScreenShot })
-    }, [screenShotArgs, scene, camera, gl])
+        return getScreenShot
+    }, [scene, camera, gl])
+
+    const preset = useConfigStore(state => state.preset)
+    
+    useEffect(() => {
+        setTimeout(() => {
+            const screenShot = getScreenShot(200, 100)
+            useConfigStore.setState(({ presetsInfo }) => ({
+                presetsInfo: {
+                    ...presetsInfo,
+                    [preset]: {
+                        screenShot
+                    }
+                }
+            }))
+        }, 3000);
+    }, [getScreenShot, preset])
+
 }
 
 export default useScreenShot;

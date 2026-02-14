@@ -63,8 +63,8 @@ export type GlobalState = {
         enableMaterial: boolean
     }>
     modelsObject: Record<string, React.ReactNode>
-    screenShotArgs: [number, number]
-    getScreenShot: () => string
+    getScreenShot: (width: number, height: number) => string
+    openMainUI: boolean
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -124,8 +124,8 @@ const useGlobalStore = create<GlobalState>(
         groupChannels: {},
         remoteModels: {},
         modelsObject: {},
-        screenShotArgs: [512, 256],
-        getScreenShot: null
+        getScreenShot: null,
+        openMainUI: false
     })
 )
 
