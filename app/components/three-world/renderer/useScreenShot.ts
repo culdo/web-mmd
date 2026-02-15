@@ -36,7 +36,6 @@ function useScreenShot() {
             ctx.drawImage(canvas, 0, 0, width, height);
             return canvas.toDataURL('image/jpeg', 0.5);
         }
-        useGlobalStore.setState({ getScreenShot })
         return getScreenShot
     }, [scene, camera, gl])
 
