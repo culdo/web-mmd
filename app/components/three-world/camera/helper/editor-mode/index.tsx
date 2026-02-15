@@ -8,6 +8,7 @@ import studio from "@theatre/studio";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { cameraToTracks } from "@/app/modules/theatreTrackBuilder";
 import { PerspectiveCamera as PerspectiveCameraImpl } from "three";
+import useAutoHide from "@/app/components/control-bar/audio-player/useAutoHide";
 
 const sheet = getProject("MMD").sheet("MMD UI")
 const sequence = sheet.sequence
@@ -47,7 +48,7 @@ function EditorMode() {
             studio.initialize({ __experimental_rafDriver: driver })
             studio.__experimental.__experimental_disblePlayPauseKeyboardShortcut()
             studio.ui.restore()
-            useGlobalStore.setState({theatreStudio: studio})
+            useGlobalStore.setState({ theatreStudio: studio })
         }
         init()
 
@@ -67,6 +68,14 @@ function EditorMode() {
         return clearOnChange
     }, [player])
 
+    const onPlay = () => {
+        studio.ui.hide();
+    }
+    const onPause = () => {
+        studio.ui.restore();
+    }
+    useAutoHide(onPlay, onPause)
+
     useEffect(() => {
         const clearUpdate = target.onValuesChange((props) => {
             camera.rotation.set(props.rotation.x, props.rotation.y, props.rotation.z)
@@ -74,7 +83,7 @@ function EditorMode() {
             camera.position.set(0, 0, - props.distance);
             camera.position.applyEuler(camera.rotation);
             camera.position.add(props.position);
-            
+
             camera.fov = props.fov
             camera.updateProjectionMatrix()
         }, driver)

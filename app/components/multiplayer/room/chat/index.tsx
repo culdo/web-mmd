@@ -3,6 +3,7 @@ import styles from "./styles.module.css"
 import useConfigStore from "@/app/stores/useConfigStore";
 import { GroupChannelContext } from "../../peer/channel/GroupChannel";
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import useAutoHide from "@/app/components/control-bar/audio-player/useAutoHide";
 
 function Chat() {
     const channel = useContext(GroupChannelContext)
@@ -58,9 +59,18 @@ function Chat() {
         textareaRef.current.scrollTop = textareaRef.current.scrollHeight
     }, [texts])
 
+    const containerRef = useRef<HTMLDivElement>(null)
+    const onPlay = () => {
+        containerRef.current.style.display = "none";
+    }
+    const onPause = () => {
+        containerRef.current.style.display = "flex";
+    }
+    useAutoHide(onPlay, onPause)
+
     return (
         <>
-            <div id="chat" className={styles.chat}>
+            <div ref={containerRef} className={styles.chat}>
                 <div ref={textareaRef} className="px-2 h-full bg-white bg-opacity-10 rounded-t-lg hover:overflow-auto overflow-hidden flex flex-col">
                     {
                         Object.entries(texts).map(

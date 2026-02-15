@@ -1,12 +1,12 @@
-import { SyntheticEvent, useEffect, useRef, useState } from "react";
+import { SyntheticEvent, useEffect, useRef } from "react";
 import styles from "./styles.module.css"
-import useGlobalStore, { Gui } from "@/app/stores/useGlobalStore";
+import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { button, useControls } from "leva";
 
 import 'media-chrome/react';
 import 'media-chrome/react/menu';
-import { buildGuiItem, buildGuiObj, loadFile } from "@/app/utils/gui";
+import { buildGuiItem, loadFile } from "@/app/utils/gui";
 import { getProject } from "@theatre/core";
 import { CameraMode } from "@/app/types/camera";
 import { MediaControlBar, MediaController, MediaMuteButton, MediaPlayButton, MediaTimeDisplay, MediaTimeRange, MediaVolumeRange } from "media-chrome/react";
@@ -19,10 +19,8 @@ function AudioPlayer() {
     const musicName = usePresetStore(state => state.musicName)
 
     const audioFile = usePresetStore(state => state.audioFile)
-    const autoHideGui = usePresetStore(state => state["auto hide GUI"])
     const cameraMode = usePresetStore(state => state["camera mode"])
     const runMode = usePresetStore(state => state["run mode"])
-    const studio = useGlobalStore(state => state.theatreStudio)
 
     useControls('Music', () => ({
         name: {
@@ -40,32 +38,11 @@ function AudioPlayer() {
     const playerRef = useRef<HTMLVideoElement>()
 
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        if (autoHideGui) {
-            document.getElementById("leva-container").style.opacity = "0.0";
-            if(document.getElementById("chat")) {
-                document.getElementById("chat").style.display = "none";
-            }
-
-            // editor mode
-            studio?.ui.hide()
-        };
         useGlobalStore.setState({ creditsPose: null })
         useGlobalStore.setState({ enabledTransform: false })
     }
 
     const onPause = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        if (autoHideGui) {
-            document.getElementById("leva-container").style.opacity = "1.0";
-            if(document.getElementById("chat")) {
-                document.getElementById("chat").style.display = "flex";
-            }
-        }
-
-        // editor mode
-        if (cameraMode == CameraMode.EDITOR) {
-            studio.ui.restore()
-        }
-
         setCurrentTime(playerRef.current.currentTime);
         useGlobalStore.setState({ enabledTransform: true })
     }

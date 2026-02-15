@@ -29,6 +29,7 @@ import LocalModels from "./models";
 import LocalMotions from "./motions";
 import LocalCameras from "./cameras";
 import LocalMusics from "./musics";
+import useAutoHide from "../control-bar/audio-player/useAutoHide";
 
 const style = {
     position: 'absolute',
@@ -54,9 +55,18 @@ function MainUI() {
     const handleOpen = () => useGlobalStore.setState({ openMainUI: true });
     const handleClose = () => useGlobalStore.setState({ openMainUI: false });
 
+    const buttonRef = useRef<HTMLButtonElement>(null)
+    const onPlay = () => {
+        buttonRef.current.style.display = "none";
+    }
+    const onPause = () => {
+        buttonRef.current.style.display = "flex";
+    }
+    useAutoHide(onPlay, onPause)
+
     return (
         <>
-            <Button onClick={handleOpen} variant="contained" sx={buttonStyle} size="large">
+            <Button ref={buttonRef} onClick={handleOpen} variant="contained" sx={buttonStyle} size="large">
                 <MenuIcon fontSize="inherit" />
             </Button>
             <Modal open={openMainUI} onClose={handleClose}>

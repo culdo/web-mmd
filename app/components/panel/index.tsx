@@ -2,8 +2,9 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { Leva } from "leva";
 import usePreset from "./usePreset";
 import styles from "./styles.module.css"
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useAbout from "./useAbout";
+import useAutoHide from "../control-bar/audio-player/useAutoHide";
 
 function Panel() {
     const gui = useGlobalStore(state => state.gui)
@@ -18,9 +19,18 @@ function Panel() {
             setCollapsed(true)
         }
     }, []);
+    
+    const containerRef = useRef<HTMLDivElement>(null)
+    const onPlay = () => {
+        containerRef.current.style.opacity = "0.0";
+    }
+    const onPause = () => {
+        containerRef.current.style.opacity = "1.0";
+    }
+    useAutoHide(onPlay, onPause)
 
     return (
-        <div id="leva-container" className={styles.levaContainer}>
+        <div ref={containerRef} className={styles.levaContainer}>
             <Leva
                 oneLineLabels
                 {...gui}
