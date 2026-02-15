@@ -1,8 +1,8 @@
 .chat {
 	position: absolute;
 	width: 25%;
-	height: 25%;
-	left: 25px; 
+	max-height: 25%;
+	left: 25px;
 	bottom: 100px;
 	opacity: 0.8;
 	z-index: 1000;
