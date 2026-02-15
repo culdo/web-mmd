@@ -1,9 +1,10 @@
 import { MouseEvent } from "react";
-import PresetCard from "./PresetCard";
 import useConfigStore from "@/app/stores/useConfigStore";
 import { setPreset } from "@/app/stores/usePresetStore";
 import { MenuItem } from "@mui/material";
 import { copyPreset, savePreset, saveConfigOnly, deletePreset } from "@/app/components/panel/presetFn";
+import ResourceCard from "../resources/ResourceCard";
+import useGlobalStore from "@/app/stores/useGlobalStore";
 
 function LocalPreset({ presetName }: { presetName: string }) {
     const presetsInfo = useConfigStore(state => state.presetsInfo)
@@ -14,11 +15,12 @@ function LocalPreset({ presetName }: { presetName: string }) {
 
     const onClick = (e: MouseEvent) => {
         setPreset(presetName, true)
+        useGlobalStore.setState({openMainUI: false})
     }
 
     return (
-        <PresetCard
-            presetName={presetName}
+        <ResourceCard
+            name={presetName}
             previewImgSrc={screenShot}
             onClick={isCurrentPreset ? undefined : onClick}
             selected={isCurrentPreset}
@@ -35,7 +37,7 @@ function LocalPreset({ presetName }: { presetName: string }) {
             <MenuItem sx={{ color: 'red' }} onClick={deletePreset}>
                 Delete Preset
             </MenuItem>
-        </PresetCard>
+        </ResourceCard>
     );
 }
 

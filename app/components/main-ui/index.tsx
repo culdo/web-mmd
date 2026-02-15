@@ -1,8 +1,6 @@
 import { useRef, useState } from "react";
-import useGlobalStore from "@/app/stores/useGlobalStore";
 import { Box, Button, Modal } from "@mui/material";
 import AppBar from '@mui/material/AppBar';
-import CssBaseline from '@mui/material/CssBaseline';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
@@ -20,9 +18,17 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import Presets from "./presets";
-import Resource from "./resource";
+import Resources, { LocalResources, RemoteResources } from "./resources";
 import { loadPreset } from "../panel/presetFn";
+import { loadModel, loadFile } from "@/app/utils/gui";
+import usePresetStore from "@/app/stores/usePresetStore";
+import LocalPresets from "./presets";
+import useGlobalStore from "@/app/stores/useGlobalStore";
+import PeersResources from "./resources/PeersResources";
+import LocalModels from "./models";
+import LocalMotions from "./motions";
+import LocalCameras from "./cameras";
+import LocalMusics from "./musics";
 
 const style = {
     position: 'absolute',
@@ -44,16 +50,16 @@ const buttonStyle = {
 }
 
 function MainUI() {
-    const [open, setOpen] = useState(true);
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
+    const openMainUI = useGlobalStore(state => state.openMainUI)
+    const handleOpen = () => useGlobalStore.setState({ openMainUI: true });
+    const handleClose = () => useGlobalStore.setState({ openMainUI: false });
 
     return (
         <>
             <Button onClick={handleOpen} variant="contained" sx={buttonStyle} size="large">
                 <MenuIcon fontSize="inherit" />
             </Button>
-            <Modal open={open} onClose={handleClose}>
+            <Modal open={openMainUI} onClose={handleClose}>
                 <Box sx={style}>
                     <ResponsiveDrawer></ResponsiveDrawer>
                 </Box>
@@ -69,28 +75,41 @@ const drawerWidth = 180;
 const drawerTopItems = {
     "Presets": {
         icon: <CollectionsIcon />,
-        component: <Presets />,
+        components: <LocalPresets />,
         onLoad: loadPreset
     },
     "Models": {
         icon: <AccessibilityNewIcon />,
-        component: <div>Models</div>,
-        onLoad: loadPreset
+        components: <LocalModels />,
+        onLoad: () => loadModel(true)
     },
     "Motions": {
         icon: <AnimationIcon />,
-        component: <div>Motions</div>,
-        onLoad: loadPreset
+        components: <LocalMotions />,
+        onLoad: () => loadFile((motionFile, motionName) => {
+            usePresetStore.setState(({ models, motionFiles, targetModelId }) => {
+                motionFiles[motionName] = motionFile
+                models[targetModelId].motionNames[0] = motionName
+                return {
+                    motionFiles: { ...motionFiles },
+                    models: { ...models }
+                }
+            })
+        })
     },
     "Cameras": {
         icon: <CameraAltIcon />,
-        component: <div>Cameras</div>,
-        onLoad: loadPreset
+        components: <LocalCameras name="camera" />,
+        onLoad: () => loadFile((cameraFile, name) => {
+            usePresetStore.setState({ cameraFile, camera: name })
+        })
     },
     "Musics": {
         icon: <MusicNoteIcon />,
-        component: <div>Musics</div>,
-        onLoad: loadPreset
+        components: <LocalMusics name="music" />,
+        onLoad: () => loadFile((audioFile, musicName) => {
+            usePresetStore.setState({ audioFile, musicName })
+        })
     }
 }
 const drawerBottomItems = {
@@ -247,9 +266,14 @@ function ResponsiveDrawer() {
                     selectedKey == "Settings" ? (
                         <Typography variant="h4">{selectedKey}</Typography>
                     ) : (
-                        <Resource selectedKey={selectedKey} onLoad={drawerItems[selectedKey].onLoad}>
-                            {drawerItems[selectedKey].component}
-                        </Resource>
+                        <Resources selectedKey={selectedKey} onLoad={drawerItems[selectedKey].onLoad}>
+                            <LocalResources>
+                                {drawerItems[selectedKey].components}
+                            </LocalResources>
+                            <RemoteResources>
+                                <PeersResources type={selectedKey.toLowerCase().slice(0, -1)} />
+                            </RemoteResources>
+                        </Resources>
                     )
                 }
             </Box>

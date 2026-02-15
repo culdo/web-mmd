@@ -5,7 +5,7 @@ import { useState } from "react";
 import { blue } from "@mui/material/colors";
 
 const options = {
-    "Select from computer...": {
+    "Open file...": {
         icon: <FileUploadIcon />
     }
 };
@@ -18,7 +18,7 @@ function CreateResource({ type, onLoad }: { type: string, onLoad: () => void }) 
     };
 
     const handlePresetKind = (value: string) => {
-        if (value === "Select from computer...") {
+        if (value === "Open file...") {
             onLoad()
         }
         setOpen(false);
@@ -34,13 +34,13 @@ function CreateResource({ type, onLoad }: { type: string, onLoad: () => void }) 
                     <CardContent>
                         <AddIcon fontSize="large" />
                         <Typography component="div">
-                            Add a new {type}
+                            Add a new {type.slice(0, -1)}
                         </Typography>
                     </CardContent>
                 </CardActionArea>
             </Card>
             <Dialog onClose={() => handlePresetKind(null)} open={open}>
-                <DialogTitle>Choose a kind of {type}</DialogTitle>
+                <DialogTitle>Choose a kind of {type.slice(0, -1)}</DialogTitle>
                 <List sx={{ pt: 0 }}>
                     {Object.entries(options).map(([resourceKind, { icon }]) => (
                         <ListItem disablePadding key={resourceKind}>

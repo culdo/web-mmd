@@ -37,7 +37,7 @@ export type PresetState = typeof defaultConfig & {
 
 let db = localforage.createInstance({ name: useConfigStore.getState().preset })
 
-const storage: PersistStorage<PresetState> = {
+export const storage: PersistStorage<PresetState> = {
     getItem: async (name: string): Promise<StorageValue<PresetState>> => {
         const keys = await db.keys()
         const preset = Object.fromEntries(await Promise.all(
