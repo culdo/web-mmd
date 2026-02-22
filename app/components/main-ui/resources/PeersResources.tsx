@@ -3,7 +3,7 @@ import RemoteResources from "./RemoteResources";
 import { addPreset } from "@/app/stores/useConfigStore";
 import usePresetStore, { migratePreset, setPreset } from "@/app/stores/usePresetStore";
 
-const onLoadMap: Record<string, (name: string, data: string) => void> = {
+const onLoadMap = {
     "preset": (name: string, data: string) => {
         addPreset(name)
         setPreset(name)
@@ -35,14 +35,14 @@ const onLoadMap: Record<string, (name: string, data: string) => void> = {
     }
 }
 
-function PeersResources({ type }: { type: string }) {
+function PeersResources({ type }: { type: ResourceType }) {
     const peerChannels = useGlobalStore(state => state.peerChannels)
     return (
         <>
             {
                 Object.entries(peerChannels)
                     .filter(([_, pc]) => pc.channels["fileTransfer"])
-                    .map(([sender, pc]) => <RemoteResources type={type} key={sender} channel={pc.channels["fileTransfer"]} onLoad={onLoadMap[type]} />)
+                    .map(([sender, pc]) => <RemoteResources type={type} key={sender} sender={sender} channel={pc.channels["fileTransfer"]} onLoad={onLoadMap[type]} />)
             }
         </>
     );

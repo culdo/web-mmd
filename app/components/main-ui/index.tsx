@@ -22,14 +22,14 @@ import Resources, { LocalResources, RemoteResources } from "./resources";
 import { loadPreset } from "../panel/presetFn";
 import { loadModel, loadFile } from "@/app/utils/gui";
 import usePresetStore from "@/app/stores/usePresetStore";
-import LocalPresets from "./presets";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import PeersResources from "./resources/PeersResources";
-import LocalModels from "./models";
-import LocalMotions from "./motions";
-import LocalCameras from "./cameras";
-import LocalMusics from "./musics";
+import LocalCamera from "./cameras/LocalCamera";
+import LocalMusic from "./musics/LocalMusic";
 import useAutoHide from "../control-bar/audio-player/useAutoHide";
+import LocalModel from "./models/LocalModel";
+import LocalPreset from "./presets/LocalPreset";
+import LocalMotion from "./motions/LocalMotion";
 
 const style = {
     position: 'absolute',
@@ -85,18 +85,18 @@ const drawerWidth = 180;
 const drawerTopItems = {
     "Presets": {
         icon: <CollectionsIcon />,
-        components: <LocalPresets />,
-        onLoad: loadPreset
+        components: <LocalPreset/>,
+        onCreate: loadPreset
     },
     "Models": {
         icon: <AccessibilityNewIcon />,
-        components: <LocalModels />,
-        onLoad: () => loadModel(true)
+        components: <LocalModel />,
+        onCreate: () => loadModel(true)
     },
     "Motions": {
         icon: <AnimationIcon />,
-        components: <LocalMotions />,
-        onLoad: () => loadFile((motionFile, motionName) => {
+        components: <LocalMotion />,
+        onCreate: () => loadFile((motionFile, motionName) => {
             usePresetStore.setState(({ models, motionFiles, targetModelId }) => {
                 motionFiles[motionName] = motionFile
                 models[targetModelId].motionNames[0] = motionName
@@ -109,15 +109,15 @@ const drawerTopItems = {
     },
     "Cameras": {
         icon: <CameraAltIcon />,
-        components: <LocalCameras name="camera" />,
-        onLoad: () => loadFile((cameraFile, name) => {
+        components: <LocalCamera />,
+        onCreate: () => loadFile((cameraFile, name) => {
             usePresetStore.setState({ cameraFile, camera: name })
         })
     },
     "Musics": {
         icon: <MusicNoteIcon />,
-        components: <LocalMusics name="music" />,
-        onLoad: () => loadFile((audioFile, musicName) => {
+        components: <LocalMusic />,
+        onCreate: () => loadFile((audioFile, musicName) => {
             usePresetStore.setState({ audioFile, musicName })
         })
     }
@@ -276,12 +276,12 @@ function ResponsiveDrawer() {
                     selectedKey == "Settings" ? (
                         <Typography variant="h4">{selectedKey}</Typography>
                     ) : (
-                        <Resources selectedKey={selectedKey} onLoad={drawerItems[selectedKey].onLoad}>
+                        <Resources selectedKey={selectedKey} onCreate={drawerItems[selectedKey].onCreate}>
                             <LocalResources>
                                 {drawerItems[selectedKey].components}
                             </LocalResources>
                             <RemoteResources>
-                                <PeersResources type={selectedKey.toLowerCase().slice(0, -1)} />
+                                <PeersResources type={selectedKey.toLowerCase().slice(0, -1) as ResourceType} />
                             </RemoteResources>
                         </Resources>
                     )

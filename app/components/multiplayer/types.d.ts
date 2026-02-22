@@ -25,3 +25,10 @@ type EventData = {
     type: string
     payload: any
 }
+
+type DataSchema = {
+    uri: string
+    payload: any
+}
+
+type ResourceType = "preset" | "motion" | "model" | "camera" | "music"

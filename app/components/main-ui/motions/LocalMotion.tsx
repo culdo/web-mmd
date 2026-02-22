@@ -2,8 +2,7 @@ import { MouseEvent } from "react";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { MenuItem } from "@mui/material";
 import ResourceCard from "../resources/ResourceCard";
-import useGlobalStore from "@/app/stores/useGlobalStore";
-import { nanoid } from "nanoid";
+import WithLocalMotions from "./WithLocalMotions";
 
 function LocalMotion({ name }: { name: string }) {
 
@@ -29,4 +28,4 @@ function LocalMotion({ name }: { name: string }) {
     );
 }
 
-export default LocalMotion;
+export default WithLocalMotions(LocalMotion);

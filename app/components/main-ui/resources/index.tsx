@@ -10,7 +10,7 @@ export function RemoteResources({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
 }
 
-function Resources({ selectedKey, children, onLoad }: { selectedKey: string, children: React.ReactNode, onLoad: () => void }) {
+function Resources({ selectedKey, children, onCreate }: { selectedKey: string, children: React.ReactNode, onCreate: () => void }) {
     let local: React.ReactNode;
     let remote: React.ReactNode;
 
@@ -33,7 +33,7 @@ function Resources({ selectedKey, children, onLoad }: { selectedKey: string, chi
                     alignContent: "flex-start"
                 }}
             >
-                <CreateResource type={selectedKey} onLoad={onLoad}></CreateResource>
+                <CreateResource type={selectedKey} onLoad={onCreate}></CreateResource>
                 {local}
             </Box>
             <Divider></Divider>

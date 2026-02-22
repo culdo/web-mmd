@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react"
 import JSONDataChannel from "./JSONDataChannel"
 
-function useSynced(channel: JSONDataChannel) {
+function useSynced(channel: JSONDataChannel, uriPrefix: string) {
     const [synced, setSynced] = useState(false)
     useEffect(() => {
         if (synced) return
         const onMessage = (e: MessageEvent) => {
-            const { type } = e.data
-            if (type == "syncing") {
-                channel.send({ type: "synced" })
+            const { uri } = e.data
+            if (uri == `${uriPrefix}/syncing`) {
+                channel.send({ uri: `${uriPrefix}/synced` })
                 setSynced(true)
             }
-            if (type == "synced") {
+            if (uri == `${uriPrefix}/synced`) {
                 setSynced(true)
             }
         }
-        channel.send({ type: "syncing" })
         channel.addEventListener("message", onMessage)
+        channel.send({ uri: `${uriPrefix}/syncing` })
         return () => {
             channel.removeEventListener("message", onMessage)
         }

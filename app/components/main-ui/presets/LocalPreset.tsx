@@ -5,22 +5,23 @@ import { MenuItem } from "@mui/material";
 import { copyPreset, savePreset, saveConfigOnly, deletePreset } from "@/app/components/panel/presetFn";
 import ResourceCard from "../resources/ResourceCard";
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import WithLocalPresets from "./WithLocalPresets";
 
-function LocalPreset({ presetName }: { presetName: string }) {
+function LocalPreset({ name }: { name: string }) {
     const presetsInfo = useConfigStore(state => state.presetsInfo)
-    const screenShot = presetsInfo[presetName]?.screenShot
+    const screenShot = presetsInfo[name]?.screenShot
 
     const preset = useConfigStore(state => state.preset)
-    const isCurrentPreset = preset === presetName
+    const isCurrentPreset = preset === name
 
     const onClick = (e: MouseEvent) => {
-        setPreset(presetName, true)
-        useGlobalStore.setState({openMainUI: false})
+        setPreset(name, true)
+        useGlobalStore.setState({ openMainUI: false })
     }
 
     return (
         <ResourceCard
-            name={presetName}
+            name={name}
             previewImgSrc={screenShot}
             onClick={isCurrentPreset ? undefined : onClick}
             selected={isCurrentPreset}
@@ -41,4 +42,4 @@ function LocalPreset({ presetName }: { presetName: string }) {
     );
 }
 
-export default LocalPreset;
+export default WithLocalPresets(LocalPreset);
