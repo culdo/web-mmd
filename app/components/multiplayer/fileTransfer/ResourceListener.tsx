@@ -1,13 +1,10 @@
 import useConfigStore from "@/app/stores/useConfigStore";
-import useGlobalStore from "@/app/stores/useGlobalStore";
-import { useContext, useEffect } from "react";
-import { SenderContext } from "./Peer";
-import JSONDataChannel from "../peer/channel/JSONDataChannel";
+import { useEffect } from "react";
 import useSynced from "../peer/channel/useSynced";
+import useFileTransfer from "./useFileTransfer";
 
 function ResourceListener({ type, name, onRequest }: { type: ResourceType, name: string, onRequest: (name: string) => Promise<string> }) {
-    const sender = useContext(SenderContext)
-    const channel = useGlobalStore(state => state.peerChannels)[sender]?.channels["fileTransfer"] as JSONDataChannel
+    const channel = useFileTransfer()
     const screenShot = useConfigStore(state => state.presetsInfo)[name]?.screenShot
     const uriPrefix = `${type}/${name}`
 

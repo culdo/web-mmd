@@ -1,12 +1,9 @@
-import { useContext, useEffect } from "react";
-import { SenderContext } from "../../multiplayer/fileTransfer/Peer";
-import useGlobalStore from "@/app/stores/useGlobalStore";
-import JSONDataChannel from "../../multiplayer/peer/channel/JSONDataChannel";
-import useSynced from "../../multiplayer/peer/channel/useSynced";
+import { useEffect } from "react";
+import useSynced from "../peer/channel/useSynced";
+import useFileTransfer from "./useFileTransfer";
 
 function NamesListener({ type, names }: { type: string, names: string[] }) {
-    const sender = useContext(SenderContext)
-    const channel = useGlobalStore(state => state.peerChannels)[sender]?.channels["fileTransfer"] as JSONDataChannel
+    const channel = useFileTransfer()
 
     useSynced(channel, type)
     useEffect(() => {

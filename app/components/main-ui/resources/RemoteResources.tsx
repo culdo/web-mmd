@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import JSONDataChannel from "../../multiplayer/peer/channel/JSONDataChannel";
 import RemoteResource from "./RemoteResource";
-import { SenderContext } from "../../multiplayer/fileTransfer/Peer";
+import { SenderContext } from "../../multiplayer/fileTransfer";
 import useSynced from "../../multiplayer/peer/channel/useSynced";
 
 function RemoteResources({ type, sender, channel, onLoad }: { type: ResourceType, sender: string, channel: JSONDataChannel, onLoad: (name: string, data: string) => void }) {
@@ -30,7 +30,6 @@ function RemoteResources({ type, sender, channel, onLoad }: { type: ResourceType
         <SenderContext.Provider value={sender}>
             {
                 Array.from(resourceNames)
-                    .map(name => `${name}@${sender}`)
                     .map(name =>
                         <RemoteResource key={name} type={type} name={name} channel={channel} onLoad={onLoad} />
                     )

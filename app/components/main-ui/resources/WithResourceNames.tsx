@@ -1,4 +1,4 @@
-import NamesListener from "./NamesListener";
+import NamesListener from "../../multiplayer/fileTransfer/NamesListener";
 
 function WithResourceNames(useNames: () => string[]) {
     return function WithResources(Component: React.ComponentType<{ name: string }>, listenerType?: ResourceType) {

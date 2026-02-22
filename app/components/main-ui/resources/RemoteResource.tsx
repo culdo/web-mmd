@@ -1,9 +1,11 @@
-import { MouseEvent, useEffect, useRef, useState } from "react";
+import { MouseEvent, useContext, useEffect, useRef, useState } from "react";
 import JSONDataChannel from "../../multiplayer/peer/channel/JSONDataChannel";
 import ResourceCard from "../resources/ResourceCard";
 import useSynced from "../../multiplayer/peer/channel/useSynced";
+import { SenderContext } from "../../multiplayer/fileTransfer";
 
 function RemoteResource({ type, name, channel, onLoad }: { type: ResourceType, name: string, channel: JSONDataChannel, onLoad: (name: string, data: string) => void }) {
+    const sender = useContext(SenderContext)
     const uriPrefix = `${type}/${name}`
     const onClick = (e: MouseEvent) => {
         channel.send({
@@ -45,7 +47,7 @@ function RemoteResource({ type, name, channel, onLoad }: { type: ResourceType, n
 
     return (
         <ResourceCard
-            name={name}
+            name={`${name}@${sender}`}
             previewImgSrc={previewImgSrc}
             onClick={onClick}
         >
