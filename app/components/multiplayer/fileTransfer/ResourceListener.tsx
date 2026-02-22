@@ -20,6 +20,10 @@ function ResourceListener({ type, name, onRequest }: { type: ResourceType, name:
                 })
                 const chunkSize = 16384;
                 const readSlice = (offset: number) => {
+                    if(channel.bufferedAmount > 1024 * 1024) {
+                        setTimeout(() => readSlice(offset), 100)
+                        return
+                    }
                     const slice = data.slice(offset, offset + chunkSize);
                     channel.send({
                         uri: `${uriPrefix}/resourceData`,
