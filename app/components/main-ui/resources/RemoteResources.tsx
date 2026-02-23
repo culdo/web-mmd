@@ -16,14 +16,14 @@ function RemoteResources() {
         }
         channel.addEventListener("message", onMessage)
         return () => channel.removeEventListener("message", onMessage)
-    }, [])
+    }, [type])
 
     useEffect(() => {
         if (!synced) return
         channel.send({
             uri: `${type}/requestResourceNames`
         })
-    }, [synced])
+    }, [type, synced])
 
     return (
         <>
