@@ -1,9 +1,8 @@
 import useConfigStore from "@/app/stores/useConfigStore";
-import WithResourceNames from "../resources/WithResourceNames";
 
-function useNames() {
+export function usePresetsNames() {
     const presetList = useConfigStore(state => state.presetsList)
     return presetList
 }
 
-export default WithResourceNames(useNames)
+export default usePresetsNames;

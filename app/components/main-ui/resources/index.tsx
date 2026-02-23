@@ -1,14 +1,8 @@
 import { Typography, Divider, Box } from "@mui/material";
 import CreateResource from "./CreateResource";
 import { Children, isValidElement } from "react";
-
-export function LocalResources({ children }: { children: React.ReactNode }) {
-    return <>{children}</>;
-}
-
-export function RemoteResources({ children }: { children: React.ReactNode }) {
-    return <>{children}</>;
-}
+import LocalResources from "./LocalResources";
+import PeersResources from "./PeersResources";
 
 function Resources({ selectedKey, children, onCreate }: { selectedKey: string, children: React.ReactNode, onCreate: () => void }) {
     let local: React.ReactNode;
@@ -18,7 +12,7 @@ function Resources({ selectedKey, children, onCreate }: { selectedKey: string, c
         if (!isValidElement(child)) return;
         if (child.type === LocalResources) {
             local = child;
-        } else if (child.type === RemoteResources) {
+        } else if (child.type === PeersResources) {
             remote = child;
         } 
     }

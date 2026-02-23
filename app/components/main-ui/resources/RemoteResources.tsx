@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import RemoteResource from "./RemoteResource";
 import useFileTransfer from "../../multiplayer/fileTransfer/useFileTransfer";
+import { useResourceType } from "./context";
 
-function RemoteResources({ type, onLoad }: { type: ResourceType, onLoad: (name: string, data: string) => void }) {
+function RemoteResources() {
     const [resourceNames, setResourceNames] = useState<string[]>([])
+    const type = useResourceType()
     const { channel, synced } = useFileTransfer(type)
     useEffect(() => {
         const onMessage = (e: MessageEvent<DataSchema>) => {
@@ -28,7 +30,7 @@ function RemoteResources({ type, onLoad }: { type: ResourceType, onLoad: (name: 
             {
                 Array.from(resourceNames)
                     .map(name =>
-                        <RemoteResource key={name} type={type} name={name} onLoad={onLoad} />
+                        <RemoteResource key={name} name={name}/>
                     )
             }
         </>

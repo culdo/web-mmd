@@ -1,6 +1,5 @@
 import { MouseEvent } from "react";
 import ResourceCard from "../resources/ResourceCard";
-import WithLocalMusics from "./WithLocalMusics";
 
 function LocalMusic({ name }: { name: string }) {
 
@@ -18,4 +17,4 @@ function LocalMusic({ name }: { name: string }) {
     );
 }
 
-export default WithLocalMusics(LocalMusic);
+export default LocalMusic;

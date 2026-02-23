@@ -1,7 +1,15 @@
 import { useEffect } from "react";
 import useFileTransfer from "./useFileTransfer";
+import ResourceListener from "./ResourceListener";
+import { resourcesMap } from "../../main-ui/resourcesMap";
+import { useResourceType } from "../../main-ui/resources/context";
 
-function NamesListener({ type, names }: { type: string, names: string[] }) {
+function ResourcesListener() {
+    const type = useResourceType()
+    const { useNames, useRequest } = resourcesMap[type]
+    const names = useNames()
+    const onRequest = useRequest()
+
     const { channel } = useFileTransfer(type)
 
     useEffect(() => {
@@ -18,8 +26,13 @@ function NamesListener({ type, names }: { type: string, names: string[] }) {
         return () => channel.removeEventListener("message", onMessage)
     }, [names])
 
-    return <></>
+    return names.map(
+        name => <ResourceListener
+            name={name}
+            onRequest={onRequest}
+        />
+    )
 }
 
 
-export default NamesListener;
+export default ResourcesListener;

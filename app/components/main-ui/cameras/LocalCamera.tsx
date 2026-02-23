@@ -1,6 +1,5 @@
 import { MouseEvent } from "react";
 import ResourceCard from "../resources/ResourceCard";
-import WithLocalCameras from "./WithLocalCameras";
 
 function LocalCamera({ name }: { name: string }) {
 
@@ -18,4 +17,4 @@ function LocalCamera({ name }: { name: string }) {
     );
 }
 
-export default WithLocalCameras(LocalCamera);
+export default LocalCamera;

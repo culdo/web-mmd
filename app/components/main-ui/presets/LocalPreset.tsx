@@ -5,7 +5,6 @@ import { MenuItem } from "@mui/material";
 import { copyPreset, savePreset, saveConfigOnly, deletePreset } from "@/app/components/panel/presetFn";
 import ResourceCard from "../resources/ResourceCard";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import WithLocalPresets from "./WithLocalPresets";
 
 function LocalPreset({ name }: { name: string }) {
     const presetsInfo = useConfigStore(state => state.presetsInfo)
@@ -42,4 +41,4 @@ function LocalPreset({ name }: { name: string }) {
     );
 }
 
-export default WithLocalPresets(LocalPreset);
+export default LocalPreset;

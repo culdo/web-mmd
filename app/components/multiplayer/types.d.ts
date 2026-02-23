@@ -31,4 +31,4 @@ type DataSchema = {
     payload: any
 }
 
-type ResourceType = "preset" | "motion" | "model" | "camera" | "music"
+type ResourceType = "Presets" | "Motions" | "Models" | "Cameras" | "Musics"

@@ -2,7 +2,6 @@ import { MouseEvent } from "react";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { MenuItem } from "@mui/material";
 import ResourceCard from "../resources/ResourceCard";
-import WithLocalMotions from "./WithLocalMotions";
 
 function LocalMotion({ name }: { name: string }) {
 
@@ -28,4 +27,4 @@ function LocalMotion({ name }: { name: string }) {
     );
 }
 
-export default WithLocalMotions(LocalMotion);
+export default LocalMotion;

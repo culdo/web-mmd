@@ -4,7 +4,6 @@ import { MenuItem } from "@mui/material";
 import ResourceCard from "../resources/ResourceCard";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { nanoid } from "nanoid";
-import WithLocalModels from "./WithLocalModels";
 
 function LocalModel({ name }: { name: string }) {
 
@@ -42,4 +41,4 @@ function LocalModel({ name }: { name: string }) {
     );
 }
 
-export default WithLocalModels(LocalModel);
+export default LocalModel;
