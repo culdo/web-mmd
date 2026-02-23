@@ -64,7 +64,8 @@ export type GlobalState = {
     }>
     modelsObject: Record<string, React.ReactNode>
     getScreenShot: (width: number, height: number) => string
-    openMainUI: boolean
+    openMainUI: boolean,
+    filesHashes: Record<ResourceType, Record<string, string>>
 }
 
 const useGlobalStore = create<GlobalState>(
@@ -125,7 +126,14 @@ const useGlobalStore = create<GlobalState>(
         remoteModels: {},
         modelsObject: {},
         getScreenShot: null,
-        openMainUI: false
+        openMainUI: false,
+        filesHashes: {
+            Presets: {},
+            Motions: {},
+            Models: {},
+            Cameras: {},
+            Musics: {}
+        }
     })
 )
 

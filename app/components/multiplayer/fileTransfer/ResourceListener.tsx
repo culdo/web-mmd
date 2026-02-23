@@ -3,9 +3,10 @@ import { useEffect } from "react";
 import useFileTransfer from "./useFileTransfer";
 import { useResource } from "../../main-ui/context";
 
-function ResourceListener({ name, onRequest }: { name: string, onRequest: (name: string) => Promise<string> }) {
+function ResourceListener({ name }: { name: string }) {
     const screenShot = useConfigStore(state => state.presetsInfo)[name]?.screenShot
-    const { type } = useResource()
+    const { type, useRequest } = useResource()
+    const onRequest = useRequest()
     const uriPrefix = `${type}/${name}`
     const { channel } = useFileTransfer(uriPrefix)
 
