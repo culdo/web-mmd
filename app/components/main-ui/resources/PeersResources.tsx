@@ -2,6 +2,7 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import RemoteResources from "./RemoteResources";
 import { addPreset } from "@/app/stores/useConfigStore";
 import usePresetStore, { migratePreset, setPreset } from "@/app/stores/usePresetStore";
+import { SenderContext } from "../../multiplayer/fileTransfer";
 
 const onLoadMap = {
     "preset": (name: string, data: string) => {
@@ -20,7 +21,7 @@ const onLoadMap = {
         usePresetStore.setState(({ motionFiles }) => {
             return { motionFiles: { ...motionFiles, [name]: data } }
         })
-    }, 
+    },
     "model": (name: string, data: string) => {
         usePresetStore.setState(({ pmxFiles }) => {
             pmxFiles.models[name] = data
@@ -42,7 +43,11 @@ function PeersResources({ type }: { type: ResourceType }) {
             {
                 Object.entries(peerChannels)
                     .filter(([_, pc]) => pc.channels["fileTransfer"])
-                    .map(([sender, pc]) => <RemoteResources type={type} key={sender} sender={sender} channel={pc.channels["fileTransfer"]} onLoad={onLoadMap[type]} />)
+                    .map(([sender, _]) => (
+                        <SenderContext.Provider value={sender}>
+                            <RemoteResources key={sender} type={type} onLoad={onLoadMap[type]} />
+                        </SenderContext.Provider>
+                    ))
             }
         </>
     );
