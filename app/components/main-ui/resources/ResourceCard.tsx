@@ -1,7 +1,7 @@
 import { Card, CardActionArea, CardMedia, CardContent, Typography, CardActions, Button, IconButton, Menu, Tooltip } from "@mui/material";
 import { useState } from "react";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import { useResource } from "../context";
 
 const ITEM_HEIGHT = 48;
 
@@ -12,6 +12,7 @@ function ResourceCard({ name, previewImgSrc, onClick, selected = false, children
     selected?: boolean,
     children?: React.ReactNode
 }) {
+    const { Icon } = useResource()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -53,7 +54,7 @@ function ResourceCard({ name, previewImgSrc, onClick, selected = false, children
                             alt="resource preview"
                         /> :
                         <CardContent sx={{ height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <InsertDriveFileIcon fontSize="large" />
+                            <Icon fontSize="large"></Icon>
                         </CardContent>
                 }
                 <CardActions

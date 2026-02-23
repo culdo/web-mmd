@@ -6,7 +6,7 @@ import useRequest from "./useRequest";
 import usePresetLoad from "./useLoad";
 
 const Presets = {
-    icon: <CollectionsIcon />,
+    Icon: CollectionsIcon,
     Component: LocalPreset,
     onCreate: loadPreset,
     useNames: usePresetsNames,

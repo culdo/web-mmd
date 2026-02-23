@@ -6,7 +6,7 @@ import useNames from "./useNames";
 import useRequest from "./useRequest";
 
 const Models = {
-    icon: <AccessibilityNewIcon />,
+    Icon: AccessibilityNewIcon,
     Component: LocalModel,
     onCreate: () => loadModel(true),
     useNames,

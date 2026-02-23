@@ -7,7 +7,7 @@ import useRequest from "./useRequest";
 import useLoad from "./useLoad";
 
 const Musics = {
-    icon: <MusicNoteIcon />,
+    Icon: MusicNoteIcon,
     Component: LocalMusic,
     onCreate: () => loadFile((audioFile, musicName) => {
         usePresetStore.setState({ audioFile, musicName })

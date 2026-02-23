@@ -1,7 +1,7 @@
 import { useResource } from "../context";
 
 function LocalResources() {
-    const { type, useNames, Component } = useResource()
+    const { useNames, Component } = useResource()
     const names = useNames()
     return names.map(name => <Component key={name} name={name}></Component>);
 }

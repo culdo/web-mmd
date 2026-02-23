@@ -7,7 +7,7 @@ import useNames from "./useNames";
 import useRequest from "./useRequest";
 
 const Cameras = {
-    icon: <CameraAltIcon />,
+    Icon: CameraAltIcon,
     Component: LocalCamera,
     onCreate: () => loadFile((cameraFile, name) => {
         usePresetStore.setState({ cameraFile, camera: name })

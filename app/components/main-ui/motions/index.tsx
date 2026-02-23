@@ -7,7 +7,7 @@ import useNames from "./useNames";
 import useRequest from "./useRequest";
 
 const Motions = {
-    icon: <AnimationIcon />,
+    Icon: AnimationIcon,
     Component: LocalMotion,
     onCreate: () => loadFile((motionFile, motionName) => {
         usePresetStore.setState(({ models, motionFiles, targetModelId }) => {

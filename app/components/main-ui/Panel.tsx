@@ -21,7 +21,7 @@ import { resourcesMap, ResourceTypeContext } from "./context";
 const drawerWidth = 180;
 const drawerBottomItems = {
     "Settings": {
-        icon: <SettingsIcon />,
+        Icon: SettingsIcon,
         component: <div>Settings</div>
     }
 }
@@ -55,14 +55,14 @@ function Panel() {
     const drawer = (
         <div>
             <List>
-                {Object.entries(resourcesMap).map(([text, item]) => (
+                {Object.entries(resourcesMap).map(([text, { Icon }]) => (
                     <ListItem key={text} disablePadding>
                         <ListItemButton selected={selectedKey === text} onClick={() => {
                             setSelectedKey(text)
                             setMobileOpen(false)
                         }}>
                             <ListItemIcon>
-                                {item.icon}
+                                <Icon></Icon>
                             </ListItemIcon>
                             <ListItemText primary={text} />
                         </ListItemButton>
@@ -71,14 +71,14 @@ function Panel() {
             </List>
             <Divider />
             <List>
-                {Object.entries(drawerBottomItems).map(([text, item]) => (
+                {Object.entries(drawerBottomItems).map(([text, { Icon }]) => (
                     <ListItem key={text} disablePadding>
                         <ListItemButton selected={selectedKey === text} onClick={() => {
                             setSelectedKey(text)
                             setMobileOpen(false)
                         }}>
                             <ListItemIcon>
-                                {item.icon}
+                                <Icon></Icon>
                             </ListItemIcon>
                             <ListItemText primary={text} />
                         </ListItemButton>
