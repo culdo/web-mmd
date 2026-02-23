@@ -6,7 +6,7 @@ type ConnectionInfo = {
 
 type PeerChannel = {
     connection?: RTCPeerConnection,
-    channels?: Record<string, RTCDataChannel>
+    channels?: Record<string, JSONDataChannel>
 }
 
 type GroupChannel = {
