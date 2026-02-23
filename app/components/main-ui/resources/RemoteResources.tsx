@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
-import JSONDataChannel from "../../multiplayer/peer/channel/JSONDataChannel";
 import RemoteResource from "./RemoteResource";
-import { SenderContext } from "../../multiplayer/fileTransfer";
-import useSynced from "../../multiplayer/peer/channel/useSynced";
+import useFileTransfer from "../../multiplayer/fileTransfer/useFileTransfer";
 
-function RemoteResources({ type, sender, channel, onLoad }: { type: ResourceType, sender: string, channel: JSONDataChannel, onLoad: (name: string, data: string) => void }) {
+function RemoteResources({ type, onLoad }: { type: ResourceType, onLoad: (name: string, data: string) => void }) {
     const [resourceNames, setResourceNames] = useState<string[]>([])
-
+    const { channel, synced } = useFileTransfer(type)
     useEffect(() => {
         const onMessage = (e: MessageEvent<DataSchema>) => {
             const { uri, payload } = e.data
@@ -18,7 +16,6 @@ function RemoteResources({ type, sender, channel, onLoad }: { type: ResourceType
         return () => channel.removeEventListener("message", onMessage)
     }, [])
 
-    const synced = useSynced(channel, type)
     useEffect(() => {
         if (!synced) return
         channel.send({
@@ -27,14 +24,14 @@ function RemoteResources({ type, sender, channel, onLoad }: { type: ResourceType
     }, [synced])
 
     return (
-        <SenderContext.Provider value={sender}>
+        <>
             {
                 Array.from(resourceNames)
                     .map(name =>
-                        <RemoteResource key={name} type={type} name={name} channel={channel} onLoad={onLoad} />
+                        <RemoteResource key={name} type={type} name={name} onLoad={onLoad} />
                     )
             }
-        </SenderContext.Provider>
+        </>
     );
 }
 

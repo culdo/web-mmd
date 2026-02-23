@@ -1,17 +1,15 @@
 import useConfigStore from "@/app/stores/useConfigStore";
 import { useEffect } from "react";
-import useSynced from "../peer/channel/useSynced";
 import useFileTransfer from "./useFileTransfer";
 
 function ResourceListener({ type, name, onRequest }: { type: ResourceType, name: string, onRequest: (name: string) => Promise<string> }) {
-    const channel = useFileTransfer()
     const screenShot = useConfigStore(state => state.presetsInfo)[name]?.screenShot
     const uriPrefix = `${type}/${name}`
+    const { channel } = useFileTransfer(uriPrefix)
 
-    const synced = useSynced(channel, uriPrefix)
     useEffect(() => {
         const onMessage = async (e: MessageEvent<DataSchema>) => {
-            const { uri, payload } = e.data
+            const { uri } = e.data
             if (uri == `${uriPrefix}/requestResource`) {
                 const data = await onRequest(name)
                 channel.send({
@@ -20,7 +18,7 @@ function ResourceListener({ type, name, onRequest }: { type: ResourceType, name:
                 })
                 const chunkSize = 16384;
                 const readSlice = (offset: number) => {
-                    if(channel.bufferedAmount > 1024 * 1024) {
+                    if (channel.bufferedAmount > 1024 * 1024) {
                         setTimeout(() => readSlice(offset), 100)
                         return
                     }
@@ -44,12 +42,21 @@ function ResourceListener({ type, name, onRequest }: { type: ResourceType, name:
     }, [])
 
     useEffect(() => {
-        if (!synced || !screenShot) return
-        channel.send({
-            uri: `${uriPrefix}/previewImg`,
-            payload: screenShot
-        })
-    }, [synced, screenShot])
+        if (!screenShot) return
+        const onMessage = async (e: MessageEvent<DataSchema>) => {
+            const { uri } = e.data
+            if (uri == `${uriPrefix}/requestPreviewImg`) {
+                channel.send({
+                    uri: `${uriPrefix}/previewImg`,
+                    payload: screenShot
+                })
+            }
+        }
+        channel.addEventListener("message", onMessage)
+        return () => {
+            channel.removeEventListener("message", onMessage)
+        }
+    }, [screenShot])
 
     return (
         <></>

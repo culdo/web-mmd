@@ -1,14 +1,14 @@
 import { MouseEvent, useContext, useEffect, useRef, useState } from "react";
-import JSONDataChannel from "../../multiplayer/peer/channel/JSONDataChannel";
 import ResourceCard from "../resources/ResourceCard";
-import useSynced from "../../multiplayer/peer/channel/useSynced";
 import { SenderContext } from "../../multiplayer/fileTransfer";
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import useFileTransfer from "../../multiplayer/fileTransfer/useFileTransfer";
 
-function RemoteResource({ type, name, channel, onLoad }: { type: ResourceType, name: string, channel: JSONDataChannel, onLoad: (name: string, data: string) => void }) {
+function RemoteResource({ type, name, onLoad }: { type: ResourceType, name: string, onLoad: (name: string, data: string) => void }) {
     const sender = useContext(SenderContext)
     const fullname = `${name}@${sender}`
     const uriPrefix = `${type}/${name}`
+    const { channel, synced } = useFileTransfer(uriPrefix)
     const onClick = (e: MouseEvent) => {
         channel.send({
             uri: `${uriPrefix}/requestResource`
@@ -19,7 +19,13 @@ function RemoteResource({ type, name, channel, onLoad }: { type: ResourceType, n
     const receiveBufferSizeRef = useRef<number>(0)
     const resourceSizeRef = useRef<number>()
     const [previewImgSrc, setPreviewImgSrc] = useState<string>()
-    useSynced(channel, uriPrefix)
+
+    useEffect(() => {
+        if (!synced) return
+        channel.send({
+            uri: `${uriPrefix}/requestPreviewImg`
+        })
+    }, [synced])
 
     useEffect(() => {
         const onMessage = (e: MessageEvent<DataSchema>) => {
@@ -32,6 +38,7 @@ function RemoteResource({ type, name, channel, onLoad }: { type: ResourceType, n
             if (pathname == "resourceSize") {
                 useGlobalStore.setState({ presetReady: false })
                 resourceSizeRef.current = payload
+                receiveBufferRef.current = []
             }
             if (pathname == "resourceData") {
                 receiveBufferRef.current.push(payload);

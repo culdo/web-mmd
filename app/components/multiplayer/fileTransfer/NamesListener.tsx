@@ -1,11 +1,9 @@
 import { useEffect } from "react";
-import useSynced from "../peer/channel/useSynced";
 import useFileTransfer from "./useFileTransfer";
 
 function NamesListener({ type, names }: { type: string, names: string[] }) {
-    const channel = useFileTransfer()
+    const { channel } = useFileTransfer(type)
 
-    useSynced(channel, type)
     useEffect(() => {
         const onMessage = (e: MessageEvent<DataSchema>) => {
             const { uri } = e.data
@@ -18,7 +16,7 @@ function NamesListener({ type, names }: { type: string, names: string[] }) {
         }
         channel.addEventListener("message", onMessage)
         return () => channel.removeEventListener("message", onMessage)
-    }, [])
+    }, [names])
 
     return <></>
 }
