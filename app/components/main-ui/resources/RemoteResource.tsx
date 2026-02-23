@@ -3,12 +3,10 @@ import ResourceCard from "../resources/ResourceCard";
 import { SenderContext } from "../../multiplayer/fileTransfer";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import useFileTransfer from "../../multiplayer/fileTransfer/useFileTransfer";
-import { useResourceType } from "./context";
-import { resourcesMap } from "../resourcesMap";
+import { useResource } from "../context";
 
 function RemoteResource({ name }: { name: string }) {
-    const type = useResourceType()
-    const { useLoad } = resourcesMap[type]
+    const { type, useLoad } = useResource()
     const onLoad = useLoad()
     const sender = useContext(SenderContext)
     const fullname = `${name}@${sender}`

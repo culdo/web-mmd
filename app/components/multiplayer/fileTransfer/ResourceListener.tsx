@@ -1,11 +1,11 @@
 import useConfigStore from "@/app/stores/useConfigStore";
 import { useEffect } from "react";
 import useFileTransfer from "./useFileTransfer";
-import { useResourceType } from "../../main-ui/resources/context";
+import { useResource } from "../../main-ui/context";
 
 function ResourceListener({ name, onRequest }: { name: string, onRequest: (name: string) => Promise<string> }) {
     const screenShot = useConfigStore(state => state.presetsInfo)[name]?.screenShot
-    const type = useResourceType()
+    const { type } = useResource()
     const uriPrefix = `${type}/${name}`
     const { channel } = useFileTransfer(uriPrefix)
 

@@ -3,6 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { useState } from "react";
 import { blue } from "@mui/material/colors";
+import { useResource } from "../context";
 
 const options = {
     "Open file...": {
@@ -10,8 +11,9 @@ const options = {
     }
 };
 
-function CreateResource({ type, onLoad }: { type: string, onLoad: () => void }) {
+function CreateResource() {
     const [open, setOpen] = useState(false);
+    const { type, onCreate } = useResource()
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -19,7 +21,7 @@ function CreateResource({ type, onLoad }: { type: string, onLoad: () => void }) 
 
     const handlePresetKind = (value: string) => {
         if (value === "Open file...") {
-            onLoad()
+            onCreate()
         }
         setOpen(false);
     };

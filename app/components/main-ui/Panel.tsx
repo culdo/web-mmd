@@ -16,8 +16,7 @@ import Typography from '@mui/material/Typography';
 import Resources from "./resources";
 import PeersResources from "./resources/PeersResources";
 import LocalResources from "./resources/LocalResources";
-import { ResourceTypeContext } from "./resources/context";
-import { resourcesMap } from "./resourcesMap";
+import { resourcesMap, ResourceTypeContext } from "./context";
 
 const drawerWidth = 180;
 const drawerBottomItems = {
@@ -175,7 +174,7 @@ function Panel() {
                         <Typography variant="h4">{selectedKey}</Typography>
                     ) : (
                         <ResourceTypeContext.Provider value={selectedKey}>
-                            <Resources selectedKey={selectedKey} onCreate={drawerItems[selectedKey].onCreate}>
+                            <Resources>
                                 <LocalResources />
                                 <PeersResources />
                             </Resources>

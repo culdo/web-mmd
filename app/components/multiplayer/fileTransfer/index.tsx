@@ -1,8 +1,8 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { createContext } from "react";
-import { resourcesMap } from "../../main-ui/resourcesMap";
+import { resourcesMap } from "../../main-ui/context";
 import ResourcesListener from "./ResourcesListener";
-import { ResourceTypeContext } from "../../main-ui/resources/context";
+import { ResourceTypeContext } from "../../main-ui/context";
 
 export const SenderContext = createContext("")
 

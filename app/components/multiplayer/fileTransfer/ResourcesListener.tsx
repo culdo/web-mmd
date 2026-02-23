@@ -1,12 +1,10 @@
 import { useEffect } from "react";
 import useFileTransfer from "./useFileTransfer";
 import ResourceListener from "./ResourceListener";
-import { resourcesMap } from "../../main-ui/resourcesMap";
-import { useResourceType } from "../../main-ui/resources/context";
+import { useResource } from "../../main-ui/context";
 
 function ResourcesListener() {
-    const type = useResourceType()
-    const { useNames, useRequest } = resourcesMap[type]
+    const { type, useNames, useRequest } = useResource()
     const names = useNames()
     const onRequest = useRequest()
 

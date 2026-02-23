@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import RemoteResource from "./RemoteResource";
 import useFileTransfer from "../../multiplayer/fileTransfer/useFileTransfer";
-import { useResourceType } from "./context";
+import { useResource } from "../context";
 
 function RemoteResources() {
     const [resourceNames, setResourceNames] = useState<string[]>([])
-    const type = useResourceType()
+    const { type } = useResource()
     const { channel, synced } = useFileTransfer(type)
     useEffect(() => {
         const onMessage = (e: MessageEvent<DataSchema>) => {

@@ -3,8 +3,10 @@ import CreateResource from "./CreateResource";
 import { Children, isValidElement } from "react";
 import LocalResources from "./LocalResources";
 import PeersResources from "./PeersResources";
+import { useResource } from "../context";
 
-function Resources({ selectedKey, children, onCreate }: { selectedKey: string, children: React.ReactNode, onCreate: () => void }) {
+function Resources({ children }: { children: React.ReactNode }) {
+    const { type: selectedKey } = useResource()
     let local: React.ReactNode;
     let remote: React.ReactNode;
 
@@ -14,7 +16,7 @@ function Resources({ selectedKey, children, onCreate }: { selectedKey: string, c
             local = child;
         } else if (child.type === PeersResources) {
             remote = child;
-        } 
+        }
     }
     return (
         <>
@@ -27,7 +29,7 @@ function Resources({ selectedKey, children, onCreate }: { selectedKey: string, c
                     alignContent: "flex-start"
                 }}
             >
-                <CreateResource type={selectedKey} onLoad={onCreate}></CreateResource>
+                <CreateResource></CreateResource>
                 {local}
             </Box>
             <Divider></Divider>
