@@ -18,7 +18,7 @@ function FileTransfer() {
                         <SenderContext.Provider key={sender} value={sender}>
                             {
                                 Object.keys(resourcesMap).map(type => 
-                                    <ResourceTypeContext.Provider value={type}>
+                                    <ResourceTypeContext.Provider key={type} value={type}>
                                         <ResourcesListener></ResourcesListener>
                                     </ResourceTypeContext.Provider>
                                 )

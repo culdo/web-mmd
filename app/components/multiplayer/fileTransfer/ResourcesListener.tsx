@@ -25,10 +25,7 @@ function ResourcesListener() {
     }, [names])
 
     return names.map(
-        name => <ResourceListener
-            name={name}
-            onRequest={onRequest}
-        />
+        name => <ResourceListener key={name} name={name} onRequest={onRequest} />
     )
 }
 

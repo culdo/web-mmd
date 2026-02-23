@@ -10,8 +10,8 @@ function PeersResources() {
                 Object.entries(peerChannels)
                     .filter(([_, pc]) => pc.channels["fileTransfer"])
                     .map(([sender, _]) => (
-                        <SenderContext.Provider value={sender}>
-                            <RemoteResources key={sender} />
+                        <SenderContext.Provider key={sender} value={sender}>
+                            <RemoteResources />
                         </SenderContext.Provider>
                     ))
             }
