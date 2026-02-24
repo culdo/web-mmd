@@ -56,7 +56,7 @@ export const removePreset = (targetPreset: string) => useConfigStore.setState(st
     const set = new Set(state.presetsList)
     set.delete(targetPreset)
     const presetsList = Array.from(set)
-    localforage.removeItem(targetPreset)
+    localforage.dropInstance({ name: targetPreset })
     return { presetsList }
 })
 
