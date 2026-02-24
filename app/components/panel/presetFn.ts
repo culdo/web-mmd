@@ -1,7 +1,12 @@
 import useConfigStore, { addPreset, removePreset } from "@/app/stores/useConfigStore";
-import usePresetStore, { migratePreset, resetPreset, setPreset } from "@/app/stores/usePresetStore";
+import usePresetStore, { migratePreset, resetPreset, setPreset, storage } from "@/app/stores/usePresetStore";
 import { startFileDownload } from "@/app/utils/base";
 import path from "path-browserify";
+
+export const getPreset = async (name: string) => {
+    const preset = await storage.getItem(name)
+    return preset.state
+}
 
 export const newPreset = async () => {
     let newName = prompt("New preset name:");
@@ -12,33 +17,34 @@ export const newPreset = async () => {
     }
 }
 
-export const copyPreset = async () => {
+export const copyPreset = async (name: string) => {
     let newName = prompt("Copy as preset name:");
     if (newName) {
+        const preset = await getPreset(name)
         addPreset(newName)
         setPreset(newName);
-        usePresetStore.setState(state => ({ ...state }))
+        usePresetStore.setState(preset)
     }
 }
 
-export const deletePreset = async () => {
+export const deletePreset = async (name: string) => {
     if (confirm("Are you sure?")) {
-        const presetName = useConfigStore.getState().preset
-        removePreset(presetName)
+        removePreset(name)
         const { presetsList } = useConfigStore.getState()
         setPreset(presetsList[presetsList.length - 1], true);
     }
 }
 
-export const savePreset = () => {
-    const presetBlob = new Blob([JSON.stringify(usePresetStore.getState())], { type: 'application/json' })
+export const savePreset = async (name: string) => {
+    const preset = await getPreset(name)
+
+    const presetBlob = new Blob([JSON.stringify(preset)], { type: 'application/json' })
     const dlUrl = URL.createObjectURL(presetBlob)
-    const presetName = useConfigStore.getState().preset
-    startFileDownload(dlUrl, `${presetName}.json`)
+    startFileDownload(dlUrl, `${name}.json`)
 }
 
-export const saveConfigOnly = () => {
-    const preset = usePresetStore.getState()
+export const saveConfigOnly = async (name: string) => {
+    const preset = await getPreset(name)
     delete preset.pmxFiles
     delete preset.cameraFile
     delete preset.motionFiles
