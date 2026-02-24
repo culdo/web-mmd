@@ -7,7 +7,6 @@ import { isDev } from "@/app/utils/base";
 import useAnswerRTC from "./peer/useAnswerRTC";
 import useSdpListener from "./peer/useSdpListener";
 import FileTransfer from "./fileTransfer";
-import useGlobalStore from "@/app/stores/useGlobalStore";
 
 function Multiplayer() {
     const uid = useConfigStore(state => state.uid);
@@ -65,8 +64,8 @@ function Multiplayer() {
 }
 
 function Wrapper() {
-    const configReady = useGlobalStore(state => state.configReady);
-    if (!configReady) return null;
+    const uid = useConfigStore(state => state.uid);
+    if (!uid) return null;
     return <Multiplayer />
 }
 
