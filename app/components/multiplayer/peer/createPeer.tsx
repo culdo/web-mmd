@@ -1,6 +1,7 @@
 import { enqueueSnackbar } from "notistack";
 import { infoStyle } from "@/app/utils/gui";
 import useGlobalStore from "@/app/stores/useGlobalStore";
+import { isDev } from "@/app/utils/base";
 
 function createPeer(uid: string, setSDP: (sdp: RTCSessionDescriptionInit) => void, onOpen: (dataChannel: RTCDataChannel) => void = null) {
     const peerConnection = new RTCPeerConnection({
@@ -45,7 +46,9 @@ function createPeer(uid: string, setSDP: (sdp: RTCSessionDescriptionInit) => voi
             }
         })
         onOpen?.(signalChannel)
-        enqueueSnackbar(`Connected with ${uid}!`, infoStyle(true));
+        if (isDev) {
+            enqueueSnackbar(`Connected with ${uid}!`, infoStyle(true));
+        }
     }
 
     signalChannel.onclose = () => {
@@ -56,7 +59,9 @@ function createPeer(uid: string, setSDP: (sdp: RTCSessionDescriptionInit) => voi
         useGlobalStore.setState(({ peerChannels }) => {
             if (!(uid in peerChannels)) return {}
             delete peerChannels[uid];
-            enqueueSnackbar(`Disconnected with ${uid}!`, infoStyle(false));
+            if (isDev) {
+                enqueueSnackbar(`Disconnected with ${uid}!`, infoStyle(false));
+            }
             return {
                 peerChannels: { ...peerChannels }
             }
