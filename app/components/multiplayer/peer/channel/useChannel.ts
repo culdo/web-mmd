@@ -1,6 +1,8 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useEffect, useState } from "react";
 
+const listenersCache = new WeakMap<(ev: any) => void, (ev: any) => void>()
+
 function useChannel(label: string, id: number, peerIdOrCode: string) {
     const peerChannels = useGlobalStore(state => state.peerChannels)
     const onInitRef = useGlobalStore(state => state.onInitRef)
@@ -28,6 +30,7 @@ function useChannel(label: string, id: number, peerIdOrCode: string) {
         // Wrap the send and addEventListener to automatically stringify and parse JSON data
         const rawSend = newDataChannel.send.bind(newDataChannel)
         newDataChannel.send = (data: any) => {
+            if(newDataChannel.readyState != "open") return
             rawSend(JSON.stringify(data))
         }
         const rawAddEventListener = newDataChannel.addEventListener.bind(newDataChannel)
@@ -41,8 +44,18 @@ function useChannel(label: string, id: number, peerIdOrCode: string) {
                         data: parsedData,
                     })
                 }
+                listenersCache.set(listener, handler)
             }
             rawAddEventListener(type, handler)
+        }
+        const rawRemoveEventListener = newDataChannel.removeEventListener.bind(newDataChannel)
+        newDataChannel.removeEventListener = <K extends keyof RTCDataChannelEventMap>(type: K, listener: (ev: RTCDataChannelEventMap[K]) => void) => {
+            let handler = listener;
+            if (type === "message") {
+                handler = listenersCache.get(listener)
+                listenersCache.delete(listener)
+            }
+            rawRemoveEventListener(type, handler)
         }
 
         newDataChannel.onopen = () => {
