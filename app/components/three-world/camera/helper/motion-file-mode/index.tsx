@@ -13,7 +13,7 @@ function MotionFileMode() {
     const camera = useThree(state => state.camera) as PerspectiveCamera
     const cameraMixer = useMemo(() => new AnimationMixer(camera), [camera])
     const cameraName = usePresetStore(state => state.camera)
-    const cameraFile = useConfigStore(state => state.cameraFiles)[cameraName]
+    const cameraFile = useConfigStore(state => state.cameraFiles)?.[cameraName]
     const player = useGlobalStore(state => state.player)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
 
