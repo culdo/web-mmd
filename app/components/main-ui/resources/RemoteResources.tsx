@@ -2,12 +2,16 @@ import { useEffect, useState } from "react";
 import RemoteResource from "./RemoteResource";
 import useFileTransfer from "../../multiplayer/fileTransfer/useFileTransfer";
 import { useResource } from "../context";
-import { fileHashes } from "../../multiplayer/fileTransfer/useGenHash";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function RemoteResources() {
     const [resourceNames, setResourceNames] = useState<Set<string>>(new Set([]))
     const { type } = useResource()
     const { channel, synced } = useFileTransfer(type)
+
+    const currentPreset = useConfigStore(state => state.preset)
+    const fileHashes = useConfigStore(state => state.fileHashes)[currentPreset]
+
     useEffect(() => {
         const onMessage = (e: MessageEvent<DataSchema>) => {
             const { uri, payload } = e.data

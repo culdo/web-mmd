@@ -14,6 +14,7 @@ export type ConfigState = {
     setUid: (uid: string) => void,
     _hasHydrated: boolean,
     setHasHydrated: (state: boolean) => void,
+    fileHashes: Record<string, Record<string, string>>
 }
 
 const useConfigStore = create(
@@ -30,7 +31,8 @@ const useConfigStore = create(
                     set({
                         _hasHydrated: state
                     });
-                }
+                },
+                fileHashes: {}
             }), {
             name: "mmd-storage",
             onRehydrateStorage: () => async (state) => {

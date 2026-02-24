@@ -3,6 +3,7 @@ import { createContext } from "react";
 import { resourcesMap } from "../../main-ui/context";
 import ResourcesListener from "./ResourcesListener";
 import { ResourceTypeContext } from "../../main-ui/context";
+import LocalResources from "./LocalResources";
 
 export const SenderContext = createContext("")
 
@@ -14,6 +15,7 @@ function FileTransfer() {
             {
                 Object.keys(resourcesMap).map(type =>
                     <ResourceTypeContext.Provider key={type} value={type}>
+                        <LocalResources></LocalResources>
                         {
                             Object.entries(peerChannels)
                                 .filter(([_, pc]) => pc.channels["fileTransfer"])

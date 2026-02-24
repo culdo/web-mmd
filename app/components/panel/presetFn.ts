@@ -1,4 +1,4 @@
-import useConfigStore, { addPreset, removePreset } from "@/app/stores/useConfigStore";
+import { addPreset } from "@/app/stores/useConfigStore";
 import usePresetStore, { migratePreset, resetPreset, setPreset, storage } from "@/app/stores/usePresetStore";
 import { startFileDownload } from "@/app/utils/base";
 import path from "path-browserify";
@@ -24,16 +24,6 @@ export const copyPreset = async (name: string) => {
         addPreset(newName)
         setPreset(newName);
         usePresetStore.setState(preset)
-    }
-}
-
-export const deletePreset = async (name: string) => {
-    if (confirm("Are you sure?")) {
-        removePreset(name)
-        const { preset, presetsList } = useConfigStore.getState()
-        if(name == preset) {
-            setPreset(presetsList[presetsList.length - 1], true);
-        }
     }
 }
 
