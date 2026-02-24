@@ -1,6 +1,6 @@
 import { isDev } from "@/app/utils/base";
 import { initializeApp } from "firebase/app";
-import { collection, doc, getCountFromServer, getDoc, getDocs, getFirestore, limit, onSnapshot, or, orderBy, query, setDoc, Timestamp, Unsubscribe, updateDoc, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, onSnapshot, or, query, setDoc, Unsubscribe, where } from "firebase/firestore";
 
 const app = initializeApp(JSON.parse(process.env.FIREBASE_CONFIG));
 const db = getFirestore(app);
@@ -11,7 +11,7 @@ enum ActiveTypes {
     DEV
 }
 
-export async function setUser(id: string, sdp: RTCSessionDescriptionInit = null, offerId = "") {
+export async function setUser(id: string) {
     await setDoc(doc(db, "users", id), {
         active: isDev ? ActiveTypes.DEV : ActiveTypes.DISABLED,
     });
@@ -27,8 +27,8 @@ export async function setSDP(peerAB: [string, string], sdp: RTCSessionDescriptio
 }
 
 export async function setUserActive(id: string, active: boolean) {
-    await updateDoc(doc(db, "users", id), {
-        active: isDev ? ActiveTypes.DEV : ActiveTypes.PROD
+    await setDoc(doc(db, "users", id), {
+        active: isDev ? ActiveTypes.DEV : (active ? ActiveTypes.PROD : ActiveTypes.DISABLED)
     });
 }
 
@@ -43,6 +43,15 @@ export async function getActiveUsers() {
     const q = query(coll, where("active", "==", isDev ? ActiveTypes.DEV : ActiveTypes.PROD));
     const querySnapshot = await getDocs(q);
     return querySnapshot;
+}
+
+export async function deleteDevUsers() {
+    const coll = collection(db, "users");
+    const q = query(coll, where("active", "==", ActiveTypes.DEV));
+    const users = await getDocs(q);
+    for (const userDoc of users.docs) {
+        await deleteDoc(doc(db, "users", userDoc.id));
+    }
 }
 
 export function listenOnConnection(id: string, callback: (data: any, unsub: Unsubscribe) => void) {

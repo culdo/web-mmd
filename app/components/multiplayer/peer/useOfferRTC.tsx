@@ -1,6 +1,6 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import createPeer, { checkPeer } from "./createPeer";
-import { setSDP, setUser } from "@/app/modules/firebase/init";
+import { setSDP } from "@/app/modules/firebase/init";
 import useConfigStore from "@/app/stores/useConfigStore";
 import { useCallback } from "react";
 

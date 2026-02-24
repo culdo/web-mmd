@@ -1,4 +1,4 @@
-import { getActiveUsers, setUser } from "@/app/modules/firebase/init";
+import { deleteDevUsers, getActiveUsers } from "@/app/modules/firebase/init";
 import { button, useControls } from "leva";
 import { useEffect } from "react";
 import PeerConnection from "../peer/PeerConnection";
@@ -19,7 +19,6 @@ function Room() {
 
     useEffect(() => {
         const init = async () => {
-            // await setUser(myUid)
             const users = await getActiveUsers();
             const peerIds = users.docs.map(user => user.id).filter(id => id !== myUid)
             for (const peerId of peerIds) {

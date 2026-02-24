@@ -84,20 +84,19 @@ const useConfigStore = create(
             name: "mmd-storage",
             storage,
             version: 1,
-            migrate,
-            onRehydrateStorage: () => async (state) => {
-                if (!state?.uid) {
-                    const uid = nanoid(7)
-                    useConfigStore.setState({ uid })
-                    await setUser(uid);
-                }
-            }
+            migrate
         }
         )
     )
 )
 
-useConfigStore.persist.onFinishHydration(() => {
+useConfigStore.persist.onFinishHydration(async ({ uid }) => {
+    if (!uid) {
+        const uid = nanoid(7)
+        useConfigStore.setState({ uid })
+        console.log(`Create User: ${uid}`)
+        await setUser(uid);
+    }
     useGlobalStore.setState({ configReady: true })
     if (useGlobalStore.getState().presetReady) {
         useGlobalStore.setState({ storeReady: true })
