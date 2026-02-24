@@ -52,12 +52,13 @@ export const addPreset = (newPreset: string) => useConfigStore.setState(state =>
     return { presetsList }
 })
 
-export const removePreset = (targetPreset: string) => useConfigStore.setState(state => {
-    const set = new Set(state.presetsList)
-    set.delete(targetPreset)
-    const presetsList = Array.from(set)
+export const removePreset = (targetPreset: string) => {
+    useConfigStore.setState(({ presetsList }) => {
+        const set = new Set(presetsList)
+        set.delete(targetPreset)
+        return { presetsList: [...set] }
+    })
     localforage.dropInstance({ name: targetPreset })
-    return { presetsList }
-})
+}
 
 export default useConfigStore;
