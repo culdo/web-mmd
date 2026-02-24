@@ -1,8 +1,8 @@
-import usePresetStore from "@/app/stores/usePresetStore";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function useNames() {
-    const musicName = usePresetStore(state => state.musicName)
-    return [musicName]
+    const audioFiles = useConfigStore(state => state.audioFiles)
+    return Object.keys(audioFiles)
 }
 
 export default useNames;

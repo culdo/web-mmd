@@ -4,20 +4,11 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import useConfigStore from './useConfigStore';
 import useGlobalStore from './useGlobalStore';
-import { withProgress } from '../utils/base';
 import { PersistStorage, StorageValue, persist } from '../middleware/persist';
 import _ from 'lodash';
 import emptyConfig from '@/app/presets/empty_config.json';
 
 export type PresetState = typeof defaultConfig & {
-    motionFiles: Record<string, string>,
-    cameraFile: string,
-    pmxFiles: {
-        models: Record<string, string>,
-        modelTextures: Record<string, Record<string, string>>
-    },
-    audioFile: string
-} & {
     // https://github.com/microsoft/TypeScript/issues/32063
     [key: `${string}.color`]: string,
     [key: `${string}.intensity`]: number,
@@ -66,12 +57,6 @@ export const storage: PersistStorage<PresetState> = {
     },
 }
 
-const getDefaultPreset = async () => {
-    const dataResp = withProgress(await fetch('presets/Default_data.json'), 38204932)
-    const defaultData = await dataResp.json()
-    return { ...defaultConfig, ...defaultData }
-}
-
 export const resetPreset = async ({ reactive } = { reactive: true }) => {
     const emptyPreset = emptyConfig as PresetState
     if (reactive) {
@@ -82,9 +67,8 @@ export const resetPreset = async ({ reactive } = { reactive: true }) => {
 }
 
 export const migratePreset = async (preset: any, version: number) => {
-    const defaultPreset = await getDefaultPreset()
     usePresetStore.setState(states => {
-        _.defaults(states, defaultPreset)
+        _.defaults(states, defaultConfig)
         return { ...states }
     })
     return preset
@@ -109,10 +93,13 @@ const usePresetStore = create(
 
 usePresetStore.persist.onFinishHydration(() => {
     useGlobalStore.setState({ presetReady: true })
+    if(useGlobalStore.getState().configReady) {
+        useGlobalStore.setState({ storeReady: true })
+    }
 })
 
 usePresetStore.persist.onHydrate(() => {
-    useGlobalStore.setState({ presetReady: false })
+    useGlobalStore.setState({ presetReady: false, storeReady: false })
 })
 
 // move to here to avoid cycle imports

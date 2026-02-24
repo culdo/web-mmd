@@ -1,8 +1,8 @@
-import usePresetStore from "@/app/stores/usePresetStore";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 async function onRead(name: string) {
-    const { cameraFile } = usePresetStore.getState()
-    return cameraFile;
+    const { cameraFiles } = useConfigStore.getState()
+    return cameraFiles[name];
 }
 
 export default onRead

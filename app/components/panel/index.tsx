@@ -7,7 +7,7 @@ import useAutoHide from "../control-bar/audio-player/useAutoHide";
 
 function Panel() {
     const gui = useGlobalStore(state => state.gui)
-    const presetReady = useGlobalStore(states => states.presetReady)
+    const presetReady = useGlobalStore(states => states.storeReady)
     const hidden = !presetReady || gui.hidden
     const [collapsed, setCollapsed] = useState(false)
     

@@ -12,7 +12,7 @@ function onLoad(name: string, data: string) {
     } else {
         usePresetStore.setState(loadedPreset)
     }
-    useGlobalStore.setState({ presetReady: true })
+    useGlobalStore.setState({ storeReady: true })
 }
 
 export default onLoad;

@@ -7,12 +7,13 @@ import WithReady from "@/app/stores/WithReady";
 import updateCamera from "../updateCamera";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import useClearMixer from "../useCameraMixer";
-
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function MotionFileMode() {
     const camera = useThree(state => state.camera) as PerspectiveCamera
     const cameraMixer = useMemo(() => new AnimationMixer(camera), [camera])
-    const cameraFile = usePresetStore(state => state.cameraFile)
+    const cameraName = usePresetStore(state => state.camera)
+    const cameraFile = useConfigStore(state => state.cameraFiles)[cameraName]
     const player = useGlobalStore(state => state.player)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
 

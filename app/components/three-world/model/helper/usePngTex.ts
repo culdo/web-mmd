@@ -1,3 +1,4 @@
+import useConfigStore from "@/app/stores/useConfigStore";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { useTexture } from "@react-three/drei";
@@ -9,7 +10,7 @@ function usePngTex(model: THREE.SkinnedMesh) {
     const modelFilename = (modelConfig ?? remoteModelConfig).fileName
     const modelFoldername = modelFilename.split("/")[0]
 
-    const modelTextures = usePresetStore(state => state.pmxFiles).modelTextures[modelFoldername] ?? {}
+    const modelTextures = useConfigStore(state => state.pmxFiles).modelTextures[modelFoldername] ?? {}
     const pngDatas = Object.keys(modelTextures).filter(
         (filename) => filename.includes(".png")).reduce(
             (obj: Record<string, string>, key) => {

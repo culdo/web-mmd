@@ -11,6 +11,8 @@ import { getProject } from "@theatre/core";
 import { CameraMode } from "@/app/types/camera";
 import { MediaControlBar, MediaController, MediaMuteButton, MediaPlayButton, MediaTimeDisplay, MediaTimeRange, MediaVolumeRange } from "media-chrome/react";
 import { RunModes } from "../../three-world/run-modes";
+import useConfigStore from "@/app/stores/useConfigStore";
+import Musics from "../../main-ui/musics";
 
 function AudioPlayer() {
     const setCurrentTime = (currentTime: number) => usePresetStore.setState({ currentTime })
@@ -18,7 +20,7 @@ function AudioPlayer() {
     const currentTime = usePresetStore(state => state.currentTime)
     const musicName = usePresetStore(state => state.musicName)
 
-    const audioFile = usePresetStore(state => state.audioFile)
+    const audioFile = useConfigStore(state => state.audioFiles)?.[musicName]
     const cameraMode = usePresetStore(state => state["camera mode"])
     const runMode = usePresetStore(state => state["run mode"])
 
@@ -28,9 +30,7 @@ function AudioPlayer() {
             editable: false
         },
         "select audio file": button(() => {
-            loadFile((audioFile, musicName) => {
-                usePresetStore.setState({ audioFile, musicName })
-            })
+            Musics.onCreate()
         }),
         "auto hide GUI on playing": buildGuiItem("auto hide GUI")
     }), { order: 200, collapsed: true }, [musicName])

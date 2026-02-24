@@ -1,7 +1,7 @@
-import usePresetStore from "@/app/stores/usePresetStore";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function onDelete(name: string) {
-    usePresetStore.setState(({ pmxFiles }) => {
+    useConfigStore.setState(({ pmxFiles }) => {
         delete pmxFiles.models[name]
         return { pmxFiles: { ...pmxFiles } }
     })

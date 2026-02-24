@@ -1,8 +1,12 @@
 import localforage from 'localforage';
 import { nanoid } from 'nanoid';
 import { create } from 'zustand';
-import { persist, subscribeWithSelector } from 'zustand/middleware'
+import { subscribeWithSelector } from 'zustand/middleware'
+import { PersistStorage, StorageValue, persist } from '../middleware/persist';
 import { setUser } from '../modules/firebase/init';
+import _ from 'lodash';
+import { withProgress } from '../utils/base';
+import useGlobalStore from './useGlobalStore';
 
 export type ConfigState = {
     preset: string,
@@ -11,42 +15,98 @@ export type ConfigState = {
         screenShot: string,
     }>,
     uid: string;
-    setUid: (uid: string) => void,
-    _hasHydrated: boolean,
-    setHasHydrated: (state: boolean) => void,
-    fileHashes: Record<string, Record<string, string>>
+    fileHashes: Record<string, Record<string, string>>,
+    motionFiles: Record<string, string>,
+    cameraFiles: Record<string, string>,
+    pmxFiles: {
+        models: Record<string, string>,
+        modelTextures: Record<string, Record<string, string>>
+    },
+    audioFiles: Record<string, string>
+}
+
+const db = localforage.createInstance({ name: "mmd-storage" })
+
+export const storage: PersistStorage<ConfigState> = {
+    getItem: async (name: string): Promise<StorageValue<ConfigState>> => {
+        const keys = await db.keys()
+        const preset = Object.fromEntries(await Promise.all(
+            keys.map(async (key) =>
+                [key, await db.getItem(key)]
+            )
+        ))
+        console.log(name, 'has been retrieved', preset)
+        return {
+            state: preset,
+            version: preset.version ?? 0
+        }
+    },
+    setItem: async (name: string, value: StorageValue<ConfigState>): Promise<void> => {
+        document.title = "Web MMD (Saving...)"
+        for (const [key, val] of Object.entries(value.state)) {
+            await db.setItem(key, val)
+        }
+        console.log(name, 'with value', value.state, 'has been saved')
+        await db.setItem("version", value.version)
+        document.title = "Web MMD"
+    },
+    removeItem: async (name: string): Promise<void> => {
+        console.log(name, 'has been deleted')
+        await db.clear()
+    },
+}
+
+const migrate = async (states: any, version: number) => {
+    const dataResp = withProgress(await fetch('presets/Default_data.json'), 33699845)
+    const defaultData = await dataResp.json()
+    useConfigStore.setState(states => {
+        _.defaults(states, defaultData)
+        return { ...states }
+    })
+    console.log("migrate ConfigStore")
+    return states
 }
 
 const useConfigStore = create(
     subscribeWithSelector(
         persist<ConfigState>(
-            (set, get) => ({
+            () => ({
                 preset: "Default",
                 presetsList: ["Default"],
                 presetsInfo: {},
                 uid: "",
-                setUid: (uid) => set({ uid }),
-                _hasHydrated: false,
-                setHasHydrated: (state) => {
-                    set({
-                        _hasHydrated: state
-                    });
-                },
-                fileHashes: {}
+                fileHashes: {},
+                motionFiles: undefined,
+                cameraFiles: undefined,
+                pmxFiles: undefined,
+                audioFiles: undefined
             }), {
             name: "mmd-storage",
+            storage,
+            version: 1,
+            migrate,
             onRehydrateStorage: () => async (state) => {
-                if (!state.uid) {
+                if (!state?.uid) {
                     const uid = nanoid(7)
-                    state?.setUid(uid);
+                    useConfigStore.setState({ uid })
                     await setUser(uid);
                 }
-                state?.setHasHydrated(true);
             }
         }
         )
     )
 )
+
+useConfigStore.persist.onFinishHydration(() => {
+    useGlobalStore.setState({ configReady: true })
+    if (useGlobalStore.getState().presetReady) {
+        useGlobalStore.setState({ storeReady: true })
+    }
+})
+
+useConfigStore.persist.onHydrate(() => {
+    useGlobalStore.setState({ configReady: false, storeReady: false })
+})
 
 export const addPreset = (newPreset: string) => useConfigStore.setState(state => {
     const set = new Set(state.presetsList)

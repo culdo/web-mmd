@@ -1,7 +1,7 @@
-import usePresetStore from "@/app/stores/usePresetStore";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function onDelete(name: string) {
-    usePresetStore.setState(({ motionFiles }) => {
+    useConfigStore.setState(({ motionFiles }) => {
         delete motionFiles[name]
         return { motionFiles: { ...motionFiles } }
     })

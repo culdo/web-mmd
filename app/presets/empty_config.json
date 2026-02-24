@@ -95,12 +95,5 @@
     "isWebGPU": false,
     "version": 0,
     "ar camera scale": 100,
-    "enableMultiPlayer": false,
-    "audioFile": null,
-    "motionFiles": {},
-    "cameraFile": "",
-    "pmxFiles": {
-        "models": {},
-        "modelTextures": {}
-    }
+    "enableMultiPlayer": false
 }

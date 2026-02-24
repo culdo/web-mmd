@@ -9,6 +9,7 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import { cameraToTracks } from "@/app/modules/theatreTrackBuilder";
 import { PerspectiveCamera as PerspectiveCameraImpl } from "three";
 import useAutoHide from "@/app/components/control-bar/audio-player/useAutoHide";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 const sheet = getProject("MMD").sheet("MMD UI")
 const sequence = sheet.sequence
@@ -35,7 +36,8 @@ function EditorMode() {
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
     const player = useGlobalStore(state => state.player)
 
-    const cameraFile = usePresetStore(state => state.cameraFile)
+    const cameraName = usePresetStore(state => state.camera)
+    const cameraFile = useConfigStore(state => state.cameraFiles)[cameraName]
 
     useEffect(() => {
 

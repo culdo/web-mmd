@@ -1,4 +1,3 @@
-import usePresetStore from "@/app/stores/usePresetStore";
 import { AnimationAction, AnimationClip, AnimationMixer, Quaternion, Vector3 } from "three";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import buildUpdatePMX from "../../../../../model/helper/buildUpdatePMX";
@@ -7,6 +6,7 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import makeClipLoopable from "../../../../../animation/makeClipLoopable";
 import { buildOnProgress } from "@/app/utils/base";
 import { RemoteModelContext } from ".";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 type ActionsType = Record<string, {
     name: string,
@@ -17,7 +17,7 @@ type ActionsType = Record<string, {
 function Actions() {
     const { mesh, channel } = useContext(RemoteModelContext)
 
-    const motionFiles = usePresetStore(state => state.motionFiles)
+    const motionFiles = useConfigStore(state => state.motionFiles)
     const loader = useGlobalStore(state => state.loader)
 
     const motionsRef = useRef<ActionsType>({

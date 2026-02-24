@@ -1,9 +1,10 @@
 import CameraWorkHelper from "./helper";
 import { button, useControls } from "leva";
-import { buildGuiItem, loadFile } from "@/app/utils/gui";
+import { buildGuiItem } from "@/app/utils/gui";
 import usePresetStore from "@/app/stores/usePresetStore";
 
 import { PerspectiveCamera } from "@react-three/drei";
+import onCreate from "../../main-ui/cameras/onCreate";
 
 function Camera() {
     const fov = usePresetStore(state => state.fov)
@@ -16,9 +17,7 @@ function Camera() {
             editable: false
         },
         "select camera file": button(() => {
-            loadFile((cameraFile, name) => {
-                usePresetStore.setState({ cameraFile, camera: name })
-            })
+            onCreate()
         }),
         "fov": {
             ...buildGuiItem("fov"),

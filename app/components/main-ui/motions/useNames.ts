@@ -1,8 +1,7 @@
-import usePresetStore from "@/app/stores/usePresetStore";
-
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function useNames() {
-    const motionFiles = usePresetStore(state => state.motionFiles)
+    const motionFiles = useConfigStore(state => state.motionFiles)
     return Object.keys(motionFiles)
 }
 

@@ -1,7 +1,7 @@
-import useConfigStore from "@/app/stores/useConfigStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import Models from "./models";
 import GroupChannel from "../../../../multiplayer/peer/channel/GroupChannel";
+import useGlobalStore from "@/app/stores/useGlobalStore";
 
 function Room() {
     return (
@@ -15,9 +15,9 @@ function Room() {
 
 function Wrapper() {
     const enableMultiPlayer = usePresetStore(state => state.enableMultiPlayer);
-    const hasHydrated = useConfigStore(state => state._hasHydrated);
+    const configReady = useGlobalStore(state => state.configReady);
 
-    return (enableMultiPlayer && hasHydrated) ? <Room /> : null;
+    return (enableMultiPlayer && configReady) ? <Room /> : null;
 }
 
 export default Wrapper;

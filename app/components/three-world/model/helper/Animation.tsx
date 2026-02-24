@@ -7,13 +7,14 @@ import buildUpdatePMX from "./buildUpdatePMX";
 import VMDMotion from "./VMDMotion";
 import { useFrame } from "@react-three/fiber";
 import { button, useControls } from "leva";
-import { loadFile } from "@/app/utils/gui";
 import isRenderGui from "./useRenderGui";
+import useConfigStore from "@/app/stores/useConfigStore";
+import Motions from "@/app/components/main-ui/motions";
 
 function Animation({ motionNames }: { motionNames: string[] }) {
     const mesh = useModel()
     const player = useGlobalStore(state => state.player)
-    const motionFiles = usePresetStore(state => state.motionFiles)
+    const motionFiles = useConfigStore(state => state.motionFiles)
     const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
 
     const mixer = useMemo(() => new AnimationMixer(mesh), [mesh]) as AnimationMixer & {
@@ -24,16 +25,7 @@ function Animation({ motionNames }: { motionNames: string[] }) {
 
     const [_, set] = useControls(`Model.${mesh.name}.Animation`, () => ({
         "add motion file": button(() => {
-            loadFile((motionFile, motionName) => {
-                usePresetStore.setState(({ models, motionFiles }) => {
-                    motionFiles[motionName] = motionFile
-                    models[mesh.name].motionNames[0] = motionName
-                    return {
-                        motionFiles: { ...motionFiles },
-                        models: { ...models }
-                    }
-                })
-            })
+            Motions.onCreate()
         }),
         "blend motion": {
             value: "Select...",

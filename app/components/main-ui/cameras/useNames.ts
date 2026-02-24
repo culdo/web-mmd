@@ -1,8 +1,7 @@
-import usePresetStore from "@/app/stores/usePresetStore";
-
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function useNames() {
-    const cameraName = usePresetStore(state => state.camera)
-    return [cameraName]
+    const cameraFiles = useConfigStore(state => state.cameraFiles)
+    return Object.keys(cameraFiles)
 }
 export default useNames;

@@ -2,8 +2,6 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useEffect, useRef, useState } from "react";
 import AudioPlayer from "./audio-player";
 import FullScreenButton from "./fullscreen-button";
-import usePresetStore from "@/app/stores/usePresetStore";
-import { CameraMode } from "@/app/types/camera";
 
 function ControlBar() {
     const getPlayer = () => useGlobalStore.getState().player

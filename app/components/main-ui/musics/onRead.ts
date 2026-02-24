@@ -1,8 +1,8 @@
-import usePresetStore from "@/app/stores/usePresetStore";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 async function onRead(name: string) {
-    const { audioFile } = usePresetStore.getState()
-    return audioFile;
+    const { audioFiles } = useConfigStore.getState()
+    return audioFiles[name];
 }
 
 export default onRead;

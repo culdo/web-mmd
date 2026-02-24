@@ -1,8 +1,7 @@
-import usePresetStore from "@/app/stores/usePresetStore";
-
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function useNames() {
-    const pmxFiles = usePresetStore(state => state.pmxFiles)
+    const pmxFiles = useConfigStore(state => state.pmxFiles)
     return Object.keys(pmxFiles.models)
 }
 

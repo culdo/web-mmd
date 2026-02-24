@@ -1,9 +1,9 @@
-import usePresetStore, {  } from "@/app/stores/usePresetStore";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function onLoad(name: string, data: string) {
-    usePresetStore.setState(({ motionFiles }) => {
-            return { motionFiles: { ...motionFiles, [name]: data } }
-        })
+    useConfigStore.setState(({ motionFiles }) => {
+        return { motionFiles: { ...motionFiles, [name]: data } }
+    })
 }
 
 export default onLoad;

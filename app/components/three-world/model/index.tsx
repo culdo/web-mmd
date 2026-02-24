@@ -1,10 +1,11 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore from "@/app/stores/usePresetStore";
 import WithReady from "@/app/stores/WithReady";
-import { buildGuiItem, loadModel } from "@/app/utils/gui";
+import { buildGuiItem } from "@/app/utils/gui";
 import { Plane } from "@react-three/drei";
 import { button, useControls } from "leva";
 import dynamic from "next/dynamic";
+import onCreate from "../../main-ui/models/onCreate";
 const Model = dynamic(() => import('./Model'), { ssr: false })
 
 function Models() {
@@ -18,7 +19,7 @@ function Models() {
             options: targetOptions
         },
         "add new model": button(() => {
-            loadModel(true)
+            onCreate(true)
         })
     }, { order: 2, collapsed: true }, [targetOptions])
 

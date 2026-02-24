@@ -1,7 +1,7 @@
-import usePresetStore, { } from "@/app/stores/usePresetStore";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 function onLoad(name: string, data: string) {
-    usePresetStore.setState(({ pmxFiles }) => {
+    useConfigStore.setState(({ pmxFiles }) => {
         pmxFiles.models[name] = data
         return { pmxFiles: { ...pmxFiles } }
     })

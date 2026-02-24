@@ -30,7 +30,9 @@ export type GlobalState = {
     isOrbitControlRef: MutableRefObject<boolean>
     isTransformControlRef: MutableRefObject<boolean>
     bindParentCb: Function,
+    storeReady: boolean,
     presetReady: boolean,
+    configReady: boolean,
     selectedName: string,
     enabledTransform: boolean,
     theatreStudio: IStudio,
@@ -99,7 +101,9 @@ const useGlobalStore = create<GlobalState>(
             return ref
         })(),
         bindParentCb: null,
+        storeReady: false,
         presetReady: false,
+        configReady: false,
         selectedName: null,
         enabledTransform: true,
         theatreStudio: null,

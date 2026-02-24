@@ -37,7 +37,7 @@ function RemoteResource({ name }: { name: string }) {
                 setPreviewImgSrc(payload)
             }
             if (pathname == "resourceSize") {
-                useGlobalStore.setState({ presetReady: false })
+                useGlobalStore.setState({ storeReady: false })
                 resourceSizeRef.current = payload
                 receiveBufferRef.current = []
             }

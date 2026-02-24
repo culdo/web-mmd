@@ -94,11 +94,15 @@ function saveCurrTime(api: { currentTime: any; }, currTime: any) {
     }
 }
 
-function blobToBase64(blob: Blob): Promise<string> {
+function readFile(blob: Blob, asBase64 = true): Promise<string> {
     return new Promise((resolve, _) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(blob);
+        if (asBase64) {
+            reader.readAsDataURL(blob);
+        } else {
+            reader.readAsText(blob)
+        }
     });
 }
 
@@ -139,4 +143,4 @@ function debugWait(ms = 2000) {
 
 const isDev = process.env.NODE_ENV === 'development';
 
-export { blobToBase64, dataURItoBlob, readBlobAsChunks as readDataUrlAsChunks, debugWait, disposeMesh, buildOnProgress, saveCurrTime, startFileDownload, withProgress, withTimeElapse, isDev };
+export { readFile, dataURItoBlob, readBlobAsChunks as readDataUrlAsChunks, debugWait, disposeMesh, buildOnProgress, saveCurrTime, startFileDownload, withProgress, withTimeElapse, isDev };

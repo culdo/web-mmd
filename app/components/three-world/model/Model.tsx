@@ -6,13 +6,14 @@ import { ThreeEvent } from "@react-three/fiber";
 import { RunModes } from "../run-modes";
 import dynamic from "next/dynamic";
 import { button, useControls } from "leva";
+import useConfigStore from "@/app/stores/useConfigStore";
 const Morph = dynamic(() => import('./helper/Morph'), { ssr: false })
 const Material = dynamic(() => import('./helper/Material'), { ssr: false })
 const Physics = dynamic(() => import("./helper/Physics"), { ssr: false })
 const Animation = dynamic(() => import("./helper/Animation"), { ssr: false })
 
 function Model({ id, fileName, motionNames = [], enableMorph = true, enableMaterial = true, enablePhysics = true }: { id: string, fileName: string, enableMorph?: boolean, enableMaterial?: boolean, enablePhysics?: boolean, motionNames?: string[] }) {
-    const pmxFiles = usePresetStore(state => state.pmxFiles)
+    const pmxFiles = useConfigStore(state => state.pmxFiles)
     const runMode = usePresetStore(state => state["run mode"])
     const targetModelId = usePresetStore(state => state.targetModelId)
     const url = pmxFiles.models[fileName]

@@ -1,5 +1,4 @@
-import usePresetStore from "@/app/stores/usePresetStore";
-import { AnimationAction, AnimationClip, AnimationMixer, MathUtils, Quaternion, Vector3 } from "three";
+import { AnimationAction, AnimationClip, AnimationMixer, Quaternion, Vector3 } from "three";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTargetModel } from "../../model/helper/useTargetModel";
 import buildUpdatePMX from "../../model/helper/buildUpdatePMX";
@@ -7,6 +6,7 @@ import { useFrame } from "@react-three/fiber";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import makeClipLoopable from "../../animation/makeClipLoopable";
 import { buildOnProgress } from "@/app/utils/base";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 type ActionsType = Record<string, {
     name: string,
@@ -16,7 +16,7 @@ type ActionsType = Record<string, {
 
 function Actions() {
     const mesh = useTargetModel()
-    const motionFiles = usePresetStore(state => state.motionFiles)
+    const motionFiles = useConfigStore(state => state.motionFiles)
     const loader = useGlobalStore(state => state.loader)
 
     const motionsRef = useRef<ActionsType>({

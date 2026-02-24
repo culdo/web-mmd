@@ -1,7 +1,7 @@
-import usePresetStore from "@/app/stores/usePresetStore";
+import useConfigStore from "@/app/stores/useConfigStore";
 
 async function onRead(name: string) {
-    const { motionFiles } = usePresetStore.getState()
+    const { motionFiles } = useConfigStore.getState()
     return motionFiles[name];
 }
 
