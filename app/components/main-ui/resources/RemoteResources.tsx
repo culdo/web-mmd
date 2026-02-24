@@ -2,28 +2,35 @@ import { useEffect, useState } from "react";
 import RemoteResource from "./RemoteResource";
 import useFileTransfer from "../../multiplayer/fileTransfer/useFileTransfer";
 import { useResource } from "../context";
-import useGlobalStore from "@/app/stores/useGlobalStore";
+import { fileHashes } from "../../multiplayer/fileTransfer/useGenHash";
 
 function RemoteResources() {
-    const [resourceNames, setResourceNames] = useState<string[]>([])
+    const [resourceNames, setResourceNames] = useState<Set<string>>(new Set([]))
     const { type } = useResource()
-    const filesHashes = useGlobalStore(state => state.filesHashes)[type]
     const { channel, synced } = useFileTransfer(type)
     useEffect(() => {
         const onMessage = (e: MessageEvent<DataSchema>) => {
-            const { uri, payload: remoteHashes } = e.data
+            const { uri, payload } = e.data
             if (uri == `${type}/resourceHashes`) {
-                const fileHashes = Object.values(filesHashes)
-                const names = Object.keys(remoteHashes)
-                    .filter(name =>
-                        !fileHashes.includes(remoteHashes[name])
-                    )
-                setResourceNames(names)
+                if (Object.values(fileHashes).includes(payload.hash)) return
+                setResourceNames(names => {
+                    names.add(payload.name)
+                    return new Set(names)
+                })
+            }
+            if (uri == `${type}/resourceDestroy`) {
+                setResourceNames(names => {
+                    names.delete(payload.name)
+                    return new Set(names)
+                })
             }
         }
         channel.addEventListener("message", onMessage)
-        return () => channel.removeEventListener("message", onMessage)
-    }, [type, filesHashes])
+        return () => {
+            setResourceNames(new Set([]))
+            channel.removeEventListener("message", onMessage)
+        }
+    }, [type])
 
     useEffect(() => {
         if (!synced) return
@@ -35,7 +42,7 @@ function RemoteResources() {
     return (
         <>
             {
-                Array.from(resourceNames)
+                [...resourceNames]
                     .map(name =>
                         <RemoteResource key={name} name={name} />
                     )

@@ -2,6 +2,7 @@ import useConfigStore from "@/app/stores/useConfigStore";
 import { useEffect } from "react";
 import useFileTransfer from "./useFileTransfer";
 import { useResource } from "../../main-ui/context";
+import useGenHash from "./useGenHash";
 
 function ResourceListener({ name }: { name: string }) {
     const screenShot = useConfigStore(state => state.presetsInfo)[name]?.screenShot
@@ -9,6 +10,33 @@ function ResourceListener({ name }: { name: string }) {
     const onRequest = useRequest()
     const uriPrefix = `${type}/${name}`
     const { channel } = useFileTransfer(uriPrefix)
+
+    const hash = useGenHash(name)
+    useEffect(() => {
+        if (!hash) return
+        const onMessage = async (e: MessageEvent<DataSchema>) => {
+            const { uri } = e.data
+            if (uri == `${type}/requestResourceHashes`) {
+                channel.send({
+                    uri: `${type}/resourceHashes`,
+                    payload: { hash, name }
+                })
+            }
+        }
+        channel.addEventListener("message", onMessage)
+        return () => {
+            channel.removeEventListener("message", onMessage)
+        }
+    }, [hash])
+
+    useEffect(() => {
+        return () => {
+            channel.send({
+                uri: `${type}/resourceDestroy`,
+                payload: { name }
+            })
+        }
+    }, [])
 
     useEffect(() => {
         const onMessage = async (e: MessageEvent<DataSchema>) => {

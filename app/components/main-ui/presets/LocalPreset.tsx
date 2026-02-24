@@ -25,16 +25,16 @@ function LocalPreset({ name }: { name: string }) {
             onClick={isCurrentPreset ? undefined : onClick}
             selected={isCurrentPreset}
         >
-            <MenuItem onClick={copyPreset}>
+            <MenuItem onClick={() => copyPreset(name)}>
                 Copy Preset
             </MenuItem>
-            <MenuItem onClick={savePreset}>
+            <MenuItem onClick={() => savePreset(name)}>
                 Save Preset
             </MenuItem>
-            <MenuItem onClick={saveConfigOnly}>
+            <MenuItem onClick={() => saveConfigOnly(name)}>
                 Save Config Only
             </MenuItem>
-            <MenuItem sx={{ color: 'red' }} onClick={deletePreset}>
+            <MenuItem sx={{ color: 'red' }} onClick={() => deletePreset(name)}>
                 Delete Preset
             </MenuItem>
         </ResourceCard>

@@ -3,13 +3,11 @@ import { createContext } from "react";
 import { resourcesMap } from "../../main-ui/context";
 import ResourcesListener from "./ResourcesListener";
 import { ResourceTypeContext } from "../../main-ui/context";
-import useGenHashes from "./useGenHashes";
 
 export const SenderContext = createContext("")
 
 function FileTransfer() {
     const peerChannels = useGlobalStore(state => state.peerChannels)
-    useGenHashes()
 
     return (
         <>
