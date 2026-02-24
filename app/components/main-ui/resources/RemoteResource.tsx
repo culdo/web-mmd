@@ -6,8 +6,7 @@ import useFileTransfer from "../../multiplayer/fileTransfer/useFileTransfer";
 import { useResource } from "../context";
 
 function RemoteResource({ name }: { name: string }) {
-    const { type, useLoad } = useResource()
-    const onLoad = useLoad()
+    const { type, onLoad } = useResource()
     const sender = useContext(SenderContext)
     const fullname = `${name}@${sender}`
     const uriPrefix = `${type}/${name}`

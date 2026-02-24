@@ -2,9 +2,9 @@ import { loadFile } from "@/app/utils/gui";
 import LocalMotion from "./LocalMotion";
 import usePresetStore from "@/app/stores/usePresetStore";
 import AnimationIcon from '@mui/icons-material/Animation';
-import useLoad from "./useLoad";
+import onLoad from "./onLoad";
 import useNames from "./useNames";
-import useRequest from "./useRequest";
+import onRead from "./onRead";
 
 const Motions = {
     Icon: AnimationIcon,
@@ -20,7 +20,7 @@ const Motions = {
         })
     }),
     useNames,
-    useRequest,
-    useLoad
+    onRead,
+    onLoad
 }
 export default Motions;

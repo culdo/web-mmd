@@ -2,9 +2,9 @@ import { loadFile } from "@/app/utils/gui";
 import LocalCamera from "./LocalCamera";
 import usePresetStore from "@/app/stores/usePresetStore";
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
-import useLoad from "./useLoad";
+import onLoad from "./onLoad";
 import useNames from "./useNames";
-import useRequest from "./useRequest";
+import onRead from "./onRead";
 
 const Cameras = {
     Icon: CameraAltIcon,
@@ -13,8 +13,8 @@ const Cameras = {
         usePresetStore.setState({ cameraFile, camera: name })
     }),
     useNames,
-    useRequest,
-    useLoad
+    onRead,
+    onLoad
 }
 
 export default Cameras;

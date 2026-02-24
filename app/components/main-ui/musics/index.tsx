@@ -3,8 +3,8 @@ import LocalMusic from "./LocalMusic";
 import usePresetStore from "@/app/stores/usePresetStore";
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import useNames from "./useNames";
-import useRequest from "./useRequest";
-import useLoad from "./useLoad";
+import onRead from "./onRead";
+import onLoad from "./onLoad";
 
 const Musics = {
     Icon: MusicNoteIcon,
@@ -13,8 +13,8 @@ const Musics = {
         usePresetStore.setState({ audioFile, musicName })
     }),
     useNames,
-    useRequest,
-    useLoad
+    onRead,
+    onLoad
 }
 
 export default Musics;

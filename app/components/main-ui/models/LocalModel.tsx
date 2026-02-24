@@ -4,6 +4,7 @@ import { MenuItem } from "@mui/material";
 import ResourceCard from "../resources/ResourceCard";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { nanoid } from "nanoid";
+import onDelete from "./onDelete";
 
 function LocalModel({ name }: { name: string }) {
 
@@ -29,12 +30,7 @@ function LocalModel({ name }: { name: string }) {
             onClick={onClick}
             selected={false}
         >
-            <MenuItem sx={{ color: 'red' }} onClick={() => {
-                usePresetStore.setState(({ pmxFiles }) => {
-                    delete pmxFiles.models[name]
-                    return { pmxFiles: { ...pmxFiles } }
-                })
-            }}>
+            <MenuItem sx={{ color: 'red' }} onClick={() => onDelete(name)}>
                 Delete Model
             </MenuItem>
         </ResourceCard>

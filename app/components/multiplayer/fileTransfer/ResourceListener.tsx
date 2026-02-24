@@ -6,8 +6,7 @@ import useGenHash from "./useGenHash";
 
 function ResourceListener({ name }: { name: string }) {
     const screenShot = useConfigStore(state => state.presetsInfo)[name]?.screenShot
-    const { type, useRequest } = useResource()
-    const onRequest = useRequest()
+    const { type, onRead } = useResource()
     const uriPrefix = `${type}/${name}`
     const { channel } = useFileTransfer(uriPrefix)
 
@@ -42,7 +41,7 @@ function ResourceListener({ name }: { name: string }) {
         const onMessage = async (e: MessageEvent<DataSchema>) => {
             const { uri } = e.data
             if (uri == `${uriPrefix}/requestResource`) {
-                const data = await onRequest(name)
+                const data = await onRead(name)
                 channel.send({
                     uri: `${uriPrefix}/resourceSize`,
                     payload: data.length

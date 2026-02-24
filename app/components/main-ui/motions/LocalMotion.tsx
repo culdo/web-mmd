@@ -2,6 +2,7 @@ import { MouseEvent } from "react";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { MenuItem } from "@mui/material";
 import ResourceCard from "../resources/ResourceCard";
+import onDelete from "./onDelete";
 
 function LocalMotion({ name }: { name: string }) {
 
@@ -15,12 +16,7 @@ function LocalMotion({ name }: { name: string }) {
             onClick={onClick}
             selected={false}
         >
-            <MenuItem sx={{ color: 'red' }} onClick={() => {
-                usePresetStore.setState(({ motionFiles }) => {
-                    delete motionFiles[name]
-                    return { motionFiles: { ...motionFiles } }
-                })
-            }}>
+            <MenuItem sx={{ color: 'red' }} onClick={() => onDelete(name)}>
                 Delete Motion
             </MenuItem>
         </ResourceCard>
