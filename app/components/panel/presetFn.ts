@@ -30,8 +30,10 @@ export const copyPreset = async (name: string) => {
 export const deletePreset = async (name: string) => {
     if (confirm("Are you sure?")) {
         removePreset(name)
-        const { presetsList } = useConfigStore.getState()
-        setPreset(presetsList[presetsList.length - 1], true);
+        const { preset, presetsList } = useConfigStore.getState()
+        if(name == preset) {
+            setPreset(presetsList[presetsList.length - 1], true);
+        }
     }
 }
 
