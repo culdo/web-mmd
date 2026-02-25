@@ -1,8 +1,10 @@
 import useConfigStore from "@/app/stores/useConfigStore";
+import _ from "lodash";
 
-function onLoad(name: string, data: string) {
+function onLoad(name: string, data: string, channel: JSONDataChannel) {
+    const model = JSON.parse(data)
     useConfigStore.setState(({ pmxFiles }) => {
-        pmxFiles.models[name] = data
+        _.merge(pmxFiles, model)
         return { pmxFiles: { ...pmxFiles } }
     })
 }

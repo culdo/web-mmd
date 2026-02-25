@@ -49,7 +49,7 @@ function RemoteResource({ name }: { name: string }) {
                 }
                 receiveBufferSizeRef.current += payload.length
                 if (receiveBufferSizeRef.current == resourceSizeRef.current) {
-                    onLoad(fullname, receiveBufferRef.current.join(""))
+                    onLoad(fullname, receiveBufferRef.current.join(""), channel)
                     useGlobalStore.setState({ openMainUI: false })
                 }
             }
