@@ -9,8 +9,7 @@ function ResourceListener({ name }: { name: string }) {
     const uriPrefix = `${type}/${name}`
     const { channel } = useFileTransfer(uriPrefix)
 
-    const currentPreset = useConfigStore(state => state.preset)
-    const hash = useConfigStore(state => state.fileHashes)[currentPreset]?.[`${type}/${name}`]
+    const hash = useConfigStore(state => state.fileHashes)[`${type}/${name}`]
     useEffect(() => {
         if (!hash) return
         const onMessage = async (e: MessageEvent<DataSchema>) => {

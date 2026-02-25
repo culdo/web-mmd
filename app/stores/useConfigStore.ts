@@ -15,7 +15,7 @@ export type ConfigState = {
         screenShot: string,
     }>,
     uid: string;
-    fileHashes: Record<string, Record<string, string>>,
+    fileHashes: Record<string, string>,
     motionFiles: Record<string, string>,
     cameraFiles: Record<string, string>,
     pmxFiles: {

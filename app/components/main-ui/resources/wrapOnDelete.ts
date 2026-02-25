@@ -8,8 +8,8 @@ function wrapOnDelete(onDelete: (name: string) => void) {
         return (name: string) => {
             onDelete(name)
             console.log(`delete ${type}/${name} hash`)
-            useConfigStore.setState(({ preset, fileHashes }) => {
-                delete fileHashes[preset][`${type}/${name}`]
+            useConfigStore.setState(({ fileHashes }) => {
+                delete fileHashes[`${type}/${name}`]
                 return { fileHashes: { ...fileHashes } }
             })
         }

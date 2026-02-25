@@ -9,8 +9,7 @@ function RemoteResources() {
     const { type } = useResource()
     const { channel, synced } = useFileTransfer(type)
 
-    const currentPreset = useConfigStore(state => state.preset)
-    const fileHashes = useConfigStore(state => state.fileHashes)[currentPreset]
+    const fileHashes = useConfigStore(state => state.fileHashes)
 
     useEffect(() => {
         const onMessage = (e: MessageEvent<DataSchema>) => {
