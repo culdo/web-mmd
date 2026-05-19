@@ -2,7 +2,7 @@ import { MouseEvent } from "react";
 import useConfigStore from "@/app/stores/useConfigStore";
 import { setPreset } from "@/app/stores/usePresetStore";
 import { MenuItem } from "@mui/material";
-import { copyPreset, savePreset, saveConfigOnly } from "@/app/components/panel/presetFn";
+import { copyPreset, savePreset, saveConfigOnly } from "@/app/components/main-ui/presets/presetFn";
 import ResourceCard from "../resources/ResourceCard";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import useDelete from "./useDelete";

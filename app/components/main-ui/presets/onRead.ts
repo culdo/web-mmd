@@ -1,4 +1,4 @@
-import { getPreset } from "../../panel/presetFn";
+import { getPreset } from "./presetFn";
 
 async function onRead(name: string) {
     const preset = await getPreset(name)

@@ -91,7 +91,8 @@ const usePresetStore = create(
     )
 )
 
-usePresetStore.persist.onFinishHydration(() => {
+usePresetStore.persist.onFinishHydration((state) => {
+    
     useGlobalStore.setState({ presetReady: true })
     if(useGlobalStore.getState().configReady) {
         useGlobalStore.setState({ storeReady: true })

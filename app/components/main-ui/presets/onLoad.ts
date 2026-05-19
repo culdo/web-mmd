@@ -3,18 +3,13 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import usePresetStore, { migratePreset, PresetState, setPreset } from "@/app/stores/usePresetStore";
 import _ from "lodash";
 
-type FilesKey = "cameraFiles" | "audioFiles" | "motionFiles" | "pmxFiles"
-
-async function onLoad(name: string, data: string, channel: JSONDataChannel) {
+async function onLoad(name: string, data: string, channel: JSONDataChannel = null) {
 
     const onRequest = (uriPrefix: string) => new Promise<string>((resolve) => {
         let resourceSize = 0
         let receiveBufferSize = 0
         let receiveBuffer: string[] = []
 
-        channel.send({
-            uri: `${uriPrefix}/requestResource`
-        })
         const onMessage = (e: MessageEvent<DataSchema>) => {
             const { uri, payload } = e.data
             if (!uri.startsWith(uriPrefix)) return
@@ -28,7 +23,7 @@ async function onLoad(name: string, data: string, channel: JSONDataChannel) {
                 receiveBuffer.push(payload);
                 const loading = document.getElementById("loading")
                 if (loading) {
-                    loading.textContent = "Loading " + Math.round(receiveBufferSize * 100 / resourceSize) + "%..."
+                    loading.textContent = `Loading ${uriPrefix} ${Math.round(receiveBufferSize * 100 / resourceSize)}%...`
                 }
                 receiveBufferSize += payload.length
                 if (receiveBufferSize == resourceSize) {
@@ -38,6 +33,9 @@ async function onLoad(name: string, data: string, channel: JSONDataChannel) {
             }
         }
         channel.addEventListener("message", onMessage)
+        channel.send({
+            uri: `${uriPrefix}/requestResource`
+        })
     })
 
     const getResources = async (type: ResourceType, name: string, filesKey: FilesKey) => {
