@@ -77,6 +77,7 @@ class OutlinePassNode extends PassNode {
 
 		renderer.setRenderObjectFunction(currentRenderObjectFunction as any);
 
+		return true;
 	}
 
 	/**

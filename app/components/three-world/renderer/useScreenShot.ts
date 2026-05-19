@@ -1,8 +1,8 @@
 import useConfigStore from "@/app/stores/useConfigStore";
-import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
+import { WebGPURenderer } from "three/webgpu";
 
 function useScreenShot() {
     const scene = useThree(state => state.scene);
@@ -11,6 +11,10 @@ function useScreenShot() {
 
     const getScreenShot = useMemo(() => {
         const getScreenShot = (width: number, height: number) => {
+            if (gl instanceof WebGPURenderer) {
+                console.warn("WebGPURenderer does not support readRenderTargetPixels, skipping screenshot");
+                return null;
+            }
             const target = new THREE.WebGLRenderTarget(width, height, {
                 minFilter: THREE.LinearFilter,
                 magFilter: THREE.LinearFilter

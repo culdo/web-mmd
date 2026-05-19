@@ -8,7 +8,7 @@ class MMDMaterial extends MeshPhysicalNodeMaterial {
 		const vertexOutput = super.setupVertex( builder )
 		if(this.buildSkinningNode) {
 			const context = builder.getContext() as any
-			context.vertex.nodes[1] = this.buildSkinningNode(builder.object as SkinnedMesh)
+			context.position.nodes[1] = this.buildSkinningNode(builder.object as SkinnedMesh)
 		}
 		return this.vertexOutput ?? vertexOutput;
 	}

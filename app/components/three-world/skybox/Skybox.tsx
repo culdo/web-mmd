@@ -5,12 +5,12 @@ import { useControls } from "leva";
 import { useEffect } from "react";
 import * as THREE from "three";
 import { PMREMGenerator as PMREMGeneratorWebGL } from "three";
-import { RGBELoader } from "three/examples/jsm/Addons.js";
+import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import { PMREMGenerator as PMREMGeneratorWebGPU, WebGPURenderer } from "three/webgpu";
 
 function Skybox({ hdrUrl }: { hdrUrl: string }) {
     const { gl, scene } = useThree();
-    const texture = useLoader(RGBELoader, hdrUrl);
+    const texture = useLoader(HDRLoader, hdrUrl);
 
     useControls("Skybox", {
         "envIntensity": {
