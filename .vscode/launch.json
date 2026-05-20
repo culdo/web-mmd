@@ -8,6 +8,15 @@
       "command": "npm run dev"
     },
     {
+      "name": "Next.js: vanilla chrome client-side",
+      "type": "chrome",
+      "request": "launch",
+      "url": "https://localhost:3000/vanilla",
+      "runtimeArgs": [
+        "--incognito"
+      ]
+    },
+    {
       "name": "Next.js: debug chrome client-side",
       "type": "chrome",
       "request": "launch",
