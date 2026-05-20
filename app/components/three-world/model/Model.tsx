@@ -81,13 +81,6 @@ function Model({ id, fileName, motionNames = [], enableMorph = true, enableMater
                     return { models: { ...models } }
                 })
             }}
-            onDoubleClick={(e: ThreeEvent<MouseEvent>) => {
-                e.stopPropagation()
-                useGlobalStore.setState(({ selectedName: id }))
-            }}
-            onPointerMissed={(e: Event) => {
-                e.type === 'click' && useGlobalStore.setState({ selectedName: null })
-            }}
         >
             <object3D name="smoothCenter"></object3D>
             {controller.enableMorph && <Morph />}
