@@ -1,6 +1,6 @@
 import usePresetStore from "@/app/stores/usePresetStore";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { AnimationMixer, PerspectiveCamera } from "three";
 import useVMD from "../../../animation/useVMD";
 import WithReady from "@/app/stores/WithReady";
@@ -15,21 +15,26 @@ function MotionFileMode() {
     const cameraName = usePresetStore(state => state.camera)
     const cameraFile = useConfigStore(state => state.cameraFiles)?.[cameraName]
     const player = useGlobalStore(state => state.player)
-    const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
+    const playAbsDeltaRef = useGlobalStore(state => state.playAbsDeltaRef)
 
-    const updateMotion = () => {
-        cameraMixer.setTime(player.currentTime)
+    const updateMotion = useCallback((delta: number) => {
+        if (playAbsDeltaRef.current > 1.0 || delta === undefined) {
+            cameraMixer.setTime(player.currentTime)
+        } else if(!player.paused) {
+            cameraMixer.update(delta)
+        } else {
+            return
+        }
         updateCamera(camera)
-    }
+    }, [cameraMixer])
 
     useVMD(camera, cameraMixer, cameraFile, updateMotion)
 
     useClearMixer(cameraMixer)
 
-    useFrame(() => {
-        if (!isMotionUpdating()) return
-        updateMotion()
-    }, 2)
+    useFrame((_, delta) => {
+        updateMotion(delta)
+    }, 1)
     return <></>;
 }
 

@@ -15,7 +15,7 @@ function Animation({ motionNames }: { motionNames: string[] }) {
     const mesh = useModel()
     const player = useGlobalStore(state => state.player)
     const motionFiles = useConfigStore(state => state.motionFiles)
-    const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
+    const playAbsDeltaRef = useGlobalStore(state => state.playAbsDeltaRef)
 
     const mixer = useMemo(() => new AnimationMixer(mesh), [mesh]) as AnimationMixer & {
         _actions: AnimationAction[]
@@ -75,7 +75,7 @@ function Animation({ motionNames }: { motionNames: string[] }) {
 
         return (delta: number) => {
             restoreBones()
-            if (isResetPoseRef.current || isMotionUpdating()) {
+            if (isResetPoseRef.current || playAbsDeltaRef.current > 1.0) {
                 mixer.setTime(player.currentTime)
                 for (const action of mixer._actions) {
                     action.time = player.currentTime

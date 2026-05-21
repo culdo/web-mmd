@@ -33,7 +33,6 @@ const target = sheet.object('Camera', {
 function EditorMode() {
 
     const camera = useThree(state => state.camera) as PerspectiveCameraImpl
-    const isMotionUpdating = useGlobalStore(state => state.isMotionUpdating)
     const player = useGlobalStore(state => state.player)
 
     const cameraName = usePresetStore(state => state.camera)
@@ -95,7 +94,7 @@ function EditorMode() {
 
     useFrame(() => {
         driver?.tick(performance.now())
-        if (isMotionUpdating()) {
+        if (!player.paused) {
             sequence.position = player.currentTime
         }
     }, 1)

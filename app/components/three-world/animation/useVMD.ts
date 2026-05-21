@@ -3,7 +3,7 @@ import { buildOnProgress } from "@/app/utils/base";
 import { useEffect, useRef } from "react";
 import { AnimationAction, AnimationClip, AnimationMixer, Camera, SkinnedMesh } from "three";
 
-function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: string, onInit?: (reset?: boolean, resetCb?: Function) => void) {
+function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: string, onInit?: Function) {
     const loader = useGlobalStore(state => state.loader)
     const actionRef = useRef<AnimationAction>()
     const clipRef = useRef<AnimationClip>()

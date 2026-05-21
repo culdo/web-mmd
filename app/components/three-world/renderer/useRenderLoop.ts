@@ -8,20 +8,17 @@ function useRenderLoop() {
 
     const player = useGlobalStore(state => state.player)
     const controls = useThree(state => state.controls) as OrbitControls
-    const playDeltaRef = useGlobalStore(state => state.playDeltaRef)
-
+    const playAbsDeltaRef = useGlobalStore(state => state.playAbsDeltaRef)
 
     const prevTimeRef = useRef(0.0)
     useFrame(() => {
         if (!player) return
 
         const currTime = player.currentTime
-        const delta = currTime - prevTimeRef.current;
-        playDeltaRef.current = delta
-        const absDelta = Math.abs(delta)
+        const absDelta = Math.abs(currTime - prevTimeRef.current);
+        playAbsDeltaRef.current = absDelta
 
         if (absDelta > 0) {
-            // camera motion updating
             prevTimeRef.current = currTime
 
             // save seeked time

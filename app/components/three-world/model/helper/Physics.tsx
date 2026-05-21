@@ -12,7 +12,7 @@ import isRenderGui from "./useRenderGui";
 
 function Physics() {
     const mesh = useModel()
-    const playDeltaRef = useGlobalStore(state => state.playDeltaRef)
+    const playAbsDeltaRef = useGlobalStore(state => state.playAbsDeltaRef)
     const [physicsHelper, setPhysicsHelper] = useState<MMDPhysicsHelper>()
     const onUpdate = useMemo(() => {
 
@@ -59,7 +59,7 @@ function Physics() {
 
         return (_: RootState, delta: number) => {
             // reset physic when time seeking
-            if (Math.abs(playDeltaRef.current) > 1.0) {
+            if (playAbsDeltaRef.current > 1.0) {
                 reset();
             }
             physics.update(delta);
