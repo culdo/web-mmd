@@ -26,8 +26,8 @@ type Props = {
 function VMDMotion({ target, mixer, vmdFile, motionName, resetPose, resetPhysic }: Props) {
     const loader = useGlobalStore(state => state.loader)
     const player = useGlobalStore(state => state.player)
-    const actionRef = useRef<AnimationAction>()
-    const clipRef = useRef<AnimationClip>()
+    const actionRef = useRef<AnimationAction>(null)
+    const clipRef = useRef<AnimationClip>(null)
     const [isInit, setIsInit] = useState(false)
     const controlPath = `Model.${target.name}.Animation.Motion-${motionName?.split(".vmd")[0].replaceAll(".", "-")}`
     const currentTime = usePresetStore(state => state.currentTime)

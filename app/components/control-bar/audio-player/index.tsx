@@ -35,7 +35,7 @@ function AudioPlayer() {
         "auto hide GUI on playing": buildGuiItem("auto hide GUI")
     }), { order: 200, collapsed: true }, [musicName])
 
-    const playerRef = useRef<HTMLVideoElement>()
+    const playerRef = useRef<HTMLVideoElement>(null)
 
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         useGlobalStore.setState({ creditsPose: null })

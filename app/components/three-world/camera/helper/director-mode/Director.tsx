@@ -49,7 +49,7 @@ function Director() {
     const deltaSpherical = useRef(new Spherical(30)).current
     const spherical = useRef(new Spherical()).current
     const _v = useRef(new Vector3()).current
-    const mouseModeRef = useRef<MOUSE>()
+    const mouseModeRef = useRef<MOUSE>(null)
 
     const model = useTargetModel()
     const centerPos = useRef(new Vector3()).current

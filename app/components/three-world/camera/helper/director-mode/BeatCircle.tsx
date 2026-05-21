@@ -17,7 +17,7 @@ function BeatCircle({ text, theta, phi, color = "aqua" }: Props) {
 
     const camera = useThree(state => state.camera)
 
-    const groupRef = useRef<Group>()
+    const groupRef = useRef<Group>(null)
 
     const props = useSpring({
         from: {

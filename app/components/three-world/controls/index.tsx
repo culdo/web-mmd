@@ -11,7 +11,7 @@ import usePresetStore from '@/app/stores/usePresetStore';
 import { CameraMode } from '@/app/types/camera';
 
 function Controls() {
-    const controlsRef = useRef<OrbitControlsImpl>()
+    const controlsRef = useRef<OrbitControlsImpl>(null)
     const camera = useThree(state => state.camera) as PerspectiveCamera
     const scene = useThree(state => state.scene)
     const gl = useThree(state => state.gl)
@@ -20,7 +20,7 @@ function Controls() {
     const selectedName = useGlobalStore(state => state.selectedName)
     const enabledTransform = useGlobalStore(state => state.enabledTransform)
     const isWheelRef = useRef(false)
-    const onEndTimeoutRef = useRef<NodeJS.Timeout>()
+    const onEndTimeoutRef = useRef<NodeJS.Timeout>(null)
 
     useEffect(() => {
         const onWheel = (event: WheelEvent) => {

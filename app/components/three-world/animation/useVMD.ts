@@ -5,8 +5,8 @@ import { AnimationAction, AnimationClip, AnimationMixer, Camera, SkinnedMesh } f
 
 function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: string, onInit?: Function) {
     const loader = useGlobalStore(state => state.loader)
-    const actionRef = useRef<AnimationAction>()
-    const clipRef = useRef<AnimationClip>()
+    const actionRef = useRef<AnimationAction>(null)
+    const clipRef = useRef<AnimationClip>(null)
 
     useEffect(() => {
         const init = async () => {

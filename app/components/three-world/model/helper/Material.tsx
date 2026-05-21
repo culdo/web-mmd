@@ -18,8 +18,8 @@ function Material() {
     const targetMaterialIdx = usePresetStore(states => states.targetMaterialIdx)
     const savedMaterials = usePresetStore(states => states.materials)[model.name] ?? {}
 
-    const normals = useRef<THREE.BufferAttribute>()
-    const normalsOrig = useRef<THREE.BufferAttribute>()
+    const normals = useRef<THREE.BufferAttribute>(null)
+    const normalsOrig = useRef<THREE.BufferAttribute>(null)
 
     const [controllers, setContollers] = useState<Schema>()
 

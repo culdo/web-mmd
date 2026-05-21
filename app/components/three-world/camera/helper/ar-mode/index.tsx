@@ -10,7 +10,7 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 
 function ARCameraMode() {
     const camera = useThree(state => state.camera);
-    const scaleRef = useRef<number>()
+    const scaleRef = useRef<number>(null)
     useControls("AR Camera", {
         scale: {
             ...buildGuiItem("ar camera scale"),

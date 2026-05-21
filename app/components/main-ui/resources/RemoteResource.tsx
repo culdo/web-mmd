@@ -18,7 +18,7 @@ function RemoteResource({ name }: { name: string }) {
     }
     const receiveBufferRef = useRef<string[]>([])
     const receiveBufferSizeRef = useRef<number>(0)
-    const resourceSizeRef = useRef<number>()
+    const resourceSizeRef = useRef<number>(null)
     const [previewImgSrc, setPreviewImgSrc] = useState<string>()
 
     useEffect(() => {

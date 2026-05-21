@@ -1,5 +1,5 @@
 import { Instance, useFrame, useThree } from "@react-three/fiber"
-import { createContext, Dispatch, SetStateAction, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { createContext, Dispatch, JSX, SetStateAction, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import BloomNode from "three/examples/jsm/tsl/display/BloomNode.js"
 import DepthOfFieldNode from "three/examples/jsm/tsl/display/DepthOfFieldNode.js"
 import { convertToTexture } from "three/tsl"

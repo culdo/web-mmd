@@ -1,5 +1,5 @@
 import { useControls } from "leva";
-import { useState } from "react";
+import { JSX, useState } from "react";
 
 function Plugins() {
 

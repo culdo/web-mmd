@@ -9,13 +9,13 @@ import { RunModes } from "../.."
 
 function Section({ start, end, position = [0, 0, 0], children }: { start: number, end: number, position?: [number, number, number], children: React.ReactNode }) {
     const player = useGlobalStore(state => state.player)
-    const groupRef = useRef<Group>()
+    const groupRef = useRef<Group>(null)
     const isPlayedRef = useRef(false)
     const { sectionTimesRef, camRot } = useContext(ContentContext)
     const camera = useThree(state => state.camera)
     const _v = useRef(new Vector3()).current
     const idxRef = useRef(0)
-    const navBtRef = useRef<Element>()
+    const navBtRef = useRef<Element>(null)
 
     useEffect(() => {
         const prevVol = player.volume

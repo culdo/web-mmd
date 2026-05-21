@@ -17,8 +17,8 @@ function Chat() {
             style: "text-sky-300 self-center"
         }
     ])
-    const inputRef = useRef<HTMLInputElement>()
-    const textareaRef = useRef<HTMLDivElement>()
+    const inputRef = useRef<HTMLInputElement>(null)
+    const textareaRef = useRef<HTMLDivElement>(null)
     const groupChannels = useGlobalStore(state => state.groupChannels)
 
     useEffect(() => {
