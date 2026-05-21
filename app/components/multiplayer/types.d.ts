@@ -16,8 +16,8 @@ type GroupChannel = {
     onOpen: (sender: string) => void
     onClose: (sender: string) => void
     sharedObjects?: {
-        chatTextRef: MutableRefObject<any>
-        remoteTextRefs: Record<string, MutableRefObject<any>>
+        chatTextRef: RefObject<any>
+        remoteTextRefs: Record<string, RefObject<any>>
     }
 }
 

@@ -1,8 +1,8 @@
-import { createContext, MutableRefObject } from "react"
+import { createContext, RefObject } from "react"
 import { Quaternion } from "three"
 
 const ContentContext = createContext<{
-    sectionTimesRef?: MutableRefObject<number[]>
+    sectionTimesRef?: RefObject<number[]>
     camRot?: Quaternion
 }>({})
 

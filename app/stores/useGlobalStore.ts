@@ -1,5 +1,5 @@
 import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
-import { MutableRefObject, createRef } from 'react';
+import { RefObject, createRef } from 'react';
 import { AnimationMixer, Euler, PerspectiveCamera, SkinnedMesh, Vector3 } from 'three';
 import { GrantSolver, MMDPhysics } from 'three-stdlib';
 import { create } from 'zustand';
@@ -24,10 +24,10 @@ export type GlobalState = {
         looped: boolean
     },
     models: Record<string, SkinnedMesh>,
-    playAbsDeltaRef: MutableRefObject<number>
-    beatsBufferRef: MutableRefObject<HTMLDivElement[]>
-    isOrbitControlRef: MutableRefObject<boolean>
-    isTransformControlRef: MutableRefObject<boolean>
+    playAbsDeltaRef: RefObject<number>
+    beatsBufferRef: RefObject<HTMLDivElement[]>
+    isOrbitControlRef: RefObject<boolean>
+    isTransformControlRef: RefObject<boolean>
     bindParentCb: Function,
     storeReady: boolean,
     presetReady: boolean,
@@ -50,11 +50,11 @@ export type GlobalState = {
     },
     showGameMenu: boolean,
     // MultiPlayer
-    onOfferingRef: MutableRefObject<Record<string, (data: ConnectionInfo) => void>>;
-    onAnsweringRef: MutableRefObject<(data: ConnectionInfo) => void>;
+    onOfferingRef: RefObject<Record<string, (data: ConnectionInfo) => void>>;
+    onAnsweringRef: RefObject<(data: ConnectionInfo) => void>;
     peerChannels: Record<string, PeerChannel>;
     groupChannels: Record<string, GroupChannel>;
-    onInitRef: MutableRefObject<(code: string, peerId: string) => void>;
+    onInitRef: RefObject<(code: string, peerId: string) => void>;
     qrCodeUrl: string;
     remoteModels: Record<string, {
         fileName: string,
@@ -79,22 +79,22 @@ const useGlobalStore = create<GlobalState>(
         cameraObj: null,
         controls: null,
         playAbsDeltaRef: (() => {
-            const ref: MutableRefObject<number> = createRef()
+            const ref: RefObject<number> = createRef()
             ref.current = 0.0
             return ref
         })(),
         beatsBufferRef: (() => {
-            const ref: MutableRefObject<HTMLDivElement[]> = createRef()
+            const ref: RefObject<HTMLDivElement[]> = createRef()
             ref.current = []
             return ref
         })(),
         isOrbitControlRef: (() => {
-            const ref: MutableRefObject<boolean> = createRef()
+            const ref: RefObject<boolean> = createRef()
             ref.current = false
             return ref
         })(),
         isTransformControlRef: (() => {
-            const ref: MutableRefObject<boolean> = createRef()
+            const ref: RefObject<boolean> = createRef()
             ref.current = false
             return ref
         })(),
@@ -115,7 +115,7 @@ const useGlobalStore = create<GlobalState>(
         },
         showGameMenu: true,
         onOfferingRef: (() => {
-            const ref: MutableRefObject<{}> = createRef()
+            const ref: RefObject<{}> = createRef()
             ref.current = {}
             return ref
         })(),
