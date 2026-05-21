@@ -84,6 +84,7 @@ function Animation({ motionNames }: { motionNames: string[] }) {
                     action.time = player.currentTime
                 }
                 isSetMotionRef.current = false
+                mixer.update(0.0)
             } else {
                 mixer.update(delta)
             }
