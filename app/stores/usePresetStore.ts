@@ -22,7 +22,8 @@ export type PresetState = typeof defaultConfig & {
         motionNames: string[],
         enableMorph: boolean,
         enablePhysics: boolean,
-        enableMaterial: boolean
+        enableMaterial: boolean,
+        morphs?: Record<string, number>,
     }>,
 }
 
