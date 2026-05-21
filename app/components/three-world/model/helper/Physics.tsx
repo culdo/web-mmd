@@ -9,10 +9,11 @@ import { Helper } from "@react-three/drei";
 import { CCDIKHelper } from "three/examples/jsm/animation/CCDIKSolver.js";
 import { SkeletonHelper } from "three";
 import isRenderGui from "./useRenderGui";
+import useSetMotion from "../../animation/useSetMotion";
 
 function Physics() {
     const mesh = useModel()
-    const playAbsDeltaRef = useGlobalStore(state => state.playAbsDeltaRef)
+    const playerSeekedRef = useSetMotion()
     const [physicsHelper, setPhysicsHelper] = useState<MMDPhysicsHelper>()
     const onUpdate = useMemo(() => {
 
@@ -45,11 +46,10 @@ function Physics() {
             }
         }
 
+        playerSeekedRef.current = true
+
         const reset = () => {
-            physics.reset();
-            for (const rigidBody of physics.bodies) {
-                rigidBody.reset()
-            }
+            physics.reset()
         }
 
         physics.warmup(60);
@@ -59,10 +59,12 @@ function Physics() {
 
         return (_: RootState, delta: number) => {
             // reset physic when time seeking
-            if (playAbsDeltaRef.current > 1.0) {
+            if (playerSeekedRef.current) {
                 reset();
+                playerSeekedRef.current = false
+            } else {
+                physics.update(delta);
             }
-            physics.update(delta);
         }
 
     }, [mesh])

@@ -1,6 +1,5 @@
 import { buildGuiItem, buildGuiObj } from "@/app/utils/gui"
 import { useControls } from "leva"
-import useRenderLoop from "./useRenderLoop"
 
 function useRenderer() {
     useControls("Renderer", {
@@ -8,8 +7,6 @@ function useRenderer() {
         ...buildGuiObj("enable PBR"),
         ...buildGuiObj("isWebGPU")
     }, { order: 100, collapsed: true })
-
-    useRenderLoop()
 }
 
 export default useRenderer;

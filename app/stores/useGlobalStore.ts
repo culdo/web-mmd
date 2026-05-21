@@ -24,7 +24,7 @@ export type GlobalState = {
         looped: boolean
     },
     models: Record<string, SkinnedMesh>,
-    playAbsDeltaRef: RefObject<number>
+    playerSeekedRef: RefObject<boolean>
     beatsBufferRef: RefObject<HTMLDivElement[]>
     isOrbitControlRef: RefObject<boolean>
     isTransformControlRef: RefObject<boolean>
@@ -78,9 +78,9 @@ const useGlobalStore = create<GlobalState>(
         camera: null,
         cameraObj: null,
         controls: null,
-        playAbsDeltaRef: (() => {
-            const ref: RefObject<number> = createRef()
-            ref.current = 0.0
+        playerSeekedRef: (() => {
+            const ref: RefObject<boolean> = createRef()
+            ref.current = false
             return ref
         })(),
         beatsBufferRef: (() => {

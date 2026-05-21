@@ -10,12 +10,15 @@ import { button, useControls } from "leva";
 import isRenderGui from "./useRenderGui";
 import useConfigStore from "@/app/stores/useConfigStore";
 import Motions from "@/app/components/main-ui/motions";
+import useSetMotion from "../../animation/useSetMotion";
 
 function Animation({ motionNames }: { motionNames: string[] }) {
     const mesh = useModel()
     const player = useGlobalStore(state => state.player)
     const motionFiles = useConfigStore(state => state.motionFiles)
-    const playAbsDeltaRef = useGlobalStore(state => state.playAbsDeltaRef)
+    const isResetPoseRef = useRef(true)
+    const isResetPhysicsRef = useRef(true)
+    const isSetMotionRef = useSetMotion()
 
     const mixer = useMemo(() => new AnimationMixer(mesh), [mesh]) as AnimationMixer & {
         _actions: AnimationAction[]
@@ -75,11 +78,12 @@ function Animation({ motionNames }: { motionNames: string[] }) {
 
         return (delta: number) => {
             restoreBones()
-            if (isResetPoseRef.current || playAbsDeltaRef.current > 1.0) {
+            if (isResetPoseRef.current || isSetMotionRef.current) {
                 mixer.setTime(player.currentTime)
                 for (const action of mixer._actions) {
                     action.time = player.currentTime
                 }
+                isSetMotionRef.current = false
             } else {
                 mixer.update(delta)
             }
@@ -90,18 +94,9 @@ function Animation({ motionNames }: { motionNames: string[] }) {
 
     }, [mesh])
 
-    const isResetPoseRef = useRef(true)
-    const isResetPhysicsRef = useRef(true)
-
     const resetPose = () => {
         isResetPoseRef.current = true
-        resetPhysics()
-    }
-
-    const resetPhysics = () => {
-        setTimeout(() => {
-            isResetPhysicsRef.current = true
-        }, 100)
+        isResetPhysicsRef.current = true
     }
 
     useEffect(() => {
@@ -141,7 +136,6 @@ function Animation({ motionNames }: { motionNames: string[] }) {
                         vmdFile={motionFiles[motionName]}
                         motionName={motionName}
                         resetPose={resetPose}
-                        resetPhysic={resetPhysics}
                     />
                 )
             }

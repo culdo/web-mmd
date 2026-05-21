@@ -23,7 +23,7 @@ type Props = {
     motionName?: string
 }
 
-function VMDMotion({ target, mixer, vmdFile, motionName, resetPose, resetPhysic }: Props) {
+function VMDMotion({ target, mixer, vmdFile, motionName, resetPose }: Props) {
     const loader = useGlobalStore(state => state.loader)
     const player = useGlobalStore(state => state.player)
     const actionRef = useRef<AnimationAction>(null)
@@ -109,7 +109,6 @@ function VMDMotion({ target, mixer, vmdFile, motionName, resetPose, resetPhysic 
             actionRef.current.setEffectiveTimeScale(1.0)
         } else {
             actionRef.current.setEffectiveTimeScale(0.0)
-            resetPhysic()
         }
     }
 
