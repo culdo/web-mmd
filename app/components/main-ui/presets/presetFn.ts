@@ -27,9 +27,10 @@ export const copyPreset = async (name: string) => {
     }
 }
 
-export const savePreset = async (name: string) => {
+export const saveFullPreset = async (name: string) => {
     const { cameraFiles, motionFiles, audioFiles, pmxFiles } = useConfigStore.getState()
-    await saveConfigOnly(name, (preset) => {
+    const motionFilesKeys = [...new Set(Object.values(usePresetStore.getState().models).flatMap(({ motionNames }) => motionNames))]
+    await savePreset(name, (preset) => {
         _.merge(preset, {
             cameraFiles: {
                 [preset.camera]: cameraFiles[preset.camera]
@@ -38,24 +39,21 @@ export const savePreset = async (name: string) => {
                 [preset.musicName]: audioFiles[preset.musicName]
             },
             motionFiles: Object.fromEntries(
-                Object.values(preset.models)
-                    .map(({ motionNames }) =>
-                        motionNames.map(
-                            (motionName) => [motionName, motionFiles[motionName]]
-                        ))),
+                motionFilesKeys.map((motionName) => [motionName, motionFiles[motionName]])
+            ),
             pmxFiles: {
                 models: Object.fromEntries(
                     Object.values(preset.models)
                         .map(({ fileName }) => [fileName, pmxFiles.models[fileName]])),
                 modelTextures: Object.fromEntries(
                     Object.values(preset.models)
-                        .map(({ fileName }) => [fileName.split("/")[0], pmxFiles.modelTextures[name.split("/")[0]]]))
+                        .map(({ fileName }) => [fileName.split("/")[0], pmxFiles.modelTextures[fileName.split("/")[0]]]))
             }
         })
     })
 }
 
-export const saveConfigOnly = async (name: string, presetCb: (preset: PresetState) => void = null) => {
+export const savePreset = async (name: string, presetCb: (preset: PresetState) => void = null) => {
     const preset = await getPreset(name) as any
     delete preset["state"]
     delete preset["audioFile"]
@@ -63,5 +61,5 @@ export const saveConfigOnly = async (name: string, presetCb: (preset: PresetStat
     presetCb?.(preset)
     const presetBlob = new Blob([JSON.stringify(preset)], { type: 'application/json' })
     const dlUrl = URL.createObjectURL(presetBlob)
-    startFileDownload(dlUrl, `${name}_config.json`)
+    startFileDownload(dlUrl, `${name}${presetCb ? "" : "_config"}.json`)
 }

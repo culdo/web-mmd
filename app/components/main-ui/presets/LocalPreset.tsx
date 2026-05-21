@@ -2,7 +2,7 @@ import { MouseEvent } from "react";
 import useConfigStore from "@/app/stores/useConfigStore";
 import { setPreset } from "@/app/stores/usePresetStore";
 import { MenuItem } from "@mui/material";
-import { copyPreset, savePreset, saveConfigOnly } from "@/app/components/main-ui/presets/presetFn";
+import { copyPreset, saveFullPreset, savePreset } from "@/app/components/main-ui/presets/presetFn";
 import ResourceCard from "../resources/ResourceCard";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import useDelete from "./useDelete";
@@ -30,10 +30,10 @@ function LocalPreset({ name }: { name: string }) {
             <MenuItem onClick={() => copyPreset(name)}>
                 Copy Preset
             </MenuItem>
-            <MenuItem onClick={() => savePreset(name)}>
+            <MenuItem onClick={() => saveFullPreset(name)}>
                 Save Preset
             </MenuItem>
-            <MenuItem onClick={() => saveConfigOnly(name)}>
+            <MenuItem onClick={() => savePreset(name)}>
                 Save Config Only
             </MenuItem>
             <MenuItem sx={{ color: 'red' }} onClick={() => onDelete(name)}>
