@@ -8,7 +8,7 @@ import { useRef, useCallback, useEffect } from "react"
  */
 function useSetMotion() {
     const player = useGlobalStore(state => state.player)
-    const isSetMotionRef = useRef(false)
+    const isSetMotionRef = useRef(true)
 
     const setMotion = useCallback(() => {
         isSetMotionRef.current = true

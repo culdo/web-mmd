@@ -46,8 +46,6 @@ function Physics() {
             }
         }
 
-        playerSeekedRef.current = true
-
         const reset = () => {
             physics.reset()
         }

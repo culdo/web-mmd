@@ -16,9 +16,7 @@ function Animation({ motionNames }: { motionNames: string[] }) {
     const mesh = useModel()
     const player = useGlobalStore(state => state.player)
     const motionFiles = useConfigStore(state => state.motionFiles)
-    const isResetPoseRef = useRef(true)
-    const isResetPhysicsRef = useRef(true)
-    const isSetMotionRef = useSetMotion()
+    const isResetPoseRef = useSetMotion()
 
     const mixer = useMemo(() => new AnimationMixer(mesh), [mesh]) as AnimationMixer & {
         _actions: AnimationAction[]
@@ -78,12 +76,11 @@ function Animation({ motionNames }: { motionNames: string[] }) {
 
         return (delta: number) => {
             restoreBones()
-            if (isResetPoseRef.current || isSetMotionRef.current) {
+            if (isResetPoseRef.current) {
                 mixer.setTime(player.currentTime)
                 for (const action of mixer._actions) {
                     action.time = player.currentTime
                 }
-                isSetMotionRef.current = false
                 mixer.update(0.0)
             } else {
                 mixer.update(delta)
@@ -97,7 +94,6 @@ function Animation({ motionNames }: { motionNames: string[] }) {
 
     const resetPose = () => {
         isResetPoseRef.current = true
-        isResetPhysicsRef.current = true
     }
 
     useEffect(() => {
@@ -118,11 +114,8 @@ function Animation({ motionNames }: { motionNames: string[] }) {
     useFrame((_, delta) => {
         onLoop(delta)
         if (isResetPoseRef.current) {
-            isResetPoseRef.current = false
-        }
-        if (isResetPhysicsRef.current) {
             mesh.userData.resetPhysic?.()
-            isResetPhysicsRef.current = false
+            isResetPoseRef.current = false
         }
     }, 1)
 

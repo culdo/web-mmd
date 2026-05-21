@@ -19,9 +19,7 @@ function MotionFileMode() {
     
     const isSetMotionRef = useSetMotion()
 
-    useVMD(camera, cameraMixer, cameraFile, () => {
-        isSetMotionRef.current = true
-    })
+    useVMD(camera, cameraMixer, cameraFile)
 
     useClearMixer(cameraMixer)
 
