@@ -27,7 +27,8 @@ export type PresetState = typeof defaultConfig & {
     }>,
 }
 
-let db = localforage.createInstance({ name: useConfigStore.getState().preset })
+const initPresetName = useConfigStore.getState().preset
+let db = localforage.createInstance({ name: initPresetName })
 
 export const storage: PersistStorage<PresetState> = {
     getItem: async (name: string): Promise<StorageValue<PresetState>> => {
@@ -67,12 +68,10 @@ export const resetPreset = async ({ reactive } = { reactive: true }) => {
     }
 }
 
-export const migratePreset = async (preset: any, version: number) => {
-    usePresetStore.setState(states => {
-        _.defaults(states, defaultConfig)
-        return { ...states }
-    })
-    return preset
+export const migratePreset = async (persistedState: any, version: number) => {
+    _.defaults(persistedState, defaultConfig)
+    usePresetStore.setState(persistedState)
+    return persistedState
 }
 
 const usePresetStore = create(
@@ -84,7 +83,7 @@ const usePresetStore = create(
                 } as PresetState
             },
             {
-                name: useConfigStore.getState().preset,
+                name: initPresetName,
                 storage,
                 version: 1,
                 migrate: migratePreset
@@ -93,9 +92,9 @@ const usePresetStore = create(
 )
 
 usePresetStore.persist.onFinishHydration((state) => {
-    
+
     useGlobalStore.setState({ presetReady: true })
-    if(useGlobalStore.getState().configReady) {
+    if (useGlobalStore.getState().configReady) {
         useGlobalStore.setState({ storeReady: true })
     }
 })
@@ -113,5 +112,10 @@ export const setPreset = async (newPresetName: string, rehydrate = false) => {
         await usePresetStore.persist.rehydrate()
     }
 }
+
+useConfigStore.persist.onFinishHydration(async ({ preset }) => {
+    if (initPresetName == preset) return
+    await setPreset(preset, true)
+})
 
 export default usePresetStore;

@@ -59,10 +59,8 @@ export const storage: PersistStorage<ConfigState> = {
 const migrate = async (states: any, version: number) => {
     const dataResp = withProgress(await fetch('presets/Default_data.json'), 33699845)
     const defaultData = await dataResp.json()
-    useConfigStore.setState(states => {
-        _.defaults(states, defaultData)
-        return { ...states }
-    })
+    _.defaults(states, defaultData)
+    useConfigStore.setState(states)
     console.log("migrate ConfigStore")
     return states
 }

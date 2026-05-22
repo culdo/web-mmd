@@ -55,9 +55,6 @@ export const saveFullPreset = async (name: string) => {
 
 export const savePreset = async (name: string, presetCb: (preset: PresetState) => void = null) => {
     const preset = await getPreset(name) as any
-    delete preset["state"]
-    delete preset["audioFile"]
-    delete preset["cameraFile"]
     presetCb?.(preset)
     const presetBlob = new Blob([JSON.stringify(preset)], { type: 'application/json' })
     const dlUrl = URL.createObjectURL(presetBlob)
