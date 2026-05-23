@@ -3,13 +3,13 @@ import type { NextConfig } from 'next'
 
 export default async (phase: string) => {
     const isDev = phase === PHASE_DEVELOPMENT_SERVER
-    let firebaseConfig: string;
+    let appConfig: string;
 
-    if (process.env.FIREBASE_CONFIG) {
-        firebaseConfig = process.env.FIREBASE_CONFIG
+    if (process.env.APP_CONFIG) {
+        appConfig = process.env.APP_CONFIG
     } else {
         // @ts-ignore
-        firebaseConfig = JSON.stringify((await import("@/app/modules/firebase/config.json")))
+        appConfig = JSON.stringify((await import("@/app.json")))
     }
 
     const nextConfig: NextConfig = {
@@ -28,7 +28,7 @@ export default async (phase: string) => {
         },
         env: {
             COMMIT: process.env.COMMIT,
-            FIREBASE_CONFIG: firebaseConfig
+            APP_CONFIG: appConfig
         },
         async rewrites() {
             return [

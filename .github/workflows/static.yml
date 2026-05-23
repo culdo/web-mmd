@@ -36,7 +36,7 @@ jobs:
       - run: npm install
       - name: Build
         env:
-          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
+          APP_CONFIG: ${{ secrets.APP_CONFIG }}
         run: COMMIT=$(date +'%Y/%m/%d')-${GITHUB_SHA::7} npx next build
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -45,5 +45,5 @@ public/ammo.*
 
 certificates
 
-# firebase config
-/app/modules/firebase/config.json
+# app config
+/app.json
