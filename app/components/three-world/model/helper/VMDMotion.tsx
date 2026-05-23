@@ -15,7 +15,7 @@ enum TriggerMode {
 }
 
 type Props = {
-    target: Camera | SkinnedMesh,
+    target: SkinnedMesh,
     mixer: AnimationMixer,
     vmdFile: string,
     resetPose?: () => void,
@@ -31,6 +31,7 @@ function VMDMotion({ target, mixer, vmdFile, motionName, resetPose }: Props) {
     const [isInit, setIsInit] = useState(false)
     const controlPath = `Model.${target.name}.Animation.Motion-${motionName?.split(".vmd")[0].replaceAll(".", "-")}`
     const currentTime = usePresetStore(state => state.currentTime)
+    const morphs = usePresetStore(state => state.models[target.name].morphs) ?? {}
 
     const {
         "blend mode": blendMode,
@@ -80,6 +81,18 @@ function VMDMotion({ target, mixer, vmdFile, motionName, resetPose }: Props) {
     useEffect(() => {
         const init = async () => {
             const clip = await loader.loadAnimation(vmdFile, target, buildOnProgress(vmdFile))
+            const clipTracks = []
+            for(const track of clip.tracks) {
+                if(track.name.startsWith(".morphTargetInfluences[")) {
+                    const morphId = track.name.split(".morphTargetInfluences[")[1].split("]")[0]
+                    const morphName = Object.keys(target.morphTargetDictionary).find(key => target.morphTargetDictionary[key] == parseInt(morphId))
+                    if(morphs[morphName] > 0) {
+                        continue
+                    }
+                }
+                clipTracks.push(track)
+            }
+            clip.tracks = clipTracks
             clip.name = motionName
             if (blendMode == AdditiveAnimationBlendMode) {
                 makeClipAdditive(clip)
