@@ -4,75 +4,22 @@ import usePresetStore, { migratePreset, PresetState, setPreset } from "@/app/sto
 import _ from "lodash";
 
 async function onLoad(name: string, data: string, channel: JSONDataChannel = null) {
-
-    const onRequest = (uriPrefix: string) => new Promise<string>((resolve) => {
-        let resourceSize = 0
-        let receiveBufferSize = 0
-        let receiveBuffer: string[] = []
-
-        const onMessage = (e: MessageEvent<DataSchema>) => {
-            const { uri, payload } = e.data
-            if (!uri.startsWith(uriPrefix)) return
-            const pathname = uri.split(uriPrefix + "/")[1]
-            if (pathname == "resourceSize") {
-                useGlobalStore.setState({ storeReady: false })
-                resourceSize = payload
-                receiveBuffer = []
-            }
-            if (pathname == "resourceData") {
-                receiveBuffer.push(payload);
-                const loading = document.getElementById("loading")
-                if (loading) {
-                    loading.textContent = `Loading ${uriPrefix} ${Math.round(receiveBufferSize * 100 / resourceSize)}%...`
-                }
-                receiveBufferSize += payload.length
-                if (receiveBufferSize == resourceSize) {
-                    channel.removeEventListener("message", onMessage)
-                    resolve(receiveBuffer.join(""))
-                }
-            }
-        }
-        channel.addEventListener("message", onMessage)
-        channel.send({
-            uri: `${uriPrefix}/requestResource`
-        })
-    })
-
-    const getResources = async (type: ResourceType, name: string, filesKey: FilesKey) => {
-        const states = useConfigStore.getState()
-        const filesMap = states[filesKey]
-        if (!(name in filesMap)) {
-            const data = await onRequest(`${type}/${name}`)
-            if (filesKey === "pmxFiles") {
-                const pmxFiles = JSON.parse(data)
-                _.merge(filesMap, pmxFiles)
-            } else {
-                states[filesKey][name] = data
-            }
-            useConfigStore.setState({ [filesKey]: { ...filesMap } })
-        }
-    }
-
-    addPreset(name)
-    setPreset(name)
     const loadedPreset = JSON.parse(data) as PresetState
     const { camera, musicName, models } = loadedPreset
-    await getResources("Cameras", camera, "cameraFiles")
-    await getResources("Musics", musicName, "audioFiles")
-    for (const model of Object.values(models)) {
-        await getResources("Models", model.fileName, "pmxFiles")
-        for (const motion of model.motionNames) {
-            await getResources("Motions", motion, "motionFiles")
+    useGlobalStore.setState({
+        autoRequestResources: {
+            Cameras: { [camera]: false },
+            Musics: { [musicName]: false },
+            Models: Object.fromEntries(Object.values(models).map(model => [model.fileName, false])),
+            Motions: Object.fromEntries(_.flatMap(Object.values(models), model => model.motionNames).map(motion => [motion, false])),
+            onAllLoaded: () => {
+                addPreset(name)
+                setPreset(name)
+                usePresetStore.setState(loadedPreset)
+                useGlobalStore.setState({ storeReady: true, openMainUI: false })
+            }
         }
-    }
-
-    const { version } = usePresetStore.getState()
-    if (version != loadedPreset.version) {
-        migratePreset(loadedPreset, loadedPreset.version)
-    } else {
-        usePresetStore.setState(loadedPreset)
-    }
-    useGlobalStore.setState({ storeReady: true })
+    })
 }
 
 export default onLoad;

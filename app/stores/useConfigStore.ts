@@ -7,6 +7,7 @@ import { setUser } from '../modules/firebase/init';
 import _ from 'lodash';
 import { withProgress } from '../utils/base';
 import useGlobalStore from './useGlobalStore';
+import AppConfig from '@/app.json';
 
 export type ConfigState = {
     preset: string,
@@ -57,7 +58,7 @@ export const storage: PersistStorage<ConfigState> = {
 }
 
 const migrate = async (states: any, version: number) => {
-    const dataResp = withProgress(await fetch('presets/Default_data.json'), 33699845)
+    const dataResp = withProgress(await fetch(AppConfig.defaultDataUrl), 33699845)
     const defaultData = await dataResp.json()
     _.defaults(states, defaultData)
     useConfigStore.setState(states)

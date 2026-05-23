@@ -13,6 +13,13 @@ export const resourcesMap = {
     Musics
 };
 
+export const autoRequestResourcesMap = {
+    Models,
+    Motions,
+    Cameras,
+    Musics
+};
+
 export const ResourceTypeContext = createContext<ResourceType>(null);
 
 export const useResource = () => {

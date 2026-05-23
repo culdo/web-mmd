@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import RemoteResource from "./RemoteResource";
 import useFileTransfer from "../../multiplayer/fileTransfer/useFileTransfer";
-import { useResource } from "../context";
 import useConfigStore from "@/app/stores/useConfigStore";
 
-function RemoteResources() {
+function RemoteResources({ type, autoRequestNames = [] }: { type: ResourceType; autoRequestNames?: string[] }) {
     const [resourceNames, setResourceNames] = useState<Set<string>>(new Set([]))
-    const { type } = useResource()
     const { channel, synced } = useFileTransfer(type)
 
     const fileHashes = useConfigStore(state => state.fileHashes)
@@ -42,12 +40,23 @@ function RemoteResources() {
         })
     }, [type, synced])
 
+    if (autoRequestNames.length > 0) {
+        return (
+            <>
+                {
+                    [...autoRequestNames].filter((v) => resourceNames.has(v)).map(name =>
+                        <RemoteResource key={name} name={name} autoRequest={true}/>
+                    )
+                }
+            </>
+        )
+    }
     return (
         <>
             {
                 [...resourceNames]
                     .map(name =>
-                        <RemoteResource key={name} name={name} />
+                        <RemoteResource key={name} name={name}/>
                     )
             }
         </>
