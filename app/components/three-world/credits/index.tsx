@@ -1,20 +1,35 @@
-import { Html } from "@react-three/drei";
+import { Billboard, Html, Text, BillboardProps } from "@react-three/drei";
 import { button, useControls } from "leva";
-import styles from "./styles.module.css"
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useThree } from "@react-three/fiber";
-import { Euler, PerspectiveCamera, Vector3 } from "three";
+import { Euler, PerspectiveCamera, Vector3, Color } from "three";
+import { useRef, useState, useEffect } from "react";
 
-function Credit({ color = "#ffd9aaff", children }: { children: React.ReactNode, color?: string }) {
+
+function Word({ children, ...props }: { children: React.ReactNode } & BillboardProps) {
+    const fontProps = { fontSize: 1, letterSpacing: -0.05, lineHeight: 1.2, 'material-toneMapped': false, textAlign: "center" as const }
+    const ref = useRef(null)
+    const [hovered, setHovered] = useState(false)
+    const over = (e: React.MouseEvent<HTMLDivElement>) => (e.stopPropagation(), setHovered(true))
+    const out = () => setHovered(false)
+    // Change the mouse cursor on hover¨
+    useEffect(() => {
+        if (hovered) {
+            document.body.style.cursor = 'pointer'
+            ref.current.material.color.set('#e8e8e8')
+        }
+        return () => {
+            document.body.style.cursor = 'auto'
+            if(ref.current) ref.current.material.color.set('white')
+        }
+    }, [hovered])
     return (
-        <h1 style={{
-            fontSize: "30px",
-            fontStyle: "italic",
-            fontWeight: "bold",
-            color: color,
-            marginBlock: "10px"
-        }}>{children}</h1>
-    );
+        <Billboard {...props}>
+            <Text ref={ref} onPointerOver={over} onPointerOut={out} onClick={() => {
+                useGlobalStore.setState({ creditsPose: null })
+            }} {...fontProps} children={children} />
+        </Billboard>
+    )
 }
 
 function CreditsList() {
@@ -28,47 +43,36 @@ function CreditsList() {
                 rotation: new Euler()
             }
             useGlobalStore.setState({ creditsPose })
-            // trigger renderering on same position
-            camera.position.z += 0.001
-            setTimeout(() => {
-                camera.position.set(0, 10, 30)
-                camera.fov = 30
-                camera.lookAt(creditsPose.position)
-            }, 100)
+            camera.position.set(0, 10, 30)
+            camera.fov = 30
+            camera.lookAt(creditsPose.position)
+            camera.updateProjectionMatrix()
         })
     }), { order: 1000, collapsed: true }, [camera])
 
     return (creditsPose &&
-        <Html
+        <Word
             position={creditsPose.position}
-            rotation={creditsPose.rotation}
-            zIndexRange={[100, 0]}
-            transform
-            occlude="blending"
         >
-            <div className={styles.credits}
-                onClick={() => {
-                    useGlobalStore.setState({ creditsPose: null })
-                }}
-            >
-                <Credit color="#bffd73ff">Player mode</Credit>
-                <Credit>Music</Credit>
-                <h1>GimmexGimme by 八王子P × Giga</h1>
-                <Credit>Model</Credit>
-                <h1>つみ式みくさんv4 by つみだんご</h1>
-                <Credit>Motion</Credit>
-                <h1>ぎみぎみ（みっちゃん）_原曲音源 by シガー</h1>
-                <Credit>Emotion</Credit>
-                <h1>GimmeGimmeリップ表情v07 by ノン</h1>
-                <Credit>Camera</Credit>
-                <h1>Gimme x Gimme镜头 by 冬菇</h1>
-                <Credit>Stage</Credit>
-                <h1>RedialC_EpRoomDS by RedialC</h1>
-                <Credit color="#bffd73ff">Game mode</Credit>
-                <Credit>Motions</Credit>
-                <h1>移動モーション v1.3、ぼんやり待ちループ by むつごろう</h1>
-            </div>
-        </Html>
+            {
+                "-- Player mode --\n" +
+                "Music\n" +
+                "GimmexGimme by 八王子P × Giga\n" +
+                "Model\n" +
+                "つみ式みくさんv4 by つみだんご\n" +
+                "Motion\n" +
+                "ぎみぎみ（みっちゃん）_原曲音源 by シガー\n" +
+                "Emotion\n" +
+                "GimmeGimmeリップ表情v07 by ノン\n" +
+                "Camera\n" +
+                "Gimme x Gimme镜头 by 冬菇\n" +
+                "Stage\n" +
+                "RedialC_EpRoomDS by RedialC\n" +
+                "-- Game mode --\n" +
+                "Motions\n" +
+                "移動モーション v1.3、ぼんやり待ちループ by むつごろう"
+            }
+        </Word>
     );
 }
 
