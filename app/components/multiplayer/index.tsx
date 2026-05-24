@@ -8,14 +8,7 @@ import useAnswerRTC from "./peer/useAnswerRTC";
 import useSdpListener from "./peer/useSdpListener";
 import FileTransfer from "./fileTransfer";
 import { nanoid } from "nanoid";
-
-useConfigStore.persist.onFinishHydration(async ({ uid }) => {
-    if (uid) return
-    const newUid = nanoid(7)
-    useConfigStore.setState({ uid: newUid })
-    console.log(`Create User: ${newUid}`)
-    await setUser(newUid);
-})
+import useGlobalStore from "@/app/stores/useGlobalStore";
 
 function Multiplayer() {
     const uid = useConfigStore(state => state.uid);
@@ -73,9 +66,16 @@ function Multiplayer() {
 }
 
 function Wrapper() {
+    const configReady = useGlobalStore(state => state.configReady);
     const uid = useConfigStore(state => state.uid);
-    if (!uid) return null;
-    return <Multiplayer />
+    useEffect(() => {
+        if (!configReady || uid) return
+        const newUid = nanoid(7)
+        useConfigStore.setState({ uid: newUid })
+        console.log(`Create User: ${newUid}`)
+        setUser(newUid);
+    }, [uid, configReady])
+    return uid && configReady ? <Multiplayer /> : null;
 }
 
 export default Wrapper;
