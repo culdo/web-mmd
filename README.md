@@ -10,9 +10,9 @@
   </h2>
 </div>
 
-For who wants to play MMD in the browser, now you can play it in **real-time** anywhere.
+For those who want to play MMD in the browser, now you can play it in **real-time** anywhere.
 
-This project is inspired by [the amazing three.js example](https://takahirox.github.io/three.js/examples/webgl_loader_mmd_audio.html) which by @takahirox.
+This project is inspired by [the amazing three.js example](https://takahirox.github.io/three.js/examples/webgl_loader_mmd_audio.html) by @takahirox.
 
 # Features
 * Run modes:
@@ -57,7 +57,7 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
 # Transform Control
 Move the objects by `transform control` in below ways: 
 * Model: Directly click on it
-* Light: Select one from `Lights > [Choose a light] > Select` gui menu
+* Light: Select from `Lights > [Choose a light] > Select` gui menu
 
 # Demo credits
 ## Player mode
