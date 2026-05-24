@@ -42,8 +42,8 @@ This project is inspired by [the amazing three.js example](https://takahirox.git
 
 ## MV Player mode
 * **Space**: Play/Pause
-* **<** : Previous frame (under 30 fps) 
-* **\>** : Next frame (under 30 fps)
+* **<** : Previous frame (in 30 fps) 
+* **\>** : Next frame (in 30 fps)
 
 ## Camera Director mode
 * **Tab**: Toggle All Trackings
@@ -77,20 +77,22 @@ The demo presets is from [this excellent MMD video](https://www.youtube.com/watc
 * Modules which mainly come from [the three.js example](https://takahirox.github.io/three.js/examples/webgl_loader_mmd_audio.html) is refactored to Classes and Async/Await styles.
 * This projects is refactored to using `Next.js`(TypeScript).
 ## Demo preset
-1. If you want to show a demo preset like the one on the demo site, you need to host the `Default_data.json`.
-2. You can use a saved preset JSON file as the `Default_data.json` because both formats are the same.
-3. Then add the `defaultDataUrl` property in the `app.json` under the project root:
+1. If you want to show a demo preset like the one on the demo site, you need to host the demo preset JSON file.
+    > You can use a saved preset JSON file as the demo preset JSON file.
+3. Then add the `demoPresetUrl` property in the `app.json` under the project root:
 ```json
+//app.json
 {
-    "defaultDataUrl": "[your-defaultDataUrl]",
+    "demoPresetUrl": "[your-demoPresetUrl]"
 }
 ```
 ## MultiPlayer
-1. If you want to enable the Multiplayer related features, you need to create a own free-tier Firestore db in Firebase.
+1. If you want to enable the multiplayer features, create a free-tier Firestore database in your own Firebase project.
 2. Then add the `firebaseConfig` property in the `app.json` under the project root:
 ```json
+//app.json
 {
-    "defaultDataUrl": "...",
+    "demoPresetUrl": "...",
     "firebaseConfig": {
         "apiKey": "[your-apiKey]",
         "authDomain": "[your-authDomain]",
@@ -104,14 +106,15 @@ The demo presets is from [this excellent MMD video](https://www.youtube.com/watc
 ```
 
 ## Tech stack
-* `three.js` forked by @takahirox (For MMD)
-* `postprocessing.js` (For effects)
+* `three.js` forked by @takahirox (for MMD)
+* `postprocessing.js` (for effects)
   * HexDoF effect is ported from [Ray-MMD](https://github.com/ray-cast/ray-mmd) HLSL shaders
-* `Next.js` (For framework and static site generation)
-* `@react-three/*` (For r3f eco-system tools)
-* `theatre.js` (For camera editor mode)
-* `media-chrome` (For audio)
-* `playwright` (For testing)
+* `Next.js` (for framework and static site generation)
+* `@react-three/*` (for r3f eco-system tools)
+* `theatre.js` (for camera editor mode)
+* `media-chrome` (for audio)
+* `playwright` (for testing)
+* `Firebase` (for multiplayer)
 
 ## E2E Testing using Playwright
 Run `npm test`

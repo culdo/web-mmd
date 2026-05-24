@@ -6,7 +6,7 @@ import useConfigStore from './useConfigStore';
 import useGlobalStore from './useGlobalStore';
 import { PersistStorage, StorageValue, persist } from '../middleware/persist';
 import _ from 'lodash';
-import { defaultDataUrl } from "@/app/config";
+import { demoPresetUrl } from "@/app/config";
 import { withProgress } from '../utils/base';
 
 export type PresetState = typeof defaultConfig & {
@@ -69,8 +69,8 @@ export const resetPreset = async ({ reactive } = { reactive: true }) => {
 }
 
 export const migratePreset = async (persistedState: any, version: number) => {
-    if (!defaultDataUrl) return persistedState
-    const dataResp = withProgress(await fetch(defaultDataUrl), 33699845)
+    if (!demoPresetUrl) return persistedState
+    const dataResp = withProgress(await fetch(demoPresetUrl), 33699845)
     const defaultData = await dataResp.json()
     const defaultDataOnly = _.pick(defaultData, ["motionFiles", "cameraFiles", "pmxFiles", "audioFiles"])
     const defaultConfigOnly = _.pick(defaultData, Object.keys(defaultConfig))
