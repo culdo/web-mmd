@@ -74,10 +74,13 @@ const useConfigStore = create(
                 presetsInfo: {},
                 uid: "",
                 fileHashes: {},
-                motionFiles: undefined,
-                cameraFiles: undefined,
-                pmxFiles: undefined,
-                audioFiles: undefined
+                motionFiles: {},
+                cameraFiles: {},
+                pmxFiles: {
+                    models: {},
+                    modelTextures: {}
+                },
+                audioFiles: {}
             }), {
             name: "mmd-storage",
             storage,
