@@ -1,8 +1,9 @@
 import { isDev } from "@/app/utils/base";
 import { initializeApp } from "firebase/app";
 import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, onSnapshot, or, query, setDoc, Unsubscribe, where } from "firebase/firestore";
+import { firebaseConfig } from "@/app/config";
 
-const app = initializeApp(JSON.parse(process.env.APP_CONFIG).firebase);
+const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 enum ActiveTypes {

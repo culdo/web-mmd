@@ -11,9 +11,11 @@ import { WebGPURenderer } from "three/webgpu";
 import GameMenu from "./components/three-world/run-modes/game-mode/Menu";
 import IntroSections from "./components/three-world/run-modes/introduction-mode/sections";
 import { SnackbarProvider } from "notistack";
-import Multiplayer from "./components/multiplayer";
 import QRCodeOverlay from "./components/qrcode-overlay";
 import MainUI from "./components/main-ui";
+import { firebaseConfig } from "@/app/config";
+
+const Multiplayer = firebaseConfig ? dynamic(() => import('./components/multiplayer'), { ssr: false }) : () => <></>
 const ControlBar = dynamic(() => import('./components/control-bar'), { ssr: false })
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 

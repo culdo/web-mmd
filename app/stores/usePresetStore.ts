@@ -7,8 +7,11 @@ import useGlobalStore from './useGlobalStore';
 import { PersistStorage, StorageValue, persist } from '../middleware/persist';
 import _ from 'lodash';
 import emptyConfig from '@/app/presets/empty_config.json';
+import { defaultDataUrl } from "@/app/config";
 
-export type PresetState = typeof defaultConfig & {
+const initConfig = defaultDataUrl ? defaultConfig : emptyConfig
+
+export type PresetState = typeof initConfig & {
     // https://github.com/microsoft/TypeScript/issues/32063
     [key: `${string}.color`]: string,
     [key: `${string}.intensity`]: number,
@@ -69,7 +72,7 @@ export const resetPreset = async ({ reactive } = { reactive: true }) => {
 }
 
 export const migratePreset = async (persistedState: any, version: number) => {
-    _.defaults(persistedState, defaultConfig)
+    _.defaults(persistedState, initConfig)
     usePresetStore.setState(persistedState)
     return persistedState
 }
@@ -79,7 +82,7 @@ const usePresetStore = create(
         persist<PresetState>(
             () => {
                 return {
-                    ...defaultConfig
+                    ...initConfig
                 } as PresetState
             },
             {

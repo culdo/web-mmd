@@ -1,4 +1,4 @@
-import { setUserActive } from "@/app/modules/firebase/init";
+import { setUser, setUserActive } from "@/app/modules/firebase/init";
 import { useControls } from "leva";
 import { useEffect, useRef } from "react";
 import Room from "./room";
@@ -7,6 +7,15 @@ import { isDev } from "@/app/utils/base";
 import useAnswerRTC from "./peer/useAnswerRTC";
 import useSdpListener from "./peer/useSdpListener";
 import FileTransfer from "./fileTransfer";
+import { nanoid } from "nanoid";
+
+useConfigStore.persist.onFinishHydration(async ({ uid }) => {
+    if (uid) return
+    const newUid = nanoid(7)
+    useConfigStore.setState({ uid: newUid })
+    console.log(`Create User: ${newUid}`)
+    await setUser(newUid);
+})
 
 function Multiplayer() {
     const uid = useConfigStore(state => state.uid);

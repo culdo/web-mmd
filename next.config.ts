@@ -3,13 +3,14 @@ import type { NextConfig } from 'next'
 
 export default async (phase: string) => {
     const isDev = phase === PHASE_DEVELOPMENT_SERVER
-    let appConfig: string;
-
-    if (process.env.APP_CONFIG) {
-        appConfig = process.env.APP_CONFIG
-    } else {
-        // @ts-ignore
-        appConfig = JSON.stringify((await import("@/app.json")))
+    let appConfig = process.env.APP_CONFIG;
+    if (!appConfig) {
+        try {
+            // @ts-ignore
+            appConfig = JSON.stringify((await import("@/app.json")))
+        } catch (e) {
+            appConfig = JSON.stringify({})
+        }
     }
 
     const nextConfig: NextConfig = {
