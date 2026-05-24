@@ -6,12 +6,10 @@ import useConfigStore from './useConfigStore';
 import useGlobalStore from './useGlobalStore';
 import { PersistStorage, StorageValue, persist } from '../middleware/persist';
 import _ from 'lodash';
-import emptyConfig from '@/app/presets/empty_config.json';
 import { defaultDataUrl } from "@/app/config";
+import { withProgress } from '../utils/base';
 
-const initConfig = defaultDataUrl ? defaultConfig : emptyConfig
-
-export type PresetState = typeof initConfig & {
+export type PresetState = typeof defaultConfig & {
     // https://github.com/microsoft/TypeScript/issues/32063
     [key: `${string}.color`]: string,
     [key: `${string}.intensity`]: number,
@@ -63,17 +61,21 @@ export const storage: PersistStorage<PresetState> = {
 }
 
 export const resetPreset = async ({ reactive } = { reactive: true }) => {
-    const emptyPreset = emptyConfig as PresetState
     if (reactive) {
-        usePresetStore.setState(emptyPreset)
+        usePresetStore.setState(defaultConfig as PresetState)
     } else {
-        await storage.setItem(useConfigStore.getState().preset, { state: emptyPreset })
+        await storage.setItem(useConfigStore.getState().preset, { state: defaultConfig as PresetState })
     }
 }
 
 export const migratePreset = async (persistedState: any, version: number) => {
-    _.defaults(persistedState, initConfig)
-    usePresetStore.setState(persistedState)
+    if (!defaultDataUrl) return persistedState
+    const dataResp = withProgress(await fetch(defaultDataUrl), 33699845)
+    const defaultData = await dataResp.json()
+    const defaultDataOnly = _.pick(defaultData, ["motionFiles", "cameraFiles", "pmxFiles", "audioFiles"])
+    const defaultConfigOnly = _.pick(defaultData, Object.keys(defaultConfig))
+    useConfigStore.setState(defaultDataOnly)
+    usePresetStore.setState(defaultConfigOnly)
     return persistedState
 }
 
@@ -82,7 +84,7 @@ const usePresetStore = create(
         persist<PresetState>(
             () => {
                 return {
-                    ...initConfig
+                    ...defaultConfig,
                 } as PresetState
             },
             {

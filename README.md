@@ -76,6 +76,32 @@ The demo presets is from [this excellent MMD video](https://www.youtube.com/watc
 2. Run `npm run dev`
 * Modules which mainly come from [the three.js example](https://takahirox.github.io/three.js/examples/webgl_loader_mmd_audio.html) is refactored to Classes and Async/Await styles.
 * This projects is refactored to using `Next.js`(TypeScript).
+## Demo preset
+1. If you want to show a demo preset like the one on the demo site, you need to host the `Default_data.json`.
+2. You can use a saved preset JSON file as the `Default_data.json` because both formats are the same.
+3. Then add the `defaultDataUrl` property in the `app.json` under the project root:
+```json
+{
+    "defaultDataUrl": "[your-defaultDataUrl]",
+}
+```
+## MultiPlayer
+1. If you want to enable the Multiplayer related features, you need to create a own free-tier Firestore db in Firebase.
+2. Then add the `firebaseConfig` property in the `app.json` under the project root:
+```json
+{
+    "defaultDataUrl": "...",
+    "firebaseConfig": {
+        "apiKey": "[your-apiKey]",
+        "authDomain": "[your-authDomain]",
+        "projectId": "[your-projectId]",
+        "storageBucket": "[your-storageBucket]",
+        "messagingSenderId": "[your-messagingSenderId]",
+        "appId": "[your-appId]",
+        "measurementId": "[your-measurementId]",
+    }
+}
+```
 
 ## Tech stack
 * `three.js` forked by @takahirox (For MMD)

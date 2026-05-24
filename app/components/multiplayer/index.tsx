@@ -66,16 +66,16 @@ function Multiplayer() {
 }
 
 function Wrapper() {
-    const configReady = useGlobalStore(state => state.configReady);
+    const storeReady = useGlobalStore(state => state.storeReady);
     const uid = useConfigStore(state => state.uid);
     useEffect(() => {
-        if (!configReady || uid) return
+        if (!storeReady || uid) return
         const newUid = nanoid(7)
         useConfigStore.setState({ uid: newUid })
         console.log(`Create User: ${newUid}`)
         setUser(newUid);
-    }, [uid, configReady])
-    return uid && configReady ? <Multiplayer /> : null;
+    }, [uid, storeReady])
+    return uid && storeReady ? <Multiplayer /> : null;
 }
 
 export default Wrapper;

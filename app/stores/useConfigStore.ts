@@ -3,9 +3,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware'
 import { PersistStorage, StorageValue, persist } from '../middleware/persist';
 import _ from 'lodash';
-import { withProgress } from '../utils/base';
 import useGlobalStore from './useGlobalStore';
-import { defaultDataUrl } from "@/app/config";
 
 export type ConfigState = {
     preset: string,
@@ -56,12 +54,6 @@ export const storage: PersistStorage<ConfigState> = {
 }
 
 const migrate = async (states: any, version: number) => {
-    if (!defaultDataUrl) return states
-    const dataResp = withProgress(await fetch(defaultDataUrl), 33699845)
-    const defaultData = await dataResp.json()
-    _.defaults(states, defaultData)
-    useConfigStore.setState(states)
-    console.log("migrate ConfigStore")
     return states
 }
 
