@@ -103,9 +103,6 @@ function Animation({ motionNames }: { motionNames: string[] }) {
             player.pause()
             player.currentTime = 0.0
             e.action.enabled = true
-            setTimeout(() => {
-                e.action.setEffectiveTimeScale(0.0)
-            }, 100)
         });
         return () => {
             mixer.stopAllAction()

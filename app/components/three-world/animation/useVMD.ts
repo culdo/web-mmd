@@ -1,7 +1,7 @@
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { buildOnProgress } from "@/app/utils/base";
 import { useEffect, useRef } from "react";
-import { AnimationAction, AnimationClip, AnimationMixer, Camera, SkinnedMesh } from "three";
+import { AnimationAction, AnimationClip, AnimationMixer, Camera, LoopOnce, SkinnedMesh } from "three";
 
 function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: string) {
     const loader = useGlobalStore(state => state.loader)
@@ -12,6 +12,7 @@ function useVMD(target: Camera | SkinnedMesh, mixer: AnimationMixer, vmdFile: st
         const init = async () => {
             const clip = await loader.loadAnimation(vmdFile, target, buildOnProgress(vmdFile))
             const action = mixer.clipAction(clip)
+            action.loop = LoopOnce
             action.play()
             actionRef.current = action
             clipRef.current = clip
