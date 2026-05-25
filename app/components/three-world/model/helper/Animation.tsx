@@ -16,7 +16,8 @@ function Animation({ motionNames }: { motionNames: string[] }) {
     const mesh = useModel()
     const player = useGlobalStore(state => state.player)
     const motionFiles = useConfigStore(state => state.motionFiles)
-    const isResetPoseRef = useSetMotion()
+    const isResetPoseRef = useRef(false)
+    const isSetMotionRef = useSetMotion()
 
     const mixer = useMemo(() => new AnimationMixer(mesh), [mesh]) as AnimationMixer & {
         _actions: AnimationAction[]
@@ -76,12 +77,13 @@ function Animation({ motionNames }: { motionNames: string[] }) {
 
         return (delta: number) => {
             restoreBones()
-            if (isResetPoseRef.current) {
-                mixer.setTime(player.currentTime)
+            if (isResetPoseRef.current || isSetMotionRef.current) {
+                // we not use mixer.setTime(currentTime) to reset pose because it will not updated when player is paused (action._effectiveTimeScale is set to 0 in <VMDMotion/>)
                 for (const action of mixer._actions) {
                     action.time = player.currentTime
                 }
                 mixer.update(0.0)
+                isSetMotionRef.current = false
             } else {
                 mixer.update(delta)
             }
