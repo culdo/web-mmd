@@ -16,18 +16,14 @@ function onCreate() {
                     _.merge(filesState, loadedPreset[filesKey])
                     return { [filesKey]: { ...filesState } }
                 })
+                delete loadedPreset[filesKey]
             }
         }
         mergeResources("audioFiles")
         mergeResources("motionFiles")
         mergeResources("pmxFiles")
         mergeResources("cameraFiles")
-        const { version } = usePresetStore.getState()
-        if (version != loadedPreset.version) {
-            await migratePreset(loadedPreset, loadedPreset.version)
-        } else {
-            usePresetStore.setState(loadedPreset)
-        }
+        usePresetStore.setState(loadedPreset)
     }, false)
 }
 

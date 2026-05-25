@@ -1,6 +1,6 @@
-import useConfigStore, { addPreset } from "@/app/stores/useConfigStore";
+import { addPreset } from "@/app/stores/useConfigStore";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import usePresetStore, { migratePreset, PresetState, setPreset } from "@/app/stores/usePresetStore";
+import usePresetStore, { PresetState, setPreset } from "@/app/stores/usePresetStore";
 import _ from "lodash";
 
 async function onLoad(name: string, data: string, channel: JSONDataChannel = null) {
