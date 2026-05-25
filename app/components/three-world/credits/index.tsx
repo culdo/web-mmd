@@ -20,14 +20,16 @@ function Word({ children, ...props }: { children: React.ReactNode } & BillboardP
         }
         return () => {
             document.body.style.cursor = 'auto'
-            if(ref.current) ref.current.material.color.set('white')
+            if (ref.current) ref.current.material.color.set('white')
         }
     }, [hovered])
     return (
         <Billboard {...props}>
             <Text ref={ref} onPointerOver={over} onPointerOut={out} onClick={() => {
                 useGlobalStore.setState({ creditsPose: null })
-            }} {...fontProps} children={children} />
+            }} {...fontProps}>
+                {children}
+            </Text>
         </Billboard>
     )
 }
