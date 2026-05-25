@@ -15,8 +15,6 @@ import useConfigStore from "@/app/stores/useConfigStore";
 import Musics from "../../main-ui/musics";
 
 function AudioPlayer() {
-    const setCurrentTime = (currentTime: number) => usePresetStore.setState({ currentTime })
-
     const currentTime = usePresetStore(state => state.currentTime)
     const musicName = usePresetStore(state => state.musicName)
 
@@ -36,6 +34,7 @@ function AudioPlayer() {
     }), { order: 200, collapsed: true }, [musicName])
 
     const playerRef = useRef<HTMLVideoElement>(null)
+    const saveCurrentTime = () => usePresetStore.setState({ currentTime: playerRef.current.currentTime })
 
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
         useGlobalStore.setState({ creditsPose: null })
@@ -43,11 +42,12 @@ function AudioPlayer() {
     }
 
     const onPause = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        setCurrentTime(playerRef.current.currentTime);
+        saveCurrentTime();
         useGlobalStore.setState({ enabledTransform: true })
     }
 
     const onSeeked = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
+        saveCurrentTime();
         if (!playerRef.current.paused) return
         if (cameraMode == CameraMode.EDITOR) {
             const sequence = getProject("MMD").sheet("MMD UI").sequence
