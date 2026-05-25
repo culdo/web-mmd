@@ -75,8 +75,7 @@ export const migratePreset = async (persistedState: any, version: number) => {
     const defaultDataOnly = _.pick(defaultData, ["motionFiles", "cameraFiles", "pmxFiles", "audioFiles"])
     const defaultConfigOnly = _.pick(defaultData, Object.keys(defaultConfig))
     useConfigStore.setState(defaultDataOnly)
-    usePresetStore.setState(defaultConfigOnly)
-    return persistedState
+    return defaultConfigOnly
 }
 
 const usePresetStore = create(
