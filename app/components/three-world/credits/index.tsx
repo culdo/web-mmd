@@ -1,79 +1,105 @@
-import { Billboard, Html, Text, BillboardProps } from "@react-three/drei";
+import { Billboard, Text, BillboardProps } from "@react-three/drei";
 import { button, useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
-import { useThree } from "@react-three/fiber";
-import { Euler, PerspectiveCamera, Vector3, Color } from "three";
-import { useRef, useState, useEffect } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { PerspectiveCamera, Group, Color, Vector3 } from "three";
+import { useRef, useState, useEffect, forwardRef } from "react";
+import { buildGuiItem } from "@/app/utils/gui";
+import usePresetStore from "@/app/stores/usePresetStore";
+import { RunModes } from "../run-modes";
 
 
-function Word({ children, ...props }: { children: React.ReactNode } & BillboardProps) {
-    const fontProps = { fontSize: 1, letterSpacing: -0.05, lineHeight: 1.2, 'material-toneMapped': false, textAlign: "center" as const }
-    const ref = useRef(null)
+const Word = forwardRef<Group, { children: React.ReactNode, colorRef: React.RefObject<any> } & BillboardProps>(({ children, onClick, colorRef, ...props }, ref) => {
+    const fontProps = { fontSize: 1, fontWeight: 900, letterSpacing: -0.05, lineHeight: 1.2, 'material-toneMapped': false, textAlign: "center" as const, outlineWidth: 0.02, outlineColor: "#000000" }
     const [hovered, setHovered] = useState(false)
     const over = (e: React.MouseEvent<HTMLDivElement>) => (e.stopPropagation(), setHovered(true))
     const out = () => setHovered(false)
-    // Change the mouse cursor on hover¨
     useEffect(() => {
         if (hovered) {
+            const origColor = colorRef.current.getHex()
             document.body.style.cursor = 'pointer'
-            ref.current.material.color.set('#e8e8e8')
-        }
-        return () => {
-            document.body.style.cursor = 'auto'
-            if (ref.current) ref.current.material.color.set('white')
+            colorRef.current.offsetHSL(0, 0, -0.1)
+            return () => {
+                document.body.style.cursor = 'auto'
+                colorRef.current?.set(origColor)
+            }
         }
     }, [hovered])
     return (
-        <Billboard {...props}>
-            <Text ref={ref} onPointerOver={over} onPointerOut={out} onClick={() => {
-                useGlobalStore.setState({ creditsPose: null })
-            }} {...fontProps}>
+        <Billboard {...props} ref={ref}>
+            <Text color={colorRef.current} material-depthTest={false} onPointerOver={over} onPointerOut={out} onClick={onClick} {...fontProps}>
                 {children}
             </Text>
         </Billboard>
     )
-}
+})
 
 function CreditsList() {
-    const creditsPose = useGlobalStore((state) => state.creditsPose)
     const camera = useThree(state => state.camera) as PerspectiveCamera
+    const creditsRef = useRef<Group>(null)
+    const colorRef = useRef(new Color(0xffffff))
+    const player = useGlobalStore(state => state.player)
+    const runMode = usePresetStore(state => state["run mode"])
+    const cameraDirection = useRef(new Vector3())
 
-    useControls("Credits", () => ({
-        show: button(() => {
-            const creditsPose = {
-                position: new Vector3(-10, 10, -10),
-                rotation: new Euler()
+    const [{ text }, _] = useControls("Credits", () => ({
+        text: {
+            ...buildGuiItem("creditsText"),
+            rows: true
+        },
+        color: {
+            ...buildGuiItem("creditsColor"),
+            onChange: (val, path, options) => {
+                colorRef.current?.set(val)
             }
-            useGlobalStore.setState({ creditsPose })
+        },
+        show: button(() => {
+            creditsRef.current.visible = true
+            creditsRef.current.position.set(-10, 10, -10)
             camera.position.set(0, 10, 30)
             camera.fov = 30
-            camera.lookAt(creditsPose.position)
+            camera.lookAt(creditsRef.current.position)
             camera.updateProjectionMatrix()
         })
     }), { order: 1000, collapsed: true }, [camera])
 
-    return (creditsPose &&
+    useEffect(() => {
+        const onPlay = () => {
+            creditsRef.current.visible = false
+        }
+        player?.addEventListener("play", onPlay)
+        player?.addEventListener("seeked", onPlay)
+        return () => {
+            player?.removeEventListener("play", onPlay)
+            player?.removeEventListener("seeked", onPlay)
+        }
+    }, [player])
+
+    useFrame(() => {
+        if(player.currentTime > player.duration - 5 && player.paused) {
+            creditsRef.current.visible = true
+            creditsRef.current.position.copy(camera.position)
+            creditsRef.current.quaternion.copy(camera.quaternion)
+            camera.getWorldDirection(cameraDirection.current)
+            cameraDirection.current.multiplyScalar(1500 / camera.fov)
+            creditsRef.current.position.add(cameraDirection.current)
+        }
+    }, 2)
+
+    return (
         <Word
-            position={creditsPose.position}
-        >
-            {
-                "-- Player mode --\n" +
-                "Music\n" +
-                "GimmexGimme by 八王子P × Giga\n" +
-                "Model\n" +
-                "つみ式みくさんv4 by つみだんご\n" +
-                "Motion\n" +
-                "ぎみぎみ（みっちゃん）_原曲音源 by シガー\n" +
-                "Emotion\n" +
-                "GimmeGimmeリップ表情v07 by ノン\n" +
-                "Camera\n" +
-                "Gimme x Gimme镜头 by 冬菇\n" +
-                "Stage\n" +
-                "RedialC_EpRoomDS by RedialC\n" +
-                "-- Game mode --\n" +
-                "Motions\n" +
-                "移動モーション v1.3、ぼんやり待ちループ by むつごろう"
-            }
+            ref={(obj) => {
+                if(!obj) return
+                creditsRef.current = obj
+                useGlobalStore.setState({creditsList: obj})
+            }}
+            visible={false}
+            colorRef={colorRef}
+            onClick={() => {
+                creditsRef.current.visible = false
+            }}
+        >   
+            {runMode == RunModes.GAME_MODE ? "-- Game mode --\nModel\n( same as in player mode )\nStage\n( same as in player mode )\nMotions\n移動モーション v1.3、ぼんやり待ちループ by むつごろう" : text}
         </Word>
     );
 }

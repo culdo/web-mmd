@@ -13,7 +13,7 @@ const Poses = {
 }
 
 function Camera() {
-    const creditsPose = useGlobalStore(state => state.creditsPose)
+    const creditsList = useGlobalStore(state => state.creditsList)
     const cameraPose = useGlobalStore(state => state.cameraOffset)
     const showGameMenu = useGlobalStore(state => state.showGameMenu)
 
@@ -22,16 +22,11 @@ function Camera() {
         const targetOrig = cameraPose.target.clone()
         cameraPose.position.fromArray(showGameMenu ? Poses.inMenu.position : Poses.inGame.position)
         cameraPose.target.fromArray(showGameMenu ? Poses.inMenu.target : Poses.inGame.target)
-        if (creditsPose) {
-            cameraPose.position.y -= 5
-            cameraPose.target.y -= 5
-            cameraPose.position.z += 40
-        }
         return () => {
             cameraPose.position = camOrig
             cameraPose.target = targetOrig
         }
-    }, [creditsPose, showGameMenu])
+    }, [creditsList, showGameMenu])
 
     return <></>;
 }

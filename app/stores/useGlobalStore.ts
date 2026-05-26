@@ -1,6 +1,6 @@
 import { LevaRootProps } from 'leva/dist/declarations/src/components/Leva/LevaRoot';
 import { RefObject, createRef } from 'react';
-import { AnimationMixer, Euler, PerspectiveCamera, SkinnedMesh, Vector3 } from 'three';
+import { AnimationMixer, Group, PerspectiveCamera, SkinnedMesh, Vector3 } from 'three';
 import { GrantSolver, MMDPhysics } from 'three-stdlib';
 import { create } from 'zustand';
 import { MMDLoader } from '../modules/MMDLoader';
@@ -35,10 +35,7 @@ export type GlobalState = {
     selectedName: string,
     enabledTransform: boolean,
     theatreStudio: IStudio,
-    creditsPose: {
-        position: Vector3,
-        rotation: Euler
-    },
+    creditsList: Group,
     cameraOffset: {
         center: Vector3,
         // target relative to center
@@ -112,7 +109,7 @@ const useGlobalStore = create<GlobalState>(
         selectedName: null,
         enabledTransform: true,
         theatreStudio: null,
-        creditsPose: null,
+        creditsList: null,
         cameraOffset: {
             position: new Vector3(0, 10, 50),
             up: new Vector3(0, 1, 0),

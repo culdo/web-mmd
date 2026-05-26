@@ -37,7 +37,6 @@ function AudioPlayer() {
     const saveCurrentTime = () => usePresetStore.setState({ currentTime: playerRef.current.currentTime })
 
     const onPlay = (e: SyntheticEvent<HTMLVideoElement, Event>) => {
-        useGlobalStore.setState({ creditsPose: null })
         useGlobalStore.setState({ enabledTransform: false })
     }
 

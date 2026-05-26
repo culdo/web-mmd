@@ -95,5 +95,7 @@
     "isWebGPU": false,
     "version": 0,
     "ar camera scale": 100,
-    "enableMultiPlayer": false
+    "enableMultiPlayer": false,
+    "creditsText": "Music\nModel\nMotion\nEmotion\nCamera\nStage",
+    "creditsColor": "#ffffff"
 }

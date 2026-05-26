@@ -61,25 +61,27 @@ Move the objects by `transform control` in below ways:
 
 # Demo credits
 ## Player mode
-The demo presets is from [this excellent MMD video](https://www.youtube.com/watch?v=ix9nEjSxgeo) :
-* Music: GimmexGimme by 八王子P × Giga
-* Model: つみ式みくさんv4 by つみだんご
-* Motion: ぎみぎみ（みっちゃん）_原曲音源 by シガー
-* Emotion: GimmeGimmeリップ表情v07 by ノン
-* Camera: Gimme x Gimme镜头 by 冬菇
-* Stage: RedialC_EpRoomDS by RedialC
+The demo preset is from [this excellent MMD video](https://www.youtube.com/watch?v=ix9nEjSxgeo):
+* Music: **GimmexGimme by 八王子P × Giga**
+* Model: **つみ式みくさんv4 by つみだんご**
+* Motion: **ぎみぎみ（みっちゃん）_原曲音源 by シガー**
+* Emotion: **GimmeGimmeリップ表情v07 by ノン**
+* Camera: **Gimme x Gimme镜头 by 冬菇**
+* Stage: **RedialC_EpRoomDS by RedialC**
 ## Game mode
-* Motions: 移動モーション v1.3、ぼんやり待ちループ by むつごろう
+* Model: **( same as in player mode )**
+* Stage: **( same as in player mode )**
+* Motions: **移動モーション v1.3、ぼんやり待ちループ by むつごろう**
 
 # Development
-1. Install deps via `npm install`
+1. Install dependencies with `npm install`
 2. Run `npm run dev`
-* Modules which mainly come from [the three.js example](https://takahirox.github.io/three.js/examples/webgl_loader_mmd_audio.html) is refactored to Classes and Async/Await styles.
-* This projects is refactored to using `Next.js`(TypeScript).
+* Modules that mainly come from [the three.js example](https://takahirox.github.io/three.js/examples/webgl_loader_mmd_audio.html) are refactored into classes and async/await style.
+* This project is refactored to use `Next.js` (TypeScript).
 ## Demo preset
-1. If you want to show a demo preset like the one on the demo site, you need to host the demo preset JSON file.
+1. If you want to show a demo preset like the one on the demo site, host your demo preset JSON file.
     > You can use a saved preset JSON file as the demo preset JSON file.
-3. Then add the `demoPresetUrl` property in the `app.json` under the project root:
+3. Then add the `demoPresetUrl` property to `app.json` at the project root:
 ```json
 //app.json
 {
@@ -88,7 +90,7 @@ The demo presets is from [this excellent MMD video](https://www.youtube.com/watc
 ```
 ## MultiPlayer
 1. If you want to enable the multiplayer features, create a free-tier Firestore database in your own Firebase project.
-2. Then add the `firebaseConfig` property in the `app.json` under the project root:
+2. Then add the `firebaseConfig` property to `app.json` at the project root:
 ```json
 //app.json
 {
