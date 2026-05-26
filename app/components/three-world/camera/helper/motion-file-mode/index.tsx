@@ -20,13 +20,25 @@ function MotionFileMode() {
     const isSetMotionRef = useSetMotion()
 
     useEffect(() => {
+        let isEnded = false;
         const onFinished = (e: {
             action: AnimationAction;
             direction: number;
         }) => {
-            player.pause()
-            player.currentTime = 0.0
             e.action.enabled = true
+            if (isEnded) {
+                isEnded = false
+                return
+            }
+            isEnded = true
+            player.pause()
+            const onPlay = () => {
+                player.currentTime = 0.0
+            }
+            player.addEventListener("seeked", () => {
+                player.removeEventListener("play", onPlay)
+            }, { once: true })
+            player.addEventListener("play", onPlay, { once: true })
         }
         cameraMixer.addEventListener('finished', onFinished);
         return () => {

@@ -99,10 +99,22 @@ function Animation({ motionNames }: { motionNames: string[] }) {
     }
 
     useEffect(() => {
+        let isEnded = false;
         mixer.addEventListener('finished', (e) => {
-            player.pause()
-            player.currentTime = 0.0
             e.action.enabled = true
+            if (isEnded) {
+                isEnded = false
+                return
+            }
+            isEnded = true
+            player.pause()
+            const onPlay = () => {
+                player.currentTime = 0.0
+            }
+            player.addEventListener("seeked", () => {
+                player.removeEventListener("play", onPlay)
+            }, { once: true })
+            player.addEventListener("play", onPlay, { once: true })
         });
         return () => {
             mixer.stopAllAction()
