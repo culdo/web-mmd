@@ -131,7 +131,7 @@ function Effects() {
             value: debugChannels.rgba,
             options: debugChannels
         }
-    }, { collapsed: true }, [debugTextures]);
+    }, { collapsed: true }, [debugTextures, dof]);
 
     const bloomConfig = useControls('Effects.Bloom', {
         enabled: buildGuiItem("bloom enabled"),
