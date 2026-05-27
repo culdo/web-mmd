@@ -9,7 +9,7 @@ import usePresetStore from "@/app/stores/usePresetStore";
 import { RunModes } from "../run-modes";
 
 
-const Word = forwardRef<Group, { children: React.ReactNode, colorRef: React.RefObject<any> } & BillboardProps>(({ children, onClick, colorRef, ...props }, ref) => {
+const Word = forwardRef<Group, { children: React.ReactNode, colorRef: React.RefObject<any> } & BillboardProps>(function Word({ children, onClick, colorRef, ...props }, ref) {
     const fontProps = { fontSize: 1, fontWeight: 900, letterSpacing: -0.05, lineHeight: 1.2, 'material-toneMapped': false, textAlign: "center" as const, outlineWidth: 0.02, outlineColor: "#000000" }
     const [hovered, setHovered] = useState(false)
     const over = (e: React.MouseEvent<HTMLDivElement>) => (e.stopPropagation(), setHovered(true))
