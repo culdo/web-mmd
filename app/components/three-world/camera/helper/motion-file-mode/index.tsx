@@ -9,6 +9,7 @@ import useGlobalStore from "@/app/stores/useGlobalStore";
 import useClearMixer from "../useCameraMixer";
 import useConfigStore from "@/app/stores/useConfigStore";
 import useSetMotion from "../../../animation/useSetMotion";
+import { OrbitControls } from "three-stdlib";
 
 function MotionFileMode() {
     const camera = useThree(state => state.camera) as PerspectiveCamera
@@ -16,6 +17,7 @@ function MotionFileMode() {
     const cameraName = usePresetStore(state => state.camera)
     const cameraFile = useConfigStore(state => state.cameraFiles)?.[cameraName]
     const player = useGlobalStore(state => state.player)
+    const controls = useThree(state => state.controls) as OrbitControls
 
     const isSetMotionRef = useSetMotion()
 
@@ -46,7 +48,9 @@ function MotionFileMode() {
         }
     }, [cameraMixer, player])
 
-    useVMD(camera, cameraMixer, cameraFile)
+    useVMD(camera, cameraMixer, cameraFile, () => {
+        isSetMotionRef.current = true
+    })
 
     useClearMixer(cameraMixer)
 
@@ -59,7 +63,7 @@ function MotionFileMode() {
         } else {
             return
         }
-        updateCamera(camera)
+        updateCamera(camera, controls)
     }, 1)
     return <></>;
 }
