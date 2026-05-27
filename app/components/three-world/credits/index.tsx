@@ -57,10 +57,9 @@ function CreditsList() {
             rows: true
         },
         color: {
-            ...buildGuiItem("creditsColor"),
-            onChange: (val, path, options) => {
+            ...buildGuiItem("creditsColor", (val, path, options) => {
                 colorRef.current?.set(val)
-            }
+            }),
         },
         show: button(showCredits)
     }), { order: 1000, collapsed: true }, [camera])
