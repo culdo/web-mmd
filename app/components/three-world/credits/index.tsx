@@ -3,7 +3,7 @@ import { button, useControls } from "leva";
 import useGlobalStore from "@/app/stores/useGlobalStore";
 import { useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera, Group, Color, Vector3 } from "three";
-import { useRef, useState, useEffect, forwardRef } from "react";
+import { useRef, useState, useEffect, forwardRef, useCallback } from "react";
 import { buildGuiItem } from "@/app/utils/gui";
 import usePresetStore from "@/app/stores/usePresetStore";
 import { RunModes } from "../run-modes";
@@ -42,6 +42,15 @@ function CreditsList() {
     const runMode = usePresetStore(state => state["run mode"])
     const cameraDirection = useRef(new Vector3())
 
+    const showCredits = useCallback(() => {
+        creditsRef.current.visible = true
+        creditsRef.current.position.copy(camera.position)
+        creditsRef.current.quaternion.copy(camera.quaternion)
+        camera.getWorldDirection(cameraDirection.current)
+        cameraDirection.current.multiplyScalar(1500 / camera.fov)
+        creditsRef.current.position.add(cameraDirection.current)
+    }, [camera])
+
     const [{ text }, _] = useControls("Credits", () => ({
         text: {
             ...buildGuiItem("creditsText"),
@@ -53,52 +62,41 @@ function CreditsList() {
                 colorRef.current?.set(val)
             }
         },
-        show: button(() => {
-            creditsRef.current.visible = true
-            creditsRef.current.position.set(-10, 10, -10)
-            camera.position.set(0, 10, 30)
-            camera.fov = 30
-            camera.lookAt(creditsRef.current.position)
-            camera.updateProjectionMatrix()
-        })
+        show: button(showCredits)
     }), { order: 1000, collapsed: true }, [camera])
 
     useEffect(() => {
         const onPlay = () => {
             creditsRef.current.visible = false
         }
+        const onPause = () => {
+            if (player.currentTime > player.duration - 5) {
+                showCredits()
+            }
+        }
         player?.addEventListener("play", onPlay)
         player?.addEventListener("seeked", onPlay)
+        player?.addEventListener("pause", onPause)
         return () => {
             player?.removeEventListener("play", onPlay)
             player?.removeEventListener("seeked", onPlay)
+            player?.removeEventListener("pause", onPause)
         }
-    }, [player])
-
-    useFrame(() => {
-        if(player.currentTime > player.duration - 5 && player.paused) {
-            creditsRef.current.visible = true
-            creditsRef.current.position.copy(camera.position)
-            creditsRef.current.quaternion.copy(camera.quaternion)
-            camera.getWorldDirection(cameraDirection.current)
-            cameraDirection.current.multiplyScalar(1500 / camera.fov)
-            creditsRef.current.position.add(cameraDirection.current)
-        }
-    }, 2)
+    }, [player, showCredits])
 
     return (
         <Word
             ref={(obj) => {
-                if(!obj) return
+                if (!obj) return
                 creditsRef.current = obj
-                useGlobalStore.setState({creditsList: obj})
+                useGlobalStore.setState({ creditsList: obj })
             }}
             visible={false}
             colorRef={colorRef}
             onClick={() => {
                 creditsRef.current.visible = false
             }}
-        >   
+        >
             {runMode == RunModes.GAME_MODE ? "-- Game mode --\nModel\n( same as in player mode )\nStage\n( same as in player mode )\nMotions\n移動モーション v1.3、ぼんやり待ちループ by むつごろう" : text}
         </Word>
     );
