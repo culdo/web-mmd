@@ -22,7 +22,7 @@ import { HexBokehFocalDistanceMaterial } from "./HexBokehFocalDistanceMaterial";
 import fragmentShader from "./shaders/hexDof.frag";
 import { getOutputColorSpace, setTextureColorSpace } from "./utils/all";
 
-OverrideMaterialManager.workaroundEnabled = true;
+OverrideMaterialManager.workaroundEnabled = false;
 
 type DepthBokeh4XPass = ShaderPass & {fullscreenMaterial: HexDepthBokeh4XMaterial}
 type HexBlurFarX = ShaderPass & {fullscreenMaterial: HexBlurFarXMaterial}
