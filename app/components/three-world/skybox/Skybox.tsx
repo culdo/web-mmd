@@ -1,12 +1,9 @@
-import usePresetStore from "@/app/stores/usePresetStore";
 import { buildGuiItem } from "@/app/utils/gui";
 import { useLoader, useThree } from "@react-three/fiber";
 import { useControls } from "leva";
 import { useEffect } from "react";
 import * as THREE from "three";
-import { PMREMGenerator as PMREMGeneratorWebGL } from "three";
 import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
-import { PMREMGenerator as PMREMGeneratorWebGPU, WebGPURenderer } from "three/webgpu";
 
 function Skybox({ hdrUrl }: { hdrUrl: string }) {
     const { gl, scene } = useThree();
@@ -25,18 +22,8 @@ function Skybox({ hdrUrl }: { hdrUrl: string }) {
         })
     }, { order: 2, collapsed: true })
     useEffect(() => {
-        let pmremGenerator: PMREMGeneratorWebGL
-        if (gl instanceof WebGPURenderer) {
-            pmremGenerator = new PMREMGeneratorWebGPU(gl as any) as unknown as PMREMGeneratorWebGL;
-        } else {
-            pmremGenerator = new PMREMGeneratorWebGL(gl);
-        }
-        pmremGenerator.compileEquirectangularShader();
-        const envMap = pmremGenerator.fromEquirectangular(texture).texture;
-
-        envMap.colorSpace = THREE.SRGBColorSpace;
-        envMap.mapping = THREE.EquirectangularReflectionMapping;
-        scene.environment = envMap
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        scene.environment = texture
 
         return () => {
             scene.environment = null
