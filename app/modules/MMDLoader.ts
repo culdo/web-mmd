@@ -58,13 +58,14 @@ import SdefSkinningNode from './effects/webgpu/SdefSkinningNode';
 type ShaderParams = {
 	enableSdef: boolean,
 	enablePBR: boolean,
-	isWebGPU: boolean
+	isWebGPU: boolean,
+	modelTextures: Record<string, string>
 }
 
 declare module 'three' {
-  interface KeyframeTrack {
-    createInterpolant(): Interpolant;
-  }
+	interface KeyframeTrack {
+		createInterpolant(): Interpolant;
+	}
 }
 
 /**
@@ -109,7 +110,7 @@ class MMDLoader extends Loader {
 	meshBuilder: MeshBuilder;
 	animationBuilder: AnimationBuilder;
 	animationPath: any;
-	params: any;
+	params: ShaderParams;
 
 	constructor(manager?: LoadingManager) {
 
@@ -182,8 +183,7 @@ class MMDLoader extends Loader {
 
 		if (params && params.modelTextures) {
 			data.textures.forEach((texturePath: string, index: number) => {
-				texturePath = texturePath.replace('\\', '/');
-				data.textures[index] = params.modelTextures[texturePath];
+				data.textures[index] = texturePath.replace('\\', '/');
 			});
 		}
 
@@ -971,6 +971,7 @@ class MaterialBuilder {
 	tgaLoader: TGALoader;
 	crossOrigin: string;
 	resourcePath: any;
+	shaderParams: ShaderParams;
 
 	constructor(manager: any) {
 
@@ -1012,6 +1013,7 @@ class MaterialBuilder {
 		const materials = [];
 
 		this.textureLoader.setCrossOrigin(this.crossOrigin);
+		this.shaderParams = shaderParams
 
 		// materials
 
@@ -1091,12 +1093,6 @@ class MaterialBuilder {
 				params.map.wrapT = RepeatWrapping;
 
 				params.map.colorSpace = SRGBColorSpace
-
-				// Since PMX spec don't have standard to list map files except color map and env map,
-				// we need to save file name for further mapping, like matching normal map file names after model loaded.
-				// ref: https://gist.github.com/felixjones/f8a06bd48f9da9a4539f#texture
-				params.userData.MMD.mapFileName = data.textures[material.textureIndex];
-
 			}
 
 			if (!shaderParams.enablePBR) {
@@ -1107,9 +1103,6 @@ class MaterialBuilder {
 					params.matcap = this._loadTexture(
 						data.textures[material.envTextureIndex]
 					);
-
-					// Same as color map above, keep file name in userData for further usage.
-					params.userData.MMD.matcapFileName = data.textures[material.envTextureIndex];
 
 					params.matcapCombine = material.envFlag === 1
 						? MultiplyOperation
@@ -1161,6 +1154,8 @@ class MaterialBuilder {
 					if (shaderParams.enableSdef) {
 						params.vertexShader = initSdef(params.vertexShader)
 					}
+					newMaterial.userData.vertexShader = params.vertexShader
+					newMaterial.userData.fragmentShader = params.fragmentShader
 					return params
 				}
 			}
@@ -1283,6 +1278,10 @@ class MaterialBuilder {
 
 			fullPath = this.resourcePath + filePath;
 
+			if (fullPath in this.shaderParams.modelTextures) {
+				fullPath = this.shaderParams.modelTextures[fullPath]
+			}
+
 		}
 
 		let loader: TextureLoader | TGALoader = this.manager.getHandler(fullPath);
@@ -1296,6 +1295,11 @@ class MaterialBuilder {
 		}
 
 		const texture = loader.load(fullPath, onLoad, onProgress, onError);
+
+		// Since PMX spec don't have standard to list map files except color map and env map,
+		// we need to save file name for further mapping, like matching normal map file names after model loaded.
+		// ref: https://gist.github.com/felixjones/f8a06bd48f9da9a4539f#texture
+		texture.name = filePath
 
 		return texture;
 
@@ -1770,8 +1774,8 @@ class AnimationBuilder {
 			}
 
 			times.length = index + 1;
-			values.length = ( index + 1 ) * stride;
-			interpolations.length = ( index + 1 ) * interpolateStride;
+			values.length = (index + 1) * stride;
+			interpolations.length = (index + 1) * interpolateStride;
 
 		}
 

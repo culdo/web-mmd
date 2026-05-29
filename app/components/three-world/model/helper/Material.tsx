@@ -23,14 +23,6 @@ function Material() {
 
     const [controllers, setContollers] = useState<Schema>()
 
-    function updateTexture(material: { [x: string]: any; needsUpdate: boolean; }, materialKey: string, textures: Record<string, any>) {
-        const handler: OnChangeHandler = (texture: THREE.Texture) => {
-            material[materialKey] = texture;
-            material.needsUpdate = true;
-        }
-        return [handler, textures] as const;
-    }
-
     const mapOptions = usePngTex(model)
 
     const needsUpdate = (material: THREE.Material) => {
@@ -69,8 +61,108 @@ function Material() {
 
     const updateControls = (idx: number) => {
         const material = materials[idx]
-        const buildMapItem = (key: Parameters<typeof buildMGuiItem>[0]) => {
-            return buildMGuiItem(key, updateTexture(material, key, { ...mapOptions }))
+
+        const buildMapItem = (materialKey: string, userDataKey?: string, modifyTexture?: Function) => {
+            const handler: OnChangeHandler = (texturePath: keyof typeof mapOptions) => {
+                const texture = mapOptions[texturePath]
+                if (texture === undefined || _.get(material, `${materialKey}.name`) === texturePath) return
+                _.set(material, materialKey, texture);
+                if(materialKey == 'map') {
+                    material.map.colorSpace = THREE.SRGBColorSpace
+                    material.map.needsUpdate = true
+                }
+                modifyTexture?.(texture)
+                material.needsUpdate = true;
+            }
+            if (userDataKey === undefined) {
+                userDataKey = materialKey
+            }
+            return buildMGuiItem(`userData.${userDataKey}`, [handler, Object.keys(mapOptions)])
+        }
+
+        const origFragmentShader = material.userData.fragmentShader;
+        const origVertexShader = material.userData.vertexShader;
+        const onBeforeCompiles: Record<string, typeof material.onBeforeCompile> = {}
+        material.onBeforeCompile = (parameters, renderer) => {
+            parameters.vertexShader = origVertexShader
+            parameters.fragmentShader = origFragmentShader
+            for (const [key, onBeforeCompile] of Object.entries(onBeforeCompiles)) {
+                onBeforeCompile(parameters, renderer)
+            }
+        }
+        const smoothnessToRoughness = (texture: THREE.Texture) => {
+            if (!texture) {
+                delete onBeforeCompiles["smoothness"]
+            } else {
+                onBeforeCompiles["smoothness"] = (parameters, renderer) => {
+                    parameters.fragmentShader = parameters.fragmentShader.replace(
+                        '#include <roughnessmap_fragment>',
+                        `float roughnessFactor = roughness;
+                        #ifdef USE_ROUGHNESSMAP
+                            vec4 texelRoughness = texture2D( roughnessMap, vRoughnessMapUv );
+                            roughnessFactor *= 1.0 - texelRoughness.g;
+                        #endif`
+                    );
+                }
+            }
+            const cacheKey = Math.random().toString()
+            material.customProgramCacheKey = () => cacheKey;
+        }
+
+        const RNMapping = (texture: THREE.Texture) => {
+            if (!texture) {
+                delete onBeforeCompiles["RNMapping"]
+            } else {
+                onBeforeCompiles["RNMapping"] = (parameters, renderer) => {
+                    parameters.uniforms.detailMap = { value: texture };
+                    parameters.uniforms.subNormalMapTransform = { value: texture.matrix };
+
+                    parameters.vertexShader = parameters.vertexShader
+                        .replace(
+                            '#include <uv_pars_vertex>',
+                            `
+                            #include <uv_pars_vertex>
+                            uniform mat3 subNormalMapTransform;
+                            varying vec2 vSubNormalMapUv;
+                            `
+                        )
+                        .replace(
+                            '#include <uv_vertex>',
+                            `
+                            #include <uv_vertex>
+                            vSubNormalMapUv = ( subNormalMapTransform * vec3( NORMALMAP_UV, 1 ) ).xy;
+                            `
+                        )
+
+                    parameters.fragmentShader = parameters.fragmentShader
+                        .replace(
+                            '#include <uv_pars_fragment>',
+                            `
+                            #include <uv_pars_fragment>
+                            varying vec2 vSubNormalMapUv;
+                            `
+                        )
+                        .replace(
+                            '#include <normalmap_pars_fragment>',
+                            `
+                            #include <normalmap_pars_fragment>
+                            uniform sampler2D detailMap;
+                            `
+                        )
+                        .replace(
+                            '#include <normal_fragment_maps>',
+                            `
+                            vec3 t = texture2D(normalMap, vNormalMapUv).xyz * vec3(2, 2, 2) + vec3(-1, -1, 0);
+                            vec3 u = texture2D(detailMap, vSubNormalMapUv).xyz * vec3(-2, -2, 2) + vec3(1, 1, -1);
+                            vec3 mapN = (normalize(t * dot(t, u) - u * t.z) + 1.0) / 2.0;
+                            mapN.xy *= normalScale;
+                            normal = normalize( tbn * mapN );
+                            `
+                        );
+                }
+            }
+            const cacheKey = Math.random().toString()
+            material.customProgramCacheKey = () => cacheKey;
         }
 
         setContollers({
@@ -83,6 +175,7 @@ function Material() {
             'emissiveIntensity': buildMGuiItem("emissiveIntensity"),
             'roughness': buildMGuiItem("roughness"),
             'roughnessMap': buildMapItem("roughnessMap"),
+            'smoothnessMap': buildMapItem("roughnessMap", "smoothnessMap", smoothnessToRoughness),
             'metalness': buildMGuiItem("metalness"),
             'metalnessMap': buildMapItem("metalnessMap"),
             'ior': buildMGuiItem("ior", null, 1, 2.333),
@@ -98,8 +191,16 @@ function Material() {
             'specularColor': buildMGuiItem("specularColor"),
             'fog': buildMGuiItem("fog", needsUpdate(material)),
             'normalMap': buildMapItem("normalMap"),
-            'subNormalMap': buildMapItem("userData.subNormalMap"),
-            // 'normalScale': buildMGuiItem("normalScale"),
+            'subNormalMap': buildMapItem("", "subNormalMap", RNMapping),
+            'subNormalMapLoop': {
+                value: 1,
+                onChange: (val) => {
+                    const subNormalMap = mapOptions[material.userData.subNormalMap]
+                    if (!subNormalMap) return
+                    subNormalMap.repeat.set(val, val)
+                    subNormalMap.updateMatrix()
+                }
+            },
             'envMap': buildMapItem("envMap"),
             'envMapIntensity': buildMGuiItem("envMapIntensity"),
             "reset All": button(() => {
@@ -134,15 +235,22 @@ function Material() {
         normalsOrig.current = geometry.attributes.normal.clone()
         normals.current = geometry.attributes.normal as THREE.BufferAttribute
 
-        for (const [idx, item] of materials.entries()) {
+        for (const [idx, material] of materials.entries()) {
             const userData = {
                 faceForward: 0,
-                normalMap: "none"
+                map: material.map?.name ?? "none",
+                emissiveMap: "none",
+                roughnessMap: "none",
+                smoothnessMap: "none",
+                metalnessMap: "none",
+                normalMap: "none",
+                subNormalMap: "none",
+                envMap: "none",
             }
-            _.merge(item.userData, userData)
-            const savedMaterial = savedMaterials[item.name]
+            _.merge(material.userData, userData)
+            const savedMaterial = savedMaterials[material.name]
             if (savedMaterial) {
-                _.merge(item, savedMaterial)
+                _.merge(material, savedMaterial)
                 if (savedMaterial.userData?.faceForward) {
                     buildFaceForwardFn(idx)(savedMaterial.userData.faceForward)
                 }

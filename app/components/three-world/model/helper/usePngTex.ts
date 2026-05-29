@@ -19,10 +19,13 @@ function usePngTex(model: THREE.SkinnedMesh) {
             }, {})
 
     const pngTexs = useTexture(pngDatas)
+    for(const [key, tex] of Object.entries(pngTexs)) {
+        tex.name = key
+    }
 
     const skin = useTexture("https://raw.githubusercontent.com/ray-cast/ray-mmd/master/Materials/_MaterialMap/skin.png");
 
-    const mapOptions = {
+    const mapOptions: Record<string, THREE.Texture> = {
         none: null as null,
         skin,
         ...pngTexs
@@ -33,7 +36,6 @@ function usePngTex(model: THREE.SkinnedMesh) {
         tex.flipY = false;
         tex.wrapS = THREE.RepeatWrapping;
         tex.wrapT = THREE.RepeatWrapping;
-        tex.colorSpace = THREE.SRGBColorSpace
     }
 
     return mapOptions

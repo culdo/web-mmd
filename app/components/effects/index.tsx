@@ -12,8 +12,6 @@ import { TextureEffectComp } from "./TextureEffectComp";
 import { ColorChannel } from "postprocessing";
 import { WebGPURenderer } from "three/webgpu";
 import WebGPUEffectComposer from "./webGPU/WebGPUEffectComposer";
-import { NormalBlending } from "./NormalBlending";
-import { NormalBlendingPass } from "@/app/modules/effects/NormalBlendingPass";
 import WithReady from "@/app/stores/WithReady";
 import OutlineNode from "./webGPU/OutlineNode";
 import PassNode from "./webGPU/PassNode";
@@ -22,15 +20,14 @@ import DofNode from "./webGPU/DofNode";
 
 function Effects() {
     const [dof, setDof] = useState<HexDofEffect>()
-    const [normal, setNormal] = useState<NormalBlendingPass>()
 
     const effectConfig = useControls('Effects', {
         ...buildGuiObj("show outline")
     }, { order: 2, collapsed: true })
 
     const debugTextures = useMemo(() => {
-        if (!normal) return { None: null }
-        const rts = dof ? [
+        if (!dof) return { None: null }
+        const rts = [
             dof.renderTarget,
             dof.renderTargetBokehTemp,
             dof.renderTargetCoC,
@@ -39,8 +36,6 @@ function Effects() {
             dof.renderTargetFocusDistance,
             dof.renderTargetFocalBlurred,
             dof.renderTargetCoCNear
-        ] : [
-            normal.outputBuffer
         ]
 
         const obj: Record<string, Texture> = {
@@ -52,7 +47,7 @@ function Effects() {
             }
         }
         return obj
-    }, [dof, normal])
+    }, [dof])
 
     const debugChannels = {
         r: [ColorChannel.RED],
@@ -185,7 +180,6 @@ function Effects() {
         return (
             <EffectComposer renderPriority={3} frameBufferType={dofConfig.debugTexture ? FloatType : undefined}>
                 {effectConfig["show outline"] && <OutlinePass></OutlinePass>}
-                <NormalBlending ref={setNormal}></NormalBlending>
                 {dofConfig.enabled && <DepthOfField ref={setDof}></DepthOfField>}
                 {bloomConfig.enabled && <Bloom mipmapBlur {...bloomConfig}></Bloom>}
                 {dofConfig.debugTexture && <TextureEffectComp texture={dofConfig.debugTexture} colorChannel={dofConfig.debugChannel} ></TextureEffectComp>}
